@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Demo application for testing Finatic Client SDK",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 3005",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
