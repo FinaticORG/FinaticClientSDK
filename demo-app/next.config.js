@@ -7,6 +7,8 @@ const nextConfig = {
     // allow importing from outside the app directory (monorepo style)
     externalDir: true,
   },
+  // Tell Next where the workspace root lives when importing from outside the app
+  outputFileTracingRoot: path.join(__dirname, '..'),
   webpack: config => {
     if (isDev) {
       // In dev, point to the SDK source for hot reload
