@@ -17,8 +17,8 @@
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: #fafafa;
+  color: #1f2937;
+  background: #f9fafb;
   font-feature-settings: 'rlig' 1, 'calt' 1;
 }
 

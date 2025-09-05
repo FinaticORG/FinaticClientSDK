@@ -116,3 +116,4 @@ temp/
 
 # Local development
 .local
+demo-app/.yarn/

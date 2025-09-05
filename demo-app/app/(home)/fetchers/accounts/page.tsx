@@ -130,7 +130,7 @@ export default function AccountsPage() {
       </div>
 
       {/* Filters Card */}
-      <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl border border-gray-200/50 p-6">
+      <div className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border border-gray-200 p-6">
         <div className="flex items-center space-x-2 mb-4">
           <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg"></div>
           <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
@@ -144,7 +144,7 @@ export default function AccountsPage() {
               placeholder="Enter broker ID" 
               value={accountsFilters.broker_id} 
               onChange={(e) => setAccountsFilters({ ...accountsFilters, broker_id: e.target.value })} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
             />
           </div>
           <div className="space-y-1">
@@ -152,7 +152,7 @@ export default function AccountsPage() {
             <select 
               value={accountsFilters.account_type} 
               onChange={(e) => setAccountsFilters({ ...accountsFilters, account_type: e.target.value })} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             >
               <option value="">All Account Types</option>
               <option value="margin">Margin</option>
@@ -167,7 +167,7 @@ export default function AccountsPage() {
             <select 
               value={accountsFilters.status} 
               onChange={(e) => setAccountsFilters({ ...accountsFilters, status: e.target.value })} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             >
               <option value="">All Statuses</option>
               <option value="active">Active</option>
@@ -181,14 +181,14 @@ export default function AccountsPage() {
               placeholder="e.g., USD, EUR" 
               value={accountsFilters.currency} 
               onChange={(e) => setAccountsFilters({ ...accountsFilters, currency: e.target.value })} 
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
             />
           </div>
         </div>
       </div>
 
       {/* Actions Card */}
-      <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl border border-gray-200/50 p-6">
+      <div className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border border-gray-200 p-6">
         <div className="flex items-center space-x-2 mb-4">
           <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg"></div>
           <h3 className="text-lg font-semibold text-gray-900">Fetch Methods</h3>
@@ -196,14 +196,14 @@ export default function AccountsPage() {
         
         <div className="flex flex-wrap items-center gap-4 mb-4">
           <div className="flex items-center space-x-3">
-            <label className="text-sm font-medium text-gray-700">Page Size:</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Page Size:</label>
             <input 
               type="number" 
               min={1} 
               max={1000} 
               value={accountsPageSize} 
               onChange={(e) => setAccountsPageSize(parseInt(e.target.value) || 10)} 
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-24 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm w-24 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
             />
           </div>
           <div className="flex items-center space-x-3">
@@ -224,8 +224,8 @@ export default function AccountsPage() {
           </div>
         </div>
         
-        <div className="bg-blue-50/50 border border-blue-200/50 rounded-lg p-3">
-          <p className="text-xs text-blue-700">
+        <div className="bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-800/50 rounded-lg p-3">
+          <p className="text-xs text-blue-700 dark:text-blue-300">
             <span className="font-medium">Page Size:</span> 1-1000 (default: 10) • 
             <span className="font-medium">Get First Page:</span> Returns PaginatedResult • 
             <span className="font-medium">Get All:</span> Returns array
@@ -235,13 +235,13 @@ export default function AccountsPage() {
 
       {/* Pagination Controls */}
       {accountsPage && (
-        <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl border border-gray-200/50 p-6">
+        <div className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-2">
               <div className="w-5 h-5 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg"></div>
-              <h3 className="text-lg font-semibold text-gray-900">Pagination</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Pagination</h3>
             </div>
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
               <span className="font-medium">Page {accountsPage.currentPage}</span>
               <span>•</span>
               <span>{accountsPage.data ? accountsPage.data.length : 0} items</span>
@@ -267,8 +267,8 @@ export default function AccountsPage() {
             >
               ⬅️ Previous
             </button>
-            <div className="px-4 py-2 bg-gray-100 rounded-lg">
-              <span className="font-mono text-sm font-medium">Page {accountsPage.currentPage}</span>
+            <div className="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+              <span className="font-mono text-sm font-medium text-gray-900 dark:text-gray-100">Page {accountsPage.currentPage}</span>
             </div>
             <button 
               onClick={handleNextAccountsPage} 
@@ -279,8 +279,8 @@ export default function AccountsPage() {
             </button>
           </div>
           
-          <div className="mt-4 bg-green-50/50 border border-green-200/50 rounded-lg p-3">
-            <p className="text-xs text-green-700">
+                      <div className="mt-4 bg-green-50/50 dark:bg-green-900/20 border border-green-200/50 dark:border-green-800/50 rounded-lg p-3">
+            <p className="text-xs text-green-700 dark:text-green-300">
               <span className="font-medium">Navigation methods:</span> 
               PaginatedResult.nextPage(), .previousPage(), .firstPage()
             </p>
@@ -289,41 +289,41 @@ export default function AccountsPage() {
       )}
 
       {/* Results Table */}
-      <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl border border-gray-200/50 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200/50">
+      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm shadow-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200/50 dark:border-gray-700/50">
           <div className="flex items-center space-x-2">
             <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg"></div>
-            <h3 className="text-lg font-semibold text-gray-900">Account Data</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Account Data</h3>
           </div>
         </div>
         
         {accounts.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-400 text-6xl mb-4">👤</div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No accounts found</h3>
-            <p className="text-gray-600">Try adjusting your filters or fetch accounts to get started.</p>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No accounts found</h3>
+            <p className="text-gray-600 dark:text-gray-400">Try adjusting your filters or fetch accounts to get started.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200/50">
-              <thead className="bg-gray-50/50">
+            <table className="min-w-full divide-y divide-gray-200/50 dark:divide-gray-700/50">
+              <thead className="bg-gray-50/50 dark:bg-gray-800/50">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Account Name</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Cash Balance</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Buying Power</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Account Name</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Cash Balance</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">Buying Power</th>
                 </tr>
               </thead>
-              <tbody className="bg-white/50 divide-y divide-gray-200/30">
+              <tbody className="bg-white/50 dark:bg-gray-900/50 divide-y divide-gray-200/30 dark:divide-gray-700/30">
                 {accounts.map((account, index) => (
-                  <tr key={account.id} className={`hover:bg-gray-50/50 transition-colors duration-150 ${index % 2 === 0 ? 'bg-white/30' : 'bg-gray-50/30'}`}>
+                  <tr key={account.id} className={`hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors duration-150 ${index % 2 === 0 ? 'bg-white/30 dark:bg-gray-900/30' : 'bg-gray-50/30 dark:bg-gray-800/30'}`}>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-mono font-medium text-gray-900">{account.id}</div>
+                      <div className="text-sm font-mono font-medium text-gray-900 dark:text-gray-100">{account.id}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{account.account_name}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{account.account_name}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -345,12 +345,12 @@ export default function AccountsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-mono font-medium text-gray-900">
+                      <div className="text-sm font-mono font-medium text-gray-900 dark:text-gray-100">
                         {account.cash_balance != null ? `$${account.cash_balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-mono font-medium text-gray-900">
+                      <div className="text-sm font-mono font-medium text-gray-900 dark:text-gray-100">
                         {account.buying_power != null ? `$${account.buying_power.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : 'N/A'}
                       </div>
                     </td>
@@ -364,14 +364,14 @@ export default function AccountsPage() {
 
       {/* Error Display */}
       {error && (
-        <div className="bg-red-50/80 backdrop-blur-sm border border-red-200/50 rounded-2xl p-6">
+        <div className="bg-red-50/80 dark:bg-red-900/20 backdrop-blur-sm border border-red-200/50 dark:border-red-800/50 rounded-2xl p-6">
           <div className="flex items-center space-x-2">
             <div className="w-5 h-5 bg-red-500 rounded-lg flex items-center justify-center">
               <span className="text-white text-xs">!</span>
             </div>
-            <h3 className="text-lg font-semibold text-red-900">Error</h3>
+            <h3 className="text-lg font-semibold text-red-900 dark:text-red-300">Error</h3>
           </div>
-          <p className="text-red-700 mt-2">{error}</p>
+          <p className="text-red-700 dark:text-red-300 mt-2">{error}</p>
         </div>
       )}
     </div>

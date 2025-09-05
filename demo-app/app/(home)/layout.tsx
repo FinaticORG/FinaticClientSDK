@@ -9,14 +9,14 @@ function Header() {
   const { isMockMode, sessionInfo, reinitialize, isLoading } = useFinatic();
   const infoText = (sessionInfo || '').replace(/^(Real Mode|Mock Mode|Mock API Only Mode)\s*-\s*/i, '').trim();
   return (
-    <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-gray-200/50 sticky top-0 z-40">
+    <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-6">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
               <div>
                 <div className="flex flex-wrap md:flex-nowrap items-baseline gap-3">
-                  <h1 className="text-2xl leading-tight font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                  <h1 className="text-2xl leading-tight font-bold text-gray-900">
                     Finatic SDK Demo
                   </h1>
                   <button 
@@ -65,7 +65,7 @@ const NAV_LINKS = [
 function NavBar() {
   const pathname = usePathname();
   return (
-    <nav className="bg-white/60 backdrop-blur-sm border-b border-gray-200/50 sticky top-[89px] z-30">
+    <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-[89px] z-30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex space-x-1 py-2">
           {NAV_LINKS.map((link) => {
