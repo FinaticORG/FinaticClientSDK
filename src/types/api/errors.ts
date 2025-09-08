@@ -23,4 +23,13 @@ export interface ValidationError {
   response_data: null;
   message: string;
   status_code: 400;
+}
+
+export interface TradingNotEnabledError {
+  success: false;
+  response_data: null;
+  message: string;
+  status_code: 403;
+  code: 'TRADING_NOT_ENABLED';
+  requires_action: null;
 } 
