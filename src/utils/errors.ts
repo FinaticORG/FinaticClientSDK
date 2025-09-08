@@ -95,3 +95,10 @@ export class OrderValidationError extends ApiError {
     this.name = 'OrderValidationError';
   }
 }
+
+export class TradingNotEnabledError extends ApiError {
+  constructor(message: string, details?: Record<string, any>) {
+    super(403, message, details);
+    this.name = 'TradingNotEnabledError';
+  }
+}

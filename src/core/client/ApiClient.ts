@@ -31,6 +31,7 @@ import {
   CompanyAccessError,
   OrderError,
   OrderValidationError,
+  TradingNotEnabledError,
 } from '../../utils/errors';
 
 export class ApiClient {
@@ -420,6 +421,12 @@ export class ApiClient {
         if (error.detail?.code === 'NO_COMPANY_ACCESS') {
           return new CompanyAccessError(
             error.detail.message || 'No broker connections found for this company',
+            error.detail
+          );
+        }
+        if (error.detail?.code === 'TRADING_NOT_ENABLED') {
+          return new TradingNotEnabledError(
+            error.detail.message || 'Trading is not enabled for your company',
             error.detail
           );
         }
