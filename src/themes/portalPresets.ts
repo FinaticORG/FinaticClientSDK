@@ -55,8 +55,134 @@ export const darkTheme: PortalThemeConfig = {
       },
     },
   },
+  typography: {
+    fontFamily: {
+      primary: 'Orbitron, Futura, Inter, system-ui, sans-serif',
+      secondary: 'Orbitron, Futura, Inter, system-ui, sans-serif',
+    },
+    fontSize: {
+      xs: '0.75rem',
+      sm: '0.875rem',
+      base: '1rem',
+      lg: '1.125rem',
+      xl: '1.25rem',
+      '2xl': '1.5rem',
+      '3xl': '1.875rem',
+      '4xl': '2.25rem',
+    },
+    fontWeight: {
+      normal: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700,
+      extrabold: 800,
+    },
+    lineHeight: {
+      tight: '1.25',
+      normal: '1.5',
+      relaxed: '1.75',
+    },
+  },
+  spacing: {
+    xs: '0.25rem',
+    sm: '0.5rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+    '2xl': '3rem',
+    '3xl': '4rem',
+  },
+  layout: {
+    containerMaxWidth: '1440px',
+    gridGap: '1rem',
+    cardPadding: '1.5rem',
+    borderRadius: {
+      sm: '0.25rem',
+      md: '0.5rem',
+      lg: '0.75rem',
+      xl: '1rem',
+      '2xl': '1.5rem',
+      full: '9999px',
+    },
+  },
+  components: {
+    brokerCard: {
+      width: '100%',
+      height: '180px',
+      logoSize: '64px',
+      padding: '1.5rem',
+    },
+    statusIndicator: {
+      size: '22px',
+      glowIntensity: 0.9,
+    },
+    modal: {
+      background: 'rgba(0, 0, 0, 0.95)',
+      backdrop: 'rgba(0, 0, 0, 0.8)',
+    },
+    brokerCardModern: {
+      width: '150px',
+      height: '150px',
+      padding: '16px',
+      logoSize: '48px',
+      statusSize: '22px',
+    },
+    connectButton: {
+      width: '120px',
+      height: '120px',
+    },
+    themeSwitcher: {
+      indicatorSize: '24px',
+    },
+  },
+  effects: {
+    glassmorphism: {
+      enabled: true,
+      blur: '12px',
+      opacity: 0.15,
+      border: 'rgba(0, 255, 255, 0.3)',
+    },
+    animations: {
+      enabled: true,
+      duration: {
+        fast: '150ms',
+        normal: '300ms',
+        slow: '500ms',
+      },
+      easing: {
+        default: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        smooth: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+      },
+    },
+    shadows: {
+      sm: '0 1px 2px rgba(0, 0, 0, 0.5)',
+      md: '0 4px 6px rgba(0, 0, 0, 0.6)',
+      lg: '0 10px 15px rgba(0, 0, 0, 0.7)',
+      xl: '0 20px 25px rgba(0, 0, 0, 0.8)',
+      card: '0px 4px 12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 255, 255, 0.2)',
+      cardHover: '0px 4px 24px rgba(0, 255, 255, 0.3), 0 0 30px rgba(0, 255, 255, 0.25)',
+      glow: '0 0 20px rgba(0, 255, 255, 0.8)',
+      focus: '0 0 0 2px #00FFFF, 0 0 8px 2px rgba(0, 255, 255, 0.8)',
+    },
+  },
   branding: {
     primaryColor: '#00FFFF',
+  },
+  glow: {
+    primary: 'rgba(0, 255, 255, 0.4)',
+    secondary: 'rgba(0, 255, 255, 0.6)',
+    card: 'rgba(0, 255, 255, 0.2)',
+    cardHover: 'rgba(0, 255, 255, 0.3)',
+    button: 'rgba(0, 255, 255, 0.6)',
+    focus: 'rgba(0, 255, 255, 0.8)',
+    scrollbar: 'rgba(0, 255, 255, 0.4)',
+  },
+  gradients: {
+    start: 'rgba(0, 255, 255, 0.08)',
+    end: 'rgba(0, 255, 255, 0.03)',
+    hoverStart: 'rgba(0, 255, 255, 0.15)',
+    hoverEnd: 'rgba(0, 255, 255, 0.08)',
   },
 };
 
@@ -115,8 +241,120 @@ export const lightTheme: PortalThemeConfig = {
       },
     },
   },
+  typography: {
+    fontFamily: {
+      primary: 'Orbitron, Futura, Inter, system-ui, sans-serif',
+      secondary: 'Orbitron, Futura, Inter, system-ui, sans-serif',
+    },
+    fontSize: {
+      xs: '0.75rem',
+      sm: '0.875rem',
+      base: '1rem',
+      lg: '1.125rem',
+      xl: '1.25rem',
+      '2xl': '1.5rem',
+      '3xl': '1.875rem',
+      '4xl': '2.25rem',
+    },
+    fontWeight: {
+      normal: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700,
+      extrabold: 800,
+    },
+    lineHeight: {
+      tight: '1.25',
+      normal: '1.5',
+      relaxed: '1.75',
+    },
+  },
+  spacing: {
+    xs: '0.25rem',
+    sm: '0.5rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+    '2xl': '3rem',
+    '3xl': '4rem',
+  },
+  layout: {
+    containerMaxWidth: '1440px',
+    gridGap: '1rem',
+    cardPadding: '1.5rem',
+    borderRadius: {
+      sm: '0.25rem',
+      md: '0.5rem',
+      lg: '0.75rem',
+      xl: '1rem',
+      '2xl': '1.5rem',
+      full: '9999px',
+    },
+  },
+  components: {
+    brokerCard: {
+      width: '100%',
+      height: '180px',
+      logoSize: '64px',
+      padding: '1.5rem',
+    },
+    statusIndicator: {
+      size: '22px',
+      glowIntensity: 0.9,
+    },
+    modal: {
+      background: 'rgba(255, 255, 255, 0.95)',
+      backdrop: 'rgba(0, 0, 0, 0.5)',
+    },
+  },
+  effects: {
+    glassmorphism: {
+      enabled: true,
+      blur: '12px',
+      opacity: 0.15,
+      border: 'rgba(0, 255, 255, 0.3)',
+    },
+    animations: {
+      enabled: true,
+      duration: {
+        fast: '150ms',
+        normal: '300ms',
+        slow: '500ms',
+      },
+      easing: {
+        default: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        smooth: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+      },
+    },
+    shadows: {
+      sm: '0 1px 2px rgba(0, 0, 0, 0.1)',
+      md: '0 4px 6px rgba(0, 0, 0, 0.1)',
+      lg: '0 10px 15px rgba(0, 0, 0, 0.1)',
+      xl: '0 20px 25px rgba(0, 0, 0, 0.1)',
+      card: '0px 4px 12px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 255, 255, 0.2)',
+      cardHover: '0px 4px 24px rgba(0, 255, 255, 0.3), 0 0 30px rgba(0, 255, 255, 0.25)',
+      glow: '0 0 20px rgba(0, 255, 255, 0.8)',
+      focus: '0 0 0 2px #00FFFF, 0 0 8px 2px rgba(0, 255, 255, 0.8)',
+    },
+  },
   branding: {
     primaryColor: '#00FFFF',
+  },
+  glow: {
+    primary: 'rgba(0, 255, 255, 0.4)',
+    secondary: 'rgba(0, 255, 255, 0.6)',
+    card: 'rgba(0, 255, 255, 0.2)',
+    cardHover: 'rgba(0, 255, 255, 0.3)',
+    button: 'rgba(0, 255, 255, 0.6)',
+    focus: 'rgba(0, 255, 255, 0.8)',
+    scrollbar: 'rgba(0, 255, 255, 0.4)',
+  },
+  gradients: {
+    start: 'rgba(0, 255, 255, 0.08)',
+    end: 'rgba(0, 255, 255, 0.03)',
+    hoverStart: 'rgba(0, 255, 255, 0.15)',
+    hoverEnd: 'rgba(0, 255, 255, 0.08)',
   },
 };
 
@@ -175,8 +413,134 @@ export const corporateBlueTheme: PortalThemeConfig = {
       },
     },
   },
+  typography: {
+    fontFamily: {
+      primary: 'Orbitron, Futura, Inter, system-ui, sans-serif',
+      secondary: 'Orbitron, Futura, Inter, system-ui, sans-serif',
+    },
+    fontSize: {
+      xs: '0.75rem',
+      sm: '0.875rem',
+      base: '1rem',
+      lg: '1.125rem',
+      xl: '1.25rem',
+      '2xl': '1.5rem',
+      '3xl': '1.875rem',
+      '4xl': '2.25rem',
+    },
+    fontWeight: {
+      normal: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700,
+      extrabold: 800,
+    },
+    lineHeight: {
+      tight: '1.25',
+      normal: '1.5',
+      relaxed: '1.75',
+    },
+  },
+  spacing: {
+    xs: '0.25rem',
+    sm: '0.5rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+    '2xl': '3rem',
+    '3xl': '4rem',
+  },
+  layout: {
+    containerMaxWidth: '1440px',
+    gridGap: '1rem',
+    cardPadding: '1.5rem',
+    borderRadius: {
+      sm: '0.25rem',
+      md: '0.5rem',
+      lg: '0.75rem',
+      xl: '1rem',
+      '2xl': '1.5rem',
+      full: '9999px',
+    },
+  },
+  components: {
+    brokerCard: {
+      width: '100%',
+      height: '180px',
+      logoSize: '64px',
+      padding: '1.5rem',
+    },
+    statusIndicator: {
+      size: '22px',
+      glowIntensity: 0.9,
+    },
+    modal: {
+      background: 'rgba(0, 0, 0, 0.95)',
+      backdrop: 'rgba(0, 0, 0, 0.8)',
+    },
+    brokerCardModern: {
+      width: '150px',
+      height: '150px',
+      padding: '16px',
+      logoSize: '48px',
+      statusSize: '22px',
+    },
+    connectButton: {
+      width: '120px',
+      height: '120px',
+    },
+    themeSwitcher: {
+      indicatorSize: '24px',
+    },
+  },
+  effects: {
+    glassmorphism: {
+      enabled: true,
+      blur: '12px',
+      opacity: 0.15,
+      border: 'rgba(59, 130, 246, 0.3)',
+    },
+    animations: {
+      enabled: true,
+      duration: {
+        fast: '150ms',
+        normal: '300ms',
+        slow: '500ms',
+      },
+      easing: {
+        default: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        smooth: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+      },
+    },
+    shadows: {
+      sm: '0 1px 2px rgba(0, 0, 0, 0.5)',
+      md: '0 4px 6px rgba(0, 0, 0, 0.6)',
+      lg: '0 10px 15px rgba(0, 0, 0, 0.7)',
+      xl: '0 20px 25px rgba(0, 0, 0, 0.8)',
+      card: '0px 4px 12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(59, 130, 246, 0.2)',
+      cardHover: '0px 4px 24px rgba(59, 130, 246, 0.3), 0 0 30px rgba(59, 130, 246, 0.25)',
+      glow: '0 0 20px rgba(59, 130, 246, 0.8)',
+      focus: '0 0 0 2px #3B82F6, 0 0 8px 2px rgba(59, 130, 246, 0.8)',
+    },
+  },
   branding: {
     primaryColor: '#3B82F6',
+  },
+  glow: {
+    primary: 'rgba(59, 130, 246, 0.4)',
+    secondary: 'rgba(59, 130, 246, 0.6)',
+    card: 'rgba(59, 130, 246, 0.2)',
+    cardHover: 'rgba(59, 130, 246, 0.3)',
+    button: 'rgba(59, 130, 246, 0.6)',
+    focus: 'rgba(59, 130, 246, 0.8)',
+    scrollbar: 'rgba(59, 130, 246, 0.4)',
+  },
+  gradients: {
+    start: 'rgba(59, 130, 246, 0.08)',
+    end: 'rgba(59, 130, 246, 0.03)',
+    hoverStart: 'rgba(59, 130, 246, 0.15)',
+    hoverEnd: 'rgba(59, 130, 246, 0.08)',
   },
 };
 
@@ -235,8 +599,134 @@ export const purpleTheme: PortalThemeConfig = {
       },
     },
   },
+  typography: {
+    fontFamily: {
+      primary: 'Orbitron, Futura, Inter, system-ui, sans-serif',
+      secondary: 'Orbitron, Futura, Inter, system-ui, sans-serif',
+    },
+    fontSize: {
+      xs: '0.75rem',
+      sm: '0.875rem',
+      base: '1rem',
+      lg: '1.125rem',
+      xl: '1.25rem',
+      '2xl': '1.5rem',
+      '3xl': '1.875rem',
+      '4xl': '2.25rem',
+    },
+    fontWeight: {
+      normal: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700,
+      extrabold: 800,
+    },
+    lineHeight: {
+      tight: '1.25',
+      normal: '1.5',
+      relaxed: '1.75',
+    },
+  },
+  spacing: {
+    xs: '0.25rem',
+    sm: '0.5rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+    '2xl': '3rem',
+    '3xl': '4rem',
+  },
+  layout: {
+    containerMaxWidth: '1440px',
+    gridGap: '1rem',
+    cardPadding: '1.5rem',
+    borderRadius: {
+      sm: '0.25rem',
+      md: '0.5rem',
+      lg: '0.75rem',
+      xl: '1rem',
+      '2xl': '1.5rem',
+      full: '9999px',
+    },
+  },
+  components: {
+    brokerCard: {
+      width: '100%',
+      height: '180px',
+      logoSize: '64px',
+      padding: '1.5rem',
+    },
+    statusIndicator: {
+      size: '22px',
+      glowIntensity: 0.9,
+    },
+    modal: {
+      background: 'rgba(0, 0, 0, 0.95)',
+      backdrop: 'rgba(0, 0, 0, 0.8)',
+    },
+    brokerCardModern: {
+      width: '150px',
+      height: '150px',
+      padding: '16px',
+      logoSize: '48px',
+      statusSize: '22px',
+    },
+    connectButton: {
+      width: '120px',
+      height: '120px',
+    },
+    themeSwitcher: {
+      indicatorSize: '24px',
+    },
+  },
+  effects: {
+    glassmorphism: {
+      enabled: true,
+      blur: '12px',
+      opacity: 0.15,
+      border: 'rgba(168, 85, 247, 0.3)',
+    },
+    animations: {
+      enabled: true,
+      duration: {
+        fast: '150ms',
+        normal: '300ms',
+        slow: '500ms',
+      },
+      easing: {
+        default: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        smooth: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+      },
+    },
+    shadows: {
+      sm: '0 1px 2px rgba(0, 0, 0, 0.5)',
+      md: '0 4px 6px rgba(0, 0, 0, 0.6)',
+      lg: '0 10px 15px rgba(0, 0, 0, 0.7)',
+      xl: '0 20px 25px rgba(0, 0, 0, 0.8)',
+      card: '0px 4px 12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(168, 85, 247, 0.2)',
+      cardHover: '0px 4px 24px rgba(168, 85, 247, 0.3), 0 0 30px rgba(168, 85, 247, 0.25)',
+      glow: '0 0 20px rgba(168, 85, 247, 0.8)',
+      focus: '0 0 0 2px #A855F7, 0 0 8px 2px rgba(168, 85, 247, 0.8)',
+    },
+  },
   branding: {
     primaryColor: '#A855F7',
+  },
+  glow: {
+    primary: 'rgba(168, 85, 247, 0.4)',
+    secondary: 'rgba(168, 85, 247, 0.6)',
+    card: 'rgba(168, 85, 247, 0.2)',
+    cardHover: 'rgba(168, 85, 247, 0.3)',
+    button: 'rgba(168, 85, 247, 0.6)',
+    focus: 'rgba(168, 85, 247, 0.8)',
+    scrollbar: 'rgba(168, 85, 247, 0.4)',
+  },
+  gradients: {
+    start: 'rgba(168, 85, 247, 0.08)',
+    end: 'rgba(168, 85, 247, 0.03)',
+    hoverStart: 'rgba(168, 85, 247, 0.15)',
+    hoverEnd: 'rgba(168, 85, 247, 0.08)',
   },
 };
 
@@ -295,8 +785,134 @@ export const greenTheme: PortalThemeConfig = {
       },
     },
   },
+  typography: {
+    fontFamily: {
+      primary: 'Orbitron, Futura, Inter, system-ui, sans-serif',
+      secondary: 'Orbitron, Futura, Inter, system-ui, sans-serif',
+    },
+    fontSize: {
+      xs: '0.75rem',
+      sm: '0.875rem',
+      base: '1rem',
+      lg: '1.125rem',
+      xl: '1.25rem',
+      '2xl': '1.5rem',
+      '3xl': '1.875rem',
+      '4xl': '2.25rem',
+    },
+    fontWeight: {
+      normal: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700,
+      extrabold: 800,
+    },
+    lineHeight: {
+      tight: '1.25',
+      normal: '1.5',
+      relaxed: '1.75',
+    },
+  },
+  spacing: {
+    xs: '0.25rem',
+    sm: '0.5rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+    '2xl': '3rem',
+    '3xl': '4rem',
+  },
+  layout: {
+    containerMaxWidth: '1440px',
+    gridGap: '1rem',
+    cardPadding: '1.5rem',
+    borderRadius: {
+      sm: '0.25rem',
+      md: '0.5rem',
+      lg: '0.75rem',
+      xl: '1rem',
+      '2xl': '1.5rem',
+      full: '9999px',
+    },
+  },
+  components: {
+    brokerCard: {
+      width: '100%',
+      height: '180px',
+      logoSize: '64px',
+      padding: '1.5rem',
+    },
+    statusIndicator: {
+      size: '22px',
+      glowIntensity: 0.9,
+    },
+    modal: {
+      background: 'rgba(0, 0, 0, 0.95)',
+      backdrop: 'rgba(0, 0, 0, 0.8)',
+    },
+    brokerCardModern: {
+      width: '150px',
+      height: '150px',
+      padding: '16px',
+      logoSize: '48px',
+      statusSize: '22px',
+    },
+    connectButton: {
+      width: '120px',
+      height: '120px',
+    },
+    themeSwitcher: {
+      indicatorSize: '24px',
+    },
+  },
+  effects: {
+    glassmorphism: {
+      enabled: true,
+      blur: '12px',
+      opacity: 0.15,
+      border: 'rgba(34, 197, 94, 0.3)',
+    },
+    animations: {
+      enabled: true,
+      duration: {
+        fast: '150ms',
+        normal: '300ms',
+        slow: '500ms',
+      },
+      easing: {
+        default: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        smooth: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+      },
+    },
+    shadows: {
+      sm: '0 1px 2px rgba(0, 0, 0, 0.5)',
+      md: '0 4px 6px rgba(0, 0, 0, 0.6)',
+      lg: '0 10px 15px rgba(0, 0, 0, 0.7)',
+      xl: '0 20px 25px rgba(0, 0, 0, 0.8)',
+      card: '0px 4px 12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(34, 197, 94, 0.2)',
+      cardHover: '0px 4px 24px rgba(34, 197, 94, 0.3), 0 0 30px rgba(34, 197, 94, 0.25)',
+      glow: '0 0 20px rgba(34, 197, 94, 0.8)',
+      focus: '0 0 0 2px #22C55E, 0 0 8px 2px rgba(34, 197, 94, 0.8)',
+    },
+  },
   branding: {
     primaryColor: '#22C55E',
+  },
+  glow: {
+    primary: 'rgba(34, 197, 94, 0.4)',
+    secondary: 'rgba(34, 197, 94, 0.6)',
+    card: 'rgba(34, 197, 94, 0.2)',
+    cardHover: 'rgba(34, 197, 94, 0.3)',
+    button: 'rgba(34, 197, 94, 0.6)',
+    focus: 'rgba(34, 197, 94, 0.8)',
+    scrollbar: 'rgba(34, 197, 94, 0.4)',
+  },
+  gradients: {
+    start: 'rgba(34, 197, 94, 0.08)',
+    end: 'rgba(34, 197, 94, 0.03)',
+    hoverStart: 'rgba(34, 197, 94, 0.15)',
+    hoverEnd: 'rgba(34, 197, 94, 0.08)',
   },
 };
 
@@ -355,8 +971,134 @@ export const orangeTheme: PortalThemeConfig = {
       },
     },
   },
+  typography: {
+    fontFamily: {
+      primary: 'Orbitron, Futura, Inter, system-ui, sans-serif',
+      secondary: 'Orbitron, Futura, Inter, system-ui, sans-serif',
+    },
+    fontSize: {
+      xs: '0.75rem',
+      sm: '0.875rem',
+      base: '1rem',
+      lg: '1.125rem',
+      xl: '1.25rem',
+      '2xl': '1.5rem',
+      '3xl': '1.875rem',
+      '4xl': '2.25rem',
+    },
+    fontWeight: {
+      normal: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700,
+      extrabold: 800,
+    },
+    lineHeight: {
+      tight: '1.25',
+      normal: '1.5',
+      relaxed: '1.75',
+    },
+  },
+  spacing: {
+    xs: '0.25rem',
+    sm: '0.5rem',
+    md: '1rem',
+    lg: '1.5rem',
+    xl: '2rem',
+    '2xl': '3rem',
+    '3xl': '4rem',
+  },
+  layout: {
+    containerMaxWidth: '1440px',
+    gridGap: '1rem',
+    cardPadding: '1.5rem',
+    borderRadius: {
+      sm: '0.25rem',
+      md: '0.5rem',
+      lg: '0.75rem',
+      xl: '1rem',
+      '2xl': '1.5rem',
+      full: '9999px',
+    },
+  },
+  components: {
+    brokerCard: {
+      width: '100%',
+      height: '180px',
+      logoSize: '64px',
+      padding: '1.5rem',
+    },
+    statusIndicator: {
+      size: '22px',
+      glowIntensity: 0.9,
+    },
+    modal: {
+      background: 'rgba(0, 0, 0, 0.95)',
+      backdrop: 'rgba(0, 0, 0, 0.8)',
+    },
+    brokerCardModern: {
+      width: '150px',
+      height: '150px',
+      padding: '16px',
+      logoSize: '48px',
+      statusSize: '22px',
+    },
+    connectButton: {
+      width: '120px',
+      height: '120px',
+    },
+    themeSwitcher: {
+      indicatorSize: '24px',
+    },
+  },
+  effects: {
+    glassmorphism: {
+      enabled: true,
+      blur: '12px',
+      opacity: 0.15,
+      border: 'rgba(249, 115, 22, 0.3)',
+    },
+    animations: {
+      enabled: true,
+      duration: {
+        fast: '150ms',
+        normal: '300ms',
+        slow: '500ms',
+      },
+      easing: {
+        default: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        smooth: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+      },
+    },
+    shadows: {
+      sm: '0 1px 2px rgba(0, 0, 0, 0.5)',
+      md: '0 4px 6px rgba(0, 0, 0, 0.6)',
+      lg: '0 10px 15px rgba(0, 0, 0, 0.7)',
+      xl: '0 20px 25px rgba(0, 0, 0, 0.8)',
+      card: '0px 4px 12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(249, 115, 22, 0.2)',
+      cardHover: '0px 4px 24px rgba(249, 115, 22, 0.3), 0 0 30px rgba(249, 115, 22, 0.25)',
+      glow: '0 0 20px rgba(249, 115, 22, 0.8)',
+      focus: '0 0 0 2px #F97316, 0 0 8px 2px rgba(249, 115, 22, 0.8)',
+    },
+  },
   branding: {
     primaryColor: '#F97316',
+  },
+  glow: {
+    primary: 'rgba(249, 115, 22, 0.4)',
+    secondary: 'rgba(249, 115, 22, 0.6)',
+    card: 'rgba(249, 115, 22, 0.2)',
+    cardHover: 'rgba(249, 115, 22, 0.3)',
+    button: 'rgba(249, 115, 22, 0.6)',
+    focus: 'rgba(249, 115, 22, 0.8)',
+    scrollbar: 'rgba(249, 115, 22, 0.4)',
+  },
+  gradients: {
+    start: 'rgba(249, 115, 22, 0.08)',
+    end: 'rgba(249, 115, 22, 0.03)',
+    hoverStart: 'rgba(249, 115, 22, 0.15)',
+    hoverEnd: 'rgba(249, 115, 22, 0.08)',
   },
 };
 

@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
 // Import types from the main API types
-import { Holding, Portfolio } from '../types/api/portfolio';
 import { Order, OrderResponse } from '../types/api/orders';
 import { 
   BrokerInfo,
@@ -453,114 +452,7 @@ export class MockDataProvider {
 
   // Portfolio & Trading Mocks
 
-  async mockGetHoldings(): Promise<{ data: Holding[] }> {
-    await this.simulateDelay();
 
-    const holdings: Holding[] = [
-      {
-        symbol: 'AAPL',
-        quantity: 100,
-        averagePrice: 150.25,
-        currentPrice: 175.5,
-        marketValue: 17550.0,
-        unrealizedPnL: 2525.0,
-        realizedPnL: 0,
-        costBasis: 15025.0,
-        currency: 'USD',
-      },
-      {
-        symbol: 'TSLA',
-        quantity: 50,
-        averagePrice: 200.0,
-        currentPrice: 220.75,
-        marketValue: 11037.5,
-        unrealizedPnL: 1037.5,
-        realizedPnL: 0,
-        costBasis: 10000.0,
-        currency: 'USD',
-      },
-      {
-        symbol: 'MSFT',
-        quantity: 75,
-        averagePrice: 300.0,
-        currentPrice: 325.25,
-        marketValue: 24393.75,
-        unrealizedPnL: 1893.75,
-        realizedPnL: 0,
-        costBasis: 22500.0,
-        currency: 'USD',
-      },
-    ];
-
-    return { data: holdings };
-  }
-
-  async mockGetPortfolio(): Promise<{ data: Portfolio }> {
-    await this.simulateDelay();
-
-    const portfolio: Portfolio = {
-      id: uuidv4(),
-      name: 'Main Portfolio',
-      type: 'individual',
-      status: 'active',
-      cash: 15000.5,
-      buyingPower: 45000.0,
-      equity: 52981.25,
-      longMarketValue: 37981.25,
-      shortMarketValue: 0,
-      initialMargin: 0,
-      maintenanceMargin: 0,
-      lastEquity: 52000.0,
-      positions: [
-        {
-          symbol: 'AAPL',
-          quantity: 100,
-          averagePrice: 150.25,
-          currentPrice: 175.5,
-          marketValue: 17550.0,
-          unrealizedPnL: 2525.0,
-          realizedPnL: 0,
-          costBasis: 15025.0,
-          currency: 'USD',
-        },
-        {
-          symbol: 'TSLA',
-          quantity: 50,
-          averagePrice: 200.0,
-          currentPrice: 220.75,
-          marketValue: 11037.5,
-          unrealizedPnL: 1037.5,
-          realizedPnL: 0,
-          costBasis: 10000.0,
-          currency: 'USD',
-        },
-        {
-          symbol: 'MSFT',
-          quantity: 75,
-          averagePrice: 300.0,
-          currentPrice: 325.25,
-          marketValue: 24393.75,
-          unrealizedPnL: 1893.75,
-          realizedPnL: 0,
-          costBasis: 22500.0,
-          currency: 'USD',
-        },
-      ],
-      performance: {
-        totalReturn: 0.089,
-        dailyReturn: 0.002,
-        weeklyReturn: 0.015,
-        monthlyReturn: 0.045,
-        yearlyReturn: 0.089,
-        maxDrawdown: -0.05,
-        sharpeRatio: 1.2,
-        beta: 0.95,
-        alpha: 0.02,
-      },
-    };
-
-    return { data: portfolio };
-  }
 
   async mockGetOrders(filter?: OrdersFilter): Promise<{ data: Order[] }> {
     await this.simulateDelay();
@@ -698,8 +590,8 @@ export class MockDataProvider {
   /**
    * Get stored user token
    */
-  getUserToken(userId: string): UserToken | undefined {
-    return this.userTokens.get(userId);
+  getUserToken(sessionId: string): UserToken | undefined {
+    return this.userTokens.get(sessionId);
   }
 
   /**

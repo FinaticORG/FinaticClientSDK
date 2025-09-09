@@ -79,19 +79,39 @@ export function getThemePreset(preset: string): PortalThemeConfig | undefined {
  */
 export function validateCustomTheme(theme: PortalThemeConfig): boolean {
   try {
-    // Check required properties
-    if (!theme.mode || !['dark', 'light', 'auto'].includes(theme.mode)) {
+    // Only validate what's provided - everything else gets defaults
+    if (theme.mode && !['dark', 'light', 'auto'].includes(theme.mode)) {
       return false;
     }
 
-    if (!theme.colors) {
-      return false;
+    // If colors are provided, validate the structure
+    if (theme.colors) {
+      // Check that any provided color sections have valid structure
+      const colorSections = ['background', 'status', 'text', 'border', 'input', 'button'];
+      for (const section of colorSections) {
+        const colorSection = theme.colors[section as keyof typeof theme.colors];
+        if (colorSection && typeof colorSection !== 'object') {
+          return false;
+        }
+      }
     }
 
-    // Check required color sections
-    const requiredSections = ['background', 'status', 'text', 'border', 'input', 'button'];
-    for (const section of requiredSections) {
-      if (!theme.colors[section as keyof typeof theme.colors]) {
+    // If typography is provided, validate structure
+    if (theme.typography) {
+      if (theme.typography.fontSize && typeof theme.typography.fontSize !== 'object') {
+        return false;
+      }
+      if (theme.typography.fontWeight && typeof theme.typography.fontWeight !== 'object') {
+        return false;
+      }
+    }
+
+    // If effects are provided, validate structure
+    if (theme.effects) {
+      if (theme.effects.animations && typeof theme.effects.animations !== 'object') {
+        return false;
+      }
+      if (theme.effects.shadows && typeof theme.effects.shadows !== 'object') {
         return false;
       }
     }
