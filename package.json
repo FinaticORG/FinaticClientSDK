@@ -1,6 +1,6 @@
 {
   "name": "@finatic/client",
-  "version": "0.0.135",
+  "version": "0.0.136",
   "description": "Finatic Client SDK for browser integration",
   "type": "module",
   "publishConfig": {
