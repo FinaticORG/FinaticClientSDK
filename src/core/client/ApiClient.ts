@@ -1,4 +1,3 @@
-import { Holding, Portfolio } from '../../types/api/portfolio';
 import { Order } from '../../types/api/orders';
 import { BrokerInfo, BrokerAccount, BrokerOrder, BrokerPosition, BrokerDataOptions, DisconnectCompanyResponse } from '../../types/api/broker';
 import { BrokerOrderParams, BrokerExtras } from '../../types/api/broker';
@@ -589,26 +588,6 @@ export class ApiClient {
     });
   }
 
-  async validatePortalSession(
-    sessionId: string,
-    signature: string
-  ): Promise<SessionValidationResponse> {
-    return this.request<SessionValidationResponse>('/portal/validate', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Session-ID': sessionId,
-        'X-Device-Info': JSON.stringify({
-          ip_address: this.deviceInfo?.ip_address || '',
-          user_agent: this.deviceInfo?.user_agent || '',
-          fingerprint: this.deviceInfo?.fingerprint || '',
-        }),
-      },
-      params: {
-        signature,
-      },
-    });
-  }
 
   async completePortalSession(sessionId: string): Promise<PortalUrlResponse> {
     return this.request<PortalUrlResponse>(`/portal/${sessionId}/complete`, {
@@ -620,19 +599,10 @@ export class ApiClient {
   }
 
   // Portfolio Management
-  async getHoldings(): Promise<{ data: Holding[] }> {
-    const accessToken = await this.getValidAccessToken();
-    return this.request<{ data: Holding[] }>('/portfolio/holdings', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
-    });
-  }
 
   async getOrders(): Promise<{ data: Order[] }> {
     const accessToken = await this.getValidAccessToken();
-    return this.request<{ data: Order[] }>('/data/orders', {
+    return this.request<{ data: Order[] }>('/brokers/data/orders', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -640,17 +610,6 @@ export class ApiClient {
     });
   }
 
-  async getPortfolio(): Promise<{ data: Portfolio }> {
-    const accessToken = await this.getValidAccessToken();
-    const response = await this.request<{ data: Portfolio }>('/portfolio/', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    return response;
-  }
 
   // Enhanced Trading Methods with Session Management
   async placeBrokerOrder(
@@ -744,10 +703,7 @@ export class ApiClient {
     const accountNumber = this.tradingContext.accountNumber;
 
     // Build query parameters as required by API documentation
-    const queryParams: Record<string, string> = {
-      broker: selectedBroker,
-      order_id: orderId,
-    };
+    const queryParams: Record<string, string> = {};
 
     // Add optional parameters if available
     if (accountNumber) {
@@ -770,7 +726,7 @@ export class ApiClient {
       };
     }
 
-    return this.request<OrderResponse>('/brokers/orders', {
+    return this.request<OrderResponse>(`/brokers/orders/${orderId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -1148,20 +1104,10 @@ export class ApiClient {
     }
   }
 
-  async revokeToken(): Promise<void> {
-    const accessToken = await this.getValidAccessToken();
-    await this.request<void>('/auth/token/revoke', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
-    });
-    this.clearTokens();
-  }
 
-  async getUserToken(userId: string): Promise<UserToken> {
+  async getUserToken(sessionId: string): Promise<UserToken> {
     const accessToken = await this.getValidAccessToken();
-    return this.request<UserToken>(`/auth/token/user/${userId}`, {
+    return this.request<UserToken>(`/auth/session/${sessionId}/user`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -1222,7 +1168,7 @@ export class ApiClient {
       status_code: number;
       warnings: null;
       errors: null;
-    }>('/brokers/list', {
+    }>('/brokers/', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -1638,7 +1584,7 @@ export class ApiClient {
    */
   async disconnectCompany(connectionId: string): Promise<DisconnectCompanyResponse> {
     const accessToken = await this.getValidAccessToken();
-    return this.request<DisconnectCompanyResponse>(`/brokers/disconnect-company/${connectionId}`, {
+    return this.request<DisconnectCompanyResponse>(`/brokers/disconnect/${connectionId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${accessToken}`,

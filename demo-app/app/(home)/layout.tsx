@@ -54,12 +54,15 @@ function Header() {
 }
 
 const NAV_LINKS = [
-  { href: '/fetchers/accounts', label: 'Accounts', icon: '👤' },
-  { href: '/fetchers/orders', label: 'Orders', icon: '📋' },
-  { href: '/fetchers/positions', label: 'Positions', icon: '📊' },
+  { href: '/authentication', label: 'Authentication', icon: '🔐' },
   { href: '/portal', label: 'Portal', icon: '🚪' },
-  { href: '/advanced', label: 'Advanced', icon: '⚙️' },
-  { href: '/executors/trading', label: 'Trading', icon: '💹' },
+  { href: '/theming', label: 'Theming', icon: '🎨' },
+  { href: '/data-access', label: 'Data Access', icon: '📊' },
+  { href: '/broker-management', label: 'Broker Management', icon: '🏢' },
+  { href: '/trading', label: 'Trading', icon: '💹' },
+  { href: '/context-management', label: 'Context', icon: '⚙️' },
+  { href: '/convenience', label: 'Convenience', icon: '🎯' },
+  { href: '/pagination', label: 'Pagination', icon: '📄' },
 ];
 
 function NavBar() {

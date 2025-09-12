@@ -9,9 +9,7 @@ import {
   SessionValidationResponse,
   SessionAuthenticateResponse,
   UserToken,
-  Holding,
   Order,
-  Portfolio,
   BrokerInfo,
   BrokerAccount,
   BrokerOrder,
@@ -313,20 +311,12 @@ export class MockApiClient {
   }
 
   // Portfolio Management
-  async getHoldings(filter?: OrdersFilter): Promise<{ data: Holding[] }> {
-    const accessToken = await this.getValidAccessToken();
-    return this.mockDataProvider.mockGetHoldings();
-  }
 
   async getOrders(filter?: OrdersFilter): Promise<{ data: Order[] }> {
     const accessToken = await this.getValidAccessToken();
     return this.mockDataProvider.mockGetOrders(filter);
   }
 
-  async getPortfolio(): Promise<{ data: Portfolio }> {
-    const accessToken = await this.getValidAccessToken();
-    return this.mockDataProvider.mockGetPortfolio();
-  }
 
   async placeOrder(order: BrokerOrderParams): Promise<void> {
     const accessToken = await this.getValidAccessToken();
@@ -706,13 +696,9 @@ export class MockApiClient {
     );
   }
 
-  async revokeToken(accessToken: string): Promise<void> {
-    // Clear tokens on revoke
-    this.clearTokens();
-  }
 
-  async getUserToken(userId: string): Promise<UserToken> {
-    const token = this.mockDataProvider.getUserToken(userId);
+  async getUserToken(sessionId: string): Promise<UserToken> {
+    const token = this.mockDataProvider.getUserToken(sessionId);
     if (!token) {
       throw new AuthenticationError('User token not found');
     }
