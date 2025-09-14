@@ -31,6 +31,7 @@ export type {
   DeviceInfo,
   BrokerOrder,
   BrokerPosition,
+  BrokerBalance,
   BrokerDataOptions,
   BrokerInfo,
   TokenInfo,
@@ -39,12 +40,14 @@ export type {
   AccountsFilter,
   OrdersFilter,
   PositionsFilter,
+  BalancesFilter,
   BrokerDataOrder,
   BrokerDataPosition,
   BrokerDataAccount,
   FilteredOrdersResponse,
   FilteredPositionsResponse,
   FilteredAccountsResponse,
+  FilteredBalancesResponse,
   BrokerConnection,
 } from './types';
 

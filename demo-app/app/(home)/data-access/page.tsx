@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { BrokerDataAccount, BrokerDataOrder, BrokerDataPosition, PaginatedResult, OrdersFilter, PositionsFilter, AccountsFilter } from '@finatic/client';
+import { BrokerDataAccount, BrokerDataOrder, BrokerDataPosition, BrokerBalance, PaginatedResult, OrdersFilter, PositionsFilter, AccountsFilter, BalancesFilter } from '@finatic/client';
 import { useFinatic } from '@/app/(home)/providers/FinaticProvider';
 
 export default function DataAccessPage() {
@@ -12,16 +12,19 @@ export default function DataAccessPage() {
   const [accounts, setAccounts] = useState<BrokerDataAccount[]>([]);
   const [orders, setOrders] = useState<BrokerDataOrder[]>([]);
   const [positions, setPositions] = useState<BrokerDataPosition[]>([]);
+  const [balances, setBalances] = useState<BrokerBalance[]>([]);
   
   // Pagination state
   const [accountsPage, setAccountsPage] = useState<PaginatedResult<BrokerDataAccount[]> | null>(null);
   const [ordersPage, setOrdersPage] = useState<PaginatedResult<BrokerDataOrder[]> | null>(null);
   const [positionsPage, setPositionsPage] = useState<PaginatedResult<BrokerDataPosition[]> | null>(null);
+  const [balancesPage, setBalancesPage] = useState<PaginatedResult<BrokerBalance[]> | null>(null);
   
   // Filter state
   const [accountsFilters, setAccountsFilters] = useState<AccountsFilter>({});
   const [ordersFilters, setOrdersFilters] = useState<OrdersFilter>({});
   const [positionsFilters, setPositionsFilters] = useState<PositionsFilter>({});
+  const [balancesFilters, setBalancesFilters] = useState<BalancesFilter>({});
   
   // Pagination settings
   const [pageSize, setPageSize] = useState(10);
@@ -132,10 +135,45 @@ export default function DataAccessPage() {
     }
   };
 
-  // Pagination navigation
-  const handleNextPage = async (type: 'accounts' | 'orders' | 'positions') => {
+  // Balances methods
+  const handleGetBalances = async () => {
     if (!finatic) return;
-    const currentPage = type === 'accounts' ? accountsPage : type === 'orders' ? ordersPage : positionsPage;
+    addLog('info', `Fetching balances (page ${currentPage}, size ${pageSize})...`);
+    try {
+      const result = await finatic.getBalances({
+        page: currentPage,
+        perPage: pageSize,
+        filter: balancesFilters
+      });
+      setBalancesPage(result);
+      setBalances(result.data || []);
+      addLog('success', `Fetched balances page ${result.currentPage} (${result.data?.length || 0} items)`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to fetch balances';
+      setError(msg);
+      addLog('error', msg);
+    }
+  };
+
+  const handleGetAllBalances = async () => {
+    if (!finatic) return;
+    addLog('info', 'Fetching all balances...');
+    try {
+      const result = await finatic.getAllBalances(balancesFilters);
+      setBalances(result);
+      setBalancesPage(null);
+      addLog('success', `Fetched all balances (${result.length} items)`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to fetch all balances';
+      setError(msg);
+      addLog('error', msg);
+    }
+  };
+
+  // Pagination navigation
+  const handleNextPage = async (type: 'accounts' | 'orders' | 'positions' | 'balances') => {
+    if (!finatic) return;
+    const currentPage = type === 'accounts' ? accountsPage : type === 'orders' ? ordersPage : type === 'positions' ? positionsPage : balancesPage;
     if (!currentPage || !currentPage.hasNext) return;
     
     addLog('info', `Fetching next ${type} page...`);
@@ -148,9 +186,12 @@ export default function DataAccessPage() {
         } else if (type === 'orders') {
           setOrdersPage(nextResult);
           setOrders(nextResult.data || []);
-        } else {
+        } else if (type === 'positions') {
           setPositionsPage(nextResult);
           setPositions(nextResult.data || []);
+        } else {
+          setBalancesPage(nextResult);
+          setBalances(nextResult.data || []);
         }
         addLog('success', `Fetched ${type} page ${nextResult.currentPage} (${nextResult.data?.length || 0} items)`);
       }
@@ -171,7 +212,7 @@ export default function DataAccessPage() {
         </div>
         <div className="flex items-center space-x-2">
           <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            {accounts.length + orders.length + positions.length} total items
+            {accounts.length + orders.length + positions.length + balances.length} total items
           </div>
         </div>
       </div>
@@ -319,6 +360,43 @@ export default function DataAccessPage() {
         </div>
       </div>
 
+      {/* Balances Section */}
+      <div className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border border-gray-200 p-6">
+        <div className="flex items-center space-x-2 mb-4">
+          <div className="w-5 h-5 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-lg"></div>
+          <h3 className="text-lg font-semibold text-gray-900">Balances</h3>
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+            {balances.length} items
+          </span>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="flex items-center space-x-4">
+            <button onClick={handleGetBalances} disabled={isLoading || !finatic} className="btn btn-primary btn-sm">
+              📄 Get Page
+            </button>
+            <button onClick={handleGetAllBalances} disabled={isLoading || !finatic} className="btn btn-secondary btn-sm">
+              📚 Get All
+            </button>
+            {balancesPage && balancesPage.hasNext && (
+              <button onClick={() => handleNextPage('balances')} disabled={isLoading || !finatic} className="btn btn-outline btn-sm">
+                ➡️ Next Page
+              </button>
+            )}
+          </div>
+          
+          {balancesPage && (
+            <div className="bg-blue-50/50 border border-blue-200/50 rounded-lg p-3">
+              <p className="text-xs text-blue-700">
+                Page {balancesPage.currentPage} of {balancesPage.totalPages} • 
+                {balancesPage.hasNext ? ' Has next page' : ' Last page'} • 
+                {balancesPage.hasPrevious ? ' Has previous page' : ' First page'}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Method Reference */}
       <div className="bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border border-gray-200 p-6">
         <div className="flex items-center space-x-2 mb-4">
@@ -326,7 +404,7 @@ export default function DataAccessPage() {
           <h3 className="text-lg font-semibold text-gray-900">Available Methods</h3>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-2">
             <h4 className="font-medium text-gray-900">Accounts</h4>
             <div className="space-y-1 text-sm">
@@ -346,6 +424,13 @@ export default function DataAccessPage() {
             <div className="space-y-1 text-sm">
               <div className="font-mono text-xs">getPositions(params?)</div>
               <div className="font-mono text-xs">getAllPositions(filter?)</div>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h4 className="font-medium text-gray-900">Balances</h4>
+            <div className="space-y-1 text-sm">
+              <div className="font-mono text-xs">getBalances(params?)</div>
+              <div className="font-mono text-xs">getAllBalances(filter?)</div>
             </div>
           </div>
         </div>
