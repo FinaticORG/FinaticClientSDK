@@ -1,17 +1,18 @@
 import { v4 as uuidv4 } from 'uuid';
 
 // Import types from the main API types
-import { Holding, Portfolio } from '../types/api/portfolio';
 import { Order, OrderResponse } from '../types/api/orders';
 import { 
   BrokerInfo,
   BrokerAccount,
   BrokerOrder,
   BrokerPosition,
+  BrokerBalance,
   BrokerConnection,
   OrdersFilter,
   PositionsFilter,
   AccountsFilter,
+  BalancesFilter,
   BrokerDataOrder,
   BrokerDataPosition,
   BrokerDataAccount,
@@ -453,114 +454,7 @@ export class MockDataProvider {
 
   // Portfolio & Trading Mocks
 
-  async mockGetHoldings(): Promise<{ data: Holding[] }> {
-    await this.simulateDelay();
 
-    const holdings: Holding[] = [
-      {
-        symbol: 'AAPL',
-        quantity: 100,
-        averagePrice: 150.25,
-        currentPrice: 175.5,
-        marketValue: 17550.0,
-        unrealizedPnL: 2525.0,
-        realizedPnL: 0,
-        costBasis: 15025.0,
-        currency: 'USD',
-      },
-      {
-        symbol: 'TSLA',
-        quantity: 50,
-        averagePrice: 200.0,
-        currentPrice: 220.75,
-        marketValue: 11037.5,
-        unrealizedPnL: 1037.5,
-        realizedPnL: 0,
-        costBasis: 10000.0,
-        currency: 'USD',
-      },
-      {
-        symbol: 'MSFT',
-        quantity: 75,
-        averagePrice: 300.0,
-        currentPrice: 325.25,
-        marketValue: 24393.75,
-        unrealizedPnL: 1893.75,
-        realizedPnL: 0,
-        costBasis: 22500.0,
-        currency: 'USD',
-      },
-    ];
-
-    return { data: holdings };
-  }
-
-  async mockGetPortfolio(): Promise<{ data: Portfolio }> {
-    await this.simulateDelay();
-
-    const portfolio: Portfolio = {
-      id: uuidv4(),
-      name: 'Main Portfolio',
-      type: 'individual',
-      status: 'active',
-      cash: 15000.5,
-      buyingPower: 45000.0,
-      equity: 52981.25,
-      longMarketValue: 37981.25,
-      shortMarketValue: 0,
-      initialMargin: 0,
-      maintenanceMargin: 0,
-      lastEquity: 52000.0,
-      positions: [
-        {
-          symbol: 'AAPL',
-          quantity: 100,
-          averagePrice: 150.25,
-          currentPrice: 175.5,
-          marketValue: 17550.0,
-          unrealizedPnL: 2525.0,
-          realizedPnL: 0,
-          costBasis: 15025.0,
-          currency: 'USD',
-        },
-        {
-          symbol: 'TSLA',
-          quantity: 50,
-          averagePrice: 200.0,
-          currentPrice: 220.75,
-          marketValue: 11037.5,
-          unrealizedPnL: 1037.5,
-          realizedPnL: 0,
-          costBasis: 10000.0,
-          currency: 'USD',
-        },
-        {
-          symbol: 'MSFT',
-          quantity: 75,
-          averagePrice: 300.0,
-          currentPrice: 325.25,
-          marketValue: 24393.75,
-          unrealizedPnL: 1893.75,
-          realizedPnL: 0,
-          costBasis: 22500.0,
-          currency: 'USD',
-        },
-      ],
-      performance: {
-        totalReturn: 0.089,
-        dailyReturn: 0.002,
-        weeklyReturn: 0.015,
-        monthlyReturn: 0.045,
-        yearlyReturn: 0.089,
-        maxDrawdown: -0.05,
-        sharpeRatio: 1.2,
-        beta: 0.95,
-        alpha: 0.02,
-      },
-    };
-
-    return { data: portfolio };
-  }
 
   async mockGetOrders(filter?: OrdersFilter): Promise<{ data: Order[] }> {
     await this.simulateDelay();
@@ -636,6 +530,59 @@ export class MockDataProvider {
     };
   }
 
+  async mockGetBrokerBalances(filter?: BalancesFilter): Promise<{ data: BrokerBalance[] }> {
+    await this.simulateDelay();
+
+    // Determine how many balances to generate based on limit parameter
+    const limit = filter?.limit || 100;
+    const maxLimit = Math.min(limit, 1000); // Cap at 1000
+
+    const mockBalances: BrokerBalance[] = [];
+    for (let i = 0; i < maxLimit; i++) {
+      const totalCashValue = Math.random() * 100000 + 10000; // $10k - $110k
+      const netLiquidationValue = totalCashValue * (0.8 + Math.random() * 0.4); // ±20% variation
+      const initialMargin = netLiquidationValue * 0.1; // 10% of net liquidation
+      const maintenanceMargin = initialMargin * 0.8; // 80% of initial margin
+      const availableToWithdraw = totalCashValue * 0.9; // 90% of cash available
+      const totalRealizedPnl = (Math.random() - 0.5) * 10000; // -$5k to +$5k
+
+      const balance: BrokerBalance = {
+        id: `balance_${i + 1}`,
+        account_id: `account_${Math.floor(Math.random() * 3) + 1}`,
+        total_cash_value: totalCashValue,
+        net_liquidation_value: netLiquidationValue,
+        initial_margin: initialMargin,
+        maintenance_margin: maintenanceMargin,
+        available_to_withdraw: availableToWithdraw,
+        total_realized_pnl: totalRealizedPnl,
+        balance_created_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+        balance_updated_at: new Date().toISOString(),
+        is_end_of_day_snapshot: Math.random() > 0.7, // 30% chance of being EOD snapshot
+        raw_payload: {
+          broker_specific_data: {
+            margin_ratio: netLiquidationValue / initialMargin,
+            day_trading_buying_power: availableToWithdraw * 4,
+            overnight_buying_power: availableToWithdraw * 2,
+          },
+        },
+        created_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      mockBalances.push(balance);
+    }
+
+    // Apply filters if provided
+    let filteredBalances = mockBalances;
+    if (filter) {
+      filteredBalances = this.applyBrokerBalanceFilters(mockBalances, filter);
+    }
+
+    return {
+      data: filteredBalances,
+    };
+  }
+
   async mockGetBrokerDataAccounts(filter?: AccountsFilter): Promise<{ data: BrokerAccount[] }> {
     await this.simulateDelay();
 
@@ -698,8 +645,8 @@ export class MockDataProvider {
   /**
    * Get stored user token
    */
-  getUserToken(userId: string): UserToken | undefined {
-    return this.userTokens.get(userId);
+  getUserToken(sessionId: string): UserToken | undefined {
+    return this.userTokens.get(sessionId);
   }
 
   /**
@@ -784,6 +731,19 @@ export class MockDataProvider {
       if (filter.account_type && account.account_type !== filter.account_type) return false;
       if (filter.status && account.status !== filter.status) return false;
       if (filter.currency && account.currency !== filter.currency) return false;
+      return true;
+    });
+  }
+
+  private applyBrokerBalanceFilters(
+    balances: BrokerBalance[],
+    filter: BalancesFilter
+  ): BrokerBalance[] {
+    return balances.filter(balance => {
+      if (filter.account_id && balance.account_id !== filter.account_id) return false;
+      if (filter.is_end_of_day_snapshot !== undefined && balance.is_end_of_day_snapshot !== filter.is_end_of_day_snapshot) return false;
+      if (filter.balance_created_after && balance.balance_created_at && new Date(balance.balance_created_at) < new Date(filter.balance_created_after)) return false;
+      if (filter.balance_created_before && balance.balance_created_at && new Date(balance.balance_created_at) > new Date(filter.balance_created_before)) return false;
       return true;
     });
   }

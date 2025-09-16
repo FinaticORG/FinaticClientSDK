@@ -2,12 +2,14 @@
  * Broker filtering utility functions
  */
 
-// Supported broker names and their corresponding IDs
+// Supported broker names and their corresponding IDs (including aliases)
 const SUPPORTED_BROKERS: Record<string, string> = {
   'alpaca': 'alpaca',
   'robinhood': 'robinhood',
   'tasty_trade': 'tasty_trade',
-  'ninja_trader': 'ninja_trader'
+  'ninja_trader': 'ninja_trader',
+  'tradovate': 'tradovate', // Alias for ninja_trader
+  'interactive_brokers': 'interactive_brokers',
 };
 
 /**

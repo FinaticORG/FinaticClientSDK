@@ -1,10 +1,9 @@
-import { Holding, Portfolio } from '../../types/api/portfolio';
 import { Order } from '../../types/api/orders';
-import { BrokerInfo, BrokerAccount, BrokerOrder, BrokerPosition, BrokerDataOptions, DisconnectCompanyResponse } from '../../types/api/broker';
+import { BrokerInfo, BrokerAccount, BrokerOrder, BrokerPosition, BrokerBalance, BrokerDataOptions, DisconnectCompanyResponse } from '../../types/api/broker';
 import { BrokerOrderParams, BrokerExtras } from '../../types/api/broker';
 import { CryptoOrderOptions, OptionsOrderOptions, OrderResponse } from '../../types/api/orders';
 import { BrokerConnection } from '../../types/api/broker';
-import { OrdersFilter, PositionsFilter, AccountsFilter } from '../../types/api/broker';
+import { OrdersFilter, PositionsFilter, AccountsFilter, BalancesFilter } from '../../types/api/broker';
 import { TradingContext } from '../../types/api/orders';
 import { ApiPaginationInfo, PaginatedResult } from '../../types/common/pagination';
 import { ApiResponse } from '../../types/api/core';
@@ -589,26 +588,6 @@ export class ApiClient {
     });
   }
 
-  async validatePortalSession(
-    sessionId: string,
-    signature: string
-  ): Promise<SessionValidationResponse> {
-    return this.request<SessionValidationResponse>('/portal/validate', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Session-ID': sessionId,
-        'X-Device-Info': JSON.stringify({
-          ip_address: this.deviceInfo?.ip_address || '',
-          user_agent: this.deviceInfo?.user_agent || '',
-          fingerprint: this.deviceInfo?.fingerprint || '',
-        }),
-      },
-      params: {
-        signature,
-      },
-    });
-  }
 
   async completePortalSession(sessionId: string): Promise<PortalUrlResponse> {
     return this.request<PortalUrlResponse>(`/portal/${sessionId}/complete`, {
@@ -620,19 +599,10 @@ export class ApiClient {
   }
 
   // Portfolio Management
-  async getHoldings(): Promise<{ data: Holding[] }> {
-    const accessToken = await this.getValidAccessToken();
-    return this.request<{ data: Holding[] }>('/portfolio/holdings', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
-    });
-  }
 
   async getOrders(): Promise<{ data: Order[] }> {
     const accessToken = await this.getValidAccessToken();
-    return this.request<{ data: Order[] }>('/data/orders', {
+    return this.request<{ data: Order[] }>('/brokers/data/orders', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -640,17 +610,6 @@ export class ApiClient {
     });
   }
 
-  async getPortfolio(): Promise<{ data: Portfolio }> {
-    const accessToken = await this.getValidAccessToken();
-    const response = await this.request<{ data: Portfolio }>('/portfolio/', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    });
-    return response;
-  }
 
   // Enhanced Trading Methods with Session Management
   async placeBrokerOrder(
@@ -744,10 +703,7 @@ export class ApiClient {
     const accountNumber = this.tradingContext.accountNumber;
 
     // Build query parameters as required by API documentation
-    const queryParams: Record<string, string> = {
-      broker: selectedBroker,
-      order_id: orderId,
-    };
+    const queryParams: Record<string, string> = {};
 
     // Add optional parameters if available
     if (accountNumber) {
@@ -770,7 +726,7 @@ export class ApiClient {
       };
     }
 
-    return this.request<OrderResponse>('/brokers/orders', {
+    return this.request<OrderResponse>(`/brokers/orders/${orderId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -1148,20 +1104,10 @@ export class ApiClient {
     }
   }
 
-  async revokeToken(): Promise<void> {
-    const accessToken = await this.getValidAccessToken();
-    await this.request<void>('/auth/token/revoke', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
-    });
-    this.clearTokens();
-  }
 
-  async getUserToken(userId: string): Promise<UserToken> {
+  async getUserToken(sessionId: string): Promise<UserToken> {
     const accessToken = await this.getValidAccessToken();
-    return this.request<UserToken>(`/auth/token/user/${userId}`, {
+    return this.request<UserToken>(`/auth/session/${sessionId}/user`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -1222,7 +1168,7 @@ export class ApiClient {
       status_code: number;
       warnings: null;
       errors: null;
-    }>('/brokers/list', {
+    }>('/brokers/', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -1347,6 +1293,45 @@ export class ApiClient {
     });
   }
 
+  async getBrokerBalances(
+    options?: BrokerDataOptions
+  ): Promise<{
+    _id: string;
+    response_data: BrokerBalance[];
+    message: string;
+    status_code: number;
+    warnings: null;
+    errors: null;
+  }> {
+    const accessToken = await this.getValidAccessToken();
+    const params: Record<string, string> = {};
+    
+    if (options?.broker_name) {
+      params.broker_id = options.broker_name;
+    }
+    if (options?.account_id) {
+      params.account_id = options.account_id;
+    }
+    if (options?.symbol) {
+      params.symbol = options.symbol;
+    }
+    
+    return this.request<{
+      _id: string;
+      response_data: BrokerBalance[];
+      message: string;
+      status_code: number;
+      warnings: null;
+      errors: null;
+    }>('/brokers/data/balances', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      params,
+    });
+  }
+
   async getBrokerConnections(): Promise<{
     _id: string;
     response_data: BrokerConnection[];
@@ -1364,6 +1349,42 @@ export class ApiClient {
       warnings: null;
       errors: null;
     }>('/brokers/connections', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+  }
+
+  async getBalances(filters?: any): Promise<{
+    _id: string;
+    response_data: any[];
+    message: string;
+    status_code: number;
+    warnings: null;
+    errors: null;
+  }> {
+    const accessToken = await this.getValidAccessToken();
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.append(key, String(value));
+        }
+      });
+    }
+    
+    const queryString = params.toString();
+    const url = queryString ? `/brokers/data/balances?${queryString}` : '/brokers/data/balances';
+    
+    return this.request<{
+      _id: string;
+      response_data: any[];
+      message: string;
+      status_code: number;
+      warnings: null;
+      errors: null;
+    }>(url, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -1611,6 +1632,87 @@ export class ApiClient {
     );
   }
 
+  async getBrokerBalancesPage(
+    page: number = 1,
+    perPage: number = 100,
+    filters?: BalancesFilter
+  ): Promise<PaginatedResult<BrokerBalance[]>> {
+    const accessToken = await this.getValidAccessToken();
+    const offset = (page - 1) * perPage;
+    const params: Record<string, string> = {
+      limit: perPage.toString(),
+      offset: offset.toString(),
+    };
+
+    // Add filter parameters
+    if (filters) {
+      if (filters.broker_id) params.broker_id = filters.broker_id;
+      if (filters.connection_id) params.connection_id = filters.connection_id;
+      if (filters.account_id) params.account_id = filters.account_id;
+      if (filters.is_end_of_day_snapshot !== undefined) params.is_end_of_day_snapshot = filters.is_end_of_day_snapshot.toString();
+      if (filters.balance_created_after) params.balance_created_after = filters.balance_created_after;
+      if (filters.balance_created_before) params.balance_created_before = filters.balance_created_before;
+      if (filters.with_metadata !== undefined) params.with_metadata = filters.with_metadata.toString();
+    }
+
+    const response = await this.request<ApiResponse<BrokerBalance[]>>('/brokers/data/balances', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      params,
+    });
+
+    // Create navigation callback for pagination
+    const navigationCallback = async (newOffset: number, newLimit: number): Promise<PaginatedResult<BrokerBalance[]>> => {
+      const newParams: Record<string, string> = {
+        limit: newLimit.toString(),
+        offset: newOffset.toString(),
+      };
+
+      // Add filter parameters
+      if (filters) {
+        if (filters.broker_id) newParams.broker_id = filters.broker_id;
+        if (filters.connection_id) newParams.connection_id = filters.connection_id;
+        if (filters.account_id) newParams.account_id = filters.account_id;
+        if (filters.is_end_of_day_snapshot !== undefined) newParams.is_end_of_day_snapshot = filters.is_end_of_day_snapshot.toString();
+        if (filters.balance_created_after) newParams.balance_created_after = filters.balance_created_after;
+        if (filters.balance_created_before) newParams.balance_created_before = filters.balance_created_before;
+        if (filters.with_metadata !== undefined) newParams.with_metadata = filters.with_metadata.toString();
+      }
+
+      const newResponse = await this.request<ApiResponse<BrokerBalance[]>>('/brokers/data/balances', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        params: newParams,
+      });
+
+      return new PaginatedResult(
+        newResponse.response_data,
+        newResponse.pagination || {
+          has_more: false,
+          next_offset: newOffset,
+          current_offset: newOffset,
+          limit: newLimit,
+        },
+        navigationCallback
+      );
+    };
+
+    return new PaginatedResult(
+      response.response_data,
+      response.pagination || {
+        has_more: false,
+        next_offset: offset,
+        current_offset: offset,
+        limit: perPage,
+      },
+      navigationCallback
+    );
+  }
+
   // Navigation methods
   async getNextPage<T>(
     previousResult: PaginatedResult<T>,
@@ -1638,7 +1740,7 @@ export class ApiClient {
    */
   async disconnectCompany(connectionId: string): Promise<DisconnectCompanyResponse> {
     const accessToken = await this.getValidAccessToken();
-    return this.request<DisconnectCompanyResponse>(`/brokers/disconnect-company/${connectionId}`, {
+    return this.request<DisconnectCompanyResponse>(`/brokers/disconnect/${connectionId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${accessToken}`,

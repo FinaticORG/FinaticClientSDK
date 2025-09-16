@@ -8,6 +8,9 @@ export default function PortalPage() {
   const [portalUrl, setPortalUrl] = useState('');
   const [portalError, setPortalError] = useState('');
   const [portalEvents, setPortalEvents] = useState<Array<{ type: string; data: any; timestamp: string }>>([]);
+  const [selectedBrokers, setSelectedBrokers] = useState<string[]>([]);
+  const [customBrokers, setCustomBrokers] = useState<string>('');
+  const [emailParam, setEmailParam] = useState<string>('');
 
   const handleOpenPortal = async () => {
     if (!finatic) return;
@@ -15,8 +18,19 @@ export default function PortalPage() {
     setPortalUrl('');
     setPortalError('');
     setPortalEvents([]);
+    
+    // Prepare broker filter
+    const brokerFilter = customBrokers.trim() 
+      ? customBrokers.split(',').map(b => b.trim()).filter(Boolean)
+      : selectedBrokers;
+    
+    if (brokerFilter.length > 0) {
+      addLog('info', `Filtering portal to show brokers: ${brokerFilter.join(', ')}`);
+    }
+    
     try {
-      await finatic.openPortal({
+      const portalOptions: any = {
+        brokers: brokerFilter.length > 0 ? brokerFilter : undefined,
         onSuccess: (userId: string) => {
           addLog('success', `Portal opened successfully for user: ${userId}`);
           setPortalUrl('Portal opened successfully');
@@ -37,7 +51,15 @@ export default function PortalPage() {
           addLog('info', `Portal event: ${type} - ${JSON.stringify(data)}`);
           setPortalEvents((prev) => [...prev, { type, data, timestamp: new Date().toLocaleTimeString() }]);
         },
-      });
+      };
+
+      // Add email parameter if provided
+      if (emailParam.trim()) {
+        portalOptions.email = emailParam.trim();
+        addLog('info', `Opening portal with email prefill: ${emailParam.trim()}`);
+      }
+
+      await finatic.openPortal(portalOptions);
     } catch (err: any) {
       setPortalError(err.message || 'Unknown error');
       addLog('error', err.message || 'Unknown error');
@@ -158,6 +180,31 @@ export default function PortalPage() {
         
         <div className="text-center space-y-4">
           <p className="text-gray-600">Test the portal functionality using the actual SDK method</p>
+          
+          {/* Portal Options Summary */}
+          {(emailParam.trim() || selectedBrokers.length > 0 || customBrokers.trim()) && (
+            <div className="bg-gray-50/50 border border-gray-200/50 rounded-lg p-3 text-left">
+              <p className="text-sm font-medium text-gray-700 mb-2">Portal Options:</p>
+              <div className="space-y-1 text-xs text-gray-600">
+                {emailParam.trim() && (
+                  <div className="flex items-center space-x-2">
+                    <span className="w-2 h-2 bg-cyan-500 rounded-full"></span>
+                    <span>Email prefill: <span className="font-mono">{emailParam}</span></span>
+                  </div>
+                )}
+                {(selectedBrokers.length > 0 || customBrokers.trim()) && (
+                  <div className="flex items-center space-x-2">
+                    <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                    <span>Broker filter: {customBrokers.trim() 
+                      ? customBrokers.split(',').map(b => b.trim()).filter(Boolean).join(', ')
+                      : selectedBrokers.join(', ')
+                    }</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
           <button 
             onClick={handleOpenPortal} 
             className="btn btn-primary"
@@ -189,6 +236,160 @@ export default function PortalPage() {
           <p className="text-xs text-blue-700">
             <span className="font-medium">Auto Refresh:</span> Sessions automatically refresh at 16 hours to extend the 24-hour lifetime
           </p>
+        </div>
+      </div>
+
+      {/* Broker Filtering Card */}
+      <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl border border-gray-200/50 p-6">
+        <div className="flex items-center space-x-2 mb-4">
+          <div className="w-5 h-5 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg"></div>
+          <h3 className="text-lg font-semibold text-gray-900">Broker Filtering</h3>
+        </div>
+        
+        <div className="space-y-4">
+          <p className="text-gray-600 text-sm">
+            Filter which brokers are shown in the portal. You can use broker names or aliases.
+          </p>
+          
+          {/* Predefined Broker Options */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select Brokers (including aliases):
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {[
+                'robinhood',
+                'tasty_trade', 
+                'ninja_trader',
+                'tradovate', // Alias
+                'interactive_brokers', // Alias
+                'ib', // Short alias
+                'td_ameritrade', // Alias
+                'charles_schwab', // Alias
+                'fidelity', // Alias
+                'webull', // Alias
+                'ally_invest', // Alias
+              ].map((broker) => (
+                <label key={broker} className="flex items-center space-x-2 p-2 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={selectedBrokers.includes(broker)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedBrokers(prev => [...prev, broker]);
+                      } else {
+                        setSelectedBrokers(prev => prev.filter(b => b !== broker));
+                      }
+                    }}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">{broker}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+          
+          {/* Custom Broker Input */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Custom Broker Names (comma-separated):
+            </label>
+            <input
+              type="text"
+              value={customBrokers}
+              onChange={(e) => setCustomBrokers(e.target.value)}
+              placeholder="e.g., tradovate, ib, schwab"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Override the checkboxes above. Leave empty to use selected brokers.
+            </p>
+          </div>
+          
+          {/* Current Filter Display */}
+          {(selectedBrokers.length > 0 || customBrokers.trim()) && (
+            <div className="bg-gray-50/50 border border-gray-200/50 rounded-lg p-3">
+              <p className="text-sm font-medium text-gray-700 mb-1">Current Filter:</p>
+              <p className="text-sm text-gray-600">
+                {customBrokers.trim() 
+                  ? customBrokers.split(',').map(b => b.trim()).filter(Boolean).join(', ')
+                  : selectedBrokers.join(', ')
+                }
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Email Parameter Testing Card */}
+      <div className="bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl border border-gray-200/50 p-6">
+        <div className="flex items-center space-x-2 mb-4">
+          <div className="w-5 h-5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg"></div>
+          <h3 className="text-lg font-semibold text-gray-900">Email Parameter Testing</h3>
+        </div>
+        
+        <div className="space-y-4">
+          <p className="text-gray-600 text-sm">
+            Test the new email parameter functionality. When you provide an email, it will be prefilled in the portal's authentication form.
+          </p>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email Address (optional):
+            </label>
+            <div className="flex space-x-2">
+              <input
+                type="email"
+                value={emailParam}
+                onChange={(e) => setEmailParam(e.target.value)}
+                placeholder="Enter email address to prefill in portal"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <button
+                onClick={() => setEmailParam('')}
+                className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Clear
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Leave empty to test without email prefill, or enter an email to test the prefill functionality.
+            </p>
+          </div>
+          
+          {/* Email Parameter Status */}
+          {emailParam.trim() && (
+            <div className="bg-blue-50/50 border border-blue-200/50 rounded-lg p-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                <span className="text-sm font-medium text-blue-700">Email Parameter Active</span>
+              </div>
+              <p className="text-xs text-blue-600 mt-1">
+                Portal will open with email prefilled: <span className="font-mono">{emailParam}</span>
+              </p>
+            </div>
+          )}
+          
+          {/* Quick Test Buttons */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-gray-700">Quick Test Emails:</p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                'demo@example.com',
+                'test@finatic.dev',
+                'user@company.com',
+                'john.doe@email.com'
+              ].map((email) => (
+                <button
+                  key={email}
+                  onClick={() => setEmailParam(email)}
+                  className="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md border border-gray-300 transition-colors"
+                >
+                  {email}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
