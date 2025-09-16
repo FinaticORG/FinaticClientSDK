@@ -11,12 +11,14 @@ import {
   BrokerAccount,
   BrokerOrder,
   BrokerPosition,
+  BrokerBalance,
   BrokerInfo,
   BrokerOrderParams,
   BrokerConnection,
   OrdersFilter,
   PositionsFilter,
   AccountsFilter,
+  BalancesFilter,
   BrokerDataOrder,
   BrokerDataPosition,
   BrokerDataAccount,
@@ -207,6 +209,27 @@ export class FinaticConnect extends EventEmitter {
     const filter = params?.filter;
 
     return this.getAccountsPage(page, perPage, filter);
+  }
+
+  /**
+   * Get user's balances with pagination and optional filtering
+   * @param params - Query parameters including page, perPage, and filters
+   * @returns Promise with paginated result that supports navigation
+   */
+  public async getBalances(params?: {
+    page?: number;
+    perPage?: number;
+    filter?: BalancesFilter;
+  }): Promise<PaginatedResult<BrokerBalance[]>> {
+    if (!this.isAuthed()) {
+      throw new AuthenticationError('User is not authenticated');
+    }
+
+    const page = params?.page || 1;
+    const perPage = params?.perPage || 100;
+    const filter = params?.filter;
+
+    return this.getBalancesPage(page, perPage, filter);
   }
 
 
@@ -441,6 +464,13 @@ export class FinaticConnect extends EventEmitter {
       
       // Apply broker filter to portal URL if provided
       themedPortalUrl = appendBrokerFilterToURL(themedPortalUrl, options?.brokers);
+
+      // Apply email parameter to portal URL if provided
+      if (options?.email) {
+        const url = new URL(themedPortalUrl);
+        url.searchParams.set('email', options.email);
+        themedPortalUrl = url.toString();
+      }
 
       // Create portal UI if not exists
       if (!this.portalUI) {
@@ -1201,6 +1231,18 @@ export class FinaticConnect extends EventEmitter {
     return this.apiClient.getBrokerAccountsPage(page, perPage, filter);
   }
 
+  public async getBalancesPage(
+    page: number = 1,
+    perPage: number = 100,
+    filter?: BalancesFilter
+  ): Promise<PaginatedResult<BrokerBalance[]>> {
+    if (!this.isAuthed()) {
+      throw new AuthenticationError('User is not authenticated');
+    }
+
+    return this.apiClient.getBrokerBalancesPage(page, perPage, filter);
+  }
+
   /**
    * Get the next page of orders
    * @param previousResult - The previous paginated result
@@ -1252,6 +1294,19 @@ export class FinaticConnect extends EventEmitter {
     return this.apiClient.getNextPage(previousResult, (offset: number, limit: number) => {
       const page = Math.floor(offset / limit) + 1;
       return this.apiClient.getBrokerAccountsPage(page, limit);
+    });
+  }
+
+  public async getNextBalancesPage(
+    previousResult: PaginatedResult<BrokerBalance[]>
+  ): Promise<PaginatedResult<BrokerBalance[]> | null> {
+    if (!this.isAuthed()) {
+      throw new AuthenticationError('User is not authenticated');
+    }
+
+    return this.apiClient.getNextPage(previousResult, (offset: number, limit: number) => {
+      const page = Math.floor(offset / limit) + 1;
+      return this.apiClient.getBrokerBalancesPage(page, limit);
     });
   }
 
@@ -1320,6 +1375,25 @@ export class FinaticConnect extends EventEmitter {
       allData.push(...currentResult.data);
       if (!currentResult.hasNext) break;
       const nextResult = await this.getNextAccountsPage(currentResult);
+      if (!nextResult) break;
+      currentResult = nextResult;
+    }
+
+    return allData;
+  }
+
+  public async getAllBalances(filter?: BalancesFilter): Promise<BrokerBalance[]> {
+    if (!this.isAuthed()) {
+      throw new AuthenticationError('User is not authenticated');
+    }
+
+    const allData: BrokerBalance[] = [];
+    let currentResult = await this.getBalancesPage(1, 100, filter);
+
+    while (currentResult) {
+      allData.push(...currentResult.data);
+      if (!currentResult.hasNext) break;
+      const nextResult = await this.getNextBalancesPage(currentResult);
       if (!nextResult) break;
       currentResult = nextResult;
     }
