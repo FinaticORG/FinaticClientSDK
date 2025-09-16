@@ -51,4 +51,6 @@ export interface PortalOptions {
   theme?: PortalTheme;
   /** Optional list of broker names to filter by (only these brokers will be shown) */
   brokers?: string[];
+  /** Optional email address to prefill in the portal */
+  email?: string;
 }

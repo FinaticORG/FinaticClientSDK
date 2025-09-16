@@ -18,6 +18,18 @@ export interface BrokerAccount {
   updated_at: string;
   /** ISO 8601 timestamp with timezone information */
   last_synced_at: string;
+  /** ISO 8601 timestamp with timezone information - when positions were last synced */
+  positions_synced_at: string | null;
+  /** ISO 8601 timestamp with timezone information - when orders were last synced */
+  orders_synced_at: string | null;
+  /** ISO 8601 timestamp with timezone information - when balances were last synced */
+  balances_synced_at: string | null;
+  /** ISO 8601 timestamp with timezone information - when the account was created */
+  account_created_at: string | null;
+  /** ISO 8601 timestamp with timezone information - when the account was last updated */
+  account_updated_at: string | null;
+  /** ISO 8601 timestamp with timezone information - when the first trade occurred */
+  account_first_trade_at: string | null;
 }
 
 export interface BrokerOrder {
@@ -57,6 +69,25 @@ export interface BrokerPosition {
   last_price: number;
   /** ISO 8601 timestamp with timezone information */
   last_price_updated_at: string;
+  /** ISO 8601 timestamp with timezone information */
+  created_at: string;
+  /** ISO 8601 timestamp with timezone information */
+  updated_at: string;
+}
+
+export interface BrokerBalance {
+  id: string;
+  account_id: string;
+  total_cash_value: number | null;
+  net_liquidation_value: number | null;
+  initial_margin: number | null;
+  maintenance_margin: number | null;
+  available_to_withdraw: number | null;
+  total_realized_pnl: number | null;
+  balance_created_at: string | null;
+  balance_updated_at: string | null;
+  is_end_of_day_snapshot: boolean | null;
+  raw_payload: any | null;
   /** ISO 8601 timestamp with timezone information */
   created_at: string;
   /** ISO 8601 timestamp with timezone information */
@@ -244,6 +275,18 @@ export interface AccountsFilter {
   with_metadata?: boolean;
 }
 
+export interface BalancesFilter {
+  broker_id?: string;
+  connection_id?: string;
+  account_id?: string;
+  is_end_of_day_snapshot?: boolean;
+  limit?: number;
+  offset?: number;
+  balance_created_after?: string; // ISO 8601 format
+  balance_created_before?: string; // ISO 8601 format
+  with_metadata?: boolean;
+}
+
 // Response types for filtered data
 export interface FilteredOrdersResponse {
   orders: BrokerDataOrder[];
@@ -261,6 +304,13 @@ export interface FilteredPositionsResponse {
 
 export interface FilteredAccountsResponse {
   accounts: BrokerDataAccount[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface FilteredBalancesResponse {
+  balances: BrokerBalance[];
   total: number;
   limit: number;
   offset: number;

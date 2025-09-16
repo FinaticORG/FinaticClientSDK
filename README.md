@@ -13,6 +13,7 @@ yarn add @finatic/client
 ## Basic Usage
 
 ### Simple Initialization
+
 ```typescript
 import { FinaticConnect } from '@finatic/client';
 
@@ -21,30 +22,32 @@ const finatic = await FinaticConnect.init('your-one-time-token');
 ```
 
 ### With User ID (for returning users)
+
 ```typescript
 // Pass token and user ID from previous session
 const finatic = await FinaticConnect.init('your-one-time-token', 'user-123');
 ```
 
 ### With Custom Configuration
+
 ```typescript
 // Pass token, user ID, and custom API URL
 const finatic = await FinaticConnect.init('your-one-time-token', 'user-123', {
-  baseUrl: 'https://api.finatic.dev'
+  baseUrl: 'https://api.finatic.dev',
 });
 ```
 
 // Open the portal
 await finatic.openPortal({
-  onSuccess: (userId) => {
-    console.log('Authentication successful:', userId);
-  },
-  onError: (error) => {
-    console.error('Authentication failed:', error);
-  },
-  onClose: () => {
-    console.log('Portal closed');
-  }
+onSuccess: (userId) => {
+console.log('Authentication successful:', userId);
+},
+onError: (error) => {
+console.error('Authentication failed:', error);
+},
+onClose: () => {
+console.log('Portal closed');
+}
 });
 
 // After successful authentication, you can use these methods:
@@ -54,8 +57,8 @@ const brokers = await finatic.getBrokerList();
 
 // Get broker accounts with pagination
 const accountsPage = await finatic.getAccounts({
-  page: 1,
-  perPage: 100
+page: 1,
+perPage: 100
 });
 
 // Navigate through pages
@@ -67,29 +70,29 @@ const allAccounts = await finatic.getAllAccounts();
 
 // Get orders with filtering
 const ordersPage = await finatic.getOrders({
-  page: 1,
-  perPage: 50,
-  filter: { status: 'filled', symbol: 'AAPL' }
+page: 1,
+perPage: 50,
+filter: { status: 'filled', symbol: 'AAPL' }
 });
 
 // Get positions
 const positionsPage = await finatic.getPositions({
-  page: 1,
-  perPage: 100
+page: 1,
+perPage: 100
 });
 
 // Place orders
 await finatic.placeOrder({
-  symbol: 'AAPL',
-  side: 'buy',
-  quantity: 10,
-  type: 'market',
-  timeInForce: 'day'
+symbol: 'AAPL',
+side: 'buy',
+quantity: 10,
+type: 'market',
+timeInForce: 'day'
 });
 
 // Open portal with broker filtering
 await finatic.openPortal({
-  brokers: ['alpaca', 'robinhood'] // Only show these brokers
+brokers: ['alpaca', 'robinhood'] // Only show these brokers
 });
 
 // Disconnect a company from a broker connection
@@ -98,7 +101,8 @@ console.log('Disconnect action:', disconnectResponse.response_data.action);
 
 // Close the portal when done
 finatic.closePortal();
-```
+
+````
 
 ## API Reference
 
@@ -148,7 +152,7 @@ await finatic.openPortal({
 });
 
 // Available presets: 'dark', 'light', 'corporateBlue', 'purple', 'green', 'orange'
-```
+````
 
 #### Using Custom Themes
 
@@ -162,7 +166,7 @@ const customTheme = {
       secondary: '#2a2a2a',
       tertiary: '#3a3a3a',
       accent: 'rgba(59, 130, 246, 0.1)',
-      glass: 'rgba(255, 255, 255, 0.05)'
+      glass: 'rgba(255, 255, 255, 0.05)',
     },
     status: {
       connected: '#10B981',
@@ -170,68 +174,70 @@ const customTheme = {
       warning: '#F59E0B',
       pending: '#8B5CF6',
       error: '#EF4444',
-      success: '#10B981'
+      success: '#10B981',
     },
     text: {
       primary: '#F8FAFC',
       secondary: '#CBD5E1',
       muted: '#94A3B8',
-      inverse: '#1a1a1a'
+      inverse: '#1a1a1a',
     },
     border: {
       primary: 'rgba(59, 130, 246, 0.2)',
       secondary: 'rgba(255, 255, 255, 0.1)',
       hover: 'rgba(59, 130, 246, 0.4)',
       focus: 'rgba(59, 130, 246, 0.6)',
-      accent: '#3B82F6'
+      accent: '#3B82F6',
     },
     input: {
       background: '#334155',
       border: 'rgba(59, 130, 246, 0.2)',
       borderFocus: '#3B82F6',
       text: '#F8FAFC',
-      placeholder: '#94A3B8'
+      placeholder: '#94A3B8',
     },
     button: {
       primary: {
         background: '#3B82F6',
         text: '#FFFFFF',
         hover: '#2563EB',
-        active: '#1D4ED8'
+        active: '#1D4ED8',
       },
       secondary: {
         background: 'transparent',
         text: '#3B82F6',
         border: '#3B82F6',
         hover: 'rgba(59, 130, 246, 0.1)',
-        active: 'rgba(59, 130, 246, 0.2)'
-      }
-    }
+        active: 'rgba(59, 130, 246, 0.2)',
+      },
+    },
   },
   branding: {
-    primaryColor: '#3B82F6'
-  }
+    primaryColor: '#3B82F6',
+  },
 };
 
 await finatic.openPortal({
-  theme: { custom: customTheme }
+  theme: { custom: customTheme },
 });
 ```
 
 #### Theme Utilities
 
 ```javascript
-import { 
-  generatePortalThemeURL, 
-  appendThemeToURL, 
-  getThemePreset, 
+import {
+  generatePortalThemeURL,
+  appendThemeToURL,
+  getThemePreset,
   validateCustomTheme,
   createCustomThemeFromPreset,
-  portalThemePresets 
+  portalThemePresets,
 } from 'finatic-sdk';
 
 // Generate a themed portal URL
-const themedUrl = generatePortalThemeURL('http://localhost:5173/companies', { preset: 'corporateBlue' });
+const themedUrl = generatePortalThemeURL('http://localhost:5173/companies', {
+  preset: 'corporateBlue',
+});
 
 // Get a theme preset
 const darkTheme = getThemePreset('dark');
@@ -243,9 +249,9 @@ const isValid = validateCustomTheme(customTheme);
 const modifiedTheme = createCustomThemeFromPreset('dark', {
   colors: {
     background: {
-      primary: '#000000'
-    }
-  }
+      primary: '#000000',
+    },
+  },
 });
 ```
 
@@ -256,6 +262,7 @@ The Finatic Portal supports broker filtering via URL parameters. You can restric
 #### Supported Brokers
 
 The following broker names are supported:
+
 - `alpaca` - Alpaca Markets
 - `robinhood` - Robinhood
 - `tasty_trade` - TastyTrade
@@ -266,18 +273,18 @@ The following broker names are supported:
 ```javascript
 // Show only specific brokers
 await finatic.openPortal({
-  brokers: ['alpaca', 'robinhood']
+  brokers: ['alpaca', 'robinhood'],
 });
 
 // Show only one broker
 await finatic.openPortal({
-  brokers: ['tasty_trade']
+  brokers: ['tasty_trade'],
 });
 
 // Combine with theme
 await finatic.openPortal({
   theme: { preset: 'dark' },
-  brokers: ['alpaca', 'ninja_trader']
+  brokers: ['alpaca', 'ninja_trader'],
 });
 ```
 
@@ -288,18 +295,18 @@ If you pass an unsupported broker name, it will be logged as a warning to the co
 ```javascript
 // This will log a warning for 'unsupported_broker' but continue with 'alpaca'
 await finatic.openPortal({
-  brokers: ['alpaca', 'unsupported_broker']
+  brokers: ['alpaca', 'unsupported_broker'],
 });
 ```
 
 #### Broker Filtering Utilities
 
 ```javascript
-import { 
-  convertBrokerNamesToIds, 
-  appendBrokerFilterToURL, 
+import {
+  convertBrokerNamesToIds,
+  appendBrokerFilterToURL,
   getSupportedBrokerNames,
-  isBrokerSupported 
+  isBrokerSupported,
 } from 'finatic-sdk';
 
 // Convert broker names to IDs
@@ -454,6 +461,7 @@ Disconnects a company from a broker connection.
 Returns: Promise<DisconnectCompanyResponse>
 
 The response includes:
+
 - `success` (boolean): Whether the operation was successful
 - `response_data.action` (string): Either 'company_access_removed' or 'connection_deleted'
 - `response_data.remaining_companies` (number, optional): Number of remaining companies if connection still exists
@@ -499,10 +507,6 @@ Returns true if the user is fully authenticated (has userId, access token, and r
 
 Returns the current user ID, or `null` if not authenticated.
 
-#### `revokeToken()`
-
-Revokes the current access token.
-
 ### Pagination Navigation
 
 The `PaginatedResult` object returned by paginated methods includes navigation methods:
@@ -538,13 +542,13 @@ Returns: Promise<PaginatedResult<T> | null>
 The SDK throws specific error types for different scenarios:
 
 ```typescript
-import { 
-  ApiError, 
-  SessionError, 
-  AuthenticationError, 
+import {
+  ApiError,
+  SessionError,
+  AuthenticationError,
   AuthorizationError,
   RateLimitError,
-  CompanyAccessError 
+  CompanyAccessError,
 } from '@finatic/client';
 
 try {
@@ -569,4 +573,4 @@ This SDK is designed for modern browsers and requires:
 
 ## License
 
-MIT 
+MIT

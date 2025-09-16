@@ -9,13 +9,12 @@ import {
   SessionValidationResponse,
   SessionAuthenticateResponse,
   UserToken,
-  Holding,
   Order,
-  Portfolio,
   BrokerInfo,
   BrokerAccount,
   BrokerOrder,
   BrokerPosition,
+  BrokerBalance,
   BrokerConnection,
   BrokerDataOptions,
   BrokerOrderParams,
@@ -29,6 +28,7 @@ import {
   OrdersFilter,
   PositionsFilter,
   AccountsFilter,
+  BalancesFilter,
   BrokerDataOrder,
   BrokerDataPosition,
   BrokerDataAccount,
@@ -313,20 +313,12 @@ export class MockApiClient {
   }
 
   // Portfolio Management
-  async getHoldings(filter?: OrdersFilter): Promise<{ data: Holding[] }> {
-    const accessToken = await this.getValidAccessToken();
-    return this.mockDataProvider.mockGetHoldings();
-  }
 
   async getOrders(filter?: OrdersFilter): Promise<{ data: Order[] }> {
     const accessToken = await this.getValidAccessToken();
     return this.mockDataProvider.mockGetOrders(filter);
   }
 
-  async getPortfolio(): Promise<{ data: Portfolio }> {
-    const accessToken = await this.getValidAccessToken();
-    return this.mockDataProvider.mockGetPortfolio();
-  }
 
   async placeOrder(order: BrokerOrderParams): Promise<void> {
     const accessToken = await this.getValidAccessToken();
@@ -706,13 +698,9 @@ export class MockApiClient {
     );
   }
 
-  async revokeToken(accessToken: string): Promise<void> {
-    // Clear tokens on revoke
-    this.clearTokens();
-  }
 
-  async getUserToken(userId: string): Promise<UserToken> {
-    const token = this.mockDataProvider.getUserToken(userId);
+  async getUserToken(sessionId: string): Promise<UserToken> {
+    const token = this.mockDataProvider.getUserToken(sessionId);
     if (!token) {
       throw new AuthenticationError('User token not found');
     }
@@ -803,6 +791,12 @@ export class MockApiClient {
     filter?: PositionsFilter
   ): Promise<{ data: BrokerDataPosition[] }> {
     return this.mockDataProvider.mockGetBrokerPositions(filter);
+  }
+
+  async getBrokerBalancesWithFilter(
+    filter?: BalancesFilter
+  ): Promise<{ data: BrokerBalance[] }> {
+    return this.mockDataProvider.mockGetBrokerBalances(filter);
   }
 
   async getBrokerDataAccountsWithFilter(
@@ -955,6 +949,57 @@ export class MockApiClient {
 
     return new PaginatedResult(
       paginatedPositions,
+      {
+        has_more: hasMore,
+        next_offset: nextOffset,
+        current_offset: startIndex,
+        limit: perPage,
+      },
+      navigationCallback
+    );
+  }
+
+  async getBrokerBalancesPage(
+    page: number = 1,
+    perPage: number = 100,
+    filters?: BalancesFilter
+  ): Promise<PaginatedResult<BrokerBalance[]>> {
+    const mockBalances = await this.mockDataProvider.mockGetBrokerBalances(filters);
+    const balances = mockBalances.data;
+
+    // Simulate pagination
+    const startIndex = (page - 1) * perPage;
+    const endIndex = startIndex + perPage;
+    const paginatedBalances = balances.slice(startIndex, endIndex);
+
+    const hasMore = endIndex < balances.length;
+    const nextOffset = hasMore ? endIndex : startIndex;
+
+    // Create navigation callback for mock pagination
+    const navigationCallback = async (
+      newOffset: number,
+      newLimit: number
+    ): Promise<PaginatedResult<BrokerBalance[]>> => {
+      const newStartIndex = newOffset;
+      const newEndIndex = newStartIndex + newLimit;
+      const newPaginatedBalances = balances.slice(newStartIndex, newEndIndex);
+      const newHasMore = newEndIndex < balances.length;
+      const newNextOffset = newHasMore ? newEndIndex : newStartIndex;
+
+      return new PaginatedResult(
+        newPaginatedBalances,
+        {
+          has_more: newHasMore,
+          next_offset: newNextOffset,
+          current_offset: newStartIndex,
+          limit: newLimit,
+        },
+        navigationCallback
+      );
+    };
+
+    return new PaginatedResult(
+      paginatedBalances,
       {
         has_more: hasMore,
         next_offset: nextOffset,
