@@ -1317,6 +1317,42 @@ export class ApiClient {
     });
   }
 
+  async getBalances(filters?: any): Promise<{
+    _id: string;
+    response_data: any[];
+    message: string;
+    status_code: number;
+    warnings: null;
+    errors: null;
+  }> {
+    const accessToken = await this.getValidAccessToken();
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params.append(key, String(value));
+        }
+      });
+    }
+    
+    const queryString = params.toString();
+    const url = queryString ? `/brokers/data/balances?${queryString}` : '/brokers/data/balances';
+    
+    return this.request<{
+      _id: string;
+      response_data: any[];
+      message: string;
+      status_code: number;
+      warnings: null;
+      errors: null;
+    }>(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+  }
+
   // Page-based pagination methods
   async getBrokerOrdersPage(
     page: number = 1,

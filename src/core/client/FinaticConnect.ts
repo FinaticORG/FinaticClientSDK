@@ -139,6 +139,14 @@ export class FinaticConnect extends EventEmitter {
   }
 
   /**
+   * Check if the client is authenticated (alias for isAuthed for consistency)
+   * @returns True if authenticated, false otherwise
+   */
+  public is_authenticated(): boolean {
+    return this.isAuthed();
+  }
+
+  /**
    * Get user's orders with pagination and optional filtering
    * @param params - Query parameters including page, perPage, and filters
    * @returns Promise with paginated result that supports navigation
@@ -321,6 +329,30 @@ export class FinaticConnect extends EventEmitter {
    */
   public async setUserId(userId: string): Promise<void> {
     await this.initializeWithUser(userId);
+  }
+
+  /**
+   * Get the user and tokens for a completed session
+   * @returns Promise with user information and tokens
+   */
+  public async getSessionUser(): Promise<Record<string, any>> {
+    if (!this.isAuthed()) {
+      throw new AuthenticationError('User is not authenticated');
+    }
+
+    if (!this.userToken) {
+      throw new AuthenticationError('No user token available');
+    }
+
+    return {
+      user_id: this.userToken.userId,
+      access_token: this.userToken.accessToken,
+      refresh_token: this.userToken.refreshToken,
+      expires_in: this.userToken.expiresIn,
+      token_type: this.userToken.tokenType,
+      scope: this.userToken.scope,
+      company_id: this.companyId
+    };
   }
 
   private async initializeWithUser(userId: string): Promise<void> {
@@ -743,6 +775,249 @@ export class FinaticConnect extends EventEmitter {
       this.emit('error', error as Error);
       throw error;
     }
+  }
+
+  /**
+   * Place a stock stop order (convenience method)
+   */
+  public async placeStockStopOrder(
+    symbol: string,
+    quantity: number,
+    side: 'buy' | 'sell',
+    stopPrice: number,
+    timeInForce: 'day' | 'gtc' = 'gtc',
+    broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader',
+    accountNumber?: string
+  ): Promise<OrderResponse> {
+    if (!this.userToken) {
+      throw new Error('Not initialized with user');
+    }
+
+    try {
+      return await this.apiClient.placeStockStopOrder(
+        symbol,
+        quantity,
+        side === 'buy' ? 'Buy' : 'Sell',
+        stopPrice,
+        timeInForce,
+        broker,
+        accountNumber
+      );
+    } catch (error) {
+      this.emit('error', error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Place a crypto market order (convenience method)
+   */
+  public async placeCryptoMarketOrder(
+    symbol: string,
+    quantity: number,
+    side: 'buy' | 'sell',
+    broker?: 'coinbase' | 'binance' | 'kraken',
+    accountNumber?: string
+  ): Promise<OrderResponse> {
+    if (!this.userToken) {
+      throw new Error('Not initialized with user');
+    }
+
+    try {
+      return await this.apiClient.placeCryptoMarketOrder(
+        symbol,
+        quantity,
+        side === 'buy' ? 'Buy' : 'Sell',
+        broker,
+        accountNumber
+      );
+    } catch (error) {
+      this.emit('error', error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Place a crypto limit order (convenience method)
+   */
+  public async placeCryptoLimitOrder(
+    symbol: string,
+    quantity: number,
+    side: 'buy' | 'sell',
+    price: number,
+    timeInForce: 'day' | 'gtc' = 'gtc',
+    broker?: 'coinbase' | 'binance' | 'kraken',
+    accountNumber?: string
+  ): Promise<OrderResponse> {
+    if (!this.userToken) {
+      throw new Error('Not initialized with user');
+    }
+
+    try {
+      return await this.apiClient.placeCryptoLimitOrder(
+        symbol,
+        quantity,
+        side === 'buy' ? 'Buy' : 'Sell',
+        price,
+        timeInForce,
+        broker,
+        accountNumber
+      );
+    } catch (error) {
+      this.emit('error', error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Place an options market order (convenience method)
+   */
+  public async placeOptionsMarketOrder(
+    symbol: string,
+    quantity: number,
+    side: 'buy' | 'sell',
+    broker?: 'tasty_trade' | 'robinhood' | 'ninja_trader',
+    accountNumber?: string
+  ): Promise<OrderResponse> {
+    if (!this.userToken) {
+      throw new Error('Not initialized with user');
+    }
+
+    try {
+      return await this.apiClient.placeOptionsMarketOrder(
+        symbol,
+        quantity,
+        side === 'buy' ? 'Buy' : 'Sell',
+        broker,
+        accountNumber
+      );
+    } catch (error) {
+      this.emit('error', error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Place an options limit order (convenience method)
+   */
+  public async placeOptionsLimitOrder(
+    symbol: string,
+    quantity: number,
+    side: 'buy' | 'sell',
+    price: number,
+    timeInForce: 'day' | 'gtc' = 'gtc',
+    broker?: 'tasty_trade' | 'robinhood' | 'ninja_trader',
+    accountNumber?: string
+  ): Promise<OrderResponse> {
+    if (!this.userToken) {
+      throw new Error('Not initialized with user');
+    }
+
+    try {
+      return await this.apiClient.placeOptionsLimitOrder(
+        symbol,
+        quantity,
+        side === 'buy' ? 'Buy' : 'Sell',
+        price,
+        timeInForce,
+        broker,
+        accountNumber
+      );
+    } catch (error) {
+      this.emit('error', error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Place a futures market order (convenience method)
+   */
+  public async placeFuturesMarketOrder(
+    symbol: string,
+    quantity: number,
+    side: 'buy' | 'sell',
+    broker?: 'ninja_trader' | 'tasty_trade',
+    accountNumber?: string
+  ): Promise<OrderResponse> {
+    if (!this.userToken) {
+      throw new Error('Not initialized with user');
+    }
+
+    try {
+      return await this.apiClient.placeFuturesMarketOrder(
+        symbol,
+        quantity,
+        side === 'buy' ? 'Buy' : 'Sell',
+        broker,
+        accountNumber
+      );
+    } catch (error) {
+      this.emit('error', error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Place a futures limit order (convenience method)
+   */
+  public async placeFuturesLimitOrder(
+    symbol: string,
+    quantity: number,
+    side: 'buy' | 'sell',
+    price: number,
+    timeInForce: 'day' | 'gtc' = 'gtc',
+    broker?: 'ninja_trader' | 'tasty_trade',
+    accountNumber?: string
+  ): Promise<OrderResponse> {
+    if (!this.userToken) {
+      throw new Error('Not initialized with user');
+    }
+
+    try {
+      return await this.apiClient.placeFuturesLimitOrder(
+        symbol,
+        quantity,
+        side === 'buy' ? 'Buy' : 'Sell',
+        price,
+        timeInForce,
+        broker,
+        accountNumber
+      );
+    } catch (error) {
+      this.emit('error', error as Error);
+      throw error;
+    }
+  }
+
+  /**
+   * Set the broker context for trading operations
+   * @param broker - The broker to set as context
+   */
+  public setBroker(broker: string): void {
+    this.apiClient.setBroker(broker);
+  }
+
+  /**
+   * Set the account context for trading operations
+   * @param accountNumber - The account number to set as context
+   */
+  public setAccount(accountNumber: string): void {
+    this.apiClient.setAccount(accountNumber);
+  }
+
+  /**
+   * Get the current trading context
+   * @returns Object with current broker and account context
+   */
+  public getTradingContext(): { broker?: string; accountNumber?: string } {
+    return this.apiClient.getTradingContext();
+  }
+
+  /**
+   * Clear the trading context
+   */
+  public clearTradingContext(): void {
+    this.apiClient.clearTradingContext();
   }
 
   /**
@@ -1254,5 +1529,24 @@ export class FinaticConnect extends EventEmitter {
     }
 
     return this.apiClient.disconnectCompany(connectionId);
+  }
+
+  /**
+   * Get account balances for the authenticated user
+   * @param filters - Optional filters for balances
+   * @returns Promise with balance data
+   */
+  public async getBalances(filters?: any): Promise<any[]> {
+    if (!this.isAuthed()) {
+      throw new AuthenticationError('User is not authenticated');
+    }
+
+    try {
+      const response = await this.apiClient.getBalances(filters);
+      return response.response_data || [];
+    } catch (error) {
+      this.emit('error', error as Error);
+      throw error;
+    }
   }
 }
