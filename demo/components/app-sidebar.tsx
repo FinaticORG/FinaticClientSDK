@@ -17,6 +17,7 @@ import {
   ChevronRight,
   Search,
   Command,
+  DoorOpen,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -43,6 +44,11 @@ const navigation = [
         title: "Authentication",
         url: "/auth",
         icon: Lock,
+      },
+      {
+        title: "Portal",
+        url: "/portal",
+        icon: DoorOpen,
       },
       {
         title: "Theming System",

@@ -1,16 +1,29 @@
 import { Order } from '../../types/api/orders';
-import { BrokerInfo, BrokerAccount, BrokerOrder, BrokerPosition, BrokerBalance, BrokerDataOptions, DisconnectCompanyResponse } from '../../types/api/broker';
+import {
+  BrokerInfo,
+  BrokerAccount,
+  BrokerOrder,
+  BrokerPosition,
+  BrokerBalance,
+  BrokerDataOptions,
+  DisconnectCompanyResponse,
+} from '../../types/api/broker';
 import { BrokerOrderParams, BrokerExtras } from '../../types/api/broker';
 import { CryptoOrderOptions, OptionsOrderOptions, OrderResponse } from '../../types/api/orders';
 import { BrokerConnection } from '../../types/api/broker';
-import { OrdersFilter, PositionsFilter, AccountsFilter, BalancesFilter } from '../../types/api/broker';
+import {
+  OrdersFilter,
+  PositionsFilter,
+  AccountsFilter,
+  BalancesFilter,
+} from '../../types/api/broker';
 import { TradingContext } from '../../types/api/orders';
 import { ApiPaginationInfo, PaginatedResult } from '../../types/common/pagination';
 import { ApiResponse } from '../../types/api/core';
 import { PortalUrlResponse } from '../../types/api/core';
-import { 
-  DeviceInfo, 
-  SessionState, 
+import {
+  DeviceInfo,
+  SessionState,
   TokenInfo,
   SessionResponse,
   OtpRequestResponse,
@@ -19,7 +32,7 @@ import {
   SessionAuthenticateResponse,
   UserToken,
   RefreshTokenRequest,
-  RefreshTokenResponse
+  RefreshTokenResponse,
 } from '../../types/api/auth';
 import {
   ApiError,
@@ -588,7 +601,6 @@ export class ApiClient {
     });
   }
 
-
   async completePortalSession(sessionId: string): Promise<PortalUrlResponse> {
     return this.request<PortalUrlResponse>(`/portal/${sessionId}/complete`, {
       method: 'POST',
@@ -605,11 +617,10 @@ export class ApiClient {
     return this.request<{ data: Order[] }>('/brokers/data/orders', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
   }
-
 
   // Enhanced Trading Methods with Session Management
   async placeBrokerOrder(
@@ -624,15 +635,15 @@ export class ApiClient {
     connection_id?: string
   ): Promise<OrderResponse> {
     const accessToken = await this.getValidAccessToken();
-    
+
     // Get broker and account from context or params
     const broker = params.broker || this.tradingContext.broker;
     const accountNumber = params.accountNumber || this.tradingContext.accountNumber;
-    
+
     if (!broker) {
       throw new Error('Broker not set. Call setBroker() or pass broker parameter.');
     }
-    
+
     if (!accountNumber) {
       throw new Error('Account not set. Call setAccount() or pass accountNumber parameter.');
     }
@@ -694,7 +705,7 @@ export class ApiClient {
     connection_id?: string
   ): Promise<OrderResponse> {
     const accessToken = await this.getValidAccessToken();
-    
+
     const selectedBroker = broker || this.tradingContext.broker;
     if (!selectedBroker) {
       throw new Error('Broker not set. Call setBroker() or pass broker parameter.');
@@ -721,8 +732,8 @@ export class ApiClient {
         order: {
           order_id: orderId,
           account_number: accountNumber,
-          ...extras
-        }
+          ...extras,
+        },
       };
     }
 
@@ -747,7 +758,7 @@ export class ApiClient {
     connection_id?: string
   ): Promise<OrderResponse> {
     const accessToken = await this.getValidAccessToken();
-    
+
     const selectedBroker = broker || this.tradingContext.broker;
     if (!selectedBroker) {
       throw new Error('Broker not set. Call setBroker() or pass broker parameter.');
@@ -806,16 +817,20 @@ export class ApiClient {
     extras: BrokerExtras = {},
     connection_id?: string
   ): Promise<OrderResponse> {
-    return this.placeBrokerOrder({
-      symbol,
-      orderQty,
-      action,
-      orderType: 'Market',
-      assetType: 'Stock',
-      timeInForce: 'day',
-      broker,
-      accountNumber,
-    }, extras, connection_id);
+    return this.placeBrokerOrder(
+      {
+        symbol,
+        orderQty,
+        action,
+        orderType: 'Market',
+        assetType: 'Stock',
+        timeInForce: 'day',
+        broker,
+        accountNumber,
+      },
+      extras,
+      connection_id
+    );
   }
 
   async placeStockLimitOrder(
@@ -829,17 +844,21 @@ export class ApiClient {
     extras: BrokerExtras = {},
     connection_id?: string
   ): Promise<OrderResponse> {
-    return this.placeBrokerOrder({
-      symbol,
-      orderQty,
-      action,
-      orderType: 'Limit',
-      assetType: 'Stock',
-      price,
-      timeInForce,
-      broker,
-      accountNumber,
-    }, extras, connection_id);
+    return this.placeBrokerOrder(
+      {
+        symbol,
+        orderQty,
+        action,
+        orderType: 'Limit',
+        assetType: 'Stock',
+        price,
+        timeInForce,
+        broker,
+        accountNumber,
+      },
+      extras,
+      connection_id
+    );
   }
 
   async placeStockStopOrder(
@@ -853,17 +872,21 @@ export class ApiClient {
     extras: BrokerExtras = {},
     connection_id?: string
   ): Promise<OrderResponse> {
-    return this.placeBrokerOrder({
-      symbol,
-      orderQty,
-      action,
-      orderType: 'Stop',
-      assetType: 'Stock',
-      stopPrice,
-      timeInForce,
-      broker,
-      accountNumber,
-    }, extras, connection_id);
+    return this.placeBrokerOrder(
+      {
+        symbol,
+        orderQty,
+        action,
+        orderType: 'Stop',
+        assetType: 'Stock',
+        stopPrice,
+        timeInForce,
+        broker,
+        accountNumber,
+      },
+      extras,
+      connection_id
+    );
   }
 
   // Crypto convenience methods
@@ -876,17 +899,20 @@ export class ApiClient {
     accountNumber?: string,
     extras: BrokerExtras = {}
   ): Promise<OrderResponse> {
-    return this.placeBrokerOrder({
-      symbol,
-      orderQty,
-      action,
-      orderType: 'Market',
-      assetType: 'Crypto',
-      timeInForce: 'day',
-      broker,
-      accountNumber,
-      ...options,
-    }, extras);
+    return this.placeBrokerOrder(
+      {
+        symbol,
+        orderQty,
+        action,
+        orderType: 'Market',
+        assetType: 'Crypto',
+        timeInForce: 'day',
+        broker,
+        accountNumber,
+        ...options,
+      },
+      extras
+    );
   }
 
   async placeCryptoLimitOrder(
@@ -900,18 +926,21 @@ export class ApiClient {
     accountNumber?: string,
     extras: BrokerExtras = {}
   ): Promise<OrderResponse> {
-    return this.placeBrokerOrder({
-      symbol,
-      orderQty,
-      action,
-      orderType: 'Limit',
-      assetType: 'Crypto',
-      price,
-      timeInForce,
-      broker,
-      accountNumber,
-      ...options,
-    }, extras);
+    return this.placeBrokerOrder(
+      {
+        symbol,
+        orderQty,
+        action,
+        orderType: 'Limit',
+        assetType: 'Crypto',
+        price,
+        timeInForce,
+        broker,
+        accountNumber,
+        ...options,
+      },
+      extras
+    );
   }
 
   // Options convenience methods
@@ -924,17 +953,20 @@ export class ApiClient {
     accountNumber?: string,
     extras: BrokerExtras = {}
   ): Promise<OrderResponse> {
-    return this.placeBrokerOrder({
-      symbol,
-      orderQty,
-      action,
-      orderType: 'Market',
-      assetType: 'Option',
-      timeInForce: 'day',
-      broker,
-      accountNumber,
-      ...options,
-    }, extras);
+    return this.placeBrokerOrder(
+      {
+        symbol,
+        orderQty,
+        action,
+        orderType: 'Market',
+        assetType: 'Option',
+        timeInForce: 'day',
+        broker,
+        accountNumber,
+        ...options,
+      },
+      extras
+    );
   }
 
   async placeOptionsLimitOrder(
@@ -948,18 +980,21 @@ export class ApiClient {
     accountNumber?: string,
     extras: BrokerExtras = {}
   ): Promise<OrderResponse> {
-    return this.placeBrokerOrder({
-      symbol,
-      orderQty,
-      action,
-      orderType: 'Limit',
-      assetType: 'Option',
-      price,
-      timeInForce,
-      broker,
-      accountNumber,
-      ...options,
-    }, extras);
+    return this.placeBrokerOrder(
+      {
+        symbol,
+        orderQty,
+        action,
+        orderType: 'Limit',
+        assetType: 'Option',
+        price,
+        timeInForce,
+        broker,
+        accountNumber,
+        ...options,
+      },
+      extras
+    );
   }
 
   // Futures convenience methods
@@ -971,16 +1006,19 @@ export class ApiClient {
     accountNumber?: string,
     extras: BrokerExtras = {}
   ): Promise<OrderResponse> {
-    return this.placeBrokerOrder({
-      symbol,
-      orderQty,
-      action,
-      orderType: 'Market',
-      assetType: 'Future',
-      timeInForce: 'day',
-      broker,
-      accountNumber,
-    }, extras);
+    return this.placeBrokerOrder(
+      {
+        symbol,
+        orderQty,
+        action,
+        orderType: 'Market',
+        assetType: 'Future',
+        timeInForce: 'day',
+        broker,
+        accountNumber,
+      },
+      extras
+    );
   }
 
   async placeFuturesLimitOrder(
@@ -993,17 +1031,20 @@ export class ApiClient {
     accountNumber?: string,
     extras: BrokerExtras = {}
   ): Promise<OrderResponse> {
-    return this.placeBrokerOrder({
-      symbol,
-      orderQty,
-      action,
-      orderType: 'Limit',
-      assetType: 'Future',
-      price,
-      timeInForce,
-      broker,
-      accountNumber,
-    }, extras);
+    return this.placeBrokerOrder(
+      {
+        symbol,
+        orderQty,
+        action,
+        orderType: 'Limit',
+        assetType: 'Future',
+        price,
+        timeInForce,
+        broker,
+        accountNumber,
+      },
+      extras
+    );
   }
 
   private buildOrderRequestBody(params: BrokerOrderParams, extras: BrokerExtras = {}) {
@@ -1033,11 +1074,7 @@ export class ApiClient {
     };
   }
 
-  private buildModifyRequestBody(
-    params: Partial<BrokerOrderParams>,
-    extras: any,
-    broker: string
-  ) {
+  private buildModifyRequestBody(params: Partial<BrokerOrderParams>, extras: any, broker: string) {
     const order: any = {};
 
     if (params.order_id !== undefined) order.order_id = params.order_id;
@@ -1071,10 +1108,10 @@ export class ApiClient {
         broker === 'robinhood'
           ? extras.robinhood
           : broker === 'ninja_trader'
-          ? extras.ninjaTrader
-          : broker === 'tasty_trade'
-          ? extras.tastyTrade
-          : undefined;
+            ? extras.ninjaTrader
+            : broker === 'tasty_trade'
+              ? extras.tastyTrade
+              : undefined;
       if (scoped) {
         extras = scoped;
       }
@@ -1104,13 +1141,12 @@ export class ApiClient {
     }
   }
 
-
   async getUserToken(sessionId: string): Promise<UserToken> {
     const accessToken = await this.getValidAccessToken();
     return this.request<UserToken>(`/auth/session/${sessionId}/user`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
   }
@@ -1160,7 +1196,7 @@ export class ApiClient {
     warnings: null;
     errors: null;
   }> {
-    const accessToken = await this.getValidAccessToken();
+    // Public endpoint - no auth required
     return this.request<{
       _id: string;
       response_data: BrokerInfo[];
@@ -1170,15 +1206,10 @@ export class ApiClient {
       errors: null;
     }>('/brokers/', {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
     });
   }
 
-  async getBrokerAccounts(
-    options?: BrokerDataOptions
-  ): Promise<{
+  async getBrokerAccounts(options?: BrokerDataOptions): Promise<{
     _id: string;
     response_data: BrokerAccount[];
     message: string;
@@ -1188,7 +1219,7 @@ export class ApiClient {
   }> {
     const accessToken = await this.getValidAccessToken();
     const params: Record<string, string> = {};
-    
+
     if (options?.broker_name) {
       params.broker_id = options.broker_name;
     }
@@ -1198,7 +1229,7 @@ export class ApiClient {
     if (options?.symbol) {
       params.symbol = options.symbol;
     }
-    
+
     return this.request<{
       _id: string;
       response_data: BrokerAccount[];
@@ -1209,15 +1240,13 @@ export class ApiClient {
     }>('/brokers/data/accounts', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
       params,
     });
   }
 
-  async getBrokerOrders(
-    options?: BrokerDataOptions
-  ): Promise<{
+  async getBrokerOrders(options?: BrokerDataOptions): Promise<{
     _id: string;
     response_data: BrokerOrder[];
     message: string;
@@ -1227,7 +1256,7 @@ export class ApiClient {
   }> {
     const accessToken = await this.getValidAccessToken();
     const params: Record<string, string> = {};
-    
+
     if (options?.broker_name) {
       params.broker_id = options.broker_name;
     }
@@ -1237,7 +1266,7 @@ export class ApiClient {
     if (options?.symbol) {
       params.symbol = options.symbol;
     }
-    
+
     return this.request<{
       _id: string;
       response_data: BrokerOrder[];
@@ -1248,15 +1277,13 @@ export class ApiClient {
     }>('/brokers/data/orders', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
       params,
     });
   }
 
-  async getBrokerPositions(
-    options?: BrokerDataOptions
-  ): Promise<{
+  async getBrokerPositions(options?: BrokerDataOptions): Promise<{
     _id: string;
     response_data: BrokerPosition[];
     message: string;
@@ -1266,7 +1293,7 @@ export class ApiClient {
   }> {
     const accessToken = await this.getValidAccessToken();
     const params: Record<string, string> = {};
-    
+
     if (options?.broker_name) {
       params.broker_id = options.broker_name;
     }
@@ -1276,7 +1303,7 @@ export class ApiClient {
     if (options?.symbol) {
       params.symbol = options.symbol;
     }
-    
+
     return this.request<{
       _id: string;
       response_data: BrokerPosition[];
@@ -1287,15 +1314,13 @@ export class ApiClient {
     }>('/brokers/data/positions', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
       params,
     });
   }
 
-  async getBrokerBalances(
-    options?: BrokerDataOptions
-  ): Promise<{
+  async getBrokerBalances(options?: BrokerDataOptions): Promise<{
     _id: string;
     response_data: BrokerBalance[];
     message: string;
@@ -1305,7 +1330,7 @@ export class ApiClient {
   }> {
     const accessToken = await this.getValidAccessToken();
     const params: Record<string, string> = {};
-    
+
     if (options?.broker_name) {
       params.broker_id = options.broker_name;
     }
@@ -1315,7 +1340,7 @@ export class ApiClient {
     if (options?.symbol) {
       params.symbol = options.symbol;
     }
-    
+
     return this.request<{
       _id: string;
       response_data: BrokerBalance[];
@@ -1326,7 +1351,7 @@ export class ApiClient {
     }>('/brokers/data/balances', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
       params,
     });
@@ -1351,7 +1376,7 @@ export class ApiClient {
     }>('/brokers/connections', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
   }
@@ -1373,10 +1398,10 @@ export class ApiClient {
         }
       });
     }
-    
+
     const queryString = params.toString();
     const url = queryString ? `/brokers/data/balances?${queryString}` : '/brokers/data/balances';
-    
+
     return this.request<{
       _id: string;
       response_data: any[];
@@ -1387,7 +1412,7 @@ export class ApiClient {
     }>(url, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
   }
@@ -1427,7 +1452,10 @@ export class ApiClient {
     });
 
     // Create navigation callback for pagination
-    const navigationCallback = async (newOffset: number, newLimit: number): Promise<PaginatedResult<BrokerOrder[]>> => {
+    const navigationCallback = async (
+      newOffset: number,
+      newLimit: number
+    ): Promise<PaginatedResult<BrokerOrder[]>> => {
       const newParams: Record<string, string> = {
         limit: newLimit.toString(),
         offset: newOffset.toString(),
@@ -1508,7 +1536,10 @@ export class ApiClient {
     });
 
     // Create navigation callback for pagination
-    const navigationCallback = async (newOffset: number, newLimit: number): Promise<PaginatedResult<BrokerAccount[]>> => {
+    const navigationCallback = async (
+      newOffset: number,
+      newLimit: number
+    ): Promise<PaginatedResult<BrokerAccount[]>> => {
       const newParams: Record<string, string> = {
         limit: newLimit.toString(),
         offset: newOffset.toString(),
@@ -1523,13 +1554,16 @@ export class ApiClient {
         if (filters.currency) newParams.currency = filters.currency;
       }
 
-      const newResponse = await this.request<ApiResponse<BrokerAccount[]>>('/brokers/data/accounts', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        params: newParams,
-      });
+      const newResponse = await this.request<ApiResponse<BrokerAccount[]>>(
+        '/brokers/data/accounts',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: newParams,
+        }
+      );
 
       return new PaginatedResult(
         newResponse.response_data,
@@ -1585,7 +1619,10 @@ export class ApiClient {
     });
 
     // Create navigation callback for pagination
-    const navigationCallback = async (newOffset: number, newLimit: number): Promise<PaginatedResult<BrokerPosition[]>> => {
+    const navigationCallback = async (
+      newOffset: number,
+      newLimit: number
+    ): Promise<PaginatedResult<BrokerPosition[]>> => {
       const newParams: Record<string, string> = {
         limit: newLimit.toString(),
         offset: newOffset.toString(),
@@ -1600,13 +1637,16 @@ export class ApiClient {
         if (filters.side) newParams.side = filters.side;
       }
 
-      const newResponse = await this.request<ApiResponse<BrokerPosition[]>>('/brokers/data/positions', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        params: newParams,
-      });
+      const newResponse = await this.request<ApiResponse<BrokerPosition[]>>(
+        '/brokers/data/positions',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: newParams,
+        }
+      );
 
       return new PaginatedResult(
         newResponse.response_data,
@@ -1649,10 +1689,14 @@ export class ApiClient {
       if (filters.broker_id) params.broker_id = filters.broker_id;
       if (filters.connection_id) params.connection_id = filters.connection_id;
       if (filters.account_id) params.account_id = filters.account_id;
-      if (filters.is_end_of_day_snapshot !== undefined) params.is_end_of_day_snapshot = filters.is_end_of_day_snapshot.toString();
-      if (filters.balance_created_after) params.balance_created_after = filters.balance_created_after;
-      if (filters.balance_created_before) params.balance_created_before = filters.balance_created_before;
-      if (filters.with_metadata !== undefined) params.with_metadata = filters.with_metadata.toString();
+      if (filters.is_end_of_day_snapshot !== undefined)
+        params.is_end_of_day_snapshot = filters.is_end_of_day_snapshot.toString();
+      if (filters.balance_created_after)
+        params.balance_created_after = filters.balance_created_after;
+      if (filters.balance_created_before)
+        params.balance_created_before = filters.balance_created_before;
+      if (filters.with_metadata !== undefined)
+        params.with_metadata = filters.with_metadata.toString();
     }
 
     const response = await this.request<ApiResponse<BrokerBalance[]>>('/brokers/data/balances', {
@@ -1664,7 +1708,10 @@ export class ApiClient {
     });
 
     // Create navigation callback for pagination
-    const navigationCallback = async (newOffset: number, newLimit: number): Promise<PaginatedResult<BrokerBalance[]>> => {
+    const navigationCallback = async (
+      newOffset: number,
+      newLimit: number
+    ): Promise<PaginatedResult<BrokerBalance[]>> => {
       const newParams: Record<string, string> = {
         limit: newLimit.toString(),
         offset: newOffset.toString(),
@@ -1675,19 +1722,26 @@ export class ApiClient {
         if (filters.broker_id) newParams.broker_id = filters.broker_id;
         if (filters.connection_id) newParams.connection_id = filters.connection_id;
         if (filters.account_id) newParams.account_id = filters.account_id;
-        if (filters.is_end_of_day_snapshot !== undefined) newParams.is_end_of_day_snapshot = filters.is_end_of_day_snapshot.toString();
-        if (filters.balance_created_after) newParams.balance_created_after = filters.balance_created_after;
-        if (filters.balance_created_before) newParams.balance_created_before = filters.balance_created_before;
-        if (filters.with_metadata !== undefined) newParams.with_metadata = filters.with_metadata.toString();
+        if (filters.is_end_of_day_snapshot !== undefined)
+          newParams.is_end_of_day_snapshot = filters.is_end_of_day_snapshot.toString();
+        if (filters.balance_created_after)
+          newParams.balance_created_after = filters.balance_created_after;
+        if (filters.balance_created_before)
+          newParams.balance_created_before = filters.balance_created_before;
+        if (filters.with_metadata !== undefined)
+          newParams.with_metadata = filters.with_metadata.toString();
       }
 
-      const newResponse = await this.request<ApiResponse<BrokerBalance[]>>('/brokers/data/balances', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        params: newParams,
-      });
+      const newResponse = await this.request<ApiResponse<BrokerBalance[]>>(
+        '/brokers/data/balances',
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          params: newParams,
+        }
+      );
 
       return new PaginatedResult(
         newResponse.response_data,
@@ -1743,7 +1797,7 @@ export class ApiClient {
     return this.request<DisconnectCompanyResponse>(`/brokers/disconnect/${connectionId}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
       },
     });
   }

@@ -137,13 +137,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const persistUsage = useCallback((next: UsageStats) => {
-    if (typeof window === 'undefined') return;
-    try {
-      const updated = { ...next, lastSavedAt: new Date().toISOString() };
-      localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(updated));
-      setUsage(updated);
-      emitUsageUpdated();
-    } catch {}
+    // Deprecated - side effects are now in useEffect([usage])
   }, []);
 
   const ensureDayRollover = useCallback((current: UsageStats): UsageStats => {
@@ -182,6 +176,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       const existing = rolled.methods[methodName] || { count: 0, totalDurationMs: 0, lastDurationMs: 0, errorCount: 0, totalBytes: 0 } as MethodStats;
       const next: UsageStats = {
         ...rolled,
+        lastSavedAt: new Date().toISOString(),
         totals: {
           apiRequests: rolled.totals.apiRequests,
           methodCalls: rolled.totals.methodCalls + 1,
@@ -199,17 +194,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
           },
         },
       };
-      // persist will set lastSavedAt and state
-      if (typeof window !== 'undefined') {
-        try {
-          const toSave = { ...next, lastSavedAt: new Date().toISOString() };
-          localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(toSave));
-          emitUsageUpdated();
-          return toSave;
-        } catch {
-          return next;
-        }
-      }
       return next;
     });
   }, [ensureDayRollover]);
@@ -221,6 +205,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       const existing = rolled.routes[key] || { count: 0, totalDurationMs: 0, lastDurationMs: 0, lastStatus: null, method: method.toUpperCase(), totalBytes: 0 } as RouteStats;
       const next: UsageStats = {
         ...rolled,
+        lastSavedAt: new Date().toISOString(),
         totals: {
           apiRequests: rolled.totals.apiRequests + 1,
           methodCalls: rolled.totals.methodCalls,
@@ -239,16 +224,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
           },
         },
       };
-      if (typeof window !== 'undefined') {
-        try {
-          const toSave = { ...next, lastSavedAt: new Date().toISOString() };
-          localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(toSave));
-          emitUsageUpdated();
-          return toSave;
-        } catch {
-          return next;
-        }
-      }
       return next;
     });
   }, [ensureDayRollover]);
@@ -266,15 +241,9 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         methods: {},
         routes: {},
       };
-      if (typeof window !== 'undefined') {
-        try {
-          localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(cleared));
-          emitUsageUpdated();
-        } catch {}
-      }
       return cleared;
     });
-  }, [emitUsageUpdated]);
+  }, []);
 
   const initializeSDK = useCallback(async () => {
     try {
@@ -474,6 +443,15 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     setStoredUserIdState(getStoredUserId());
     void initializeSDK();
   }, [getStoredUserId, initializeSDK]);
+
+  // Persist usage and emit event AFTER state updates to avoid re-entrant updates during render
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(usage));
+      emitUsageUpdated();
+    } catch {}
+  }, [usage, emitUsageUpdated]);
 
   // Instrument global fetch once; decide whether to record using apiBaseUrlRef
   useEffect(() => {
