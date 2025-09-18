@@ -1,5 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { AdvancedDeveloper } from "@/components/advanced-developer"
+import { AdvancedDeveloper } from "@/app/(dashboard)/developer/_components/advanced-developer"
 
 export default function DeveloperPage() {
   return (

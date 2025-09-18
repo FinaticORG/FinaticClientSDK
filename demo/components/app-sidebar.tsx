@@ -80,11 +80,6 @@ const navigation = [
     title: "DEVELOPER TOOLS",
     items: [
       {
-        title: "Pagination Helpers",
-        url: "/pagination",
-        icon: Grid3X3,
-      },
-      {
         title: "Advanced Developer",
         url: "/developer",
         icon: Code,
