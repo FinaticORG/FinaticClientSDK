@@ -2,7 +2,11 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Activity, ArrowUpRight, Code2, Database, Lock, TrendingUp, Zap, Clock } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Activity, ArrowUpRight, Code2, Database, Lock, TrendingUp, Zap } from "lucide-react"
+import { useFinatic } from "@/app/providers/FinaticProvider"
+import { useEffect, useReducer } from "react"
+import Link from "next/link"
 
 const quickActions = [
   {
@@ -16,7 +20,7 @@ const quickActions = [
     title: "Database Management",
     description: "Manage your data models and queries",
     icon: Database,
-    href: "/data",
+    href: "/database",
     color: "text-green-400",
   },
   {
@@ -35,34 +39,55 @@ const quickActions = [
   },
 ]
 
-const stats = [
-  {
-    title: "Active Sessions",
-    value: "2,847",
-    change: "+12.5%",
-    icon: Activity,
-  },
-  {
-    title: "API Requests",
-    value: "45.2K",
-    change: "+8.2%",
-    icon: Zap,
-  },
-  {
-    title: "Data Processed",
-    value: "1.2TB",
-    change: "+23.1%",
-    icon: Database,
-  },
-  {
-    title: "Uptime",
-    value: "99.9%",
-    change: "+0.1%",
-    icon: Clock,
-  },
-]
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`
+  const units = ["KB", "MB", "GB", "TB"]
+  let value = bytes / 1024
+  let unitIdx = 0
+  while (value >= 1024 && unitIdx < units.length - 1) {
+    value /= 1024
+    unitIdx += 1
+  }
+  return `${value.toFixed(1)} ${units[unitIdx]}`
+}
 
 export function OverviewDashboard() {
+  const { usage, clearUsage } = useFinatic()
+  // Force re-render on usage updates without polling/React Query
+  const [, force] = useReducer((x: number) => x + 1, 0)
+  useEffect(() => {
+    const handler = () => force()
+    window.addEventListener('finatic-usage-updated', handler)
+    return () => window.removeEventListener('finatic-usage-updated', handler)
+  }, [])
+  const avgApiMs = usage.totals.apiRequests ? Math.round(usage.totals.apiRequests ? Object.values(usage.routes).reduce((sum, r) => sum + r.totalDurationMs, 0) / usage.totals.apiRequests : 0) : 0
+  const avgMethodMs = usage.totals.methodCalls ? Math.round(usage.totals.methodCalls ? Object.values(usage.methods).reduce((sum, m) => sum + m.totalDurationMs, 0) / usage.totals.methodCalls : 0) : 0
+  const stats = [
+    {
+      title: "API Requests",
+      value: String(usage.totals.apiRequests),
+      change: `${avgApiMs} ms avg`,
+      icon: Zap,
+    },
+    {
+      title: "SDK Method Calls",
+      value: String(usage.totals.methodCalls),
+      change: `${avgMethodMs} ms avg`,
+      icon: Activity,
+    },
+    {
+      title: "Data Processed",
+      value: formatBytes(usage.totals.totalBytes),
+      change: `${usage.totals.errors} errors`,
+      icon: Database,
+    },
+    {
+      title: "Tracking Day",
+      value: usage.day,
+      change: usage.lastSavedAt ? `Saved ${new Date(usage.lastSavedAt).toLocaleTimeString()}` : "Not saved",
+      icon: Code2,
+    },
+  ]
   return (
     <div className="flex-1 space-y-6 p-6">
       {/* Header */}
@@ -76,8 +101,33 @@ export function OverviewDashboard() {
             <div className="w-2 h-2 bg-green-400 rounded-full mr-2" />
             All Systems Operational
           </Badge>
+          <Button variant="outline" className="border-border" onClick={clearUsage}>Clear Stats</Button>
         </div>
       </div>
+
+      {/* Quick Actions */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4 text-foreground">Quick Actions</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {quickActions.map((action) => (
+            <Link key={action.title} href={action.href} className="block">
+              <Card className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer group">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <action.icon className={`h-8 w-8 ${action.color}`} />
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  </div>
+                  <CardTitle className="text-lg text-foreground">{action.title}</CardTitle>
+                  <CardDescription className="text-muted-foreground">{action.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Analytics */}
+      <h2 className="text-xl font-semibold text-foreground">Analytics</h2>
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -95,28 +145,6 @@ export function OverviewDashboard() {
         ))}
       </div>
 
-      {/* Quick Actions */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4 text-foreground">Quick Actions</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {quickActions.map((action) => (
-            <Card
-              key={action.title}
-              className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer group"
-            >
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <action.icon className={`h-8 w-8 ${action.color}`} />
-                  <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                </div>
-                <CardTitle className="text-lg text-foreground">{action.title}</CardTitle>
-                <CardDescription className="text-muted-foreground">{action.description}</CardDescription>
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
-      </div>
-
       {/* Recent Activity */}
       <Card className="bg-card border-border">
         <CardHeader>
@@ -124,37 +152,41 @@ export function OverviewDashboard() {
           <CardDescription className="text-muted-foreground">Latest system events and updates</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {[
-              {
-                action: "Authentication system updated",
-                time: "2 minutes ago",
-                type: "security",
-              },
-              {
-                action: "Database backup completed",
-                time: "15 minutes ago",
-                type: "data",
-              },
-              {
-                action: "Trading algorithm deployed",
-                time: "1 hour ago",
-                type: "trading",
-              },
-              {
-                action: "New developer tools installed",
-                time: "3 hours ago",
-                type: "development",
-              },
-            ].map((activity, index) => (
-              <div key={index} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-primary rounded-full" />
-                  <span className="text-foreground">{activity.action}</span>
-                </div>
-                <span className="text-sm text-muted-foreground">{activity.time}</span>
+          <div className="space-y-6">
+            <div>
+              <div className="text-sm font-medium text-foreground mb-2">Top SDK Methods</div>
+              <div className="space-y-2">
+                {Object.entries(usage.methods).length === 0 && (
+                  <div className="text-sm text-muted-foreground">No method calls yet</div>
+                )}
+                {Object.entries(usage.methods)
+                  .sort((a, b) => b[1].count - a[1].count)
+                  .slice(0, 5)
+                  .map(([name, m]) => (
+                    <div key={name} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                      <div className="text-foreground">{name}</div>
+                      <div className="text-sm text-muted-foreground">{m.count} calls - last {Math.round(m.lastDurationMs)} ms</div>
+                    </div>
+                  ))}
               </div>
-            ))}
+            </div>
+            <div>
+              <div className="text-sm font-medium text-foreground mb-2">Recent API Routes</div>
+              <div className="space-y-2">
+                {Object.entries(usage.routes).length === 0 && (
+                  <div className="text-sm text-muted-foreground">No API requests yet</div>
+                )}
+                {Object.entries(usage.routes)
+                  .sort((a, b) => b[1].count - a[1].count)
+                  .slice(0, 5)
+                  .map(([route, r]) => (
+                    <div key={route} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                      <div className="text-foreground">{route}</div>
+                      <div className="text-sm text-muted-foreground">{r.count} req - last {Math.round(r.lastDurationMs)} ms - {formatBytes(r.totalBytes)}</div>
+                    </div>
+                  ))}
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

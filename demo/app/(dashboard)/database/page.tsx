@@ -1,5 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { DataManagement } from "@/components/data-management"
+import { DataManagement } from "@/components/database"
 
 export default function DataPage() {
   return (

@@ -50,8 +50,8 @@ const navigation = [
         icon: Palette,
       },
       {
-        title: "Data Convenience",
-        url: "/data",
+        title: "Database",
+        url: "/database",
         icon: Database,
       },
       {
@@ -65,7 +65,7 @@ const navigation = [
     title: "TRADING",
     items: [
       {
-        title: "Context Trading",
+        title: "Trading",
         url: "/trading",
         icon: TrendingUp,
       },
