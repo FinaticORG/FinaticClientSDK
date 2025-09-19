@@ -484,24 +484,6 @@ export class FinaticConnect extends EventEmitter {
               throw new SessionError('Session not initialized');
             }
 
-            // Get tokens from portal UI
-            const userToken = this.portalUI.getTokens();
-            if (!userToken) {
-              throw new Error('No tokens received from portal');
-            }
-
-            // Set the tokens internally
-            this.userToken = userToken;
-
-            // Set tokens in ApiClient for automatic token management
-            const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString(); // 1 hour from now
-            this.apiClient.setTokens(
-              userToken.accessToken,
-              userToken.refreshToken,
-              expiresAt,
-              userId
-            );
-
             // Emit portal success event
             this.emit('portal:success', userId);
 
