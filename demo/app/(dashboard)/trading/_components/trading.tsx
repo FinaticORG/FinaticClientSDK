@@ -121,7 +121,7 @@ export function Trading() {
       orderQty: number
       action: "Buy" | "Sell"
       orderType: "Market" | "Limit" | "Stop" | "StopLimit"
-      assetType: "Stock" | "Option" | "Crypto" | "Future"
+      assetType: "equity" | "equity_option" | "crypto" | "forex" | "future" | "future_option"
       timeInForce: "day" | "gtc" | "gtd" | "ioc" | "fok"
       price?: number
       stopPrice?: number
@@ -141,7 +141,7 @@ export function Trading() {
             orderQty: 1,
             action: "Buy",
             orderType: "Market",
-            assetType: "Future",
+            assetType: "future",
             timeInForce: "day",
           },
           extras: { ninjaTrader: { accountSpec: "", isAutomated: true } },
@@ -155,7 +155,7 @@ export function Trading() {
             orderQty: 1,
             action: "Sell",
             orderType: "Market",
-            assetType: "Future",
+            assetType: "future",
             timeInForce: "day",
           },
           extras: { ninjaTrader: { accountSpec: "", isAutomated: true } },
@@ -169,7 +169,7 @@ export function Trading() {
             orderQty: 1,
             action: "Buy",
             orderType: "Limit",
-            assetType: "Future",
+            assetType: "future",
             timeInForce: "gtc",
             price: 1500,
           },
@@ -184,7 +184,7 @@ export function Trading() {
             orderQty: 1,
             action: "Sell",
             orderType: "Limit",
-            assetType: "Future",
+            assetType: "future",
             timeInForce: "gtc",
             price: 1500,
           },
@@ -199,7 +199,7 @@ export function Trading() {
             orderQty: 1,
             action: "Buy",
             orderType: "Stop",
-            assetType: "Future",
+            assetType: "future",
             timeInForce: "day",
             stopPrice: 120.5,
           },
@@ -214,7 +214,7 @@ export function Trading() {
             orderQty: 1,
             action: "Sell",
             orderType: "Stop",
-            assetType: "Future",
+            assetType: "future",
             timeInForce: "day",
             stopPrice: 120.5,
           },
@@ -229,7 +229,7 @@ export function Trading() {
             orderQty: 1,
             action: "Buy",
             orderType: "StopLimit",
-            assetType: "Future",
+            assetType: "future",
             timeInForce: "day",
             price: 1500,
             stopPrice: 120.5,
@@ -245,7 +245,7 @@ export function Trading() {
             orderQty: 1,
             action: "Sell",
             orderType: "StopLimit",
-            assetType: "Future",
+            assetType: "future",
             timeInForce: "day",
             price: 1500,
             stopPrice: 120.5,
@@ -265,7 +265,7 @@ export function Trading() {
           orderQty: 3,
           action: "Buy",
           orderType: "Market",
-          assetType: "Stock",
+          assetType: "equity",
           timeInForce: "day",
         },
       },
@@ -278,7 +278,7 @@ export function Trading() {
           orderQty: 1,
           action: "Buy",
           orderType: "Limit",
-          assetType: "Option",
+          assetType: "equity_option",
           timeInForce: "gtc",
           price: 0.75,
         },
@@ -388,7 +388,7 @@ export function Trading() {
     orderQty: number
     action: "Buy" | "Sell"
     orderType: "Market" | "Limit" | "Stop" | "StopLimit"
-    assetType: "Stock" | "Option" | "Crypto" | "Future"
+    assetType: "equity" | "equity_option" | "crypto" | "forex" | "future" | "future_option"
     timeInForce: "day" | "gtc" | "gtd" | "ioc" | "fok"
     price?: number
     stopPrice?: number
@@ -397,7 +397,7 @@ export function Trading() {
     orderQty: 1,
     action: "Buy",
     orderType: "Market",
-    assetType: "Stock",
+    assetType: "equity",
     timeInForce: "day",
   })
   const [customExtrasText, setCustomExtrasText] = useState<string>("{}")
