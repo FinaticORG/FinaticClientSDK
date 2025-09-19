@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { CheckCircle2, CircleX, Mail, Filter, Trash2, DoorOpen, RefreshCw } from "lucide-react"
+import { CheckCircle2, CircleX, Mail, Filter, Trash2, DoorOpen, RefreshCw, ChevronDown } from "lucide-react"
 import type { BrokerInfo } from "@/../src/types/api/broker"
 
 type PortalEvent = { type: string; data: unknown; timestamp: string }
@@ -21,7 +21,6 @@ export default function Portal(): JSX.Element {
   const [portalError, setPortalError] = useState<string>("")
   const [portalEvents, setPortalEvents] = useState<PortalEvent[]>([])
   const [selectedBrokers, setSelectedBrokers] = useState<string[]>([])
-  const [customBrokers, setCustomBrokers] = useState<string>("")
   const [emailParam, setEmailParam] = useState<string>("")
   const [availableBrokers, setAvailableBrokers] = useState<BrokerInfo[] | null>(null)
   const [brokersError, setBrokersError] = useState<string>("")
@@ -30,6 +29,36 @@ export default function Portal(): JSX.Element {
   // Avoid calling SDK methods during render - compute in effects and store locally
   const [isAuthed, setIsAuthed] = useState<boolean>(false)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [optionsOpen, setOptionsOpen] = useState<boolean>(true)
+  const [eventsOpen, setEventsOpen] = useState<boolean>(true)
+
+  // Persist portal event history for the current day
+  const getDayKey = useCallback(() => `finatic-portal-events-${new Date().toISOString().slice(0, 10)}` , [])
+
+  const loadHistory = useCallback(() => {
+    try {
+      const raw = localStorage.getItem(getDayKey())
+      if (!raw) return [] as PortalEvent[]
+      const parsed = JSON.parse(raw) as PortalEvent[]
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return [] as PortalEvent[]
+    }
+  }, [getDayKey])
+
+  const saveHistory = useCallback((events: PortalEvent[]) => {
+    try {
+      localStorage.setItem(getDayKey(), JSON.stringify(events))
+    } catch {}
+  }, [getDayKey])
+
+  const appendEvent = useCallback((event: PortalEvent) => {
+    setPortalEvents((prev) => {
+      const next = [...prev, event]
+      saveHistory(next)
+      return next
+    })
+  }, [saveHistory])
 
   useEffect(() => {
     let cancelled = false
@@ -58,6 +87,19 @@ export default function Portal(): JSX.Element {
     }
   }, [finatic])
 
+  // Initialize event history for today
+  useEffect(() => {
+    setPortalEvents(loadHistory())
+  }, [loadHistory])
+
+  const clearEvents = useCallback(() => {
+    try {
+      localStorage.removeItem(getDayKey())
+    } catch {}
+    setPortalEvents([])
+    addLog("info", "Cleared portal events for today")
+  }, [getDayKey, addLog])
+
   // Load broker list regardless of auth
   useEffect(() => {
     let cancelled = false
@@ -84,22 +126,14 @@ export default function Portal(): JSX.Element {
     }
   }, [finatic])
 
-  const brokerFilter: string[] = useMemo(() => {
-    if (customBrokers.trim()) {
-      return customBrokers
-        .split(",")
-        .map((b) => b.trim())
-        .filter(Boolean)
-    }
-    return selectedBrokers
-  }, [customBrokers, selectedBrokers])
+  const brokerFilter: string[] = useMemo(() => selectedBrokers, [selectedBrokers])
 
   const handleOpenPortal = useCallback(async () => {
     if (!finatic) return
     addLog("info", "Opening portal...")
     setPortalMessage("")
     setPortalError("")
-    setPortalEvents([])
+    appendEvent({ type: "portal-open", data: {}, timestamp: new Date().toLocaleTimeString() })
 
     if (brokerFilter.length > 0) {
       addLog("info", `Filtering portal to show brokers: ${brokerFilter.join(", ")}`)
@@ -122,40 +156,34 @@ export default function Portal(): JSX.Element {
           addLog("info", `Stored userId in localStorage: ${userId}`)
           setIsAuthed(true)
           setCurrentUserId(userId)
-          setPortalEvents((prev) => [
-            ...prev,
-            { type: "portal-success", data: { userId }, timestamp: new Date().toLocaleTimeString() },
-          ])
+          appendEvent({ type: "portal-success", data: { userId }, timestamp: new Date().toLocaleTimeString() })
         },
         onError: (error: Error) => {
           setPortalError(error.message)
           addLog("error", error.message)
-          setPortalEvents((prev) => [
-            ...prev,
-            { type: "portal-error", data: { message: error.message }, timestamp: new Date().toLocaleTimeString() },
-          ])
+          appendEvent({ type: "portal-error", data: { message: error.message }, timestamp: new Date().toLocaleTimeString() })
         },
         onClose: () => {
           addLog("info", "Portal closed")
-          setPortalEvents((prev) => [...prev, { type: "portal-close", data: {}, timestamp: new Date().toLocaleTimeString() }])
+          appendEvent({ type: "portal-close", data: {}, timestamp: new Date().toLocaleTimeString() })
         },
         onEvent: (type: string, data: unknown) => {
           addLog("info", `Portal event: ${type} - ${JSON.stringify(data)}`)
-          setPortalEvents((prev) => [...prev, { type, data, timestamp: new Date().toLocaleTimeString() }])
+          appendEvent({ type, data, timestamp: new Date().toLocaleTimeString() })
         },
       } as any)
     } catch (err: any) {
       setPortalError(err?.message || "Unknown error")
       addLog("error", err?.message || "Unknown error")
     }
-  }, [finatic, addLog, brokerFilter, emailParam, setStoredUserId])
+  }, [finatic, addLog, brokerFilter, emailParam, setStoredUserId, appendEvent])
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {isAuthed ? (
-            <Badge variant="secondary" className="gap-1">
+            <Badge className="gap-1 bg-green-500/10 text-green-600 border-green-500/20">
               <CheckCircle2 className="size-3" /> Authenticated
             </Badge>
           ) : (
@@ -166,11 +194,23 @@ export default function Portal(): JSX.Element {
         </div>
       </div>
 
+      <div className="flex justify-center">
+        <Button onClick={handleOpenPortal} disabled={!finatic} className="gap-2 px-6">
+          <DoorOpen className="size-4" /> Open Portal
+        </Button>
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>Portal</CardTitle>
-          <CardDescription>Open the embedded authentication portal with optional filters.</CardDescription>
+          <button type="button" onClick={() => setOptionsOpen((v) => !v)} className="flex w-full items-center justify-between">
+            <div className="text-left">
+              <CardTitle>Portal options</CardTitle>
+              <CardDescription>Open the embedded authentication portal with optional options.</CardDescription>
+            </div>
+            <ChevronDown className={`size-4 transition-transform ${optionsOpen ? 'rotate-180' : ''}`} />
+          </button>
         </CardHeader>
+        {optionsOpen ? (
         <CardContent className="grid gap-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 grid gap-4">
@@ -192,18 +232,7 @@ export default function Portal(): JSX.Element {
                 </div>
               </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="custom-brokers" className="gap-2">
-                  <Filter className="size-4" /> Broker filter (comma-separated)
-                </Label>
-                <Input
-                  id="custom-brokers"
-                  placeholder="e.g., tradovate, ib, schwab"
-                  value={customBrokers}
-                  onChange={(e) => setCustomBrokers(e.target.value)}
-                />
-                <div className="text-xs text-muted-foreground">Overrides the checkboxes below when provided.</div>
-              </div>
+              
 
               <div className="grid gap-2">
                 <div className="text-sm font-medium">Available brokers</div>
@@ -267,10 +296,6 @@ export default function Portal(): JSX.Element {
                 </div>
               </div>
 
-              <Button onClick={handleOpenPortal} disabled={!finatic} className="gap-2">
-                <DoorOpen className="size-4" /> Open Portal
-              </Button>
-
               {portalMessage ? (
                 <div className="text-sm text-green-600">{portalMessage}</div>
               ) : null}
@@ -279,30 +304,39 @@ export default function Portal(): JSX.Element {
               ) : null}
             </div>
           </div>
-
-          {portalEvents.length > 0 ? (
-            <div className="grid gap-2">
-              <div className="text-sm font-medium">Portal events</div>
-              <Card className="border-dashed">
-                <CardContent>
-                  <ScrollArea className="h-64">
-                    <div className="p-2 grid gap-2">
-                      {portalEvents.map((event, idx) => (
-                        <div key={idx} className="border rounded-md bg-background p-3">
-                          <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <span className="font-mono">{event.type}</span>
-                            <span className="font-mono">{event.timestamp}</span>
-                          </div>
-                          <pre className="text-xs mt-2 overflow-x-auto whitespace-pre-wrap">{JSON.stringify(event.data, null, 2)}</pre>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
-            </div>
-          ) : null}
         </CardContent>
+        ) : null}
+      </Card>
+
+      <Card className="border-dashed">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <button type="button" onClick={() => setEventsOpen((v) => !v)} className="flex items-center gap-2">
+              <CardTitle>Portal events</CardTitle>
+              <ChevronDown className={`size-4 transition-transform ${eventsOpen ? 'rotate-180' : ''}`} />
+            </button>
+            <Button variant="outline" size="sm" onClick={clearEvents} className="gap-2">
+              <Trash2 className="size-4" /> Clear
+            </Button>
+          </div>
+        </CardHeader>
+        {eventsOpen ? (
+        <CardContent>
+          <ScrollArea className="h-64">
+            <div className="p-2 grid gap-2">
+              {[...portalEvents].reverse().map((event, idx) => (
+                <div key={idx} className="border rounded-md bg-background p-3">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="font-mono">{event.type}</span>
+                    <span className="font-mono">{event.timestamp}</span>
+                  </div>
+                  <pre className="text-xs mt-2 overflow-x-auto whitespace-pre-wrap">{JSON.stringify(event.data, null, 2)}</pre>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </CardContent>
+        ) : null}
       </Card>
     </div>
   )

@@ -75,11 +75,6 @@ const navigation = [
         url: "/trading",
         icon: TrendingUp,
       },
-      {
-        title: "Analytics",
-        url: "/analytics",
-        icon: BarChart3,
-      },
     ],
   },
   {

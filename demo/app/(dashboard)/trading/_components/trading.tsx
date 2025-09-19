@@ -5,10 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
 import { Play, Activity, CheckCircle, Loader2 } from "lucide-react"
 import { useState, useEffect, useCallback } from "react"
 import { useFinatic } from "@/app/providers/FinaticProvider"
@@ -16,20 +13,23 @@ import { useFinatic } from "@/app/providers/FinaticProvider"
 // Removed static demo arrays
 
 export function Trading() {
-  const [selectedStrategy, setSelectedStrategy] = useState("")
-  const [autoTrade, setAutoTrade] = useState(true)
-  const [riskManagement, setRiskManagement] = useState(true)
+  
 
   // Finatic SDK
   const { finatic, addLog } = useFinatic()
 
   // Broker routing context
-  const [selectedBroker, setSelectedBroker] = useState<"tasty_trade" | "ninja_trader" | "robinhood" | "">("")
+  const [selectedBroker, setSelectedBroker] = useState<"tasty_trade" | "ninja_trader" | "tradovate" | "robinhood" | "">("")
   const [brokers, setBrokers] = useState<any[]>([])
   const [accounts, setAccounts] = useState<any[]>([])
   const [accountNumber, setAccountNumber] = useState("")
   const [connectionId, setConnectionId] = useState("")
   const [placingId, setPlacingId] = useState<string | null>(null)
+  const [failedLogos, setFailedLogos] = useState<Record<string, boolean>>({})
+
+  const onLogoError = useCallback((id: string) => {
+    setFailedLogos((prev) => ({ ...prev, [id]: true }))
+  }, [])
 
   // Load supported brokers (logos, names)
   useEffect(() => {
@@ -53,7 +53,7 @@ export function Trading() {
     if (!finatic || !selectedBroker) return
     const f = finatic
     try {
-      f.setBroker(selectedBroker as any)
+      ;(f as any).setBroker(selectedBroker as any)
     } catch {}
     let cancelled = false
     async function loadAccounts() {
@@ -92,8 +92,8 @@ export function Trading() {
     extras?: any
   }
 
-  const makeDefaultExamples = useCallback((broker: "tasty_trade" | "ninja_trader"): ExampleOrder[] => {
-    if (broker === "ninja_trader") {
+  const makeDefaultExamples = useCallback((broker: "tasty_trade" | "ninja_trader" | "tradovate"): ExampleOrder[] => {
+    if (broker === "ninja_trader" || broker === "tradovate") {
       return [
         {
           id: "ninja-fut-mkt-buy-day",
@@ -106,6 +106,35 @@ export function Trading() {
             orderType: "Market",
             assetType: "Future",
             timeInForce: "day",
+          },
+          extras: { ninjaTrader: { accountSpec: "", isAutomated: true } },
+        },
+        {
+          id: "ninja-fut-mkt-sell-day",
+          title: "Futures Market Sell (Day)",
+          broker: "ninja_trader",
+          params: {
+            symbol: "MNQU5",
+            orderQty: 1,
+            action: "Sell",
+            orderType: "Market",
+            assetType: "Future",
+            timeInForce: "day",
+          },
+          extras: { ninjaTrader: { accountSpec: "", isAutomated: true } },
+        },
+        {
+          id: "ninja-fut-limit-buy-gtc",
+          title: "Futures Limit Buy (GTC)",
+          broker: "ninja_trader",
+          params: {
+            symbol: "MNQU5",
+            orderQty: 1,
+            action: "Buy",
+            orderType: "Limit",
+            assetType: "Future",
+            timeInForce: "gtc",
+            price: 1500,
           },
           extras: { ninjaTrader: { accountSpec: "", isAutomated: true } },
         },
@@ -135,6 +164,53 @@ export function Trading() {
             orderType: "Stop",
             assetType: "Future",
             timeInForce: "day",
+            stopPrice: 120.5,
+          },
+          extras: { ninjaTrader: { accountSpec: "", isAutomated: true } },
+        },
+        {
+          id: "ninja-fut-stop-sell-day",
+          title: "Futures Stop Sell (Day)",
+          broker: "ninja_trader",
+          params: {
+            symbol: "MNQU5",
+            orderQty: 1,
+            action: "Sell",
+            orderType: "Stop",
+            assetType: "Future",
+            timeInForce: "day",
+            stopPrice: 120.5,
+          },
+          extras: { ninjaTrader: { accountSpec: "", isAutomated: true } },
+        },
+        {
+          id: "ninja-fut-stoplimit-buy-day",
+          title: "Futures Stop Limit Buy (Day)",
+          broker: "ninja_trader",
+          params: {
+            symbol: "MNQU5",
+            orderQty: 1,
+            action: "Buy",
+            orderType: "StopLimit",
+            assetType: "Future",
+            timeInForce: "day",
+            price: 1500,
+            stopPrice: 120.5,
+          },
+          extras: { ninjaTrader: { accountSpec: "", isAutomated: true } },
+        },
+        {
+          id: "ninja-fut-stoplimit-sell-day",
+          title: "Futures Stop Limit Sell (Day)",
+          broker: "ninja_trader",
+          params: {
+            symbol: "MNQU5",
+            orderQty: 1,
+            action: "Sell",
+            orderType: "StopLimit",
+            assetType: "Future",
+            timeInForce: "day",
+            price: 1500,
             stopPrice: 120.5,
           },
           extras: { ninjaTrader: { accountSpec: "", isAutomated: true } },
@@ -177,14 +253,14 @@ export function Trading() {
   const [exampleOrders, setExampleOrders] = useState<ExampleOrder[]>([])
 
   useEffect(() => {
-    if (selectedBroker === "ninja_trader" || selectedBroker === "tasty_trade") {
-      setExampleOrders(makeDefaultExamples(selectedBroker))
+    if (selectedBroker === "ninja_trader" || selectedBroker === "tradovate" || selectedBroker === "tasty_trade") {
+      setExampleOrders(makeDefaultExamples(selectedBroker as any))
     } else {
       setExampleOrders([])
     }
   }, [selectedBroker, makeDefaultExamples])
 
-  const onBrokerClick = (brokerId: "tasty_trade" | "ninja_trader" | "robinhood") => {
+  const onBrokerClick = (brokerId: "tasty_trade" | "ninja_trader" | "tradovate" | "robinhood") => {
     setSelectedBroker(brokerId)
   }
 
@@ -228,8 +304,8 @@ export function Trading() {
     try {
       // Set context
       try {
-        finatic.setBroker(selectedBroker as any)
-        finatic.setAccount(String(accountNumber))
+        ;(finatic as any).setBroker(selectedBroker as any)
+        ;(finatic as any).setAccount(String(accountNumber))
       } catch {}
 
       // Call low-level ApiClient to support all broker types
@@ -293,9 +369,9 @@ export function Trading() {
                   selectedBroker === b.id ? "border-primary bg-primary/10" : "border-border hover:bg-accent/10"
                 }`}
               >
-                {b.logo_path ? (
+                {b.logo_path && !failedLogos[b.id] ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={b.logo_path} alt={b.display_name} className="h-6 w-6 rounded" />
+                  <img src={b.logo_path} alt={b.display_name} className="h-6 w-6 rounded" onError={() => onLogoError(b.id)} />
                 ) : (
                   <Activity className="h-5 w-5 text-muted-foreground" />
                 )}
@@ -356,14 +432,8 @@ export function Trading() {
 
       {/* Removed static stats grid */}
 
-      {/* Main Content */}
-      <Tabs defaultValue="orders" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 bg-muted">
-          <TabsTrigger value="settings">Settings</TabsTrigger>
-          <TabsTrigger value="orders">Orders</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="orders" className="space-y-4">
+      {/* Orders Playground Only */}
+      <div className="space-y-4">
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="text-foreground">Orders Playground</CardTitle>
@@ -375,7 +445,7 @@ export function Trading() {
               ) : exampleOrders.length === 0 ? (
                 <div className="text-sm text-muted-foreground">No examples available.</div>
               ) : (
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {exampleOrders.map((ex) => (
                     <Card key={ex.id} className="bg-card border-border">
                       <CardHeader className="pb-2">
@@ -389,7 +459,7 @@ export function Trading() {
                           <div className="space-y-1">
                             <Label className="text-foreground">Symbol</Label>
                             <Input
-                              className="bg-input border-border text-foreground"
+                              className="bg-input border-border text-foreground w-full"
                               value={ex.params.symbol}
                               onChange={(e) => updateExampleField(ex.id, "symbol", e.target.value)}
                             />
@@ -398,7 +468,7 @@ export function Trading() {
                             <Label className="text-foreground">Qty</Label>
                             <Input
                               type="number"
-                              className="bg-input border-border text-foreground"
+                              className="bg-input border-border text-foreground w-full"
                               value={ex.params.orderQty}
                               onChange={(e) => updateExampleField(ex.id, "orderQty", Number(e.target.value))}
                             />
@@ -406,7 +476,7 @@ export function Trading() {
                           <div className="space-y-1">
                             <Label className="text-foreground">Side</Label>
                             <Select value={ex.params.action} onValueChange={(v) => updateExampleField(ex.id, "action", v)}>
-                              <SelectTrigger className="bg-input border-border text-foreground">
+                              <SelectTrigger className="bg-input border-border text-foreground w-full">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -418,7 +488,7 @@ export function Trading() {
                           <div className="space-y-1">
                             <Label className="text-foreground">Time In Force</Label>
                             <Select value={ex.params.timeInForce} onValueChange={(v) => updateExampleField(ex.id, "timeInForce", v)}>
-                              <SelectTrigger className="bg-input border-border text-foreground">
+                              <SelectTrigger className="bg-input border-border text-foreground w-full">
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -430,84 +500,87 @@ export function Trading() {
                               </SelectContent>
                             </Select>
                           </div>
-                          {(ex.params.orderType === "Limit" || ex.params.orderType === "StopLimit" || typeof ex.params.price === "number") && (
-                            <div className="space-y-1">
-                              <Label className="text-foreground">Price</Label>
-                              <Input
-                                type="number"
-                                className="bg-input border-border text-foreground"
-                                value={ex.params.price ?? 0}
-                                onChange={(e) => updateExampleField(ex.id, "price", Number(e.target.value))}
-                              />
-                            </div>
-                          )}
-                          {(ex.params.orderType === "Stop" || ex.params.orderType === "StopLimit" || typeof ex.params.stopPrice === "number") && (
-                            <div className="space-y-1">
-                              <Label className="text-foreground">Stop Price</Label>
-                              <Input
-                                type="number"
-                                className="bg-input border-border text-foreground"
-                                value={ex.params.stopPrice ?? 0}
-                                onChange={(e) => updateExampleField(ex.id, "stopPrice", Number(e.target.value))}
-                              />
-                            </div>
-                          )}
                         </div>
 
-                        {/* Broker-specific extras (compact) */}
-                        {selectedBroker === "ninja_trader" && (
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                              <Label className="text-foreground">Account Spec (NT)</Label>
-                              <Input
-                                className="bg-input border-border text-foreground"
-                                value={ex.extras?.ninjaTrader?.accountSpec || ""}
-                                onChange={(e) => updateExampleExtras(ex.id, "ninjaTrader.accountSpec", e.target.value)}
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-foreground">Automated</Label>
-                              <Select
-                                value={(ex.extras?.ninjaTrader?.isAutomated ?? true) ? "true" : "false"}
-                                onValueChange={(v) => updateExampleExtras(ex.id, "ninjaTrader.isAutomated", v === "true")}
-                              >
-                                <SelectTrigger className="bg-input border-border text-foreground">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="true">true</SelectItem>
-                                  <SelectItem value="false">false</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                        )}
+                        <details className="rounded-md border border-border/60 p-3 mt-1">
+                          <summary className="cursor-pointer text-sm text-muted-foreground">Advanced</summary>
+                          <div className="mt-3 grid grid-cols-2 gap-3">
+                            {(ex.params.orderType === "Limit" || ex.params.orderType === "StopLimit" || typeof ex.params.price === "number") && (
+                              <div className="space-y-1">
+                                <Label className="text-foreground">Price</Label>
+                                <Input
+                                  type="number"
+                                  className="bg-input border-border text-foreground"
+                                  value={ex.params.price ?? 0}
+                                  onChange={(e) => updateExampleField(ex.id, "price", Number(e.target.value))}
+                                />
+                              </div>
+                            )}
+                            {(ex.params.orderType === "Stop" || ex.params.orderType === "StopLimit" || typeof ex.params.stopPrice === "number") && (
+                              <div className="space-y-1">
+                                <Label className="text-foreground">Stop Price</Label>
+                                <Input
+                                  type="number"
+                                  className="bg-input border-border text-foreground"
+                                  value={ex.params.stopPrice ?? 0}
+                                  onChange={(e) => updateExampleField(ex.id, "stopPrice", Number(e.target.value))}
+                                />
+                              </div>
+                            )}
 
-                        {selectedBroker === "tasty_trade" && ex.params.orderType === "Limit" && (
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                              <Label className="text-foreground">Price Effect</Label>
-                              <Select
-                                value={ex.extras?.tastyTrade?.priceEffect || "Debit"}
-                                onValueChange={(v) => updateExampleExtras(ex.id, "tastyTrade.priceEffect", v)}
-                              >
-                                <SelectTrigger className="bg-input border-border text-foreground">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Debit">Debit</SelectItem>
-                                  <SelectItem value="Credit">Credit</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                        )}
+                            {selectedBroker === "ninja_trader" && (
+                              <>
+                                <div className="space-y-1">
+                                  <Label className="text-foreground">Account Spec (NT)</Label>
+                                  <Input
+                                    className="bg-input border-border text-foreground"
+                                    value={ex.extras?.ninjaTrader?.accountSpec || ""}
+                                    onChange={(e) => updateExampleExtras(ex.id, "ninjaTrader.accountSpec", e.target.value)}
+                                  />
+                                </div>
+                                <div className="space-y-1">
+                                  <Label className="text-foreground">Automated</Label>
+                                  <Select
+                                    value={(ex.extras?.ninjaTrader?.isAutomated ?? true) ? "true" : "false"}
+                                    onValueChange={(v) => updateExampleExtras(ex.id, "ninjaTrader.isAutomated", v === "true")}
+                                  >
+                                    <SelectTrigger className="bg-input border-border text-foreground">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="true">true</SelectItem>
+                                      <SelectItem value="false">false</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </>
+                            )}
 
-                        <div className="flex gap-2">
+                            {selectedBroker === "tasty_trade" && ex.params.orderType === "Limit" && (
+                              <div className="space-y-1">
+                                <Label className="text-foreground">Price Effect</Label>
+                                <Select
+                                  value={ex.extras?.tastyTrade?.priceEffect || "Debit"}
+                                  onValueChange={(v) => updateExampleExtras(ex.id, "tastyTrade.priceEffect", v)}
+                                >
+                                  <SelectTrigger className="bg-input border-border text-foreground">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Debit">Debit</SelectItem>
+                                    <SelectItem value="Credit">Credit</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
+                          </div>
+                        </details>
+
+                        <div className="flex gap-2 pt-1">
                           <Button
                             onClick={() => placeExampleOrder(ex)}
                             disabled={!selectedBroker || !accountNumber || placingId === ex.id}
-                            className="bg-primary text-primary-foreground hover:bg-primary/90"
+                            className="bg-primary text-primary-foreground hover:bg-primary/90 h-8 px-3"
                           >
                             {placingId === ex.id ? (
                               <>
@@ -526,92 +599,7 @@ export function Trading() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-
-
-        <TabsContent value="settings" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-foreground">Trading Settings</CardTitle>
-                <CardDescription className="text-muted-foreground">Configure trading behavior</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-foreground">Auto Trading</Label>
-                    <p className="text-xs text-muted-foreground">Enable automatic trade execution</p>
-                  </div>
-                  <Switch checked={autoTrade} onCheckedChange={setAutoTrade} />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-foreground">Risk Management</Label>
-                    <p className="text-xs text-muted-foreground">Enable automatic risk controls</p>
-                  </div>
-                  <Switch checked={riskManagement} onCheckedChange={setRiskManagement} />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-foreground">Max Daily Loss (%)</Label>
-                  <Input type="number" defaultValue="5" className="bg-input border-border text-foreground" />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-foreground">Position Size (%)</Label>
-                  <Input type="number" defaultValue="2" className="bg-input border-border text-foreground" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-foreground">Market Context</CardTitle>
-                <CardDescription className="text-muted-foreground">Current market conditions</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-foreground">Market Sentiment</Label>
-                  <Select>
-                    <SelectTrigger className="bg-input border-border text-foreground">
-                      <SelectValue placeholder="Auto-detect" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="bullish">Bullish</SelectItem>
-                      <SelectItem value="bearish">Bearish</SelectItem>
-                      <SelectItem value="neutral">Neutral</SelectItem>
-                      <SelectItem value="auto">Auto-detect</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-foreground">Volatility Filter</Label>
-                  <Select>
-                    <SelectTrigger className="bg-input border-border text-foreground">
-                      <SelectValue placeholder="Medium" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-foreground">News Filter</Label>
-                  <Textarea
-                    placeholder="Keywords to avoid trading during news..."
-                    className="bg-input border-border text-foreground"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+      </div>
     </div>
   )
 }

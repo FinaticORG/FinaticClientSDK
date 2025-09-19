@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AppSidebar } from "@/components/app-sidebar"
-import { EnvironmentSettings } from "@/app/(dashboard)/settings/_components/environment-settings"
+import { EnvironmentSettings } from "@/app/(dashboard)/settings/_components/EnvironmentSettings"
 import { 
   Settings, 
   Palette, 

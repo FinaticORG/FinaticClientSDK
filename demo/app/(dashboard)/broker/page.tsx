@@ -1,5 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { BrokerManagement } from "@/app/(dashboard)/broker/_components/broker-management"
+import { BrokerManagement } from "@/app/(dashboard)/broker/_components/BrokerMangement"
 
 export default function BrokerPage() {
   return (

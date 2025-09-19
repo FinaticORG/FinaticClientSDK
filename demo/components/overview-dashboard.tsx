@@ -101,7 +101,19 @@ export function OverviewDashboard() {
             <div className="w-2 h-2 bg-green-400 rounded-full mr-2" />
             All Systems Operational
           </Badge>
-          <Button variant="outline" className="border-border" onClick={clearUsage}>Clear Stats</Button>
+          <Button
+            variant="outline"
+            className="border-border"
+            onClick={() => {
+              // Clear SDK usage and broadcast a portal-history clear signal
+              clearUsage()
+              try {
+                window.dispatchEvent(new Event('finatic-portal-events-cleared'))
+              } catch {}
+            }}
+          >
+            Clear Stats
+          </Button>
         </div>
       </div>
 

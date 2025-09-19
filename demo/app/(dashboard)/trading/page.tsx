@@ -1,5 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { Trading } from "@/app/(dashboard)/trading/_components/trading"
+import { Trading } from "@/app/(dashboard)/trading/_components/Trading"
 
 export default function TradingPage() {
   return (

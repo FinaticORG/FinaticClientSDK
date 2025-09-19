@@ -1,5 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { AuthenticationPortal } from "@/app/(dashboard)/auth/_components/authentication"
+import { AuthenticationPortal } from "@/app/(dashboard)/auth/_components/Authentication"
 
 export default function AuthPage() {
   return (
