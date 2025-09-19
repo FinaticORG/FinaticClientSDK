@@ -28,9 +28,12 @@ export default function PortalPage() {
       addLog('info', `Filtering portal to show brokers: ${brokerFilter.join(', ')}`);
     }
     
+    addLog('info', 'Opening portal with StockAlgos theme');
+    
     try {
       const portalOptions: any = {
         brokers: brokerFilter.length > 0 ? brokerFilter : undefined,
+        theme: { preset: 'stockAlgos' },  // Use StockAlgos theme
         onSuccess: (userId: string) => {
           addLog('success', `Portal opened successfully for user: ${userId}`);
           setPortalUrl('Portal opened successfully');
