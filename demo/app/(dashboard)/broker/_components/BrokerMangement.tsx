@@ -19,8 +19,11 @@ import {
   MoreHorizontal,
   CheckCircle,
   Star,
+  Loader2,
 } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useFinatic } from "@/app/providers/FinaticProvider"
+import type { BrokerConnection as SDKBrokerConnection } from "@finatic/client"
 
 const brokerStats = [
   {
@@ -104,40 +107,16 @@ const brokers = [
   },
 ]
 
-const recentActivity = [
-  {
-    broker: "AlphaTrade Pro",
-    action: "Trade executed",
-    details: "AAPL - 100 shares @ $150.25",
-    time: "2 minutes ago",
-    status: "success",
-  },
-  {
-    broker: "TradeMaster",
-    action: "Order placed",
-    details: "TSLA - 50 shares @ $220.00",
-    time: "5 minutes ago",
-    status: "pending",
-  },
-  {
-    broker: "QuickTrade",
-    action: "Account verified",
-    details: "KYC documentation approved",
-    time: "1 hour ago",
-    status: "success",
-  },
-  {
-    broker: "ProBroker Elite",
-    action: "Connection lost",
-    details: "API timeout - reconnecting",
-    time: "2 hours ago",
-    status: "error",
-  },
-]
+ 
 
 export function BrokerManagement() {
   const [selectedBroker, setSelectedBroker] = useState("")
   const [autoRebalance, setAutoRebalance] = useState(true)
+  const { finatic } = useFinatic()
+  const [connections, setConnections] = useState<SDKBrokerConnection[]>([])
+  const [isLoadingConnections, setIsLoadingConnections] = useState(false)
+  const [connectionsError, setConnectionsError] = useState<string | null>(null)
+  const [brokerNamesById, setBrokerNamesById] = useState<Record<string, string>>({})
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -152,18 +131,75 @@ export function BrokerManagement() {
     }
   }
 
-  const getActivityStatusColor = (status: string) => {
+  
+
+  const getConnectionDotColor = (status: string) => {
     switch (status) {
-      case "success":
+      case "connected":
+      case "active":
         return "bg-green-400"
+      case "needs_reauth":
       case "pending":
         return "bg-yellow-400"
       case "error":
+      case "disconnected":
         return "bg-red-400"
       default:
         return "bg-gray-400"
     }
   }
+
+  const getConnectionBadge = (status: string) => {
+    switch (status) {
+      case "connected":
+      case "active":
+        return { className: "bg-green-500/10 text-green-400 border-green-500/20", label: "Online" }
+      case "needs_reauth":
+        return { className: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20", label: "Reauth needed" }
+      case "pending":
+        return { className: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20", label: "Pending" }
+      case "disconnected":
+        return { className: "bg-gray-500/10 text-gray-400 border-gray-500/20", label: "Disconnected" }
+      case "error":
+        return { className: "bg-red-500/10 text-red-400 border-red-500/20", label: "Error" }
+      default:
+        return { className: "bg-gray-500/10 text-gray-400 border-gray-500/20", label: status || "Unknown" }
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      if (!finatic) return
+      setIsLoadingConnections(true)
+      try {
+        try {
+          const list = await finatic.getBrokerList()
+          if (!cancelled) {
+            const map: Record<string, string> = {}
+            for (const b of list) {
+              map[b.id] = (b as any).display_name || (b as any).name || b.id
+            }
+            setBrokerNamesById(map)
+          }
+        } catch {}
+
+        const conns = await finatic.getBrokerConnections()
+        if (!cancelled) {
+          setConnections(conns)
+          setConnectionsError(null)
+        }
+      } catch (err: any) {
+        if (!cancelled) setConnectionsError(err?.message || "Failed to load connections")
+      } finally {
+        if (!cancelled) setIsLoadingConnections(false)
+      }
+    }
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [finatic])
 
   return (
     <div className="flex-1 space-y-6 p-6">
@@ -310,8 +346,8 @@ export function BrokerManagement() {
         </TabsContent>
 
         <TabsContent value="connections" className="space-y-4">
-          <div className="grid gap-4 lg:grid-cols-3">
-            <div className="lg:col-span-2">
+          <div className="grid gap-4 lg:grid-cols-1">
+            <div>
               <Card className="bg-card border-border">
                 <CardHeader>
                   <CardTitle className="text-foreground">Connection Status</CardTitle>
@@ -321,54 +357,40 @@ export function BrokerManagement() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {brokers
-                      .filter((broker) => broker.status === "active")
-                      .map((broker) => (
-                        <div
-                          key={broker.id}
-                          className="flex items-center justify-between p-4 border border-border rounded-lg"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-3 h-3 bg-green-400 rounded-full" />
-                            <div>
-                              <div className="font-medium text-foreground">{broker.name}</div>
-                              <div className="text-sm text-muted-foreground">API Connected</div>
+                    {isLoadingConnections ? (
+                      <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Loading connections...
+                      </div>
+                    ) : connectionsError ? (
+                      <div className="text-sm text-red-400">{connectionsError}</div>
+                    ) : connections.length === 0 ? (
+                      <div className="text-sm text-muted-foreground">No connections found.</div>
+                    ) : (
+                      connections.map((conn) => {
+                        const badge = getConnectionBadge((conn as any).status)
+                        return (
+                          <div
+                            key={conn.id}
+                            className="flex items-center justify-between p-4 border border-border rounded-lg"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-3 h-3 rounded-full ${getConnectionDotColor((conn as any).status)}`} />
+                              <div>
+                                <div className="font-medium text-foreground">{brokerNamesById[conn.broker_id] || conn.broker_id}</div>
+                                <div className="text-sm text-muted-foreground">{(conn as any).status || "Unknown status"}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="secondary" className={badge.className}>
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                {badge.label}
+                              </Badge>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="secondary" className="bg-green-500/10 text-green-400 border-green-500/20">
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Online
-                            </Badge>
-                            <Button variant="ghost" size="sm">
-                              Test
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="space-y-4">
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-foreground">Recent Activity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {recentActivity.map((activity, index) => (
-                      <div key={index} className="flex items-start gap-3">
-                        <div className={`w-2 h-2 rounded-full mt-2 ${getActivityStatusColor(activity.status)}`} />
-                        <div className="flex-1 space-y-1">
-                          <div className="text-sm font-medium text-foreground">{activity.broker}</div>
-                          <div className="text-sm text-muted-foreground">{activity.action}</div>
-                          <div className="text-xs text-muted-foreground">{activity.details}</div>
-                          <div className="text-xs text-muted-foreground">{activity.time}</div>
-                        </div>
-                      </div>
-                    ))}
+                        )
+                      })
+                    )}
                   </div>
                 </CardContent>
               </Card>
