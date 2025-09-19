@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { CheckCircle2, CircleX, Mail, Filter, Trash2, DoorOpen, RefreshCw, ChevronDown } from "lucide-react"
+import { CheckCircle2, CircleX, Mail, Trash2, DoorOpen, RefreshCw, ChevronDown } from "lucide-react"
 import type { BrokerInfo } from "@/../src/types/api/broker"
 
 type PortalEvent = { type: string; data: unknown; timestamp: string }
@@ -212,116 +212,107 @@ export default function Portal(): JSX.Element {
         </CardHeader>
         {optionsOpen ? (
         <CardContent className="grid gap-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2 grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="email" className="gap-2">
-                  <Mail className="size-4" /> Email prefill (optional)
-                </Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={emailParam}
-                    onChange={(e) => setEmailParam(e.target.value)}
-                  />
-                  <Button variant="outline" onClick={() => setEmailParam("")}>
-                    Clear
-                  </Button>
-                </div>
-              </div>
-
-              
-
-              <div className="grid gap-2">
-                <div className="text-sm font-medium">Available brokers</div>
-                {brokersLoading ? (
-                  <div className="text-xs text-muted-foreground flex items-center gap-2"><RefreshCw className="size-3 animate-spin"/> Loading brokers...</div>
-                ) : brokersError ? (
-                  <div className="text-xs text-red-600">{brokersError}</div>
-                ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {(availableBrokers || []).map((broker) => {
-                      const key = broker.name
-                      const checked = selectedBrokers.includes(key)
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() =>
-                            setSelectedBrokers((prev) =>
-                              prev.includes(key) ? prev.filter((b) => b !== key) : [...prev, key]
-                            )
-                          }
-                          className={`text-sm border rounded-md px-3 py-2 text-left transition-colors ${
-                            checked ? "bg-accent border-primary" : "hover:bg-accent"
-                          }`}
-                          aria-pressed={checked}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="truncate">{broker.display_name || broker.name}</span>
-                            {checked ? <Badge>On</Badge> : <Badge variant="outline">Off</Badge>}
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email" className="gap-2">
+                <Mail className="size-4" /> Email prefill (optional)
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={emailParam}
+                  onChange={(e) => setEmailParam(e.target.value)}
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setEmailParam("")}
+                  aria-label="Clear email prefill"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
               </div>
             </div>
 
-            <div className="grid gap-4">
-              <div className="grid gap-2">
-                <div className="text-sm font-medium">Current user</div>
-                <div className="text-sm font-mono border rounded-md px-3 py-2">{currentUserId || "Not authenticated"}</div>
-                {storedUserId ? (
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => clearStoredUserId()} className="gap-2">
-                      <Trash2 className="size-4" /> Clear stored user
-                    </Button>
-                  </div>
-                ) : null}
+            <div className="grid gap-2">
+              <div className="text-sm font-medium">Current user</div>
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-mono border rounded-md px-3 py-2 flex-1">{currentUserId || "Not authenticated"}</div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => clearStoredUserId()}
+                  disabled={!storedUserId}
+                  aria-label="Clear stored user"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
               </div>
-
-              <div className="grid gap-2">
-                <div className="text-sm font-medium">Effective options</div>
-                <div className="flex flex-wrap gap-2">
-                  {emailParam.trim() ? <Badge className="gap-1"><Mail className="size-3"/> {emailParam.trim()}</Badge> : null}
-                  {brokerFilter.length > 0 ? (
-                    <Badge variant="secondary" className="gap-1">
-                      <Filter className="size-3" /> {brokerFilter.join(", ")}
-                    </Badge>
-                  ) : null}
-                </div>
-              </div>
-
-              {portalMessage ? (
-                <div className="text-sm text-green-600">{portalMessage}</div>
-              ) : null}
-              {portalError ? (
-                <div className="text-sm text-red-600">Error: {portalError}</div>
-              ) : null}
             </div>
           </div>
+
+          <div className="grid gap-2">
+            <div className="text-sm font-medium">Available brokers (filtered in the portal)</div>
+            {brokersLoading ? (
+              <div className="text-xs text-muted-foreground flex items-center gap-2"><RefreshCw className="size-3 animate-spin"/> Loading brokers...</div>
+            ) : brokersError ? (
+              <div className="text-xs text-red-600">{brokersError}</div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                {(availableBrokers || []).map((broker) => {
+                  const key = broker.name
+                  const checked = selectedBrokers.includes(key)
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() =>
+                        setSelectedBrokers((prev) =>
+                          prev.includes(key) ? prev.filter((b) => b !== key) : [...prev, key]
+                        )
+                      }
+                      className={`text-sm border rounded-md px-3 py-2 text-left transition-colors ${
+                        checked ? "bg-accent border-primary" : "hover:bg-accent"
+                      }`}
+                      aria-pressed={checked}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="truncate">{broker.display_name || broker.name}</span>
+                        {checked ? <Badge>On</Badge> : <Badge variant="outline">Off</Badge>}
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {portalMessage ? (
+            <div className="text-sm text-green-600">{portalMessage}</div>
+          ) : null}
+          {portalError ? (
+            <div className="text-sm text-red-600">Error: {portalError}</div>
+          ) : null}
         </CardContent>
         ) : null}
       </Card>
 
       <Card className="border-dashed">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <button type="button" onClick={() => setEventsOpen((v) => !v)} className="flex items-center gap-2">
-              <CardTitle>Portal events</CardTitle>
-              <ChevronDown className={`size-4 transition-transform ${eventsOpen ? 'rotate-180' : ''}`} />
-            </button>
-            <Button variant="outline" size="sm" onClick={clearEvents} className="gap-2">
-              <Trash2 className="size-4" /> Clear
-            </Button>
-          </div>
+          <button type="button" onClick={() => setEventsOpen((v) => !v)} className="flex w-full items-center justify-between">
+            <CardTitle>Portal events</CardTitle>
+            <ChevronDown className={`size-4 transition-transform ${eventsOpen ? 'rotate-180' : ''}`} />
+          </button>
         </CardHeader>
         {eventsOpen ? (
         <CardContent>
+          <div className="flex justify-end mb-2">
+            <Button variant="outline" size="icon" onClick={clearEvents} aria-label="Clear portal events">
+              <Trash2 className="size-4" />
+            </Button>
+          </div>
           <ScrollArea className="h-64">
             <div className="p-2 grid gap-2">
               {[...portalEvents].reverse().map((event, idx) => (
