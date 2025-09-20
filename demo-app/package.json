@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@finatic/client": "link:..",
-    "next": "^15.4.2",
+    "next": "^15.6.0-canary.19",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
