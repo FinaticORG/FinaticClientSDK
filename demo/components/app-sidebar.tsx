@@ -65,6 +65,16 @@ const navigation = [
         url: "/broker",
         icon: Users,
       },
+      {
+        title: "Broker Method Lab",
+        url: "/broker/methods",
+        icon: Grid3X3,
+      },
+      {
+        title: "Order Execution Lab",
+        url: "/broker/orders",
+        icon: BarChart3,
+      },
     ],
   },
   {
