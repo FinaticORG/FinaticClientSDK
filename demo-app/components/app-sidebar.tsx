@@ -103,7 +103,7 @@ export function AppSidebar({ className, ...props }: AppSidebarProps) {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
             <Command className="h-4 w-4" />
           </div>
-          <span className="font-semibold">DevPlatform</span>
+          <span className="font-semibold">Finatic Demo App</span>
         </div>
       </div>
 
