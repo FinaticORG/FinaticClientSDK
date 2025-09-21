@@ -1,0 +1,110 @@
+---
+globs: demo-app**
+alwaysApply: false
+---
+## Demo App Structure
+
+- **Root**: `demo-app/` (Next.js App Router)
+- **App router**: `demo-app/app/`
+  - `layout.tsx`: wraps pages with `ThemeProvider` and `FinaticProvider`
+  - `page.tsx`: dashboard landing page
+  - `(dashboard)/`: wgroup for sidebar-routed pages
+    - Each feature folder has:
+      - `page.tsx`: PascalCase default export component named `XxxPage`
+      - `_components/`: co-located feature components in PascalCase
+  - `providers/`: global providers (e.g., `FinaticProvider.tsx`, `ThemeProvider.tsx`)
+  - `api/`: Next.js route handlers for server-side helpers
+- **Shared UI**: `demo-app/components/` and `demo-app/components/ui/`
+- **Lib**: `demo-app/lib/` for helpers like `cn`
+
+## Navigation & Layout
+
+- Sidebar lives in `demo-app/components/app-sidebar.tsx` and defines routes like `/auth`, `/portal`, `/methods`, `/trading`, `/developer`, `/settings`.
+- Pages use a standard layout:
+  - Import `AppSidebar` from `@/components/app-sidebar`
+  - Render a full-height container with sidebar and a `main` scroll area
+
+```12:35:/workspaces/Finatic/codebases/Frontend/FinaticClientSDK/demo-app/app/layout.tsx
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+        <Suspense fallback={null}>
+          <FinaticProvider>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+              {children}
+            </ThemeProvider>
+          </FinaticProvider>
+        </Suspense>
+        <Analytics />
+      </body>
+    </html>
+  )
+}
+```
+
+## Import Aliases
+
+- `demo-app/tsconfig.json` defines `@/*` to `./*`. Use absolute imports, never relative.
+
+```21:23:/workspaces/Finatic/codebases/Frontend/FinaticClientSDK/demo-app/tsconfig.json
+"paths": {
+  "@/*": ["./*"]
+}
+```
+
+## State & SDK Initialization
+
+- Global Finatic SDK context is provided by `FinaticProvider` with logging, mock mode, usage stats, and fetch instrumentation.
+
+```67:75:/workspaces/Finatic/codebases/Frontend/FinaticClientSDK/demo-app/app/providers/FinaticProvider.tsx
+export function FinaticProvider({ children }: { children: React.ReactNode }) {
+  const [finatic, setFinatic] = useState<FinaticConnect | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isMockMode, setIsMockMode] = useState(false);
+  const [sessionInfo, setSessionInfo] = useState<string>('Not initialized');
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+```
+
+## Page Pattern
+
+- Page files export a default component named `XxxPage` and compose feature components from `_components`.
+
+```1:13:/workspaces/Finatic/codebases/Frontend/FinaticClientSDK/demo-app/app/(dashboard)/auth/page.tsx
+import { AppSidebar } from "@/components/app-sidebar"
+import { AuthenticationPortal } from "@/app/(dashboard)/auth/_components/AuthenticationPage"
+
+export default function AuthPage() {
+  return (
+    <div className="flex h-screen bg-background">
+      <AppSidebar />
+      <main className="flex-1 overflow-auto">
+        <AuthenticationPortal />
+      </main>
+    </div>
+  )
+}
+```
+
+## Settings Section
+
+- `settings/page.tsx` renders tabs and pulls `EnvironmentSettings` from `_components`.
+
+```44:56:/workspaces/Finatic/codebases/Frontend/FinaticClientSDK/demo-app/app/(dashboard)/settings/page.tsx
+return (
+  <div className="flex h-screen bg-background">
+    <AppSidebar />
+    <main className="flex-1 overflow-auto">
+      <div className="flex-1 space-y-6 p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Settings</h1>
+            <p className="text-muted-foreground">Manage your application preferences and environment settings</p>
+          </div>
+```
