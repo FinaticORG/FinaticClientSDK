@@ -1,12 +1,12 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { OverviewDashboard } from "@/components/overview-dashboard"
+import { SettingsPageComponent } from "@/app/(dashboard)/settings/_components/SettingsPageComponent"
 
-export default function HomePage() {
+export default function SettingsPage() {
   return (
     <div className="flex h-screen bg-background">
       <AppSidebar />
       <main className="flex-1 overflow-auto">
-        <OverviewDashboard />
+        <SettingsPageComponent />
       </main>
     </div>
   )

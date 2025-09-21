@@ -1,12 +1,12 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { OverviewDashboard } from "@/components/overview-dashboard"
+import { ThemingSystemPageComponent } from "@/app/(dashboard)/theming/_components/ThemingSystemPageComponent"
 
-export default function HomePage() {
+export default function ThemingPage() {
   return (
     <div className="flex h-screen bg-background">
       <AppSidebar />
       <main className="flex-1 overflow-auto">
-        <OverviewDashboard />
+        <ThemingSystemPageComponent />
       </main>
     </div>
   )

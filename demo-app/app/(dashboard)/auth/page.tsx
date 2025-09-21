@@ -1,12 +1,12 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { OverviewDashboard } from "@/components/overview-dashboard"
+import { AuthenticationPageComponent } from "@/app/(dashboard)/auth/_components/AuthenticationPage"
 
-export default function HomePage() {
+export default function AuthenticationPage() {
   return (
     <div className="flex h-screen bg-background">
       <AppSidebar />
       <main className="flex-1 overflow-auto">
-        <OverviewDashboard />
+        <AuthenticationPageComponent />
       </main>
     </div>
   )
