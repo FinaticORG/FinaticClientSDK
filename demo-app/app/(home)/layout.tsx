@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 import { FinaticProvider, useFinatic } from '@/app/(home)/providers/FinaticProvider';
+import { EnvironmentSelector } from './components/EnvironmentSelector';
 
 function Header() {
-  const { isMockMode, sessionInfo, reinitialize, isLoading } = useFinatic();
+  const { isMockMode, sessionInfo, reinitialize, isLoading, currentEnvironment } = useFinatic();
   const infoText = (sessionInfo || '').replace(/^(Real Mode|Mock Mode|Mock API Only Mode)\s*-\s*/i, '').trim();
   return (
     <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-40">
@@ -39,8 +40,19 @@ function Header() {
                   </button>
                 </div>
                 <div className="flex items-center space-x-2 mt-1">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${isMockMode ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
-                    {isMockMode ? '🔧 Mock Mode' : '🚀 Real Mode'}
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    isMockMode 
+                      ? 'bg-amber-100 text-amber-800' 
+                      : currentEnvironment === 'sandbox'
+                        ? 'bg-orange-100 text-orange-800'
+                        : 'bg-green-100 text-green-800'
+                  }`}>
+                    {isMockMode 
+                      ? '🔧 Mock Mode' 
+                      : currentEnvironment === 'sandbox'
+                        ? '🧪 Sandbox'
+                        : '🚀 Production'
+                    }
                   </span>
                   <span className="text-sm text-gray-600">{infoText}</span>
                 </div>
@@ -62,7 +74,7 @@ const NAV_LINKS = [
   { href: '/trading', label: 'Trading', icon: '💹' },
   { href: '/context-management', label: 'Context', icon: '⚙️' },
   { href: '/convenience', label: 'Convenience', icon: '🎯' },
-  { href: '/pagination', label: 'Pagination', icon: '📄' },
+  { href: '/pagination', label:'Pagination', icon: '📄' },
 ];
 
 function NavBar() {
@@ -138,6 +150,10 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
         <Header />
         <NavBar />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Environment Selector */}
+          <div className="mb-8">
+            <EnvironmentSelector />
+          </div>
           {children}
         </main>
       </div>

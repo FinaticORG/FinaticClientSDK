@@ -15,32 +15,38 @@ This is a Next.js demo application for testing the Finatic Client SDK with real 
 
 ### Prerequisites
 
-- Node.js 16+ 
+- Node.js 16+
 - npm or yarn
 - Finatic API key
 
 ### Installation
 
 1. **Install dependencies:**
+
    ```bash
    cd demo-app/js
    npm install
    ```
 
 2. **Build the SDK (if not already built):**
+
    ```bash
    # From the root directory
    node dev.js build client
    ```
 
 3. **Set up environment variables:**
+
    ```bash
    # Copy the example file
    cp env.example .env.local
-   
+
    # Edit .env.local with your actual values
-   FINATIC_API_KEY=your_actual_api_key_here
+   FINATIC_API_KEY=fntc_live_your_production_key_here
+   FINATIC_SANDBOX_API_KEY=fntc_sandbox_your_sandbox_key_here
    FINATIC_API_URL=http://localhost:8000  # or your actual API URL
+
+   # Environment selection is now controlled via the demo app UI
    ```
 
 4. **Start the demo:**
@@ -76,6 +82,7 @@ The demo app supports **Mock Mode** via environment variable:
 - **Visual Indicator** - Purple indicator shows when mock mode is active
 
 **To use Mock Mode:**
+
 1. Set `NEXT_PUBLIC_FINATIC_USE_MOCKS=true` in your environment
 2. Restart the development server
 3. The SDK will automatically use mock data for all API calls
@@ -86,10 +93,13 @@ The demo app supports **Mock Mode** via environment variable:
 
 ### Environment Variables
 
-- `FINATIC_API_KEY` - Your Finatic API key (required)
+- `FINATIC_API_KEY` - Your production API key (starts with `fntc_live_`)
+- `FINATIC_SANDBOX_API_KEY` - Your sandbox API key (starts with `fntc_sandbox_`)
 - `FINATIC_API_URL` - Base URL for Finatic API (default: http://localhost:8000)
 - `NEXT_PUBLIC_FINATIC_API_URL` - Public API URL for client-side use
 - `NEXT_PUBLIC_FINATIC_USE_MOCKS` - Enable mock mode (default: false)
+
+**Environment Selection**: The demo app now includes a UI toggle to switch between sandbox and production environments. No environment variables needed!
 
 ### Mock Mode Configuration
 
@@ -103,6 +113,7 @@ Mock mode is controlled through environment variable:
 ### API Endpoint
 
 The demo includes a `/api/getToken` endpoint that:
+
 - Uses your server-side API key
 - Calls the Finatic API to get a one-time token
 - Returns the token for SDK initialization
@@ -110,21 +121,26 @@ The demo includes a `/api/getToken` endpoint that:
 ## Troubleshooting
 
 ### SDK Not Loading
+
 - Make sure the SDK is built: `node dev.js build client`
 - Check browser console for import errors
 - Verify the file path in `package.json` is correct
 
 ### API Key Issues
-- Ensure `FINATIC_API_KEY` is set in `.env.local`
+
+- Ensure both `FINATIC_API_KEY` and `FINATIC_SANDBOX_API_KEY` are set in `.env.local`
 - Check server logs for API key errors
-- Verify the API key has proper permissions
+- Verify the API keys have proper permissions
+- Make sure API keys have the correct prefixes (`fntc_live_` or `fntc_sandbox_`)
 
 ### Portal Not Working
+
 - Ensure the client is initialized first
 - Check if portal module is available in the SDK
 - Look for console errors in browser dev tools
 
 ### API Connection Issues
+
 - Verify `FINATIC_API_URL` is correct
 - Check if the Finatic API is running
 - Look at server logs for connection errors
@@ -140,6 +156,7 @@ The demo includes a `/api/getToken` endpoint that:
 ### API Route
 
 The `/api/getToken` route in `app/api/getToken/route.ts` handles:
+
 - Server-side API key management
 - Finatic API communication
 - Error handling and logging
@@ -173,6 +190,7 @@ demo-app/js/
 ## API Integration
 
 The demo shows how to:
+
 1. Use server-side API keys securely
 2. Get one-time tokens from Finatic API
 3. Initialize the SDK with tokens
@@ -185,6 +203,7 @@ The mock system is automatically integrated into the SDK. Here's how it works:
 ### Automatic Detection
 
 The SDK automatically detects mock mode through multiple methods:
+
 1. Environment variable: `FINATIC_USE_MOCKS=true`
 2. Global variable: `window.FINATIC_USE_MOCKS = 'true'`
 3. localStorage: `finatic_mock_mode = 'true'`
@@ -210,4 +229,4 @@ const isMockMode = MockFactory.isMockMode();
 - **Configurable Delays** - Simulate network latency
 - **Session Management** - Mock sessions and tokens work like real ones
 - **Trading Operations** - Place orders, get portfolios, etc.
-- **Broker Integration** - Mock broker connections and accounts 
+- **Broker Integration** - Mock broker connections and accounts

@@ -24,17 +24,40 @@ async function handleRequest(request: Request) {
       return NextResponse.json(mockResponse);
     }
     
-    // Get API key from environment variables
-    const apiKey = process.env.FINATIC_API_KEY;
+    // Get environment preference from request (query param or body)
+    const url = new URL(request.url);
+    const environmentParam = url.searchParams.get('environment');
+    let requestBody = null;
+    
+    try {
+      if (request.method === 'POST' && request.headers.get('content-type')?.includes('application/json')) {
+        requestBody = await request.json();
+      }
+    } catch (e) {
+      // Ignore JSON parsing errors for non-JSON requests
+    }
+    
+    // Determine environment from request parameter or body
+    const requestedEnv = environmentParam || requestBody?.environment || 'sandbox'; // Default to sandbox for safety
+    const useSandbox = requestedEnv === 'sandbox';
+    
+    // Get API keys from environment variables
+    const liveApiKey = process.env.FINATIC_API_KEY;
+    const sandboxApiKey = process.env.FINATIC_SANDBOX_API_KEY;
     const apiUrl = process.env.FINATIC_API_URL || 'http://localhost:8000';
     
-    console.log("Using server-side API key:", apiKey ? "present" : "missing");
+    const apiKey = useSandbox ? sandboxApiKey : liveApiKey;
+    const keyType = useSandbox ? 'sandbox' : 'live';
+    
+    console.log(`Using ${keyType} API key (requested: ${requestedEnv}):`, apiKey ? "present" : "missing");
+    console.log("API Key prefix:", apiKey ? apiKey.substring(0, 15) + "..." : "none");
     console.log("Using API URL:", apiUrl);
     
     if (!apiKey) {
-      console.log("No Finatic API key found in environment variables");
+      const missingKey = useSandbox ? 'FINATIC_SANDBOX_API_KEY' : 'FINATIC_API_KEY';
+      console.log(`No ${keyType} API key found in environment variables`);
       return NextResponse.json(
-        { error: "Server configuration error - FINATIC_API_KEY not set" },
+        { error: `Server configuration error - ${missingKey} not set` },
         { status: 500 }
       );
     }
