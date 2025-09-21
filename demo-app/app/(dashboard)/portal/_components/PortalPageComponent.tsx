@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CheckCircle2, CircleX, Mail, Trash2, DoorOpen, RefreshCw, ChevronDown, Palette } from "lucide-react"
 import type { BrokerInfo } from "@/../src/types/api/broker"
+import { portalThemePresets } from "@/../src/themes/portalPresets"
 
 type PortalEvent = { type: string; data: unknown; timestamp: string }
 
@@ -128,6 +130,7 @@ export default function PortalPageComponent(): JSX.Element {
   }, [finatic])
 
   const brokerFilter: string[] = useMemo(() => selectedBrokers, [selectedBrokers])
+  const themeOptions = useMemo(() => Object.keys(portalThemePresets), [])
 
   const handleOpenPortal = useCallback(async () => {
     if (!finatic) return
@@ -246,13 +249,19 @@ export default function PortalPageComponent(): JSX.Element {
                 <Palette className="size-4" /> Theme preset (optional)
               </Label>
               <div className="flex gap-2">
-                <Input
-                  id="theme"
-                  type="text"
-                  placeholder="corporateBlue"
-                  value={themePreset}
-                  onChange={(e) => setThemePreset(e.target.value)}
-                />
+                <Select value={themePreset || "default"} onValueChange={(v) => setThemePreset(v === "default" ? "" : v)}>
+                  <SelectTrigger className="flex-1" aria-label="Select theme preset">
+                    <SelectValue placeholder="Default" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Default</SelectItem>
+                    {themeOptions.map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Button
                   variant="outline"
                   size="icon"
