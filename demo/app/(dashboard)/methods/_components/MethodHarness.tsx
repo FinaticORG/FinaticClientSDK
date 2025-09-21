@@ -1,7 +1,7 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import { Loader2, CheckCircle2, XCircle, Clock, ChevronDown, ChevronRight } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { Loader2, CheckCircle2, XCircle, Clock, ChevronDown, ChevronRight, Minimize2, Maximize2, Info } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -151,6 +151,8 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
     minMs?: number
     maxMs?: number
   } | null>(null)
+  const [isAuthed, setIsAuthed] = useState<boolean | null>(null)
+  const [showInfo, setShowInfo] = useState(false)
 
   const methodKeyToGroupKey = useMemo(() => {
     const map: Record<string, string> = {}
@@ -164,6 +166,22 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
 
   const toggleGroup = (key: string) => {
     setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const minimizeAllGroups = () => {
+    const minimized: Record<string, boolean> = {}
+    for (const group of methodGroups) {
+      minimized[group.key] = false
+    }
+    setExpandedGroups(minimized)
+  }
+
+  const maximizeAllGroups = () => {
+    const maximized: Record<string, boolean> = {}
+    for (const group of methodGroups) {
+      maximized[group.key] = true
+    }
+    setExpandedGroups(maximized)
   }
 
   const anchorToMethod = (methodKey: string) => {
@@ -187,8 +205,10 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
       }
     }
     // Weight methods so seed page requests run before next-page requests
-    // 0: get*Page (not Next), 1: others, 2: getNext*Page
+    // -2: openPortal, -1: closePortal, 0: get*Page (not Next), 1: others, 2: getNext*Page
     const weight = (key: string) => {
+      if (key === "openPortal") return -2
+      if (key === "closePortal") return -1
       const isNextPage = /^getNext.*Page$/i.test(key)
       const isSeedPage = /^get.*Page$/i.test(key) && !isNextPage
       if (isSeedPage) return 0
@@ -223,6 +243,131 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
     }),
     [pagination]
   )
+
+  // Compute test coverage for info panel
+  const sdkMethodNames = useMemo(
+    () => [
+      "isAuthed",
+      "is_authenticated",
+      "openPortal",
+      "closePortal",
+      "setUserId",
+      "getUserId",
+      "getSessionUser",
+      "disconnectCompany",
+      "getBrokerList",
+      "getBrokerConnections",
+      "getAccounts",
+      "getAccountsPage",
+      "getNextAccountsPage",
+      "getAllAccounts",
+      "getActiveAccounts",
+      "getBalances",
+      "getBalancesPage",
+      "getNextBalancesPage",
+      "getAllBalances",
+      "getOrders",
+      "getOrdersPage",
+      "getNextOrdersPage",
+      "getAllOrders",
+      "getFilledOrders",
+      "getPendingOrders",
+      "getOrdersBySymbol",
+      "getOrdersByBroker",
+      "getPositions",
+      "getPositionsPage",
+      "getNextPositionsPage",
+      "getAllPositions",
+      "getOpenPositions",
+      "getPositionsBySymbol",
+      "getPositionsByBroker",
+      "setBroker",
+      "setAccount",
+      "getTradingContext",
+      "clearTradingContext",
+      "placeOrder",
+      "cancelOrder",
+      "modifyOrder",
+      "placeStockMarketOrder",
+      "placeStockLimitOrder",
+      "placeStockStopOrder",
+      "placeCryptoMarketOrder",
+      "placeCryptoLimitOrder",
+      "placeOptionsMarketOrder",
+      "placeOptionsLimitOrder",
+      "placeFuturesMarketOrder",
+      "placeFuturesLimitOrder",
+    ],
+    []
+  )
+
+  const testedMethodNames = useMemo(() => {
+    const names = new Set<string>()
+    for (const group of methodGroups) {
+      for (const method of group.methods) {
+        names.add(method.methodName ?? method.key)
+      }
+    }
+    return Array.from(names)
+  }, [methodGroups])
+
+  const untestedMethodNames = useMemo(
+    () => sdkMethodNames.filter((name) => !testedMethodNames.includes(name)),
+    [sdkMethodNames, testedMethodNames]
+  )
+
+  // Evaluate SDK auth readiness
+  useEffect(() => {
+    let cancelled = false
+    const checkAuth = async () => {
+      if (!finatic) {
+        if (!cancelled) setIsAuthed(null)
+        return
+      }
+      try {
+        const maybe = (finatic as any).isAuthed?.()
+        const ok = maybe instanceof Promise ? await maybe : maybe
+        if (!cancelled) setIsAuthed(Boolean(ok))
+      } catch {
+        if (!cancelled) setIsAuthed(false)
+      }
+    }
+    void checkAuth()
+    return () => {
+      cancelled = true
+    }
+  }, [finatic])
+
+  const sdkReady = Boolean(finatic) && !isLoading
+  const allReady = sdkReady && isAuthed === true
+
+  const handlePrimaryAction = async () => {
+    if (!finatic) return
+    if (allReady) {
+      await runAllMethods()
+      return
+    }
+    const openPortal = (finatic as any).openPortal
+    if (typeof openPortal === "function") {
+      try {
+        await Promise.resolve(openPortal.call(finatic, { path: "/", mode: "modal" }))
+        // Re-check auth shortly after opening portal
+        setTimeout(async () => {
+          try {
+            const res = (finatic as any).isAuthed?.()
+            const ok = res instanceof Promise ? await res : res
+            setIsAuthed(Boolean(ok))
+          } catch {
+            setIsAuthed(false)
+          }
+        }, 1000)
+      } catch (err) {
+        addLog("error", "Failed to open portal")
+      }
+    } else {
+      addLog("error", "Portal method is not available on the SDK instance")
+    }
+  }
 
   const runMethod = async (definition: MethodDefinition): Promise<MethodExecutionRecord> => {
     if (!finatic) {
@@ -385,39 +530,91 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
     <div className="flex-1 space-y-6 p-6">
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
-            {description && <p className="text-muted-foreground">{description}</p>}
+          <div className="flex items-center gap-3">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
+              {description && <p className="text-muted-foreground">{description}</p>}
+            </div>
           </div>
-          <div className="text-right text-sm text-muted-foreground">
+          <div className="text-right text-sm text-muted-foreground relative">
             <div className="flex items-center justify-end gap-2">
-              {finatic ? (
-                <Badge variant="secondary" className="bg-green-500/10 text-green-400 border-green-500/20">
-                  Ready
-                </Badge>
-              ) : isLoading ? (
-                <Badge variant="secondary" className="bg-blue-500/10 text-blue-400 border-blue-500/20">
-                  <Loader2 className="mr-1 h-3 w-3 animate-spin" /> Initializing
-                </Badge>
-              ) : (
-                <Badge variant="secondary" className="bg-red-500/10 text-red-400 border-red-500/20">
-                  Unavailable
-                </Badge>
-              )}
               <Button
-                className="ml-2 bg-primary text-primary-foreground hover:bg-primary/90"
-                onClick={() => void runAllMethods()}
+                variant="outline"
+                size="icon"
+                onClick={() => setShowInfo((prev) => !prev)}
+                className="h-8 w-8 rounded-full"
+                title="Show method coverage"
+              >
+                <Info className="h-4 w-4" />
+              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={minimizeAllGroups}
+                  className="h-8 px-2 text-xs"
+                >
+                  <Minimize2 className="mr-1 h-3 w-3" />
+                  Minimize all
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={maximizeAllGroups}
+                  className="h-8 px-2 text-xs"
+                >
+                  <Maximize2 className="mr-1 h-3 w-3" />
+                  Maximize all
+                </Button>
+              </div>
+              <Button
+                className={`ml-2 ${allReady ? "bg-green-600 hover:bg-green-600/90" : "bg-red-600 hover:bg-red-600/90"} text-primary-foreground`}
+                onClick={() => void handlePrimaryAction()}
                 disabled={!finatic || isRunningAll}
+                title={allReady ? "SDK is authenticated. Run all methods." : (!sdkReady ? "SDK not initialized" : "Not authenticated - open portal to connect")}
               >
                 {isRunningAll ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Running all
                   </>
-                ) : (
+                ) : allReady ? (
                   "Run all methods"
+                ) : (
+                  "Open portal to connect"
                 )}
               </Button>
             </div>
+            {showInfo && (
+              <div className="absolute right-0 mt-2 w-96 rounded-md border border-border bg-card p-3 text-left shadow-lg z-50">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm font-medium text-foreground">SDK method coverage</span>
+                  <Badge variant="secondary" className="text-xs">{testedMethodNames.length}/{sdkMethodNames.length} covered</Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-3 max-h-64 overflow-auto">
+                  <div>
+                    <label className="text-xs font-medium text-foreground">Tested</label>
+                    <ul className="mt-1 space-y-1">
+                      {testedMethodNames.sort().map((name) => (
+                        <li key={`tested-${name}`} className="text-xs text-muted-foreground">{name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-foreground">Not tested</label>
+                    <ul className="mt-1 space-y-1">
+                      {untestedMethodNames.sort().map((name) => (
+                        <li key={`untested-${name}`} className="text-xs text-muted-foreground">{name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+            {!allReady && (
+              <p className="text-xs text-red-400">
+                {!sdkReady ? "SDK is not ready yet" : (isAuthed === false ? "User is not authenticated - open the portal to connect" : "Evaluating authentication...")}
+              </p>
+            )}
             {error && <p className="text-xs text-red-400">{error}</p>}
           </div>
         </div>

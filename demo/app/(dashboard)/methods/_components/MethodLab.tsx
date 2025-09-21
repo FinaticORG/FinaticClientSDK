@@ -63,6 +63,18 @@ export function MethodLab() {
         },
       },
       {
+        key: "getUserId",
+        label: "Get user id",
+        description: "Returns the current user id from the SDK session.",
+        input: { type: "none" },
+      },
+      {
+        key: "isAuthed",
+        label: "Is authed?",
+        description: "Returns true when the SDK has an authenticated session.",
+        input: { type: "none" },
+      },
+      {
         key: "getSessionUser",
         label: "Get session user",
         description: "Fetches the hydrated session payload including issued tokens.",
@@ -88,6 +100,12 @@ export function MethodLab() {
           const payload = parseOptionalJson(inputValue, "portal options")
           return payload ? [payload] : []
         },
+      },
+      {
+        key: "closePortal",
+        label: "Close portal",
+        description: "Closes the hosted onboarding portal.",
+        input: { type: "none" },
       },
       {
         key: "disconnectCompany",
@@ -118,6 +136,64 @@ export function MethodLab() {
       title: "Session & Portal",
       description: "Manage authentication context and hosted portal lifecycle.",
       methods: sessionMethods,
+    })
+
+    const tradingContextMethods: MethodDefinition[] = [
+      {
+        key: "setTradingContextBroker",
+        label: "Set trading context - broker",
+        description: "Sets broker used for trading operations.",
+        methodName: "setBroker",
+        input: {
+          type: "fields",
+          fields: [
+            { name: "broker", label: "Broker id", placeholder: "tasty_trade", defaultValue: "tasty_trade" },
+          ],
+        },
+        prepareArgs: ({ fieldValues }) => {
+          const broker = fieldValues?.broker?.trim()
+          if (!broker) throw new Error("Provide a broker id")
+          return [broker]
+        },
+      },
+      {
+        key: "setTradingContextAccount",
+        label: "Set trading context - account",
+        description: "Sets account used for trading operations.",
+        methodName: "setAccount",
+        input: {
+          type: "fields",
+          fields: [
+            { name: "accountNumber", label: "Account number", placeholder: "12345", defaultValue: "12345" },
+            { name: "accountId", label: "Account id (optional)", placeholder: "uuid-optional" },
+          ],
+        },
+        prepareArgs: ({ fieldValues }) => {
+          const accountNumber = fieldValues?.accountNumber?.trim()
+          const accountId = fieldValues?.accountId?.trim()
+          if (!accountNumber) throw new Error("Provide an account number")
+          return accountId ? [accountNumber, accountId] : [accountNumber]
+        },
+      },
+      {
+        key: "getTradingContext",
+        label: "Get trading context",
+        description: "Returns current broker/account trading context.",
+        input: { type: "none" },
+      },
+      {
+        key: "clearTradingContext",
+        label: "Clear trading context",
+        description: "Clears current trading context.",
+        input: { type: "none" },
+      },
+    ]
+
+    groups.push({
+      key: "tradingContext",
+      title: "Trading context",
+      description: "Manage broker and account context for trading APIs.",
+      methods: tradingContextMethods,
     })
 
     const directoryMethods: MethodDefinition[] = [
@@ -191,7 +267,7 @@ export function MethodLab() {
           type: "fields",
           fields: [
             { name: "page", label: "Page", defaultValue: "1", type: "number" },
-            { name: "perPage", label: "Per page", defaultValue: "50", type: "number" },
+            { name: "perPage", label: "Per page", defaultValue: "1", type: "number" },
             {
               name: "filter",
               label: "Filter JSON",
@@ -201,7 +277,7 @@ export function MethodLab() {
         },
         prepareArgs: ({ fieldValues }) => {
           const page = parseNumberField(fieldValues, "page", 1, "page")
-          const perPage = parseNumberField(fieldValues, "perPage", 50, "per page")
+          const perPage = parseNumberField(fieldValues, "perPage", 1, "per page")
           const filter = parseOptionalJson(fieldValues?.filter, "filter")
           return [page, perPage, filter]
         },
@@ -287,13 +363,13 @@ export function MethodLab() {
           type: "fields",
           fields: [
             { name: "page", label: "Page", defaultValue: "1", type: "number" },
-            { name: "perPage", label: "Per page", defaultValue: "50", type: "number" },
+            { name: "perPage", label: "Per page", defaultValue: "1", type: "number" },
             { name: "filter", label: "Filter JSON", placeholder: "{\"currency\":\"USD\"}" },
           ],
         },
         prepareArgs: ({ fieldValues }) => {
           const page = parseNumberField(fieldValues, "page", 1, "page")
-          const perPage = parseNumberField(fieldValues, "perPage", 50, "per page")
+          const perPage = parseNumberField(fieldValues, "perPage", 1, "per page")
           const filter = parseOptionalJson(fieldValues?.filter, "filter")
           return [page, perPage, filter]
         },
@@ -394,7 +470,7 @@ export function MethodLab() {
         input: {
           type: "fields",
           fields: [
-            { name: "symbol", label: "Symbol", placeholder: "AAPL" },
+            { name: "symbol", label: "Symbol", placeholder: "AAPL", defaultValue: "AAPL" },
           ],
         },
         prepareArgs: ({ fieldValues }) => {
@@ -412,7 +488,7 @@ export function MethodLab() {
         input: {
           type: "fields",
           fields: [
-            { name: "brokerId", label: "Broker id", placeholder: "tasty_trade" },
+            { name: "brokerId", label: "Broker id", placeholder: "tasty_trade" , defaultValue: "tasty_trade" },
           ],
         },
         prepareArgs: ({ fieldValues }) => {
@@ -431,13 +507,13 @@ export function MethodLab() {
           type: "fields",
           fields: [
             { name: "page", label: "Page", defaultValue: "1", type: "number" },
-            { name: "perPage", label: "Per page", defaultValue: "50", type: "number" },
+            { name: "perPage", label: "Per page", defaultValue: "1", type: "number" },
             { name: "filter", label: "Filter JSON", placeholder: "{\"status\":\"pending\"}" },
           ],
         },
         prepareArgs: ({ fieldValues }) => {
           const page = parseNumberField(fieldValues, "page", 1, "page")
-          const perPage = parseNumberField(fieldValues, "perPage", 50, "per page")
+          const perPage = parseNumberField(fieldValues, "perPage", 1, "per page")
           const filter = parseOptionalJson(fieldValues?.filter, "filter")
           return [page, perPage, filter]
         },
@@ -528,7 +604,7 @@ export function MethodLab() {
         input: {
           type: "fields",
           fields: [
-            { name: "symbol", label: "Symbol", placeholder: "AAPL" },
+            { name: "symbol", label: "Symbol", placeholder: "AAPL" , defaultValue: "AAPL" },
           ],
         },
         prepareArgs: ({ fieldValues }) => {
@@ -546,7 +622,7 @@ export function MethodLab() {
         input: {
           type: "fields",
           fields: [
-            { name: "brokerId", label: "Broker id", placeholder: "tasty_trade" },
+            { name: "brokerId", label: "Broker id", placeholder: "tasty_trade" , defaultValue: "tasty_trade" },
           ],
         },
         prepareArgs: ({ fieldValues }) => {
@@ -565,7 +641,7 @@ export function MethodLab() {
           type: "fields",
           fields: [
             { name: "page", label: "Page", defaultValue: "1", type: "number" },
-            { name: "perPage", label: "Per page", defaultValue: "50", type: "number" },
+            { name: "perPage", label: "Per page", defaultValue: "1", type: "number" },
             {
               name: "filter",
               label: "Filter JSON",
@@ -575,7 +651,7 @@ export function MethodLab() {
         },
         prepareArgs: ({ fieldValues }) => {
           const page = parseNumberField(fieldValues, "page", 1, "page")
-          const perPage = parseNumberField(fieldValues, "perPage", 50, "per page")
+          const perPage = parseNumberField(fieldValues, "perPage", 1, "per page")
           const filter = parseOptionalJson(fieldValues?.filter, "filter")
           return [page, perPage, filter]
         },
@@ -638,7 +714,7 @@ export function MethodLab() {
 
   return (
     <MethodHarness
-      title="Broker method lab"
+      title="Finatic SDK Method lab"
       description="Interactive playground covering every broker data method exposed by the Finatic SDK."
       methodGroups={methodGroups}
     />
