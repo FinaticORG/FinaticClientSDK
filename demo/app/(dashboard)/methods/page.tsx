@@ -1,12 +1,12 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { BrokerMethodLab } from "@/app/(dashboard)/broker/methods/_components/BrokerMethodLab"
+import { MethodLab } from "@/app/(dashboard)/methods/_components/MethodLab"
 
-export default function BrokerMethodsPage() {
+export default function MethodsPage() {
   return (
     <div className="flex h-screen bg-background">
       <AppSidebar />
       <main className="flex-1 overflow-auto">
-        <BrokerMethodLab />
+        <MethodLab />
       </main>
     </div>
   )

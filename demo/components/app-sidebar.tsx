@@ -51,23 +51,8 @@ const navigation = [
         icon: DoorOpen,
       },
       {
-        title: "Theming System",
-        url: "/theming",
-        icon: Palette,
-      },
-      {
-        title: "Database",
-        url: "/database",
-        icon: Database,
-      },
-      {
-        title: "Broker Management",
-        url: "/broker",
-        icon: Users,
-      },
-      {
-        title: "Broker Method Lab",
-        url: "/broker/methods",
+        title: "Method Lab",
+        url: "/methods",
         icon: Grid3X3,
       },
     ],
@@ -89,6 +74,11 @@ const navigation = [
         title: "Advanced Developer",
         url: "/developer",
         icon: Code,
+      },
+      {
+        title: "Theming System",
+        url: "/theming",
+        icon: Palette,
       },
     ],
   },

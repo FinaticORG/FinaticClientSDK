@@ -6,7 +6,7 @@ import {
   MethodHarness,
   type MethodDefinition,
   type MethodGroup,
-} from "@/app/(dashboard)/broker/_components/MethodHarness"
+} from "@/app/(dashboard)/methods/_components/MethodHarness"
 
 function parseNumberField(
   values: Record<string, string> | undefined,
@@ -34,7 +34,7 @@ function parseOptionalJson(raw?: string, label?: string) {
   }
 }
 
-export function BrokerMethodLab() {
+export function MethodLab() {
   const methodGroups = useMemo<MethodGroup[]>(() => {
     const groups: MethodGroup[] = []
 
