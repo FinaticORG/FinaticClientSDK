@@ -70,11 +70,6 @@ const navigation = [
         url: "/broker/methods",
         icon: Grid3X3,
       },
-      {
-        title: "Order Execution Lab",
-        url: "/broker/orders",
-        icon: BarChart3,
-      },
     ],
   },
   {
@@ -84,6 +79,11 @@ const navigation = [
         title: "Trading",
         url: "/trading",
         icon: TrendingUp,
+      },
+      {
+        title: "Order Execution Lab",
+        url: "/broker/orders",
+        icon: BarChart3,
       },
     ],
   },

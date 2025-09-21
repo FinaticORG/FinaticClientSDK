@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Loader2, CheckCircle2, XCircle, Clock } from "lucide-react"
+import { Loader2, CheckCircle2, XCircle, Clock, ChevronDown, ChevronRight } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -89,6 +89,18 @@ export interface MethodHarnessProps {
   methodGroups: MethodGroup[]
 }
 
+function isJsonInput(
+  input: MethodDefinition["input"]
+): input is { type: "json"; defaultValue?: string; placeholder?: string } {
+  return input?.type === "json"
+}
+
+function isFieldsInput(
+  input: MethodDefinition["input"]
+): input is { type: "fields"; fields: MethodField[] } {
+  return input?.type === "fields"
+}
+
 export function MethodHarness({ title, description, methodGroups }: MethodHarnessProps) {
   const { finatic, addLog, isLoading, error } = useFinatic()
 
@@ -123,6 +135,70 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
   const [jsonValues, setJsonValues] = useState(initialJsonState)
   const [records, setRecords] = useState<Record<string, MethodExecutionRecord>>({})
   const [pagination, setPagination] = useState<Record<string, unknown>>({})
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {}
+    for (const group of methodGroups) {
+      initial[group.key] = true
+    }
+    return initial
+  })
+  const [isRunningAll, setIsRunningAll] = useState(false)
+  const [lastRunSummary, setLastRunSummary] = useState<{
+    total: number
+    succeeded: { key: string; label: string; durationMs?: number }[]
+    failed: { key: string; label: string }[]
+    averageMs?: number
+    minMs?: number
+    maxMs?: number
+  } | null>(null)
+
+  const methodKeyToGroupKey = useMemo(() => {
+    const map: Record<string, string> = {}
+    for (const group of methodGroups) {
+      for (const method of group.methods) {
+        map[method.key] = group.key
+      }
+    }
+    return map
+  }, [methodGroups])
+
+  const toggleGroup = (key: string) => {
+    setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const anchorToMethod = (methodKey: string) => {
+    const groupKey = methodKeyToGroupKey[methodKey]
+    if (groupKey) {
+      setExpandedGroups((prev) => ({ ...prev, [groupKey]: true }))
+    }
+    setTimeout(() => {
+      const el = document.getElementById(`method-${methodKey}`)
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" })
+      }
+    }, 0)
+  }
+
+  const getRunAllOrder = () => {
+    const all: MethodDefinition[] = []
+    for (const group of methodGroups) {
+      for (const method of group.methods) {
+        all.push(method)
+      }
+    }
+    // Weight methods so seed page requests run before next-page requests
+    // 0: get*Page (not Next), 1: others, 2: getNext*Page
+    const weight = (key: string) => {
+      const isNextPage = /^getNext.*Page$/i.test(key)
+      const isSeedPage = /^get.*Page$/i.test(key) && !isNextPage
+      if (isSeedPage) return 0
+      if (isNextPage) return 2
+      return 1
+    }
+    return all
+      .slice()
+      .sort((a, b) => weight(a.key) - weight(b.key))
+  }
 
   const context: HarnessContext = useMemo(
     () => ({
@@ -143,15 +219,15 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
       setPagination: (key, value) => {
         setPagination((prev) => ({ ...prev, [key]: value }))
       },
-      getPagination: (key) => pagination[key],
+      getPagination: <T = unknown>(key: string) => pagination[key] as T | undefined,
     }),
     [pagination]
   )
 
-  const runMethod = async (definition: MethodDefinition) => {
+  const runMethod = async (definition: MethodDefinition): Promise<MethodExecutionRecord> => {
     if (!finatic) {
       addLog("error", "Finatic SDK is not ready yet")
-      return
+      return { status: "error", error: "SDK not ready" }
     }
 
     const key = definition.key
@@ -194,7 +270,7 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
         )
       } else {
         const methodName = definition.methodName ?? definition.key
-        const target = (finatic as Record<string, unknown>)[methodName]
+        const target = (finatic as unknown as Record<string, unknown>)[methodName]
         if (typeof target !== "function") {
           throw new Error(`Method ${methodName} is not available on the Finatic SDK instance`)
         }
@@ -202,35 +278,69 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
       }
       const durationMs = performance.now() - startTime
 
+      const finalRecord: MethodExecutionRecord = {
+        status: "success",
+        startedAt,
+        finishedAt: new Date().toISOString(),
+        durationMs,
+        result,
+      }
       setRecords((prev) => ({
         ...prev,
-        [key]: {
-          status: "success",
-          startedAt,
-          finishedAt: new Date().toISOString(),
-          durationMs,
-          result,
-        },
+        [key]: finalRecord,
       }))
 
       definition.onSuccess?.(result, helpers)
       addLog("success", `${definition.methodName ?? definition.key} succeeded in ${durationMs.toFixed(0)}ms`)
+      return finalRecord
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error"
+      const finalRecord: MethodExecutionRecord = {
+        status: "error",
+        startedAt,
+        finishedAt: new Date().toISOString(),
+        error: message,
+      }
       setRecords((prev) => ({
         ...prev,
-        [key]: {
-          status: "error",
-          startedAt,
-          finishedAt: new Date().toISOString(),
-          error: message,
-        },
+        [key]: finalRecord,
       }))
       if (err instanceof Error) {
         definition.onError?.(err, helpers)
       }
       addLog("error", `${definition.methodName ?? definition.key} failed: ${message}`)
+      return finalRecord
     }
+  }
+
+  const runAllMethods = async () => {
+    if (isRunningAll) return
+    setIsRunningAll(true)
+    setLastRunSummary(null)
+    const order = getRunAllOrder()
+    const succeeded: { key: string; label: string; durationMs?: number }[] = []
+    const failed: { key: string; label: string }[] = []
+    for (const method of order) {
+      const record = await runMethod(method)
+      if (record.status === "success") {
+        succeeded.push({ key: method.key, label: method.label, durationMs: record.durationMs })
+      } else {
+        failed.push({ key: method.key, label: method.label })
+      }
+    }
+    const durations = succeeded.map((r) => r.durationMs ?? 0)
+    const averageMs = durations.length ? durations.reduce((a, b) => a + b, 0) / durations.length : undefined
+    const minMs = durations.length ? Math.min(...durations) : undefined
+    const maxMs = durations.length ? Math.max(...durations) : undefined
+    setLastRunSummary({
+      total: order.length,
+      succeeded,
+      failed,
+      averageMs,
+      minMs,
+      maxMs,
+    })
+    setIsRunningAll(false)
   }
 
   const renderStatusBadge = (record?: MethodExecutionRecord) => {
@@ -294,6 +404,19 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
                   Unavailable
                 </Badge>
               )}
+              <Button
+                className="ml-2 bg-primary text-primary-foreground hover:bg-primary/90"
+                onClick={() => void runAllMethods()}
+                disabled={!finatic || isRunningAll}
+              >
+                {isRunningAll ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Running all
+                  </>
+                ) : (
+                  "Run all methods"
+                )}
+              </Button>
             </div>
             {error && <p className="text-xs text-red-400">{error}</p>}
           </div>
@@ -301,15 +424,98 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
         <Separator className="bg-border" />
       </div>
 
+      {lastRunSummary && (
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg text-foreground">Run summary</CardTitle>
+              <div className="text-xs text-muted-foreground">
+                <span className="mr-3">Total: {lastRunSummary.total}</span>
+                <span className="mr-3 text-green-400">Succeeded: {lastRunSummary.succeeded.length}</span>
+                <span className="text-red-400">Failed: {lastRunSummary.failed.length}</span>
+              </div>
+            </div>
+            <CardDescription className="text-sm text-muted-foreground">
+              {lastRunSummary.averageMs != null && (
+                <span className="mr-3">Avg: {Math.round(lastRunSummary.averageMs)}ms</span>
+              )}
+              {lastRunSummary.minMs != null && (
+                <span className="mr-3">Min: {Math.round(lastRunSummary.minMs)}ms</span>
+              )}
+              {lastRunSummary.maxMs != null && (
+                <span>Max: {Math.round(lastRunSummary.maxMs)}ms</span>
+              )}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0">
+            {lastRunSummary.succeeded.length > 0 && (
+              <div className="space-y-2 mb-4">
+                <label className="text-sm font-medium text-foreground">Succeeded methods</label>
+                <div className="flex flex-wrap gap-2">
+                  {lastRunSummary.succeeded.map((m) => (
+                    <Button
+                      key={m.key}
+                      variant="secondary"
+                      className="h-7 px-2 py-0 text-xs bg-green-500/15 text-green-400 border border-green-500/20 hover:bg-green-500/25"
+                      onClick={() => anchorToMethod(m.key)}
+                    >
+                      {m.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {lastRunSummary.failed.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Failed methods</label>
+                <div className="flex flex-wrap gap-2">
+                  {lastRunSummary.failed.map((m) => (
+                    <Button
+                      key={m.key}
+                      variant="destructive"
+                      className="h-7 px-2 py-0 text-xs"
+                      onClick={() => anchorToMethod(m.key)}
+                    >
+                      {m.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <div className="space-y-8">
         {methodGroups.map((group) => (
           <section key={group.key} className="space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">{group.title}</h2>
-              {group.description && <p className="text-sm text-muted-foreground">{group.description}</p>}
-            </div>
-            <div className="grid gap-4 lg:grid-cols-2">
-              {group.methods.map((method) => {
+            <Card className="bg-card border-border">
+              <CardHeader
+                onClick={() => toggleGroup(group.key)}
+                className="cursor-pointer select-none"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <CardTitle className="text-xl text-foreground">{group.title}</CardTitle>
+                    {group.description && (
+                      <CardDescription className="text-sm text-muted-foreground">
+                        {group.description}
+                      </CardDescription>
+                    )}
+                  </div>
+                  <span className="text-muted-foreground">
+                    {expandedGroups[group.key] ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </span>
+                </div>
+              </CardHeader>
+              {expandedGroups[group.key] && (
+                <CardContent id={`group-${group.key}`} className="pt-0">
+                  <div className="grid gap-4 lg:grid-cols-2">
+                  {group.methods.map((method) => {
                 const record = records[method.key]
                 const inputType = method.input?.type ?? "none"
 
@@ -329,7 +535,7 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
                 }
 
                 return (
-                  <Card key={method.key} className="bg-card border-border">
+                  <Card key={method.key} id={`method-${method.key}`} className="bg-card border-border">
                     <CardHeader>
                       <div className="flex items-start justify-between gap-2">
                         <div>
@@ -352,7 +558,7 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {inputType === "json" && (
+                      {isJsonInput(method.input) && (
                         <div className="space-y-2">
                           <label className="text-sm font-medium text-foreground">Payload</label>
                           <Textarea
@@ -361,15 +567,15 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
                               const value = event.target.value
                               setJsonValues((prev) => ({ ...prev, [method.key]: value }))
                             }}
-                            placeholder={method.input?.placeholder ?? "{\n  \"example\": true\n}"}
+                            placeholder={method.input.placeholder ?? "{\n  \"example\": true\n}"}
                             className="min-h-[160px] font-mono text-xs bg-muted/30 border-border"
                           />
                         </div>
                       )}
 
-                      {inputType === "fields" && method.input?.fields.length ? (
+                      {isFieldsInput(method.input) && method.input.fields.length ? (
                         <div className="space-y-3">
-                          {method.input.fields.map((field) => (
+                          {method.input.fields.map((field: MethodField) => (
                             <div key={field.name} className="space-y-1">
                               <label className="text-sm font-medium text-foreground">{field.label}</label>
                               <Input
@@ -436,8 +642,11 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
                     </CardContent>
                   </Card>
                 )
-              })}
-            </div>
+                  })}
+                  </div>
+                </CardContent>
+              )}
+            </Card>
           </section>
         ))}
       </div>
