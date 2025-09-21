@@ -1,0 +1,29 @@
+---
+globs: demo-app/app/**
+alwaysApply: false
+---
+## Naming Conventions
+
+- **React components**: PascalCase (e.g., `AuthenticationPortal`, `EnvironmentSettings`)
+- **Page components**: default export, PascalCase, end with `Page` (e.g., `AuthPage`)
+- **File names**: match exported component in PascalCase (e.g., `AuthenticationPage.tsx`, `EnvironmentSettings.tsx`)
+- **Directories**: kebab-case or Next.js conventions
+  - Feature components live in `_components/` under their page folder
+- **Functions/variables**: camelCase
+- **Constants/enums**: UPPER_SNAKE_CASE
+- **Absolute imports only**: use `@/*` alias, never relative `../../..`
+- **Icons/third-party**: import from package root and use PascalCase in JSX
+
+## Examples
+
+```1:4:/workspaces/Finatic/codebases/Frontend/FinaticClientSDK/demo-app/app/(dashboard)/methods/page.tsx
+import { AppSidebar } from "@/components/app-sidebar"
+import { MethodLab } from "@/app/(dashboard)/methods/_components/MethodLab"
+
+export default function MethodsPage() {
+```
+
+```1:4:/workspaces/Finatic/codebases/Frontend/FinaticClientSDK/demo-app/app/(dashboard)/auth/page.tsx
+import { AppSidebar } from "@/components/app-sidebar"
+import { AuthenticationPortal } from "@/app/(dashboard)/auth/_components/AuthenticationPage"
+```

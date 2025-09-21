@@ -6,7 +6,7 @@ import { MockFactory } from '../../mocks/MockFactory';
 import { PaginatedResult } from '../../types/common/pagination';
 import { UserToken, SessionState } from '../../types/api/auth';
 import { Order, OrderResponse, TradingContext } from '../../types/api/orders';
-import { 
+import {
   BrokerDataOptions,
   BrokerAccount,
   BrokerOrder,
@@ -232,7 +232,6 @@ export class FinaticConnect extends EventEmitter {
     return this.getBalancesPage(page, perPage, filter);
   }
 
-
   /**
    * Initialize the Finatic Connect SDK
    * @param token - The portal token from your backend
@@ -289,7 +288,7 @@ export class FinaticConnect extends EventEmitter {
       );
       FinaticConnect.instance.sessionId = startResponse.data.session_id;
       FinaticConnect.instance.companyId = startResponse.data.company_id || '';
-      
+
       // Record session start time for automatic refresh
       FinaticConnect.instance.sessionStartTime = Date.now();
 
@@ -374,7 +373,7 @@ export class FinaticConnect extends EventEmitter {
       expires_in: this.userToken.expiresIn,
       token_type: this.userToken.tokenType,
       scope: this.userToken.scope,
-      company_id: this.companyId
+      company_id: this.companyId,
     };
   }
 
@@ -461,7 +460,7 @@ export class FinaticConnect extends EventEmitter {
 
       // Apply theme to portal URL if provided
       let themedPortalUrl = appendThemeToURL(portalResponse.data.portal_url, options?.theme);
-      
+
       // Apply broker filter to portal URL if provided
       themedPortalUrl = appendBrokerFilterToURL(themedPortalUrl, options?.brokers);
 
@@ -484,24 +483,6 @@ export class FinaticConnect extends EventEmitter {
             if (!this.sessionId) {
               throw new SessionError('Session not initialized');
             }
-
-            // Get tokens from portal UI
-            const userToken = this.portalUI.getTokens();
-            if (!userToken) {
-              throw new Error('No tokens received from portal');
-            }
-
-            // Set the tokens internally
-            this.userToken = userToken;
-
-            // Set tokens in ApiClient for automatic token management
-            const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString(); // 1 hour from now
-            this.apiClient.setTokens(
-              userToken.accessToken,
-              userToken.refreshToken,
-              expiresAt,
-              userId
-            );
 
             // Emit portal success event
             this.emit('portal:success', userId);
@@ -641,7 +622,12 @@ export class FinaticConnect extends EventEmitter {
         order_id: order.order_id,
       };
 
-      return await this.apiClient.placeBrokerOrder(this.userToken!.accessToken, brokerOrder, {}, order.connection_id);
+      return await this.apiClient.placeBrokerOrder(
+        this.userToken!.accessToken,
+        brokerOrder,
+        {},
+        order.connection_id
+      );
     } catch (error) {
       this.emit('error', error as Error);
       throw error;
@@ -704,12 +690,24 @@ export class FinaticConnect extends EventEmitter {
       if (modifications.quantity) brokerModifications.orderQty = modifications.quantity;
       if (modifications.price) brokerModifications.price = modifications.price;
       if (modifications.stopPrice) brokerModifications.stopPrice = modifications.stopPrice;
-      if (modifications.timeInForce) brokerModifications.timeInForce = modifications.timeInForce as 'day' | 'gtc' | 'gtd' | 'ioc' | 'fok';
+      if (modifications.timeInForce)
+        brokerModifications.timeInForce = modifications.timeInForce as
+          | 'day'
+          | 'gtc'
+          | 'gtd'
+          | 'ioc'
+          | 'fok';
       if (modifications.orderType) brokerModifications.orderType = modifications.orderType;
       if (modifications.side) brokerModifications.action = modifications.side;
       if (modifications.order_id) brokerModifications.order_id = modifications.order_id;
 
-      return await this.apiClient.modifyBrokerOrder(orderId, brokerModifications, broker, {}, connection_id);
+      return await this.apiClient.modifyBrokerOrder(
+        orderId,
+        brokerModifications,
+        broker,
+        {},
+        connection_id
+      );
     } catch (error) {
       this.emit('error', error as Error);
       throw error;
@@ -720,7 +718,9 @@ export class FinaticConnect extends EventEmitter {
    * Set the broker context for trading
    * @param broker - The broker to use for trading
    */
-  public setBroker(broker: 'robinhood' | 'tasty_trade' | 'ninja_trader'): void {
+  public setTradingContextBroker(
+    broker: 'robinhood' | 'tasty_trade' | 'ninja_trader' | 'interactive_brokers' | 'tradestation'
+  ): void {
     this.apiClient.setBroker(broker);
   }
 
@@ -729,7 +729,7 @@ export class FinaticConnect extends EventEmitter {
    * @param accountNumber - The account number to use for trading
    * @param accountId - Optional account ID
    */
-  public setAccount(accountNumber: string, accountId?: string): void {
+  public setTradingContextAccount(accountNumber: string, accountId?: string): void {
     this.apiClient.setAccount(accountNumber, accountId);
   }
 
@@ -1020,37 +1020,6 @@ export class FinaticConnect extends EventEmitter {
   }
 
   /**
-   * Set the broker context for trading operations
-   * @param broker - The broker to set as context
-   */
-  public setBroker(broker: string): void {
-    this.apiClient.setBroker(broker);
-  }
-
-  /**
-   * Set the account context for trading operations
-   * @param accountNumber - The account number to set as context
-   */
-  public setAccount(accountNumber: string): void {
-    this.apiClient.setAccount(accountNumber);
-  }
-
-  /**
-   * Get the current trading context
-   * @returns Object with current broker and account context
-   */
-  public getTradingContext(): { broker?: string; accountNumber?: string } {
-    return this.apiClient.getTradingContext();
-  }
-
-  /**
-   * Clear the trading context
-   */
-  public clearTradingContext(): void {
-    this.apiClient.clearTradingContext();
-  }
-
-  /**
    * Get the current user ID
    * @returns The current user ID or undefined if not authenticated
    * @throws AuthenticationError if user is not authenticated
@@ -1070,9 +1039,9 @@ export class FinaticConnect extends EventEmitter {
    * @returns Promise with array of broker information
    */
   public async getBrokerList(): Promise<BrokerInfo[]> {
-    if (!this.isAuthed()) {
-      throw new AuthenticationError('Not authenticated');
-    }
+    // if (!this.isAuthed()) {
+    //   throw new AuthenticationError('Not authenticated');
+    // }
 
     const response = await this.apiClient.getBrokerList();
     const baseUrl = this.baseUrl.replace('/api/v1', ''); // Remove /api/v1 to get the base URL
@@ -1453,13 +1422,13 @@ export class FinaticConnect extends EventEmitter {
 
     try {
       console.log('[FinaticConnect] Validating session for keep-alive...');
-      
+
       // Check if we need to refresh the session (at 16 hours)
       if (this.shouldRefreshSession()) {
         await this.refreshSessionAutomatically();
         return;
       }
-      
+
       // Session keep-alive - assume session is active if we have a session ID
       console.log('[FinaticConnect] Session keep-alive successful');
       this.currentSessionState = 'active';
@@ -1479,17 +1448,19 @@ export class FinaticConnect extends EventEmitter {
 
     const sessionAgeHours = (Date.now() - this.sessionStartTime) / (1000 * 60 * 60);
     const hoursUntilRefresh = this.SESSION_REFRESH_BUFFER_HOURS - sessionAgeHours;
-    
+
     if (hoursUntilRefresh <= 0) {
-      console.log(`[FinaticConnect] Session is ${sessionAgeHours.toFixed(1)} hours old - triggering refresh`);
+      console.log(
+        `[FinaticConnect] Session is ${sessionAgeHours.toFixed(1)} hours old - triggering refresh`
+      );
       return true;
     }
-    
+
     // Log when refresh will occur (every 5 minutes during keep-alive)
     if (hoursUntilRefresh <= 1) {
       console.log(`[FinaticConnect] Session will refresh in ${hoursUntilRefresh.toFixed(1)} hours`);
     }
-    
+
     return false;
   }
 
@@ -1505,12 +1476,12 @@ export class FinaticConnect extends EventEmitter {
     try {
       console.log('[FinaticConnect] Automatically refreshing session (16+ hours old)...');
       const response = await this.apiClient.refreshSession();
-      
+
       if (response.success) {
         console.log('[FinaticConnect] Session automatically refreshed successfully');
         console.log('[FinaticConnect] New session expires at:', response.response_data.expires_at);
         this.currentSessionState = response.response_data.status;
-        
+
         // Update session start time to prevent immediate re-refresh
         this.sessionStartTime = Date.now();
       } else {
@@ -1540,7 +1511,7 @@ export class FinaticConnect extends EventEmitter {
     // For 24-hour sessions, we don't want to complete sessions on visibility changes
     // This prevents sessions from being closed when users switch tabs or apps
     console.log('[FinaticConnect] Page visibility changed to:', document.visibilityState);
-    
+
     // Only pause keep-alive when hidden, but don't complete the session
     if (document.visibilityState === 'hidden') {
       this.stopSessionKeepAlive();
