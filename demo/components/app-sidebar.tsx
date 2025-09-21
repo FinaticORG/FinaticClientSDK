@@ -80,11 +80,6 @@ const navigation = [
         url: "/trading",
         icon: TrendingUp,
       },
-      {
-        title: "Order Execution Lab",
-        url: "/broker/orders",
-        icon: BarChart3,
-      },
     ],
   },
   {
