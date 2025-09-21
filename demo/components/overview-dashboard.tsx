@@ -24,7 +24,7 @@ const quickActions = [
     color: "text-green-400",
   },
   {
-    title: "Trading Context",
+    title: "Trading",
     description: "Set up trading algorithms and contexts",
     icon: TrendingUp,
     href: "/trading",

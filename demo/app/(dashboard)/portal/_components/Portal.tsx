@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { CheckCircle2, CircleX, Mail, Trash2, DoorOpen, RefreshCw, ChevronDown } from "lucide-react"
+import { CheckCircle2, CircleX, Mail, Trash2, DoorOpen, RefreshCw, ChevronDown, Palette } from "lucide-react"
 import type { BrokerInfo } from "@/../src/types/api/broker"
 
 type PortalEvent = { type: string; data: unknown; timestamp: string }
@@ -22,6 +22,7 @@ export default function Portal(): JSX.Element {
   const [portalEvents, setPortalEvents] = useState<PortalEvent[]>([])
   const [selectedBrokers, setSelectedBrokers] = useState<string[]>([])
   const [emailParam, setEmailParam] = useState<string>("")
+  const [themePreset, setThemePreset] = useState<string>("")
   const [availableBrokers, setAvailableBrokers] = useState<BrokerInfo[] | null>(null)
   const [brokersError, setBrokersError] = useState<string>("")
   const [brokersLoading, setBrokersLoading] = useState<boolean>(false)
@@ -146,6 +147,10 @@ export default function Portal(): JSX.Element {
         options.email = emailParam.trim()
         addLog("info", `Opening portal with email prefill: ${emailParam.trim()}`)
       }
+      if (themePreset.trim()) {
+        options.theme = { preset: themePreset.trim() }
+        addLog("info", `Opening portal with theme preset: ${themePreset.trim()}`)
+      }
 
       await finatic.openPortal({
         ...options,
@@ -176,7 +181,7 @@ export default function Portal(): JSX.Element {
       setPortalError(err?.message || "Unknown error")
       addLog("error", err?.message || "Unknown error")
     }
-  }, [finatic, addLog, brokerFilter, emailParam, setStoredUserId, appendEvent])
+  }, [finatic, addLog, brokerFilter, emailParam, themePreset, setStoredUserId, appendEvent])
 
   return (
     <div className="flex flex-col gap-6">
@@ -212,7 +217,7 @@ export default function Portal(): JSX.Element {
         </CardHeader>
         {optionsOpen ? (
         <CardContent className="grid gap-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email" className="gap-2">
                 <Mail className="size-4" /> Email prefill (optional)
@@ -230,6 +235,29 @@ export default function Portal(): JSX.Element {
                   size="icon"
                   onClick={() => setEmailParam("")}
                   aria-label="Clear email prefill"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="theme" className="gap-2">
+                <Palette className="size-4" /> Theme preset (optional)
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id="theme"
+                  type="text"
+                  placeholder="corporateBlue"
+                  value={themePreset}
+                  onChange={(e) => setThemePreset(e.target.value)}
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setThemePreset("")}
+                  aria-label="Clear theme preset"
                 >
                   <Trash2 className="size-4" />
                 </Button>

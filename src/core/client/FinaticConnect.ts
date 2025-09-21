@@ -718,7 +718,9 @@ export class FinaticConnect extends EventEmitter {
    * Set the broker context for trading
    * @param broker - The broker to use for trading
    */
-  public setBroker(broker: 'robinhood' | 'tasty_trade' | 'ninja_trader'): void {
+  public setTradingContextBroker(
+    broker: 'robinhood' | 'tasty_trade' | 'ninja_trader' | 'interactive_brokers' | 'tradestation'
+  ): void {
     this.apiClient.setBroker(broker);
   }
 
@@ -727,7 +729,7 @@ export class FinaticConnect extends EventEmitter {
    * @param accountNumber - The account number to use for trading
    * @param accountId - Optional account ID
    */
-  public setAccount(accountNumber: string, accountId?: string): void {
+  public setTradingContextAccount(accountNumber: string, accountId?: string): void {
     this.apiClient.setAccount(accountNumber, accountId);
   }
 
@@ -1015,37 +1017,6 @@ export class FinaticConnect extends EventEmitter {
       this.emit('error', error as Error);
       throw error;
     }
-  }
-
-  /**
-   * Set the broker context for trading operations
-   * @param broker - The broker to set as context
-   */
-  public setBroker(broker: string): void {
-    this.apiClient.setBroker(broker);
-  }
-
-  /**
-   * Set the account context for trading operations
-   * @param accountNumber - The account number to set as context
-   */
-  public setAccount(accountNumber: string): void {
-    this.apiClient.setAccount(accountNumber);
-  }
-
-  /**
-   * Get the current trading context
-   * @returns Object with current broker and account context
-   */
-  public getTradingContext(): { broker?: string; accountNumber?: string } {
-    return this.apiClient.getTradingContext();
-  }
-
-  /**
-   * Clear the trading context
-   */
-  public clearTradingContext(): void {
-    this.apiClient.clearTradingContext();
   }
 
   /**

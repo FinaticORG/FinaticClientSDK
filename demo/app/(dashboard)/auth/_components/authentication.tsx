@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { CheckCircle, AlertTriangle, RefreshCw, User, Shield } from "lucide-react"
+import { CheckCircle, AlertTriangle, RefreshCw, User, Shield, Trash2 } from "lucide-react"
 import { useMemo, useState } from "react"
 import { useFinatic } from "@/app/providers/FinaticProvider"
 
 export function AuthenticationPortal() {
-  const { finatic, isLoading, error, isMockMode, sessionInfo, logs, addLog, reinitialize, storedUserId, setStoredUserId, clearStoredUserId } = useFinatic()
+  const { finatic, isLoading, error, isMockMode, sessionInfo, logs, addLog, reinitialize, storedUserId, setStoredUserId, clearStoredUserId, clearLogs } = useFinatic()
   const [userIdInput, setUserIdInput] = useState("")
   const [isAuthedStatus, setIsAuthedStatus] = useState<boolean | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
@@ -75,6 +75,11 @@ export function AuthenticationPortal() {
     await reinitialize()
     setIsAuthedStatus(null)
     setCurrentUserId(null)
+  }
+
+  const handleClearLogs = () => {
+    addLog("info", "Clearing logs")
+    clearLogs()
   }
 
   return (
@@ -171,8 +176,22 @@ export function AuthenticationPortal() {
 
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-foreground">Logs</CardTitle>
-          <CardDescription className="text-muted-foreground">SDK initialization and actions</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-foreground">Logs</CardTitle>
+              <CardDescription className="text-muted-foreground">SDK initialization and actions</CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClearLogs}
+              disabled={logs.length === 0}
+              className="border-border hover:bg-destructive/10 hover:border-destructive/20"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Clear
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="max-h-64 overflow-auto space-y-1 text-sm">

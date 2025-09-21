@@ -53,6 +53,7 @@ interface FinaticContextValue {
   sessionInfo: string;
   logs: LogEntry[];
   addLog: (type: LogEntry['type'], message: string) => void;
+  clearLogs: () => void;
   reinitialize: () => Promise<void>;
   storedUserId: string | null;
   setStoredUserId: (userId: string) => void;
@@ -110,6 +111,10 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       ...prev,
       { type, message, timestamp: new Date().toLocaleTimeString() },
     ]);
+  }, []);
+
+  const clearLogs = useCallback(() => {
+    setLogs([]);
   }, []);
 
   const getStoredUserId = useCallback((): string | null => {
@@ -532,13 +537,14 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     sessionInfo,
     logs,
     addLog,
+    clearLogs,
     reinitialize: initializeSDK,
     storedUserId,
     setStoredUserId,
     clearStoredUserId,
     usage,
     clearUsage,
-  }), [finatic, isLoading, error, isMockMode, sessionInfo, logs, addLog, initializeSDK, storedUserId, setStoredUserId, clearStoredUserId, usage, clearUsage]);
+  }), [finatic, isLoading, error, isMockMode, sessionInfo, logs, addLog, clearLogs, initializeSDK, storedUserId, setStoredUserId, clearStoredUserId, usage, clearUsage]);
 
   return (
     <FinaticContext.Provider value={value}>{children}</FinaticContext.Provider>
