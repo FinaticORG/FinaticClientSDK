@@ -1,14 +1,20 @@
 import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 async function handleRequest(request: Request) {
   try {
     // Log all headers for debugging
     console.log('Request headers:', Object.fromEntries(request.headers.entries()));
 
+    console.log('Request headers:', Object.fromEntries(request.headers.entries()));
+
     // Check if mock mode is enabled
     const isMockMode = process.env.NEXT_PUBLIC_FINATIC_USE_MOCKS === 'true';
 
+
     if (isMockMode) {
+      console.log('🔧 Mock mode enabled - returning mock token');
+
       console.log('🔧 Mock mode enabled - returning mock token');
 
       // Return mock session init response (matching production format)
@@ -20,6 +26,7 @@ async function handleRequest(request: Request) {
           expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes from now
         },
       };
+
 
       return NextResponse.json(mockResponse);
     }
