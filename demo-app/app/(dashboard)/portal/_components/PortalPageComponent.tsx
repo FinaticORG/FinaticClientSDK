@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CheckCircle2, CircleX, Mail, Trash2, DoorOpen, RefreshCw, ChevronDown, Palette } from "lucide-react"
 import type { BrokerInfo } from "@/../src/types/api/broker"
-import { THEME_PRESETS } from "@/../../FinaticConnect/src/utils/themePresets"
+import { portalThemePresets } from "@/../src/themes/portalPresets"
 
 type PortalEvent = { type: string; data: unknown; timestamp: string }
 
@@ -130,7 +130,7 @@ export default function PortalPageComponent(): JSX.Element {
   }, [finatic])
 
   const brokerFilter: string[] = useMemo(() => selectedBrokers, [selectedBrokers])
-  const themeOptions = useMemo(() => Object.keys(THEME_PRESETS), [])
+  const themeOptions = useMemo(() => Object.keys(portalThemePresets), [])
 
   const handleOpenPortal = useCallback(async () => {
     if (!finatic) return
