@@ -319,13 +319,10 @@ export class MockApiClient {
     return this.mockDataProvider.mockGetOrders(filter);
   }
 
-
   async placeOrder(order: BrokerOrderParams): Promise<void> {
     const accessToken = await this.getValidAccessToken();
     await this.mockDataProvider.mockPlaceOrder(order);
   }
-
-
 
   // Enhanced Trading Methods with Session Management
   async placeBrokerOrder(
@@ -340,7 +337,7 @@ export class MockApiClient {
     connection_id?: string
   ): Promise<OrderResponse> {
     const accessToken = await this.getValidAccessToken();
-    
+
     // Debug logging
     console.log('MockApiClient.placeBrokerOrder Debug:', {
       params,
@@ -348,9 +345,9 @@ export class MockApiClient {
       paramsBroker: params.broker,
       contextBroker: this.tradingContext.broker,
       paramsAccountNumber: params.accountNumber,
-      contextAccountNumber: this.tradingContext.accountNumber
+      contextAccountNumber: this.tradingContext.accountNumber,
     });
-    
+
     const fullParams: BrokerOrderParams = {
       broker:
         ((params.broker || this.tradingContext.broker) as
@@ -433,7 +430,7 @@ export class MockApiClient {
     console.log('MockApiClient.setAccount Debug:', {
       accountNumber,
       accountId,
-      previousContext: { ...this.tradingContext }
+      previousContext: { ...this.tradingContext },
     });
     this.tradingContext.accountNumber = accountNumber;
     this.tradingContext.accountId = accountId;
@@ -698,7 +695,6 @@ export class MockApiClient {
     );
   }
 
-
   async getUserToken(sessionId: string): Promise<UserToken> {
     const token = this.mockDataProvider.getUserToken(sessionId);
     if (!token) {
@@ -720,13 +716,11 @@ export class MockApiClient {
     warnings: null;
     errors: null;
   }> {
-    const accessToken = await this.getValidAccessToken();
+    // Public in mock mode as well - no auth required
     return this.mockDataProvider.mockGetBrokerList();
   }
 
-  async getBrokerAccounts(
-    options?: BrokerDataOptions
-  ): Promise<{
+  async getBrokerAccounts(options?: BrokerDataOptions): Promise<{
     _id: string;
     response_data: BrokerAccount[];
     message: string;
@@ -738,9 +732,7 @@ export class MockApiClient {
     return this.mockDataProvider.mockGetBrokerAccounts();
   }
 
-  async getBrokerOrders(
-    options?: BrokerDataOptions
-  ): Promise<{
+  async getBrokerOrders(options?: BrokerDataOptions): Promise<{
     _id: string;
     response_data: BrokerOrder[];
     message: string;
@@ -760,9 +752,7 @@ export class MockApiClient {
     };
   }
 
-  async getBrokerPositions(
-    options?: BrokerDataOptions
-  ): Promise<{
+  async getBrokerPositions(options?: BrokerDataOptions): Promise<{
     _id: string;
     response_data: BrokerPosition[];
     message: string;
@@ -793,9 +783,7 @@ export class MockApiClient {
     return this.mockDataProvider.mockGetBrokerPositions(filter);
   }
 
-  async getBrokerBalancesWithFilter(
-    filter?: BalancesFilter
-  ): Promise<{ data: BrokerBalance[] }> {
+  async getBrokerBalancesWithFilter(filter?: BalancesFilter): Promise<{ data: BrokerBalance[] }> {
     return this.mockDataProvider.mockGetBrokerBalances(filter);
   }
 

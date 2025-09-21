@@ -1,0 +1,58 @@
+---
+globs: demo-app/app/(dashboard)/**
+alwaysApply: false
+---
+## Add a New Dashboard Page
+
+- Create both files:
+  - `demo-app/app/(dashboard)/<route>/page.tsx`
+  - `demo-app/app/(dashboard)/<route>/_components/<FeaturePageComponent>.tsx`
+- Use PascalCase for React components. Default export in `page.tsx` is `<Feature>PageComponent`.
+- Import only via absolute alias `@/*`.
+- Compose the page with `AppSidebar` and render the feature component in `main`.
+
+### Template
+
+```tsx
+// demo-app/app/(dashboard)/<route>/page.tsx
+import { AppSidebar } from "@/components/app-sidebar"
+import { <FeaturePageComponent> } from "@/app/(dashboard)/<route>/_components/<FeaturePageComponent>"
+
+export default function <Feature>Page() {
+  return (
+    <div className="flex h-screen bg-background">
+      <AppSidebar />
+      <main className="flex-1 overflow-auto">
+        <<FeaturePageComponent> />
+      </main>
+    </div>
+  )
+}
+```
+
+```tsx
+// demo-app/app/(dashboard)/<route>/_components/<FeaturePageComponent>.tsx
+"use client"
+
+export function <FeaturePageComponent>() {
+  return (
+    <div className="p-6">{/* content */}</div>
+  )
+}
+```
+
+### Example: Settings
+
+- `demo-app/app/(dashboard)/settings/page.tsx` uses `SettingsPageComponent` from `_components`.
+- If adding a new Settings shell page, include:
+  - `demo-app/app/(dashboard)/settings/page.tsx`
+  - `demo-app/app/(dashboard)/settings/_components/SettingsPageComponent.tsx`
+
+### Sidebar
+
+- To expose a new route, add to `demo-app/components/app-sidebar.tsx` navigation.
+
+### Do/Don't
+
+- Do: PascalCase components, absolute imports, colocate feature components in `_components`.
+- Don't: Use relative imports, snake_case component names, or place feature UI outside its page folder.
