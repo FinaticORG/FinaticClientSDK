@@ -16,6 +16,8 @@ export interface SessionResponseData {
   company_id: string; // ID of the company this session is for
   status: 'pending'; // Always starts as pending
   expires_at: string; // ISO datetime when session expires
+  is_sandbox: boolean; // Whether this session is in sandbox mode
+  environment: string; // Environment context (production or sandbox)
 }
 
 export interface SessionStartResponse {
@@ -55,6 +57,8 @@ export interface SessionValidationResponse {
   valid: boolean;
   company_id: string;
   status: string;
+  is_sandbox: boolean; // Whether this session is in sandbox mode
+  environment: string; // Environment context (production or sandbox)
 }
 
 export interface SessionAuthenticateResponse {
@@ -105,6 +109,8 @@ export interface SessionResponse {
     expires_in?: number;
     token_type?: string;
     scope?: string;
+    is_sandbox?: boolean; // Whether this session is in sandbox mode
+    environment?: string; // Environment context (production or sandbox)
   };
   message: string;
 }
