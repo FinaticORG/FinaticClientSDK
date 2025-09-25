@@ -40,7 +40,7 @@ export interface PortalMessage {
 
 export interface PortalOptions {
   /** Callback when user successfully connects */
-  onSuccess?: (userId: string) => void;
+  onSuccess?: (userId: string, tokens?: { access_token?: string; refresh_token?: string }) => void;
   /** Callback when an error occurs */
   onError?: (error: Error) => void;
   /** Callback when the portal is closed */

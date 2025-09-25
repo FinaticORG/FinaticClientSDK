@@ -478,10 +478,15 @@ export class FinaticConnect extends EventEmitter {
 
       // Show portal
       this.portalUI.show(themedPortalUrl, this.sessionId || '', {
-        onSuccess: async (userId: string) => {
+        onSuccess: async (userId: string, tokens?: { access_token?: string; refresh_token?: string }) => {
           try {
             if (!this.sessionId) {
               throw new SessionError('Session not initialized');
+            }
+
+            // Handle tokens if provided
+            if (tokens?.access_token && tokens?.refresh_token) {
+              this.handleTokens(tokens);
             }
 
             // Emit portal success event
