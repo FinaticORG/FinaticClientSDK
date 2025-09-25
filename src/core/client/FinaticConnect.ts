@@ -1,7 +1,7 @@
 import { EventEmitter } from '../../utils/events';
 import { ApiClient } from './ApiClient';
 import { PortalUI } from '../portal/PortalUI';
-import { SessionError, AuthenticationError, CompanyAccessError } from '../../utils/errors';
+import { SessionError, AuthenticationError, CompanyAccessError, ApiError, ValidationError } from '../../utils/errors';
 import { MockFactory } from '../../mocks/MockFactory';
 import { PaginatedResult } from '../../types/common/pagination';
 import { UserToken, SessionState } from '../../types/api/auth';
@@ -1609,6 +1609,75 @@ export class FinaticConnect extends EventEmitter {
     } catch (error) {
       this.emit('error', error as Error);
       throw error;
+    }
+  }
+
+  /**
+   * Send a test webhook for the specified event type.
+   * 
+   * @param eventType Event type to test (e.g., 'order:filled', 'connection:needs_reauth')
+   * @param sampleData Optional custom sample data to include in the webhook
+   * @returns Promise containing test webhook response with success status, endpoints that received the webhook, and the webhook payload
+   * @throws {AuthenticationError} If not authenticated
+   * @throws {ApiError} If the API request fails
+   * @throws {ValidationError} If the event type is invalid or not subscribed to
+   * 
+   * @example
+   * ```typescript
+   * // Test an order filled event
+   * const response = await finaticConnect.testWebhook("order:filled");
+   * console.log(`Sent to ${response.sent_to_endpoints.length} endpoints`);
+   * 
+   * // Test with custom sample data
+   * const customData = {
+   *   new: {
+   *     id: "custom-order-123",
+   *     symbol: "TSLA",
+   *     quantity: 50,
+   *     status: "filled",
+   *     price: 200.50
+   *   }
+   * };
+   * const response = await finaticConnect.testWebhook("order:filled", customData);
+   * ```
+   */
+  public async testWebhook(
+    eventType: string, 
+    sampleData?: Record<string, any>
+      ): Promise<{
+        success: boolean;
+        message: string;
+        sent_to_endpoints: string[];
+        failed_endpoints: string[];
+        webhook_payload: Record<string, any>;
+      }> {
+    if (!this.isAuthed()) {
+      throw new AuthenticationError('User is not authenticated');
+    }
+
+    if (!this.sessionId) {
+      throw new AuthenticationError('No active session. Please authenticate first.');
+    }
+
+    try {
+      const response = await this.apiClient.post('/auth/webhook/test', {
+        event_type: eventType,
+        sample_data: sampleData
+      }, {
+        'Session-ID': this.sessionId
+      });
+
+      return response;
+    } catch (error: any) {
+      this.emit('error', error as Error);
+      
+      if (error.message?.toLowerCase().includes('not authenticated')) {
+        throw new AuthenticationError(`Authentication failed: ${error.message}`);
+      } else if (error.message?.toLowerCase().includes('not subscribed') || error.message?.toLowerCase().includes('invalid')) {
+        throw new ValidationError(`Invalid event type or subscription: ${error.message}`);
+      } else {
+        throw new ApiError(`Failed to send test webhook: ${error.message}`);
+      }
     }
   }
 }
