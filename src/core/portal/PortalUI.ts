@@ -1,5 +1,3 @@
-import { UserToken, FinaticConnectOptions, PortalMessage } from '../../types';
-
 export class PortalUI {
   private iframe: HTMLIFrameElement | null = null;
   private container: HTMLDivElement | null = null;
@@ -12,7 +10,6 @@ export class PortalUI {
     onClose?: () => void;
     onEvent?: (type: string, data: any) => void;
   };
-  private userToken: UserToken | null = null;
   private originalBodyStyle: string | null = null;
 
   constructor(portalUrl: string) {
@@ -180,16 +177,14 @@ export class PortalUI {
       return;
     }
 
-    const { type, userId, access_token, refresh_token, error, height, data } = event.data;
+    const { type, userId, error, height, data } = event.data;
     console.log('[PortalUI] Received message:', event.data);
 
     switch (type) {
       case 'portal-success': {
         // Handle both direct userId and data.userId formats
         const successUserId = userId || (data && data.userId);
-        const successAccessToken = access_token || (data && data.access_token);
-        const successRefreshToken = refresh_token || (data && data.refresh_token);
-        this.handlePortalSuccess(successUserId, successAccessToken, successRefreshToken);
+        this.handlePortalSuccess(successUserId);
         break;
       }
 
@@ -214,7 +209,7 @@ export class PortalUI {
 
       // Legacy support for old message types
       case 'success':
-        this.handleSuccess(userId, access_token, refresh_token);
+        this.handleSuccess(userId);
         break;
 
       case 'error':
@@ -230,29 +225,13 @@ export class PortalUI {
     }
   }
 
-  private handlePortalSuccess(userId: string, accessToken?: string, refreshToken?: string): void {
+  private handlePortalSuccess(userId: string): void {
     if (!userId) {
       console.error('[PortalUI] Missing userId in portal-success message');
       return;
     }
 
     console.log('[PortalUI] Portal success - User connected:', userId);
-
-    // If tokens are provided, store them internally
-    if (accessToken && refreshToken) {
-      const userToken: UserToken = {
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        expiresIn: 3600, // Default to 1 hour
-        user_id: userId,
-        tokenType: 'Bearer',
-        scope: 'api:access',
-      };
-      this.userToken = userToken;
-      console.log('[PortalUI] Portal authentication successful');
-    } else {
-      console.warn('[PortalUI] No tokens received from portal');
-    }
 
     // Pass userId to parent (SDK will handle tokens internally)
     this.options?.onSuccess?.(userId);
@@ -284,24 +263,11 @@ export class PortalUI {
     }
   }
 
-  private handleSuccess(userId: string, access_token: string, refresh_token: string): void {
-    if (!userId || !access_token || !refresh_token) {
+  private handleSuccess(userId: string): void {
+    if (!userId) {
       console.error('[PortalUI] Missing required fields in success message');
       return;
     }
-
-    // Convert portal tokens to UserToken format
-    const userToken: UserToken = {
-      accessToken: access_token,
-      refreshToken: refresh_token,
-      expiresIn: 3600, // Default to 1 hour
-      user_id: userId,
-      tokenType: 'Bearer',
-      scope: 'api:access',
-    };
-
-    // Store tokens internally
-    this.userToken = userToken;
 
     // Pass userId to parent
     this.options?.onSuccess?.(userId);
@@ -323,9 +289,5 @@ export class PortalUI {
       console.log('[PortalUI] Received resize message:', height);
       this.iframe.style.height = `${height}px`;
     }
-  }
-
-  public getTokens(): UserToken | null {
-    return this.userToken;
   }
 }

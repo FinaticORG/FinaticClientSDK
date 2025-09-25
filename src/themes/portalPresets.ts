@@ -1102,6 +1102,199 @@ export const orangeTheme: PortalThemeConfig = {
   },
 };
 
+// StockAlgos theme - Clean professional theme matching StockAlgos website
+export const stockAlgosTheme: PortalThemeConfig = {
+  mode: 'light',  // Light mode like StockAlgos website
+  colors: {
+    background: {
+      primary: '#FFFFFF',           // Clean white background
+      secondary: '#FFFFFF',         // Also white for consistency
+      tertiary: '#F8FAFC',          // Very light gray for subtle elevation
+      accent: 'rgba(79, 70, 229, 0.05)', // Very subtle blue accent
+      glass: '#FFFFFF',             // Pure white, no transparency
+    },
+    status: {
+      connected: '#10B981',        // Green for positive/connected
+      disconnected: '#EF4444',     // Red for negative/disconnected  
+      warning: '#F59E0B',          // Amber for warnings
+      pending: '#6366F1',          // Indigo for pending states
+      error: '#EF4444',            // Red for errors
+      success: '#10B981',          // Green for success
+    },
+    text: {
+      primary: '#111827',           // Very dark text for maximum contrast
+      secondary: '#374151',         // Dark gray for secondary text
+      muted: '#6B7280',             // Medium gray for muted text
+      inverse: '#FFFFFF',           // White for text on dark backgrounds
+    },
+    border: {
+      primary: '#E5E7EB',           // Light gray border
+      secondary: '#F3F4F6',         // Very light gray border
+      hover: '#D1D5DB',             // Slightly darker on hover
+      focus: '#4F46E5',             // Blue focus border
+      accent: '#4F46E5',            // Blue accent border
+    },
+    input: {
+      background: '#FFFFFF',        // White input background
+      border: '#D1D5DB',            // Slightly more visible light gray border
+      borderFocus: '#4F46E5',       // Blue focus border
+      text: '#111827',              // Darker text for better contrast
+      placeholder: '#6B7280',       // Darker placeholder for visibility
+    },
+    button: {
+      primary: {
+        background: '#4F46E5',      // Blue primary button
+        text: '#FFFFFF',            // White text
+        hover: '#4338CA',           // Darker blue on hover
+        active: '#3730A3',          // Even darker on active
+      },
+      secondary: {
+        background: '#FFFFFF',      // White background
+        text: '#4F46E5',            // Blue text
+        border: '#E5E7EB',          // Light gray border
+        hover: '#F8FAFC',           // Very light gray on hover
+        active: '#F1F5F9',          // Light gray on active
+      },
+    },
+  },
+  typography: {
+    fontFamily: {
+      primary: 'Inter, system-ui, -apple-system, sans-serif', // Clean, modern font like StockAlgos
+      secondary: 'Inter, system-ui, -apple-system, sans-serif',
+    },
+    fontSize: {
+      xs: '0.75rem',     // 12px
+      sm: '0.875rem',    // 14px
+      base: '1rem',      // 16px
+      lg: '1.125rem',    // 18px
+      xl: '1.25rem',     // 20px
+      '2xl': '1.5rem',   // 24px
+      '3xl': '1.875rem', // 30px
+      '4xl': '2.25rem',  // 36px
+    },
+    fontWeight: {
+      normal: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700,
+      extrabold: 800,
+    },
+    lineHeight: {
+      tight: '1.25',
+      normal: '1.5',
+      relaxed: '1.75',
+    },
+  },
+  spacing: {
+    xs: '0.25rem',   // 4px
+    sm: '0.5rem',    // 8px
+    md: '1rem',      // 16px
+    lg: '1.5rem',    // 24px
+    xl: '2rem',      // 32px
+    '2xl': '3rem',   // 48px
+    '3xl': '4rem',   // 64px
+  },
+  layout: {
+    containerMaxWidth: '1440px',
+    gridGap: '1rem',
+    cardPadding: '1.5rem',
+    borderRadius: {
+      sm: '0.25rem',   // 4px
+      md: '0.5rem',    // 8px
+      lg: '0.75rem',   // 12px
+      xl: '1rem',      // 16px
+      '2xl': '1.5rem', // 24px
+      full: '9999px',
+    },
+  },
+  components: {
+    brokerCard: {
+      width: '100%',
+      height: '180px',
+      logoSize: '64px',
+      padding: '1.5rem',
+    },
+    statusIndicator: {
+      size: '22px',
+      glowIntensity: 0.1,  // Minimal glow for clean look
+    },
+    modal: {
+      background: '#FFFFFF', // Pure white modal background
+      backdrop: 'rgba(0, 0, 0, 0.4)',          // Lighter backdrop
+    },
+    brokerCardModern: {
+      width: '150px',
+      height: '150px',
+      padding: '16px',
+      logoSize: '48px',
+      statusSize: '22px',
+    },
+    connectButton: {
+      width: '120px',
+      height: '120px',
+    },
+    themeSwitcher: {
+      indicatorSize: '24px',
+    },
+  },
+  effects: {
+    glassmorphism: {
+      enabled: false,    // Disable glass effects for clean look
+      blur: '0px',
+      opacity: 0,
+      border: 'rgba(0, 0, 0, 0.1)',
+    },
+    animations: {
+      enabled: true,
+      duration: {
+        fast: '150ms',
+        normal: '200ms',   // Faster, more subtle animations
+        slow: '300ms',
+      },
+      easing: {
+        default: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        smooth: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+      },
+    },
+    shadows: {
+      sm: '0 1px 2px rgba(0, 0, 0, 0.05)',      // Very subtle shadows
+      md: '0 4px 6px rgba(0, 0, 0, 0.07)',
+      lg: '0 10px 15px rgba(0, 0, 0, 0.1)',
+      xl: '0 20px 25px rgba(0, 0, 0, 0.1)',
+      card: '0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)', // Clean card shadow
+      cardHover: '0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)', // Subtle hover shadow
+      glow: '0 0 0px transparent',              // No glow effects
+      focus: '0 0 0 3px rgba(79, 70, 229, 0.1)', // Subtle focus ring
+    },
+  },
+  branding: {
+    logo: '/stockalgos-logo.png',      // Custom logo path
+    companyName: 'StockAlgos',         // Company name
+    favicon: '/stockalgos-favicon.ico', // Custom favicon
+    primaryColor: '#4F46E5',           // Indigo brand color
+  },
+  
+  // Minimal glow effects
+  glow: {
+    primary: 'transparent',
+    secondary: 'transparent',
+    card: 'transparent',
+    cardHover: 'rgba(79, 70, 229, 0.05)',  // Very subtle
+    button: 'transparent',
+    focus: 'rgba(79, 70, 229, 0.1)',
+    scrollbar: 'transparent',
+  },
+  
+  // Minimal gradients
+  gradients: {
+    start: 'rgba(79, 70, 229, 0.02)',
+    end: 'rgba(79, 70, 229, 0.01)',
+    hoverStart: 'rgba(79, 70, 229, 0.05)',
+    hoverEnd: 'rgba(79, 70, 229, 0.02)',
+  },
+};
+
 // Theme preset mapping
 export const portalThemePresets: Record<string, PortalThemeConfig> = {
   dark: darkTheme,
@@ -1110,4 +1303,5 @@ export const portalThemePresets: Record<string, PortalThemeConfig> = {
   purple: purpleTheme,
   green: greenTheme,
   orange: orangeTheme,
+  stockAlgos: stockAlgosTheme,
 };
