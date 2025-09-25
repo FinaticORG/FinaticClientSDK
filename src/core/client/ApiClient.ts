@@ -45,6 +45,7 @@ import {
   OrderValidationError,
   TradingNotEnabledError,
 } from '../../utils/errors';
+import { supabase, type Session as SupabaseSession } from '../supabase';
 
 export class ApiClient {
   private readonly baseUrl: string;
@@ -53,10 +54,9 @@ export class ApiClient {
   protected currentSessionId: string | null = null;
   private tradingContext: TradingContext = {};
 
-  // Token management
-  private tokenInfo: TokenInfo | null = null;
-  private refreshPromise: Promise<TokenInfo> | null = null;
-  private readonly REFRESH_BUFFER_MINUTES = 5; // Refresh token 5 minutes before expiry
+  // Supabase session management
+  private supabaseSession: SupabaseSession | null = null;
+  private sessionRefreshPromise: Promise<SupabaseSession> | null = null;
 
   // Session and company context
   private companyId: string | null = null;
@@ -70,6 +70,25 @@ export class ApiClient {
     // Append /api/v1 if not already present
     if (!this.baseUrl.includes('/api/v1')) {
       this.baseUrl = `${this.baseUrl}/api/v1`;
+    }
+
+    // Initialize Supabase session
+    this.initializeSupabaseSession();
+  }
+
+  private async initializeSupabaseSession() {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      this.supabaseSession = session;
+
+      // Listen for auth changes
+      supabase.auth.onAuthStateChange((event, session) => {
+        this.supabaseSession = session;
+      });
+    } catch (error) {
+      console.warn('Failed to initialize Supabase session:', error);
     }
   }
 
@@ -104,121 +123,114 @@ export class ApiClient {
   }
 
   /**
-   * Store tokens after successful authentication
-   */
-  setTokens(accessToken: string, refreshToken: string, expiresAt: string, userId?: string): void {
-    this.tokenInfo = {
-      accessToken,
-      refreshToken,
-      expiresAt,
-      userId,
-    };
-  }
-
-  /**
-   * Get the current access token, refreshing if necessary
+   * Get the current Supabase access token
    */
   async getValidAccessToken(): Promise<string> {
-    if (!this.tokenInfo) {
-      throw new AuthenticationError('No tokens available. Please authenticate first.');
+    if (!this.supabaseSession?.access_token) {
+      throw new AuthenticationError('No Supabase session available. Please authenticate first.');
     }
 
-    // Check if token is expired or about to expire
+    // Check if token is expired and refresh if needed
     if (this.isTokenExpired()) {
-      await this.refreshTokens();
+      await this.refreshSupabaseSession();
     }
 
-    return this.tokenInfo.accessToken;
+    if (!this.supabaseSession?.access_token) {
+      throw new AuthenticationError('Failed to get valid access token.');
+    }
+
+    return this.supabaseSession.access_token;
   }
 
   /**
-   * Check if the current token is expired or about to expire
+   * Check if the current Supabase token is expired
    */
   private isTokenExpired(): boolean {
-    if (!this.tokenInfo) return true;
+    if (!this.supabaseSession?.expires_at) return true;
 
-    const expiryTime = new Date(this.tokenInfo.expiresAt).getTime();
+    const expiryTime = this.supabaseSession.expires_at * 1000; // Convert to milliseconds
     const currentTime = Date.now();
-    const bufferTime = this.REFRESH_BUFFER_MINUTES * 60 * 1000; // 5 minutes in milliseconds
+    const bufferTime = 5 * 60 * 1000; // 5 minutes buffer
 
     return currentTime >= expiryTime - bufferTime;
   }
 
   /**
-   * Refresh the access token using the refresh token
+   * Refresh the Supabase session
    */
-  private async refreshTokens(): Promise<void> {
-    if (!this.tokenInfo) {
+  private async refreshSupabaseSession(): Promise<void> {
+    if (!this.supabaseSession?.refresh_token) {
       throw new AuthenticationError('No refresh token available.');
     }
 
     // If a refresh is already in progress, wait for it
-    if (this.refreshPromise) {
-      await this.refreshPromise;
+    if (this.sessionRefreshPromise) {
+      await this.sessionRefreshPromise;
       return;
     }
 
     // Start a new refresh
-    this.refreshPromise = this.performTokenRefresh();
+    this.sessionRefreshPromise = this.performSupabaseRefresh();
 
     try {
-      await this.refreshPromise;
+      await this.sessionRefreshPromise;
     } finally {
-      this.refreshPromise = null;
+      this.sessionRefreshPromise = null;
     }
   }
 
   /**
-   * Perform the actual token refresh request
+   * Perform the actual Supabase session refresh
    */
-  private async performTokenRefresh(): Promise<TokenInfo> {
-    if (!this.tokenInfo) {
+  private async performSupabaseRefresh(): Promise<SupabaseSession> {
+    if (!this.supabaseSession?.refresh_token) {
       throw new AuthenticationError('No refresh token available.');
     }
 
     try {
-      const response = await this.request<RefreshTokenResponse>('/company/auth/refresh', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: {
-          refresh_token: this.tokenInfo.refreshToken,
-        } as RefreshTokenRequest,
+      const { data, error } = await supabase.auth.refreshSession({
+        refresh_token: this.supabaseSession.refresh_token,
       });
 
-      // Update stored tokens
-      this.tokenInfo = {
-        accessToken: response.response_data.access_token,
-        refreshToken: response.response_data.refresh_token,
-        expiresAt: response.response_data.expires_at,
-        userId: this.tokenInfo.userId,
-      };
+      if (error) {
+        throw new AuthenticationError('Failed to refresh Supabase session: ' + error.message);
+      }
 
-      return this.tokenInfo;
+      if (!data.session) {
+        throw new AuthenticationError('No session returned from refresh');
+      }
+
+      this.supabaseSession = data.session;
+      return data.session;
     } catch (error) {
-      // Clear tokens on refresh failure
-      this.tokenInfo = null;
+      // Clear session on refresh failure
+      this.supabaseSession = null;
       throw new AuthenticationError(
-        'Token refresh failed. Please re-authenticate.',
+        'Session refresh failed. Please re-authenticate.',
         error as Record<string, any>
       );
     }
   }
 
   /**
-   * Clear stored tokens (useful for logout)
+   * Clear Supabase session (useful for logout)
    */
   clearTokens(): void {
-    this.tokenInfo = null;
-    this.refreshPromise = null;
+    this.supabaseSession = null;
+    this.sessionRefreshPromise = null;
   }
 
   /**
-   * Get current token info (for debugging/testing)
+   * Get current session info (for debugging/testing)
    */
-  getTokenInfo(): TokenInfo | null {
-    return this.tokenInfo ? { ...this.tokenInfo } : null;
+  getTokenInfo(): { accessToken: string; refreshToken: string; expiresAt: number } | null {
+    if (!this.supabaseSession) return null;
+
+    return {
+      accessToken: this.supabaseSession.access_token,
+      refreshToken: this.supabaseSession.refresh_token,
+      expiresAt: this.supabaseSession.expires_at,
+    };
   }
 
   /**
@@ -243,9 +255,13 @@ export class ApiClient {
       });
     }
 
+    // Get Supabase JWT token
+    const accessToken = await this.getValidAccessToken();
+
     // Build comprehensive headers object with all available session data
     const comprehensiveHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
     };
 
     // Add device info if available
@@ -522,15 +538,11 @@ export class ApiClient {
       },
     });
 
-    // Store tokens after successful OTP verification
+    // Update session ID after successful OTP verification
     if (response.success && response.data) {
-      const expiresAt = new Date(Date.now() + response.data.expires_in * 1000).toISOString();
-      this.setTokens(
-        response.data.access_token,
-        response.data.refresh_token,
-        expiresAt,
-        response.data.user_id
-      );
+      this.currentSessionId = response.data.session_id;
+      // Note: Supabase JWT will be handled by the Supabase client
+      // The backend now creates/retrieves Supabase users and returns session info
     }
 
     return response;
@@ -1160,6 +1172,7 @@ export class ApiClient {
 
   /**
    * Refresh the current session to extend its lifetime
+   * Note: This now uses Supabase session refresh instead of custom endpoint
    */
   async refreshSession(): Promise<{
     success: boolean;
@@ -1178,13 +1191,23 @@ export class ApiClient {
       throw new SessionError('No active session to refresh');
     }
 
-    return this.request('/auth/session/refresh', {
-      method: 'POST',
-      headers: {
-        'Session-ID': this.currentSessionId,
-        'X-Company-ID': this.companyId,
+    // Refresh Supabase session
+    await this.refreshSupabaseSession();
+
+    // Return session info in expected format
+    return {
+      success: true,
+      response_data: {
+        session_id: this.currentSessionId,
+        company_id: this.companyId,
+        status: 'active',
+        expires_at: new Date(this.supabaseSession?.expires_at! * 1000).toISOString(),
+        user_id: this.supabaseSession?.user?.id || '',
+        auto_login: false,
       },
-    });
+      message: 'Session refreshed successfully',
+      status_code: 200,
+    };
   }
 
   // Broker Data Management

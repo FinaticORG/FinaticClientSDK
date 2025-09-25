@@ -30,6 +30,7 @@
     "format": "prettier --write src/**/*.{ts,tsx}"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.58.0",
     "crypto-js": "^4.2.0",
     "uuid": "^9.0.1"
   },

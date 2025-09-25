@@ -70,6 +70,9 @@ export type {
 export { ApiClient } from './core/client/ApiClient';
 export { FinaticConnect } from './core/client/FinaticConnect';
 
+// Supabase configuration
+export { supabase } from './core/supabase';
+
 // Core types and classes
 export { PaginatedResult } from './types/common/pagination';
 
