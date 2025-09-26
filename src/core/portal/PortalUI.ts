@@ -5,7 +5,7 @@ export class PortalUI {
   private sessionId: string | null = null;
   private portalOrigin: string | null = null;
   private options?: {
-    onSuccess?: (userId: string) => void;
+    onSuccess?: (userId: string, tokens?: { access_token?: string; refresh_token?: string }) => void;
     onError?: (error: Error) => void;
     onClose?: () => void;
     onEvent?: (type: string, data: any) => void;
@@ -177,14 +177,18 @@ export class PortalUI {
       return;
     }
 
-    const { type, userId, error, height, data } = event.data;
+    const { type, userId, access_token, refresh_token, error, height, data } = event.data;
     console.log('[PortalUI] Received message:', event.data);
 
     switch (type) {
       case 'portal-success': {
         // Handle both direct userId and data.userId formats
         const successUserId = userId || (data && data.userId);
-        this.handlePortalSuccess(successUserId);
+        const tokens = {
+          access_token: access_token || (data && data.access_token),
+          refresh_token: refresh_token || (data && data.refresh_token)
+        };
+        this.handlePortalSuccess(successUserId, tokens);
         break;
       }
 
@@ -225,16 +229,19 @@ export class PortalUI {
     }
   }
 
-  private handlePortalSuccess(userId: string): void {
+  private handlePortalSuccess(userId: string, tokens?: { access_token?: string; refresh_token?: string }): void {
     if (!userId) {
       console.error('[PortalUI] Missing userId in portal-success message');
       return;
     }
 
     console.log('[PortalUI] Portal success - User connected:', userId);
+    if (tokens?.access_token && tokens?.refresh_token) {
+      console.log('[PortalUI] Tokens received for user:', userId);
+    }
 
     // Pass userId to parent (SDK will handle tokens internally)
-    this.options?.onSuccess?.(userId);
+    this.options?.onSuccess?.(userId, tokens);
   }
 
   private handlePortalError(error: string): void {

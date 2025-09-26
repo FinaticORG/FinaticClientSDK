@@ -72,6 +72,7 @@ __metadata:
     "@rollup/plugin-commonjs": "npm:^25.0.7"
     "@rollup/plugin-node-resolve": "npm:^15.2.3"
     "@rollup/plugin-typescript": "npm:^11.1.6"
+    "@supabase/supabase-js": "npm:^2.58.0"
     "@types/crypto-js": "npm:^4.2.1"
     "@types/uuid": "npm:^9.0.7"
     "@typescript-eslint/eslint-plugin": "npm:^6.0.0"
@@ -417,6 +418,77 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@supabase/auth-js@npm:2.72.0":
+  version: 2.72.0
+  resolution: "@supabase/auth-js@npm:2.72.0"
+  dependencies:
+    "@supabase/node-fetch": "npm:^2.6.14"
+  checksum: 10c0/744abb80a75fa93930754894c32c56f86352c877057bdd71cc943ca016922bcde14515bb5c19cac3b36403d010566205e6995cbe97044008c8ccbceeee9c3d97
+  languageName: node
+  linkType: hard
+
+"@supabase/functions-js@npm:2.5.0":
+  version: 2.5.0
+  resolution: "@supabase/functions-js@npm:2.5.0"
+  dependencies:
+    "@supabase/node-fetch": "npm:^2.6.14"
+  checksum: 10c0/499e31838da8aa8a41c7351fe4e3ffd9649a21dd2da27e7a45b6d0b64da92d7d81067239d481bfcbbdebcbafecf13d653aaa79b16fae93cf897981d9d2bc0ef4
+  languageName: node
+  linkType: hard
+
+"@supabase/node-fetch@npm:2.6.15, @supabase/node-fetch@npm:^2.6.13, @supabase/node-fetch@npm:^2.6.14":
+  version: 2.6.15
+  resolution: "@supabase/node-fetch@npm:2.6.15"
+  dependencies:
+    whatwg-url: "npm:^5.0.0"
+  checksum: 10c0/98d25cab2eba53c93c59e730d52d50065b1a7fe216c65224471e83e2064ebd45ae51ad09cb39ec263c3cb59e3d41870fc2e789ea2e9587480d7ba212b85daf38
+  languageName: node
+  linkType: hard
+
+"@supabase/postgrest-js@npm:1.21.4":
+  version: 1.21.4
+  resolution: "@supabase/postgrest-js@npm:1.21.4"
+  dependencies:
+    "@supabase/node-fetch": "npm:^2.6.14"
+  checksum: 10c0/9efa19a3b56c780c63b7caebca084f8c67750349f882c3221c5547153baaa4010b736d4fdd9a024ebdf117eab7de17770fecb698b39210f9903777522d9a7bff
+  languageName: node
+  linkType: hard
+
+"@supabase/realtime-js@npm:2.15.5":
+  version: 2.15.5
+  resolution: "@supabase/realtime-js@npm:2.15.5"
+  dependencies:
+    "@supabase/node-fetch": "npm:^2.6.13"
+    "@types/phoenix": "npm:^1.6.6"
+    "@types/ws": "npm:^8.18.1"
+    ws: "npm:^8.18.2"
+  checksum: 10c0/df8946a54a10dc1cca6f697d41617ea19c60932dfa881a789e27e9d129851e5c84776f055206bc7753c1633667fc38ee4fc407ab769208a6d0e56d5d6fbe8322
+  languageName: node
+  linkType: hard
+
+"@supabase/storage-js@npm:2.12.2":
+  version: 2.12.2
+  resolution: "@supabase/storage-js@npm:2.12.2"
+  dependencies:
+    "@supabase/node-fetch": "npm:^2.6.14"
+  checksum: 10c0/f8c1194bba17d839c663b9d114c5d9e74bb55cbbc52f62f87edebb908e9c3f241d900a0fa4bd16b13c9cbbfe9bbe602c77917e13f6628216572be4ba7474849e
+  languageName: node
+  linkType: hard
+
+"@supabase/supabase-js@npm:^2.58.0":
+  version: 2.58.0
+  resolution: "@supabase/supabase-js@npm:2.58.0"
+  dependencies:
+    "@supabase/auth-js": "npm:2.72.0"
+    "@supabase/functions-js": "npm:2.5.0"
+    "@supabase/node-fetch": "npm:2.6.15"
+    "@supabase/postgrest-js": "npm:1.21.4"
+    "@supabase/realtime-js": "npm:2.15.5"
+    "@supabase/storage-js": "npm:2.12.2"
+  checksum: 10c0/73c024c01d4ab12157e2df97c17305c8bafe88b9115fe81d77b2482c8d6427932c48c19c29b290e3c75a3e3e3a134732853c1b2bf9e257e1ea79a49c571e4b9d
+  languageName: node
+  linkType: hard
+
 "@types/crypto-js@npm:^4.2.1":
   version: 4.2.2
   resolution: "@types/crypto-js@npm:4.2.2"
@@ -438,6 +510,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:*":
+  version: 24.5.2
+  resolution: "@types/node@npm:24.5.2"
+  dependencies:
+    undici-types: "npm:~7.12.0"
+  checksum: 10c0/96baaca6564d39c6f7f6eddd73ce41e2a7594ef37225cd52df3be36fad31712af8ae178387a72d0b80f2e2799e7fd30c014bc0ae9eb9f962d9079b691be00c48
+  languageName: node
+  linkType: hard
+
+"@types/phoenix@npm:^1.6.6":
+  version: 1.6.6
+  resolution: "@types/phoenix@npm:1.6.6"
+  checksum: 10c0/4dfcb3fd36341ed5500de030291af14163c599857e00d2d4ff065d4c4600317d5d20aa170913fb9609747a09436e3add44db7d0c709bdf80f36cddcc67a42021
+  languageName: node
+  linkType: hard
+
 "@types/resolve@npm:1.20.2":
   version: 1.20.2
   resolution: "@types/resolve@npm:1.20.2"
@@ -456,6 +544,15 @@ __metadata:
   version: 9.0.8
   resolution: "@types/uuid@npm:9.0.8"
   checksum: 10c0/b411b93054cb1d4361919579ef3508a1f12bf15b5fdd97337d3d351bece6c921b52b6daeef89b62340fd73fd60da407878432a1af777f40648cbe53a01723489
+  languageName: node
+  linkType: hard
+
+"@types/ws@npm:^8.18.1":
+  version: 8.18.1
+  resolution: "@types/ws@npm:8.18.1"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/61aff1129143fcc4312f083bc9e9e168aa3026b7dd6e70796276dcfb2c8211c4292603f9c4864fae702f2ed86e4abd4d38aa421831c2fd7f856c931a481afbab
   languageName: node
   linkType: hard
 
@@ -3455,6 +3552,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tr46@npm:~0.0.3":
+  version: 0.0.3
+  resolution: "tr46@npm:0.0.3"
+  checksum: 10c0/047cb209a6b60c742f05c9d3ace8fa510bff609995c129a37ace03476a9b12db4dbf975e74600830ef0796e18882b2381fb5fb1f6b4f96b832c374de3ab91a11
+  languageName: node
+  linkType: hard
+
 "ts-api-utils@npm:^1.0.1":
   version: 1.4.3
   resolution: "ts-api-utils@npm:1.4.3"
@@ -3572,6 +3676,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"undici-types@npm:~7.12.0":
+  version: 7.12.0
+  resolution: "undici-types@npm:7.12.0"
+  checksum: 10c0/326e455bbc0026db1d6b81c76a1cf10c63f7e2f9821db2e24fdc258f482814e5bfa8481f8910d07c68e305937c5c049610fdc441c5e8b7bb0daca7154fb8a306
+  languageName: node
+  linkType: hard
+
 "unique-filename@npm:^4.0.0":
   version: 4.0.0
   resolution: "unique-filename@npm:4.0.0"
@@ -3605,6 +3716,23 @@ __metadata:
   bin:
     uuid: dist/bin/uuid
   checksum: 10c0/1607dd32ac7fc22f2d8f77051e6a64845c9bce5cd3dd8aa0070c074ec73e666a1f63c7b4e0f4bf2bc8b9d59dc85a15e17807446d9d2b17c8485fbc2147b27f9b
+  languageName: node
+  linkType: hard
+
+"webidl-conversions@npm:^3.0.0":
+  version: 3.0.1
+  resolution: "webidl-conversions@npm:3.0.1"
+  checksum: 10c0/5612d5f3e54760a797052eb4927f0ddc01383550f542ccd33d5238cfd65aeed392a45ad38364970d0a0f4fea32e1f4d231b3d8dac4a3bdd385e5cf802ae097db
+  languageName: node
+  linkType: hard
+
+"whatwg-url@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "whatwg-url@npm:5.0.0"
+  dependencies:
+    tr46: "npm:~0.0.3"
+    webidl-conversions: "npm:^3.0.0"
+  checksum: 10c0/1588bed84d10b72d5eec1d0faa0722ba1962f1821e7539c535558fb5398d223b0c50d8acab950b8c488b4ba69043fd833cc2697056b167d8ad46fac3995a55d5
   languageName: node
   linkType: hard
 
@@ -3724,6 +3852,21 @@ __metadata:
   version: 1.0.2
   resolution: "wrappy@npm:1.0.2"
   checksum: 10c0/56fece1a4018c6a6c8e28fbc88c87e0fbf4ea8fd64fc6c63b18f4acc4bd13e0ad2515189786dd2c30d3eec9663d70f4ecf699330002f8ccb547e4a18231fc9f0
+  languageName: node
+  linkType: hard
+
+"ws@npm:^8.18.2":
+  version: 8.18.3
+  resolution: "ws@npm:8.18.3"
+  peerDependencies:
+    bufferutil: ^4.0.1
+    utf-8-validate: ">=5.0.2"
+  peerDependenciesMeta:
+    bufferutil:
+      optional: true
+    utf-8-validate:
+      optional: true
+  checksum: 10c0/eac918213de265ef7cb3d4ca348b891a51a520d839aa51cdb8ca93d4fa7ff9f6ccb339ccee89e4075324097f0a55157c89fa3f7147bde9d8d7e90335dc087b53
   languageName: node
   linkType: hard
 
