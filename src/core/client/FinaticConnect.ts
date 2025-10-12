@@ -27,7 +27,7 @@ import {
 import { FinaticConnectOptions, PortalOptions } from '../../types/connect';
 import { appendThemeToURL } from '../../utils/themeUtils';
 import { appendBrokerFilterToURL } from '../../utils/brokerUtils';
-import { supabase } from '../supabase';
+// Supabase import removed - SDK no longer depends on Supabase
 
 interface DeviceInfo {
   ip_address: string;
@@ -109,39 +109,61 @@ export class FinaticConnect extends EventEmitter {
     this.registerSessionCleanup();
   }
 
-  private handleTokens(tokens: { access_token?: string; refresh_token?: string }): void {
-    if (!tokens.access_token || !tokens.refresh_token) {
-      return;
-    }
-    // Keep existing user_id or use empty string as fallback
-    const userId = this.userToken?.user_id || '';
-    this.userToken = {
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token,
-      expiresIn: 3600, // Default to 1 hour if not provided
-      user_id: userId,
-      tokenType: 'Bearer',
-      scope: 'api:access',
-    };
+  private async linkUserToSession(userId: string): Promise<boolean> {
+    try {
+      if (!this.sessionId) {
+        console.error('No session ID available for user linking');
+        return false;
+      }
 
-    // Note: Supabase tokens are now handled by the Supabase client
-    // The ApiClient will get tokens from Supabase session automatically
+      // Call API endpoint to authenticate user with session
+      const response = await this.apiClient.request('/session/authenticate', {
+        method: 'POST',
+        body: {
+          session_id: this.sessionId,
+          user_id: userId,
+        },
+      });
+
+      if (response.error) {
+        console.error('Failed to link user to session:', response.error);
+        return false;
+      }
+
+      console.log('User linked to session successfully');
+      return true;
+    } catch (error) {
+      console.error('Error linking user to session:', error);
+      return false;
+    }
   }
 
   /**
-   * Check if the user is fully authenticated (has userId and Supabase session)
+   * Store user ID for authentication state persistence
+   * @param userId - The user ID to store
+   */
+  private storeUserId(userId: string): void {
+    // Initialize userToken if it doesn't exist
+    if (!this.userToken) {
+      this.userToken = {
+        user_id: userId,
+      };
+    } else {
+      // Update existing userToken with new userId
+      this.userToken.user_id = userId;
+    }
+
+    // Set user ID in ApiClient for session context
+    this.apiClient.setSessionContext(this.sessionId || '', this.companyId, undefined);
+  }
+
+  /**
+   * Check if the user is fully authenticated (has userId in session context)
    * @returns True if the user is fully authenticated and ready for API calls
    */
   public async isAuthed(): Promise<boolean> {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      return !!(this.userToken?.user_id && session?.access_token);
-    } catch (error) {
-      console.warn('Failed to check Supabase session:', error);
-      return false;
-    }
+    // Check internal session context only - no localStorage dependency
+    return this.userToken?.user_id !== undefined && this.userToken?.user_id !== null;
   }
 
   /**
@@ -308,38 +330,19 @@ export class FinaticConnect extends EventEmitter {
         );
       }
 
-      // If userId is provided, authenticate directly
+      // If userId is provided, try to link user to session
       if (normalizedUserId) {
         try {
-          const authResponse = await FinaticConnect.instance.apiClient.authenticateDirectly(
-            startResponse.data.session_id,
-            normalizedUserId
-          );
-
-          // Convert API response to UserToken format
-          const userToken: UserToken = {
-            accessToken: authResponse.data.access_token,
-            refreshToken: authResponse.data.refresh_token,
-            expiresIn: 3600, // Default to 1 hour
-            user_id: normalizedUserId,
-            tokenType: 'Bearer',
-            scope: 'api:access',
-          };
-
-          // Set the tokens in both FinaticConnect and ApiClient
-          FinaticConnect.instance.userToken = userToken;
-
-          // Set tokens in ApiClient for automatic token management
-          const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString(); // 1 hour from now
-          FinaticConnect.instance.apiClient.setTokens(
-            authResponse.data.access_token,
-            authResponse.data.refresh_token,
-            expiresAt,
-            normalizedUserId
-          );
-
-          // Emit success event
-          FinaticConnect.instance.emit('success', normalizedUserId);
+          // Try to link user to session via API
+          const linked = await FinaticConnect.instance.linkUserToSession(normalizedUserId);
+          if (linked) {
+            // Store user ID for authentication state
+            FinaticConnect.instance.storeUserId(normalizedUserId);
+            // Emit success event
+            FinaticConnect.instance.emit('success', normalizedUserId);
+          } else {
+            console.warn('Failed to link user to session during initialization');
+          }
         } catch (error) {
           FinaticConnect.instance.emit('error', error as Error);
           throw error;
@@ -370,16 +373,11 @@ export class FinaticConnect extends EventEmitter {
       throw new AuthenticationError('No user token available');
     }
 
-    // Get current Supabase session
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
     return {
-      user_id: this.userToken.userId,
-      access_token: session?.access_token || '',
-      refresh_token: session?.refresh_token || '',
-      expires_in: session ? Math.floor((session.expires_at * 1000 - Date.now()) / 1000) : 0,
+      user_id: this.userToken.user_id,
+      access_token: '', // No longer using Supabase tokens
+      refresh_token: '', // No longer using Supabase tokens
+      expires_in: 0, // No token expiration for session-based auth
       token_type: 'Bearer',
       scope: 'api:access',
       company_id: this.companyId,
@@ -391,22 +389,22 @@ export class FinaticConnect extends EventEmitter {
       if (!this.sessionId) {
         throw new SessionError('Session not initialized');
       }
-      this.userToken = await this.apiClient.getUserToken(this.sessionId);
 
-      // Set tokens in ApiClient for automatic token management
-      if (this.userToken) {
-        const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString(); // 1 hour from now
-        this.apiClient.setTokens(
-          this.userToken.accessToken,
-          this.userToken.refreshToken,
-          expiresAt,
-          userId
-        );
+      // Try to link user to session
+      const linked = await this.linkUserToSession(userId);
+      if (!linked) {
+        console.warn('Failed to link user to session during initialization');
+        // Don't throw error, just continue without authentication
+        return;
       }
+
+      // Store user ID for authentication state
+      this.storeUserId(userId);
 
       this.emit('success', userId);
     } catch (error) {
       this.emit('error', error as Error);
+      throw error;
     }
   }
 
@@ -480,6 +478,16 @@ export class FinaticConnect extends EventEmitter {
         themedPortalUrl = url.toString();
       }
 
+      // Add session ID to portal URL so the portal can use it
+      const url = new URL(themedPortalUrl);
+      if (this.sessionId) {
+        url.searchParams.set('session_id', this.sessionId);
+      }
+      if (this.companyId) {
+        url.searchParams.set('company_id', this.companyId);
+      }
+      themedPortalUrl = url.toString();
+
       // Create portal UI if not exists
       if (!this.portalUI) {
         this.portalUI = new PortalUI(this.baseUrl);
@@ -487,18 +495,19 @@ export class FinaticConnect extends EventEmitter {
 
       // Show portal
       this.portalUI.show(themedPortalUrl, this.sessionId || '', {
-        onSuccess: async (
-          userId: string,
-          tokens?: { access_token?: string; refresh_token?: string }
-        ) => {
+        onSuccess: async (userId: string) => {
           try {
             if (!this.sessionId) {
               throw new SessionError('Session not initialized');
             }
 
-            // Handle tokens if provided
-            if (tokens?.access_token && tokens?.refresh_token) {
-              this.handleTokens(tokens);
+            // Store the userId for authentication state
+            this.storeUserId(userId);
+
+            // Try to link user to session via API
+            const linked = await this.linkUserToSession(userId);
+            if (!linked) {
+              console.warn('Failed to link user to session, but continuing with authentication');
             }
 
             // Emit portal success event
@@ -612,8 +621,11 @@ export class FinaticConnect extends EventEmitter {
     order_id?: string;
     connection_id?: string;
   }): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthed())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -640,7 +652,7 @@ export class FinaticConnect extends EventEmitter {
       };
 
       return await this.apiClient.placeBrokerOrder(
-        this.userToken!.accessToken,
+        '', // No longer using access tokens
         brokerOrder,
         {},
         order.connection_id
@@ -662,8 +674,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader',
     connection_id?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthed())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -696,8 +711,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader',
     connection_id?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthed())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -774,8 +792,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthed())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -804,8 +825,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthed())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -836,8 +860,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthed())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -866,8 +893,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'coinbase' | 'binance' | 'kraken',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthed())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -896,8 +926,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'coinbase' | 'binance' | 'kraken',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthed())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -926,8 +959,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'tasty_trade' | 'robinhood' | 'ninja_trader',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthed())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -956,8 +992,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'tasty_trade' | 'robinhood' | 'ninja_trader',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthed())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -986,8 +1025,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'ninja_trader' | 'tasty_trade',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthed())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -1016,8 +1058,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'ninja_trader' | 'tasty_trade',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthed())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -1560,7 +1605,6 @@ export class FinaticConnect extends EventEmitter {
       const response = await fetch(`${this.baseUrl}/portal/${sessionId}/complete`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${this.userToken?.accessToken || ''}`,
           'Content-Type': 'application/json',
         },
       });
@@ -1593,24 +1637,7 @@ export class FinaticConnect extends EventEmitter {
     return this.apiClient.disconnectCompany(connectionId);
   }
 
-  /**
-   * Get account balances for the authenticated user
-   * @param filters - Optional filters for balances
-   * @returns Promise with balance data
-   */
-  public async getBalances(filters?: any): Promise<any[]> {
-    if (!(await this.isAuthed())) {
-      throw new AuthenticationError('User is not authenticated');
-    }
-
-    try {
-      const response = await this.apiClient.getBalances(filters);
-      return response.response_data || [];
-    } catch (error) {
-      this.emit('error', error as Error);
-      throw error;
-    }
-  }
+  // Duplicate getBalances method removed - using the paginated version above
 
   /**
    * Send a test webhook for the specified event type.
@@ -1676,7 +1703,7 @@ export class FinaticConnect extends EventEmitter {
       } else if (error.message?.toLowerCase().includes('not subscribed') || error.message?.toLowerCase().includes('invalid')) {
         throw new ValidationError(`Invalid event type or subscription: ${error.message}`);
       } else {
-        throw new ApiError(`Failed to send test webhook: ${error.message}`);
+        throw new ApiError(500, `Failed to send test webhook: ${error.message}`);
       }
     }
   }

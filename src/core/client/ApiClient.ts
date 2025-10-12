@@ -26,6 +26,7 @@ import {
   SessionState,
   TokenInfo,
   SessionResponse,
+  SessionResponseData,
   OtpRequestResponse,
   OtpVerifyResponse,
   SessionValidationResponse,
@@ -45,7 +46,7 @@ import {
   OrderValidationError,
   TradingNotEnabledError,
 } from '../../utils/errors';
-import { supabase, type Session as SupabaseSession } from '../supabase';
+// Supabase import removed - SDK no longer depends on Supabase
 
 export class ApiClient {
   private readonly baseUrl: string;
@@ -54,9 +55,7 @@ export class ApiClient {
   protected currentSessionId: string | null = null;
   private tradingContext: TradingContext = {};
 
-  // Supabase session management
-  private supabaseSession: SupabaseSession | null = null;
-  private sessionRefreshPromise: Promise<SupabaseSession> | null = null;
+  // Session management (no Supabase needed)
 
   // Session and company context
   private companyId: string | null = null;
@@ -72,25 +71,10 @@ export class ApiClient {
       this.baseUrl = `${this.baseUrl}/api/v1`;
     }
 
-    // Initialize Supabase session
-    this.initializeSupabaseSession();
+    // No Supabase initialization needed - SDK is clean
   }
 
-  private async initializeSupabaseSession() {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      this.supabaseSession = session;
-
-      // Listen for auth changes
-      supabase.auth.onAuthStateChange((event, session) => {
-        this.supabaseSession = session;
-      });
-    } catch (error) {
-      console.warn('Failed to initialize Supabase session:', error);
-    }
-  }
+  // Supabase initialization removed - SDK no longer depends on Supabase
 
   /**
    * Set session context (session ID, company ID, CSRF token)
@@ -123,114 +107,35 @@ export class ApiClient {
   }
 
   /**
-   * Get the current Supabase access token
+   * Get a valid access token (session-based auth - no tokens needed)
    */
   async getValidAccessToken(): Promise<string> {
-    if (!this.supabaseSession?.access_token) {
-      throw new AuthenticationError('No Supabase session available. Please authenticate first.');
-    }
-
-    // Check if token is expired and refresh if needed
-    if (this.isTokenExpired()) {
-      await this.refreshSupabaseSession();
-    }
-
-    if (!this.supabaseSession?.access_token) {
-      throw new AuthenticationError('Failed to get valid access token.');
-    }
-
-    return this.supabaseSession.access_token;
+    // Session-based auth - return empty token as we use session headers
+    return '';
   }
 
-  /**
-   * Check if the current Supabase token is expired
-   */
-  private isTokenExpired(): boolean {
-    if (!this.supabaseSession?.expires_at) return true;
+  // Token expiration check removed - session-based auth doesn't use expiring tokens
 
-    const expiryTime = this.supabaseSession.expires_at * 1000; // Convert to milliseconds
-    const currentTime = Date.now();
-    const bufferTime = 5 * 60 * 1000; // 5 minutes buffer
-
-    return currentTime >= expiryTime - bufferTime;
-  }
-
-  /**
-   * Refresh the Supabase session
-   */
-  private async refreshSupabaseSession(): Promise<void> {
-    if (!this.supabaseSession?.refresh_token) {
-      throw new AuthenticationError('No refresh token available.');
-    }
-
-    // If a refresh is already in progress, wait for it
-    if (this.sessionRefreshPromise) {
-      await this.sessionRefreshPromise;
-      return;
-    }
-
-    // Start a new refresh
-    this.sessionRefreshPromise = this.performSupabaseRefresh();
-
-    try {
-      await this.sessionRefreshPromise;
-    } finally {
-      this.sessionRefreshPromise = null;
-    }
-  }
+  // Supabase refresh method removed - SDK no longer uses Supabase tokens
 
   /**
    * Perform the actual Supabase session refresh
    */
-  private async performSupabaseRefresh(): Promise<SupabaseSession> {
-    if (!this.supabaseSession?.refresh_token) {
-      throw new AuthenticationError('No refresh token available.');
-    }
-
-    try {
-      const { data, error } = await supabase.auth.refreshSession({
-        refresh_token: this.supabaseSession.refresh_token,
-      });
-
-      if (error) {
-        throw new AuthenticationError('Failed to refresh Supabase session: ' + error.message);
-      }
-
-      if (!data.session) {
-        throw new AuthenticationError('No session returned from refresh');
-      }
-
-      this.supabaseSession = data.session;
-      return data.session;
-    } catch (error) {
-      // Clear session on refresh failure
-      this.supabaseSession = null;
-      throw new AuthenticationError(
-        'Session refresh failed. Please re-authenticate.',
-        error as Record<string, any>
-      );
-    }
-  }
+  // Supabase refresh method removed - SDK no longer uses Supabase tokens
 
   /**
-   * Clear Supabase session (useful for logout)
+   * Clear session tokens (useful for logout)
    */
   clearTokens(): void {
-    this.supabaseSession = null;
-    this.sessionRefreshPromise = null;
+    // Session-based auth - no tokens to clear
   }
 
   /**
-   * Get current session info (for debugging/testing)
+   * Get current session info (for debugging/testing) - session-based auth
    */
   getTokenInfo(): { accessToken: string; refreshToken: string; expiresAt: number } | null {
-    if (!this.supabaseSession) return null;
-
-    return {
-      accessToken: this.supabaseSession.access_token,
-      refreshToken: this.supabaseSession.refresh_token,
-      expiresAt: this.supabaseSession.expires_at,
-    };
+    // Session-based auth - no tokens to return
+    return null;
   }
 
   /**
@@ -479,7 +384,7 @@ export class ApiClient {
 
   // Session Management
   async startSession(token: string, userId?: string): Promise<SessionResponse> {
-    const response = await this.request<SessionResponse>('/auth/session/start', {
+    const response = await this.request<SessionResponse>('/session/start', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -538,9 +443,8 @@ export class ApiClient {
       },
     });
 
-    // Update session ID after successful OTP verification
+    // OTP verification successful - tokens are handled by Supabase client
     if (response.success && response.data) {
-      this.currentSessionId = response.data.session_id;
       // Note: Supabase JWT will be handled by the Supabase client
       // The backend now creates/retrieves Supabase users and returns session info
     }
@@ -558,7 +462,7 @@ export class ApiClient {
       throw new SessionError('Session must be in ACTIVE state to authenticate');
     }
 
-    const response = await this.request<SessionAuthenticateResponse>('/auth/session/authenticate', {
+    const response = await this.request<SessionAuthenticateResponse>('/session/authenticate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -578,9 +482,7 @@ export class ApiClient {
 
     // Store tokens after successful direct authentication
     if (response.success && response.data) {
-      // For direct auth, we don't get expires_in, so we'll set a default 1-hour expiry
-      const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
-      this.setTokens(response.data.access_token, response.data.refresh_token, expiresAt, userId);
+      // Session-based auth - no token storage needed
     }
 
     return response;
@@ -598,7 +500,7 @@ export class ApiClient {
       throw new SessionError('Session must be in ACTIVE state to get portal URL');
     }
 
-    return this.request<PortalUrlResponse>('/auth/session/portal', {
+    return this.request<PortalUrlResponse>('/session/portal', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -1155,7 +1057,7 @@ export class ApiClient {
 
   async getUserToken(sessionId: string): Promise<UserToken> {
     const accessToken = await this.getValidAccessToken();
-    return this.request<UserToken>(`/auth/session/${sessionId}/user`, {
+    return this.request<UserToken>(`/session/${sessionId}/user`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -1191,8 +1093,7 @@ export class ApiClient {
       throw new SessionError('No active session to refresh');
     }
 
-    // Refresh Supabase session
-    await this.refreshSupabaseSession();
+    // Session-based auth - no token refresh needed
 
     // Return session info in expected format
     return {
@@ -1201,8 +1102,8 @@ export class ApiClient {
         session_id: this.currentSessionId,
         company_id: this.companyId,
         status: 'active',
-        expires_at: new Date(this.supabaseSession?.expires_at! * 1000).toISOString(),
-        user_id: this.supabaseSession?.user?.id || '',
+        expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour from now
+        user_id: '', // Session-based auth - user_id comes from session
         auto_login: false,
       },
       message: 'Session refreshed successfully',

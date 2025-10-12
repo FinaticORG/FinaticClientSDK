@@ -106,12 +106,8 @@ export class MockDataProvider {
     const refreshToken = `mock_refresh_${uuidv4().replace(/-/g, '')}`;
 
     return {
-      accessToken,
-      refreshToken,
-      expiresIn: 3600, // 1 hour
       user_id: userId,
-      tokenType: 'Bearer',
-      scope: 'read write',
+      // Removed token fields - we no longer use Supabase tokens in the SDK
     };
   }
 
@@ -137,6 +133,7 @@ export class MockDataProvider {
     this.sessionData.set(sessionId, sessionData);
 
     return {
+      success: true,
       data: sessionData,
       message: 'Session started successfully',
     };
@@ -164,12 +161,12 @@ export class MockDataProvider {
       success: true,
       message: 'OTP verified successfully',
       data: {
-        access_token: tokens.accessToken,
-        refresh_token: tokens.refreshToken,
+        access_token: '', // No longer using Supabase tokens
+        refresh_token: '', // No longer using Supabase tokens
         user_id: userId,
-        expires_in: tokens.expiresIn,
-        scope: tokens.scope,
-        token_type: tokens.tokenType as 'Bearer',
+        expires_in: 0, // No token expiration for session-based auth
+        scope: 'api:access',
+        token_type: 'Bearer',
       },
     };
   }
@@ -187,8 +184,8 @@ export class MockDataProvider {
       success: true,
       message: 'Authentication successful',
       data: {
-        access_token: tokens.accessToken,
-        refresh_token: tokens.refreshToken,
+        access_token: '', // No longer using Supabase tokens
+        refresh_token: '', // No longer using Supabase tokens
       },
     };
   }
@@ -240,6 +237,8 @@ export class MockDataProvider {
       valid: true,
       company_id: this.generateCompanyId(),
       status: 'active',
+      is_sandbox: false,
+      environment: 'production',
     };
   }
 

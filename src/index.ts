@@ -13,7 +13,6 @@ export type {
   Portfolio,
   PortalResponse,
   SessionInitResponse,
-  SessionStartResponse,
   SessionResponse,
   OtpRequestResponse,
   OtpVerifyResponse,
@@ -71,7 +70,7 @@ export { ApiClient } from './core/client/ApiClient';
 export { FinaticConnect } from './core/client/FinaticConnect';
 
 // Supabase configuration
-export { supabase } from './core/supabase';
+// Supabase export removed - SDK no longer depends on Supabase
 
 // Core types and classes
 export { PaginatedResult } from './types/common/pagination';
@@ -84,5 +83,5 @@ export * from './utils/themeUtils';
 // Theme presets
 export { portalThemePresets } from './themes/portalPresets';
 
-// Mocks (optional, for testing)
-export { MockFactory } from './mocks/MockFactory';
+// Mocks (optional, for testing) - removed from main export to reduce bundle size
+// export { MockFactory } from './mocks/MockFactory';

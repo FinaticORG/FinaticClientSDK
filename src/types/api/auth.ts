@@ -11,19 +11,9 @@ export interface SessionInitResponse {
   };
 }
 
-export interface SessionResponseData {
-  session_id: string; // Unique session identifier
-  company_id: string; // ID of the company this session is for
-  status: 'pending'; // Always starts as pending
-  expires_at: string; // ISO datetime when session expires
-  is_sandbox: boolean; // Whether this session is in sandbox mode
-  environment: string; // Environment context (production or sandbox)
-}
+// SessionResponseData moved below to match backend response format
 
-export interface SessionStartResponse {
-  data: SessionResponseData;
-  message: 'Session started successfully';
-}
+// SessionStartResponse removed - using SessionResponse instead
 
 export interface OtpRequestResponse {
   success: boolean;
@@ -45,12 +35,8 @@ export interface OtpVerifyResponse {
 }
 
 export interface UserToken {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
   user_id: string;
-  tokenType: string;
-  scope: string;
+  // Removed token fields - we no longer use Supabase tokens in the SDK
 }
 
 export interface SessionValidationResponse {
@@ -94,25 +80,19 @@ export interface TokenInfo {
   userId?: string;
 }
 
+export interface SessionResponseData {
+  session_id: string;
+  company_id: string;
+  status: string;
+  expires_at: string;
+  user_id?: string | null;
+  auto_login?: boolean;
+}
+
 export interface SessionResponse {
-  data: {
-    session_id: string;
-    state: SessionState;
-    device_info?: Record<string, string>;
-    company_id?: string;
-    status?: string;
-    expires_at?: string;
-    user_id?: string | null;
-    auto_login?: boolean;
-    access_token?: string;
-    refresh_token?: string;
-    expires_in?: number;
-    token_type?: string;
-    scope?: string;
-    is_sandbox?: boolean; // Whether this session is in sandbox mode
-    environment?: string; // Environment context (production or sandbox)
-  };
+  success: boolean;
   message: string;
+  data: SessionResponseData;
 }
 
 export enum SessionState {
