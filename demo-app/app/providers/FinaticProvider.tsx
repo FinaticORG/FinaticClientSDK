@@ -1,9 +1,15 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  FinaticConnect,
-} from '@finatic/client';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { FinaticConnect } from '@finatic/client';
 
 type LogEntry = {
   type: 'info' | 'error' | 'success';
@@ -60,6 +66,10 @@ interface FinaticContextValue {
   clearStoredUserId: () => void;
   usage: UsageStats;
   clearUsage: () => void;
+  // Global authentication state
+  isAuthed: boolean;
+  currentUserId: string | null;
+  checkAuth: () => Promise<void>;
 }
 
 const FinaticContext = createContext<FinaticContextValue | undefined>(undefined);
@@ -72,6 +82,8 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   const [sessionInfo, setSessionInfo] = useState<string>('Not initialized');
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [storedUserId, setStoredUserIdState] = useState<string | null>(null);
+  const [isAuthed, setIsAuthed] = useState<boolean>(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const apiBaseUrlRef = useRef<string | null>(null);
   const [usage, setUsage] = useState<UsageStats>(() => {
     if (typeof window === 'undefined') {
@@ -107,10 +119,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   });
 
   const addLog = useCallback((type: LogEntry['type'], message: string) => {
-    setLogs((prev) => [
-      ...prev,
-      { type, message, timestamp: new Date().toLocaleTimeString() },
-    ]);
+    setLogs(prev => [...prev, { type, message, timestamp: new Date().toLocaleTimeString() }]);
   }, []);
 
   const clearLogs = useCallback(() => {
@@ -175,63 +184,86 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const recordMethodCall = useCallback((methodName: string, durationMs: number, bytes: number, isError = false) => {
-    setUsage((prev) => {
-      const rolled = ensureDayRollover(prev);
-      const existing = rolled.methods[methodName] || { count: 0, totalDurationMs: 0, lastDurationMs: 0, errorCount: 0, totalBytes: 0 } as MethodStats;
-      const next: UsageStats = {
-        ...rolled,
-        lastSavedAt: new Date().toISOString(),
-        totals: {
-          apiRequests: rolled.totals.apiRequests,
-          methodCalls: rolled.totals.methodCalls + 1,
-          errors: rolled.totals.errors + (isError ? 1 : 0),
-          totalBytes: rolled.totals.totalBytes + (bytes || 0),
-        },
-        methods: {
-          ...rolled.methods,
-          [methodName]: {
-            count: existing.count + 1,
-            totalDurationMs: existing.totalDurationMs + durationMs,
-            lastDurationMs: durationMs,
-            errorCount: existing.errorCount + (isError ? 1 : 0),
-            totalBytes: existing.totalBytes + (bytes || 0),
+  const recordMethodCall = useCallback(
+    (methodName: string, durationMs: number, bytes: number, isError = false) => {
+      setUsage(prev => {
+        const rolled = ensureDayRollover(prev);
+        const existing =
+          rolled.methods[methodName] ||
+          ({
+            count: 0,
+            totalDurationMs: 0,
+            lastDurationMs: 0,
+            errorCount: 0,
+            totalBytes: 0,
+          } as MethodStats);
+        const next: UsageStats = {
+          ...rolled,
+          lastSavedAt: new Date().toISOString(),
+          totals: {
+            apiRequests: rolled.totals.apiRequests,
+            methodCalls: rolled.totals.methodCalls + 1,
+            errors: rolled.totals.errors + (isError ? 1 : 0),
+            totalBytes: rolled.totals.totalBytes + (bytes || 0),
           },
-        },
-      };
-      return next;
-    });
-  }, [ensureDayRollover]);
+          methods: {
+            ...rolled.methods,
+            [methodName]: {
+              count: existing.count + 1,
+              totalDurationMs: existing.totalDurationMs + durationMs,
+              lastDurationMs: durationMs,
+              errorCount: existing.errorCount + (isError ? 1 : 0),
+              totalBytes: existing.totalBytes + (bytes || 0),
+            },
+          },
+        };
+        return next;
+      });
+    },
+    [ensureDayRollover]
+  );
 
-  const recordApiRequest = useCallback((path: string, method: string, status: number, durationMs: number, bytes: number) => {
-    setUsage((prev) => {
-      const rolled = ensureDayRollover(prev);
-      const key = `${method.toUpperCase()} ${path}`;
-      const existing = rolled.routes[key] || { count: 0, totalDurationMs: 0, lastDurationMs: 0, lastStatus: null, method: method.toUpperCase(), totalBytes: 0 } as RouteStats;
-      const next: UsageStats = {
-        ...rolled,
-        lastSavedAt: new Date().toISOString(),
-        totals: {
-          apiRequests: rolled.totals.apiRequests + 1,
-          methodCalls: rolled.totals.methodCalls,
-          errors: rolled.totals.errors + (status >= 400 ? 1 : 0),
-          totalBytes: rolled.totals.totalBytes + (bytes || 0),
-        },
-        routes: {
-          ...rolled.routes,
-          [key]: {
-            count: existing.count + 1,
-            totalDurationMs: existing.totalDurationMs + durationMs,
-            lastDurationMs: durationMs,
-            lastStatus: status,
+  const recordApiRequest = useCallback(
+    (path: string, method: string, status: number, durationMs: number, bytes: number) => {
+      setUsage(prev => {
+        const rolled = ensureDayRollover(prev);
+        const key = `${method.toUpperCase()} ${path}`;
+        const existing =
+          rolled.routes[key] ||
+          ({
+            count: 0,
+            totalDurationMs: 0,
+            lastDurationMs: 0,
+            lastStatus: null,
             method: method.toUpperCase(),
-            totalBytes: existing.totalBytes + (bytes || 0),
+            totalBytes: 0,
+          } as RouteStats);
+        const next: UsageStats = {
+          ...rolled,
+          lastSavedAt: new Date().toISOString(),
+          totals: {
+            apiRequests: rolled.totals.apiRequests + 1,
+            methodCalls: rolled.totals.methodCalls,
+            errors: rolled.totals.errors + (status >= 400 ? 1 : 0),
+            totalBytes: rolled.totals.totalBytes + (bytes || 0),
           },
-        },
-      };
-      return next;
-    });
-  }, [ensureDayRollover]);
+          routes: {
+            ...rolled.routes,
+            [key]: {
+              count: existing.count + 1,
+              totalDurationMs: existing.totalDurationMs + durationMs,
+              lastDurationMs: durationMs,
+              lastStatus: status,
+              method: method.toUpperCase(),
+              totalBytes: existing.totalBytes + (bytes || 0),
+            },
+          },
+        };
+        return next;
+      });
+    },
+    [ensureDayRollover]
+  );
 
   const clearUsage = useCallback(() => {
     setUsage(() => {
@@ -249,6 +281,25 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       return cleared;
     });
   }, []);
+
+  const checkAuth = useCallback(async () => {
+    if (!finatic) {
+      setIsAuthed(false);
+      setCurrentUserId(null);
+      return;
+    }
+
+    try {
+      const authed = typeof finatic.isAuthed === 'function' ? await finatic.isAuthed() : false;
+      const uid = typeof finatic.getUserId === 'function' ? await finatic.getUserId() : null;
+      setIsAuthed(authed);
+      setCurrentUserId(uid);
+    } catch (error) {
+      console.error('Error checking auth:', error);
+      setIsAuthed(false);
+      setCurrentUserId(null);
+    }
+  }, [finatic]);
 
   const initializeSDK = useCallback(async () => {
     try {
@@ -269,38 +320,48 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         setSessionInfo('Mock Mode - No real API calls');
         const apiUrl = process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
         apiBaseUrlRef.current = apiUrl;
-        const initStart = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-        const mockFinatic = await FinaticConnect.init('mock-token', existingUserId || 'mock-user-123', {
-          baseUrl: apiUrl,
-        });
+        const initStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
+        const mockFinatic = await FinaticConnect.init(
+          'mock-token',
+          existingUserId || 'mock-user-123',
+          {
+            baseUrl: apiUrl,
+          }
+        );
         const wrapped = new Proxy(mockFinatic as unknown as Record<string, unknown>, {
           get(target, prop, receiver) {
             const value = Reflect.get(target, prop, receiver);
             if (typeof value === 'function') {
               return function wrappedMethod(this: unknown, ...args: unknown[]) {
-                const start = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+                const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
                 try {
                   const result = (value as Function).apply(target, args);
                   if (result && typeof (result as Promise<unknown>).then === 'function') {
                     return (result as Promise<unknown>)
-                      .then((res) => {
-                        const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                      .then(res => {
+                        const duration =
+                          (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
+                          start;
                         const bytes = estimateBytes(res);
                         recordMethodCall(String(prop), duration, bytes, false);
                         return res;
                       })
-                      .catch((err) => {
-                        const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                      .catch(err => {
+                        const duration =
+                          (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
+                          start;
                         recordMethodCall(String(prop), duration, 0, true);
                         throw err;
                       });
                   }
-                  const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                  const duration =
+                    (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
                   const bytes = estimateBytes(result);
                   recordMethodCall(String(prop), duration, bytes, false);
                   return result;
                 } catch (err) {
-                  const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                  const duration =
+                    (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
                   recordMethodCall(String(prop), duration, 0, true);
                   throw err;
                 }
@@ -310,7 +371,8 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
           },
         });
         setFinatic(wrapped as unknown as FinaticConnect);
-        const initDuration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
+        const initDuration =
+          (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
         recordMethodCall('FinaticConnect.init', initDuration, 0, false);
         addLog('success', 'SDK initialized in MOCK mode');
         return;
@@ -321,38 +383,48 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         setSessionInfo('Mock API Only Mode - Mock API calls, real portal');
         const apiUrl = process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
         apiBaseUrlRef.current = apiUrl;
-        const initStart = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-        const mockFinatic = await FinaticConnect.init('mock-token', existingUserId || 'mock-user-123', {
-          baseUrl: apiUrl,
-        });
+        const initStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
+        const mockFinatic = await FinaticConnect.init(
+          'mock-token',
+          existingUserId || 'mock-user-123',
+          {
+            baseUrl: apiUrl,
+          }
+        );
         const wrapped = new Proxy(mockFinatic as unknown as Record<string, unknown>, {
           get(target, prop, receiver) {
             const value = Reflect.get(target, prop, receiver);
             if (typeof value === 'function') {
               return function wrappedMethod(this: unknown, ...args: unknown[]) {
-                const start = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+                const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
                 try {
                   const result = (value as Function).apply(target, args);
                   if (result && typeof (result as Promise<unknown>).then === 'function') {
                     return (result as Promise<unknown>)
-                      .then((res) => {
-                        const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                      .then(res => {
+                        const duration =
+                          (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
+                          start;
                         const bytes = estimateBytes(res);
                         recordMethodCall(String(prop), duration, bytes, false);
                         return res;
                       })
-                      .catch((err) => {
-                        const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                      .catch(err => {
+                        const duration =
+                          (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
+                          start;
                         recordMethodCall(String(prop), duration, 0, true);
                         throw err;
                       });
                   }
-                  const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                  const duration =
+                    (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
                   const bytes = estimateBytes(result);
                   recordMethodCall(String(prop), duration, bytes, false);
                   return result;
                 } catch (err) {
-                  const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                  const duration =
+                    (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
                   recordMethodCall(String(prop), duration, 0, true);
                   throw err;
                 }
@@ -362,7 +434,8 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
           },
         });
         setFinatic(wrapped as unknown as FinaticConnect);
-        const initDuration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
+        const initDuration =
+          (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
         recordMethodCall('FinaticConnect.init', initDuration, 0, false);
         addLog('success', 'SDK initialized in MOCK API ONLY mode');
         return;
@@ -372,7 +445,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       const apiUrl = process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
       addLog('info', `Using API URL: ${apiUrl}`);
       apiBaseUrlRef.current = apiUrl;
-      const initStart = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const initStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
       const response = await fetch('/api/getToken');
       if (!response.ok) {
         addLog('error', 'Failed to get token from /api/getToken');
@@ -394,29 +467,35 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
           const value = Reflect.get(target, prop, receiver);
           if (typeof value === 'function') {
             return function wrappedMethod(this: unknown, ...args: unknown[]) {
-              const start = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+              const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
               try {
                 const result = (value as Function).apply(target, args);
                 if (result && typeof (result as Promise<unknown>).then === 'function') {
                   return (result as Promise<unknown>)
-                    .then((res) => {
-                      const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                    .then(res => {
+                      const duration =
+                        (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
+                        start;
                       const bytes = estimateBytes(res);
                       recordMethodCall(String(prop), duration, bytes, false);
                       return res;
                     })
-                    .catch((err) => {
-                      const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                    .catch(err => {
+                      const duration =
+                        (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
+                        start;
                       recordMethodCall(String(prop), duration, 0, true);
                       throw err;
                     });
                 }
-                const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                const duration =
+                  (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
                 const bytes = estimateBytes(result);
                 recordMethodCall(String(prop), duration, bytes, false);
                 return result;
               } catch (err) {
-                const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                const duration =
+                  (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
                 recordMethodCall(String(prop), duration, 0, true);
                 throw err;
               }
@@ -426,8 +505,11 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         },
       });
       setFinatic(wrapped as unknown as FinaticConnect);
-      setSessionInfo(`Real Mode - Authenticated${existingUserId ? ` (User: ${existingUserId})` : ''}`);
-      const initDuration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
+      setSessionInfo(
+        `Real Mode - Authenticated${existingUserId ? ` (User: ${existingUserId})` : ''}`
+      );
+      const initDuration =
+        (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
       recordMethodCall('FinaticConnect.init', initDuration, 0, false);
       addLog('success', 'SDK initialized in REAL mode');
     } catch (err) {
@@ -449,6 +531,11 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     void initializeSDK();
   }, [getStoredUserId, initializeSDK]);
 
+  // Check authentication when SDK is initialized or when stored user ID changes
+  useEffect(() => {
+    void checkAuth();
+  }, [checkAuth, storedUserId]);
+
   // Persist usage and emit event AFTER state updates to avoid re-entrant updates during render
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -462,10 +549,17 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const originalFetch = window.fetch.bind(window);
-    const instrumentedFetch: typeof window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-      const start = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    const instrumentedFetch: typeof window.fetch = async (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ) => {
+      const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
       let url: string;
-      let method = (init?.method || (typeof input === 'object' && 'method' in input ? (input as Request).method : 'GET') || 'GET').toUpperCase();
+      let method = (
+        init?.method ||
+        (typeof input === 'object' && 'method' in input ? (input as Request).method : 'GET') ||
+        'GET'
+      ).toUpperCase();
       if (typeof input === 'string') {
         url = input;
       } else if (input instanceof URL) {
@@ -481,7 +575,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       try {
         const response = await originalFetch(input as any, init as any);
         if (isSdkCall && !isLocalNextApi) {
-          const end = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+          const end = typeof performance !== 'undefined' ? performance.now() : Date.now();
           const duration = end - start;
           let bytes = 0;
           try {
@@ -507,7 +601,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         return response;
       } catch (err) {
         if (isSdkCall && !isLocalNextApi) {
-          const end = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+          const end = typeof performance !== 'undefined' ? performance.now() : Date.now();
           const duration = end - start;
           const path = (() => {
             try {
@@ -529,26 +623,48 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     };
   }, [recordApiRequest]);
 
-  const value = useMemo<FinaticContextValue>(() => ({
-    finatic,
-    isLoading,
-    error,
-    isMockMode,
-    sessionInfo,
-    logs,
-    addLog,
-    clearLogs,
-    reinitialize: initializeSDK,
-    storedUserId,
-    setStoredUserId,
-    clearStoredUserId,
-    usage,
-    clearUsage,
-  }), [finatic, isLoading, error, isMockMode, sessionInfo, logs, addLog, clearLogs, initializeSDK, storedUserId, setStoredUserId, clearStoredUserId, usage, clearUsage]);
-
-  return (
-    <FinaticContext.Provider value={value}>{children}</FinaticContext.Provider>
+  const value = useMemo<FinaticContextValue>(
+    () => ({
+      finatic,
+      isLoading,
+      error,
+      isMockMode,
+      sessionInfo,
+      logs,
+      addLog,
+      clearLogs,
+      reinitialize: initializeSDK,
+      storedUserId,
+      setStoredUserId,
+      clearStoredUserId,
+      usage,
+      clearUsage,
+      isAuthed,
+      currentUserId,
+      checkAuth,
+    }),
+    [
+      finatic,
+      isLoading,
+      error,
+      isMockMode,
+      sessionInfo,
+      logs,
+      addLog,
+      clearLogs,
+      initializeSDK,
+      storedUserId,
+      setStoredUserId,
+      clearStoredUserId,
+      usage,
+      clearUsage,
+      isAuthed,
+      currentUserId,
+      checkAuth,
+    ]
   );
+
+  return <FinaticContext.Provider value={value}>{children}</FinaticContext.Provider>;
 }
 
 export function useFinatic() {
@@ -558,5 +674,3 @@ export function useFinatic() {
   }
   return ctx;
 }
-
-
