@@ -19,6 +19,9 @@
   "engines": {
     "node": ">=16.0.0"
   },
+  "workspaces": [
+    "demo-app"
+  ],
   "files": [
     "src",
     "dist"

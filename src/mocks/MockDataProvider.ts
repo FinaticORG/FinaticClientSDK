@@ -367,6 +367,12 @@ export class MockDataProvider {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         last_synced_at: new Date().toISOString(),
+        positions_synced_at: new Date().toISOString(),
+        orders_synced_at: new Date().toISOString(),
+        balances_synced_at: new Date().toISOString(),
+        account_created_at: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year ago
+        account_updated_at: new Date().toISOString(),
+        account_first_trade_at: new Date(Date.now() - 300 * 24 * 60 * 60 * 1000).toISOString(), // 300 days ago
       },
       {
         id: uuidv4(),
@@ -381,6 +387,12 @@ export class MockDataProvider {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         last_synced_at: new Date().toISOString(),
+        positions_synced_at: new Date().toISOString(),
+        orders_synced_at: new Date().toISOString(),
+        balances_synced_at: new Date().toISOString(),
+        account_created_at: new Date(Date.now() - 730 * 24 * 60 * 60 * 1000).toISOString(), // 2 years ago
+        account_updated_at: new Date().toISOString(),
+        account_first_trade_at: new Date(Date.now() - 700 * 24 * 60 * 60 * 1000).toISOString(), // 700 days ago
       },
     ];
 
@@ -922,6 +934,12 @@ export class MockDataProvider {
         created_at: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(), // Random date within last year
         updated_at: new Date().toISOString(),
         last_synced_at: new Date().toISOString(),
+        positions_synced_at: new Date().toISOString(),
+        orders_synced_at: new Date().toISOString(),
+        balances_synced_at: new Date().toISOString(),
+        account_created_at: new Date(Date.now() - Math.random() * 730 * 24 * 60 * 60 * 1000).toISOString(), // Random date within last 2 years
+        account_updated_at: new Date().toISOString(),
+        account_first_trade_at: new Date(Date.now() - Math.random() * 500 * 24 * 60 * 60 * 1000).toISOString(), // Random date within last 500 days
       });
     }
 

@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@finatic/client": "file:..",
+    "@finatic/client": "workspace:*",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
@@ -73,6 +73,6 @@
     "typescript": "^5"
   },
   "resolutions": {
-    "@finatic/client": "file:.."
+    "@finatic/client": "workspace:*"
   }
 }
