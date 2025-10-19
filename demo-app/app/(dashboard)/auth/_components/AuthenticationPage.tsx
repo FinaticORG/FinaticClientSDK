@@ -13,6 +13,7 @@ import { useFinatic } from '@/app/providers/FinaticProvider';
 export function AuthenticationPageComponent() {
   const {
     finatic,
+    sdkAdapter,
     isLoading,
     error,
     isMockMode,
@@ -55,11 +56,11 @@ export function AuthenticationPageComponent() {
   }, [error, isLoading]);
 
   const handleCheckAuth = async () => {
-    if (!finatic) return;
+    if (!sdkAdapter) return;
     try {
       addLog('info', 'Checking authentication status');
-      const authed = await finatic.isAuthed();
-      const uid = await finatic.getUserId();
+      const authed = await sdkAdapter.isAuthed();
+      const uid = await sdkAdapter.getUserId();
       setIsAuthedStatus(authed);
       setCurrentUserId(uid ?? null);
       addLog('success', `Auth check - isAuthed: ${authed} - userId: ${uid ?? 'null'}`);
@@ -70,12 +71,12 @@ export function AuthenticationPageComponent() {
   };
 
   const handleSetUserId = async () => {
-    if (!finatic) return;
+    if (!sdkAdapter) return;
     const value = userIdInput.trim();
     if (!value) return;
     try {
       addLog('info', `Setting userId to ${value}`);
-      await finatic.setUserId(value);
+      await sdkAdapter.setUserId(value);
       setStoredUserId(value);
       setUserIdInput('');
       handleCheckAuth();

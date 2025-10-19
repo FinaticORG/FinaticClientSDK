@@ -117,3 +117,4 @@ temp/
 # Local development
 .local
 demo-app/.yarn/
+.yarn/install-state.gz

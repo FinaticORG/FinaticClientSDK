@@ -617,7 +617,7 @@ export class FinaticConnect extends EventEmitter {
     timeInForce: 'day' | 'gtc' | 'gtd' | 'ioc' | 'fok';
     broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader';
     accountNumber?: string;
-    assetType?: 'Stock' | 'Option' | 'Crypto' | 'Future';
+    assetType?: 'equity' | 'equity_option' | 'crypto' | 'forex' | 'future' | 'future_option';
     order_id?: string;
     connection_id?: string;
   }): Promise<OrderResponse> {
@@ -642,7 +642,7 @@ export class FinaticConnect extends EventEmitter {
               : order.orderType === 'stop'
                 ? 'Stop'
                 : ('StopLimit' as 'Market' | 'Limit' | 'Stop' | 'StopLimit'),
-        assetType: order.assetType || ('Stock' as 'Stock' | 'Option' | 'Crypto' | 'Future'),
+        assetType: order.assetType || ('equity' as 'equity' | 'equity_option' | 'crypto' | 'forex' | 'future' | 'future_option'),
         timeInForce: order.timeInForce as 'day' | 'gtc' | 'gtd' | 'ioc' | 'fok',
         price: order.price,
         stopPrice: order.stopPrice,

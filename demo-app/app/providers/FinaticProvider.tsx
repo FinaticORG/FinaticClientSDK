@@ -10,6 +10,9 @@ import React, {
   useState,
 } from 'react';
 import { FinaticConnect } from '@finatic/client';
+import { SdkType, SdkAdapter, createSdkAdapter } from '@/lib/sdk-adapter';
+
+export type { SdkType };
 
 type LogEntry = {
   type: 'info' | 'error' | 'success';
@@ -53,6 +56,8 @@ const USAGE_STORAGE_KEY = 'finatic_usage_v1';
 
 interface FinaticContextValue {
   finatic: FinaticConnect | null;
+  // SDK adapter - this is the new way to interact with the SDK
+  sdkAdapter: SdkAdapter | null;
   isLoading: boolean;
   error: string | null;
   isMockMode: boolean;
@@ -70,6 +75,10 @@ interface FinaticContextValue {
   isAuthed: boolean;
   currentUserId: string | null;
   checkAuth: () => Promise<void>;
+  setAuthState: (isAuthenticated: boolean, userId: string | null) => void;
+  // SDK adapter state
+  sdkType: SdkType;
+  setSdkType: (sdkType: SdkType) => void;
 }
 
 const FinaticContext = createContext<FinaticContextValue | undefined>(undefined);
@@ -117,6 +126,64 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       routes: {},
     };
   });
+
+  // SDK type state management with localStorage persistence
+  const [sdkType, setSdkTypeState] = useState<SdkType>(() => {
+    if (typeof window === 'undefined') return 'client';
+    try {
+      return (localStorage.getItem('finatic_sdk_type') as SdkType) || 'client';
+    } catch {
+      return 'client';
+    }
+  });
+
+  const setSdkType = useCallback((newSdkType: SdkType) => {
+    console.log('🔄 Setting SDK type to:', newSdkType);
+    setSdkTypeState(newSdkType);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('finatic_sdk_type', newSdkType);
+        console.log('✅ SDK type saved to localStorage:', newSdkType);
+      } catch (e) {
+        console.warn('Failed to save SDK type to localStorage:', e);
+      }
+    }
+  }, []);
+
+  // SDK adapter state
+  const [sdkAdapter, setSdkAdapterState] = useState<SdkAdapter | null>(null);
+
+  // Initialize adapter based on SDK type and client instance
+  useEffect(() => {
+    console.log('🔄 Initializing SDK adapter for type:', sdkType);
+    try {
+      if (sdkType === 'client' && finatic) {
+        // Create ClientSdkAdapter wrapping existing finatic instance
+        const adapter = createSdkAdapter('client', finatic);
+        setSdkAdapterState(adapter);
+        console.log('✅ Client SDK adapter initialized');
+      } else if (sdkType === 'python') {
+        // Create ApiSdkAdapter for Python server SDK
+        const adapter = createSdkAdapter('python');
+        setSdkAdapterState(adapter);
+        console.log('✅ Python Server SDK adapter initialized');
+      } else if (sdkType === 'node') {
+        // Create ApiSdkAdapter for Node server SDK
+        const adapter = createSdkAdapter('node');
+        setSdkAdapterState(adapter);
+        console.log('✅ Node Server SDK adapter initialized');
+      } else if (sdkType === 'client' && !finatic) {
+        setSdkAdapterState(null);
+        console.log('⚠️ Client SDK selected but finatic instance not ready yet');
+      } else {
+        setSdkAdapterState(null);
+        console.log('⚠️ No adapter created - unknown SDK type or not ready');
+      }
+    } catch (error) {
+      console.error('❌ Failed to initialize SDK adapter:', error);
+      setSdkAdapterState(null);
+    }
+  }, [sdkType, finatic]);
 
   const addLog = useCallback((type: LogEntry['type'], message: string) => {
     setLogs(prev => [...prev, { type, message, timestamp: new Date().toLocaleTimeString() }]);
@@ -283,15 +350,29 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const checkAuth = useCallback(async () => {
-    if (!finatic) {
+    // For server SDKs, use sdkAdapter instead of finatic client
+    const authSource =
+      sdkAdapter && (sdkType === 'python' || sdkType === 'node') ? sdkAdapter : finatic;
+
+    if (!authSource) {
       setIsAuthed(false);
       setCurrentUserId(null);
       return;
     }
 
     try {
-      const authed = typeof finatic.isAuthed === 'function' ? await finatic.isAuthed() : false;
-      const uid = typeof finatic.getUserId === 'function' ? await finatic.getUserId() : null;
+      // Use sdkAdapter methods for server SDKs, finatic methods for client SDK
+      const authed =
+        typeof authSource.isAuthed === 'function' ? await authSource.isAuthed() : false;
+      const uid = typeof authSource.getUserId === 'function' ? await authSource.getUserId() : null;
+
+      console.log('🔍 checkAuth() - authed:', authed, 'typeof:', typeof authed);
+      console.log('🔍 checkAuth() - uid:', uid, 'typeof:', typeof uid);
+      console.log(
+        '🔍 checkAuth() - authSource:',
+        authSource === sdkAdapter ? 'sdkAdapter' : 'finatic'
+      );
+
       setIsAuthed(authed);
       setCurrentUserId(uid);
     } catch (error) {
@@ -299,7 +380,20 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       setIsAuthed(false);
       setCurrentUserId(null);
     }
-  }, [finatic]);
+  }, [finatic, sdkAdapter, sdkType]);
+
+  // Method to directly set authentication state after portal confirmation
+  const setAuthState = useCallback(
+    (isAuthenticated: boolean, userId: string | null) => {
+      console.log('🔍 setAuthState() called with:', { isAuthenticated, userId });
+      setIsAuthed(isAuthenticated);
+      setCurrentUserId(userId);
+      if (isAuthenticated && userId) {
+        addLog('success', `Authentication state updated - User: ${userId}`);
+      }
+    },
+    [addLog]
+  );
 
   const initializeSDK = useCallback(async () => {
     try {
@@ -313,6 +407,58 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       const existingUserId = getStoredUserId();
       if (existingUserId) {
         addLog('info', `Found stored userId: ${existingUserId}`);
+      }
+
+      // Handle server SDK initialization
+      if (sdkType === 'python' || sdkType === 'node') {
+        const baseUrl = sdkType === 'python' ? 'http://localhost:8002' : 'http://localhost:8003';
+        addLog('info', `Initializing ${sdkType} server SDK`);
+        apiBaseUrlRef.current = baseUrl;
+
+        try {
+          // Initialize server SDK by starting a session
+          const response = await fetch(`${baseUrl}/api/session/start`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(
+              `Server SDK initialization failed: ${response.status} ${response.statusText}`
+            );
+          }
+
+          const sessionData = await response.json();
+          if (!sessionData.success) {
+            throw new Error(
+              `Server SDK initialization failed: ${sessionData.error || 'Unknown error'}`
+            );
+          }
+
+          addLog('success', `${sdkType} server SDK session started`);
+          setSessionInfo(
+            `${sdkType.charAt(0).toUpperCase() + sdkType.slice(1)} Server SDK - Session: ${sessionData.data?.session_id || 'started'}`
+          );
+
+          // Clear the client SDK instance since we're using server SDK
+          setFinatic(null);
+
+          setIsLoading(false);
+          return; // Early return for server SDKs
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : 'Failed to initialize server SDK';
+          addLog('error', `Failed to initialize ${sdkType} server SDK: ${msg}`);
+          setError(msg);
+          setSessionInfo(`Failed to initialize ${sdkType} server SDK`);
+
+          // Clear the client SDK instance since we're using server SDK
+          setFinatic(null);
+
+          setIsLoading(false);
+          return;
+        }
       }
 
       if (useMocks) {
@@ -524,14 +670,21 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [addLog, getStoredUserId, estimateBytes, recordMethodCall]);
+  }, [addLog, getStoredUserId, estimateBytes, recordMethodCall, sdkType]);
 
+  // Initialize SDK only on mount, not when stored user ID changes
   useEffect(() => {
     setStoredUserIdState(getStoredUserId());
     void initializeSDK();
-  }, [getStoredUserId, initializeSDK]);
+  }, [initializeSDK]); // Removed getStoredUserId dependency to prevent unnecessary re-initialization
+
+  // Re-initialize when SDK type changes
+  useEffect(() => {
+    void initializeSDK();
+  }, [sdkType, initializeSDK]);
 
   // Check authentication when SDK is initialized or when stored user ID changes
+  // But don't call initializeSDK again for server SDKs after portal confirmation
   useEffect(() => {
     void checkAuth();
   }, [checkAuth, storedUserId]);
@@ -626,6 +779,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<FinaticContextValue>(
     () => ({
       finatic,
+      sdkAdapter,
       isLoading,
       error,
       isMockMode,
@@ -642,9 +796,13 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       isAuthed,
       currentUserId,
       checkAuth,
+      setAuthState,
+      sdkType,
+      setSdkType,
     }),
     [
       finatic,
+      sdkAdapter,
       isLoading,
       error,
       isMockMode,
@@ -661,6 +819,9 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       isAuthed,
       currentUserId,
       checkAuth,
+      setAuthState,
+      sdkType,
+      setSdkType,
     ]
   );
 

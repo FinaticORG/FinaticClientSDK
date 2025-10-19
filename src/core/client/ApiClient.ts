@@ -543,7 +543,7 @@ export class ApiClient {
       orderQty: number;
       action: 'Buy' | 'Sell';
       orderType: 'Market' | 'Limit' | 'Stop' | 'StopLimit';
-      assetType: 'Stock' | 'Option' | 'Crypto' | 'Future';
+      assetType: 'equity' | 'equity_option' | 'crypto' | 'forex' | 'future' | 'future_option';
     },
     extras: BrokerExtras = {},
     connection_id?: string
@@ -737,7 +737,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Market',
-        assetType: 'Stock',
+        assetType: 'equity',
         timeInForce: 'day',
         broker,
         accountNumber,
@@ -764,7 +764,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Limit',
-        assetType: 'Stock',
+        assetType: 'equity',
         price,
         timeInForce,
         broker,
@@ -792,7 +792,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Stop',
-        assetType: 'Stock',
+        assetType: 'equity',
         stopPrice,
         timeInForce,
         broker,
@@ -819,7 +819,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Market',
-        assetType: 'Crypto',
+        assetType: 'crypto',
         timeInForce: 'day',
         broker,
         accountNumber,
@@ -846,7 +846,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Limit',
-        assetType: 'Crypto',
+        assetType: 'crypto',
         price,
         timeInForce,
         broker,
@@ -873,7 +873,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Market',
-        assetType: 'Option',
+        assetType: 'equity_option',
         timeInForce: 'day',
         broker,
         accountNumber,
@@ -900,7 +900,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Limit',
-        assetType: 'Option',
+        assetType: 'equity_option',
         price,
         timeInForce,
         broker,
