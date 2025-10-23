@@ -1,9 +1,18 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  FinaticConnect,
-} from '@finatic/client';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { FinaticConnect } from '@finatic/client';
+import { SdkType, SdkAdapter, createSdkAdapter } from '@/lib/sdk-adapter';
+
+export type { SdkType };
 
 type LogEntry = {
   type: 'info' | 'error' | 'success';
@@ -47,6 +56,8 @@ const USAGE_STORAGE_KEY = 'finatic_usage_v1';
 
 interface FinaticContextValue {
   finatic: FinaticConnect | null;
+  // SDK adapter - this is the new way to interact with the SDK
+  sdkAdapter: SdkAdapter | null;
   isLoading: boolean;
   error: string | null;
   isMockMode: boolean;
@@ -60,6 +71,14 @@ interface FinaticContextValue {
   clearStoredUserId: () => void;
   usage: UsageStats;
   clearUsage: () => void;
+  // Global authentication state
+  isAuthed: boolean;
+  currentUserId: string | null;
+  checkAuth: () => Promise<void>;
+  setAuthState: (isAuthenticated: boolean, userId: string | null) => void;
+  // SDK adapter state
+  sdkType: SdkType;
+  setSdkType: (sdkType: SdkType) => void;
 }
 
 const FinaticContext = createContext<FinaticContextValue | undefined>(undefined);
@@ -72,6 +91,8 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   const [sessionInfo, setSessionInfo] = useState<string>('Not initialized');
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [storedUserId, setStoredUserIdState] = useState<string | null>(null);
+  const [isAuthed, setIsAuthed] = useState<boolean>(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const apiBaseUrlRef = useRef<string | null>(null);
   const [usage, setUsage] = useState<UsageStats>(() => {
     if (typeof window === 'undefined') {
@@ -106,11 +127,66 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     };
   });
 
+  // SDK type state management with localStorage persistence
+  const [sdkType, setSdkTypeState] = useState<SdkType>(() => {
+    if (typeof window === 'undefined') return 'client';
+    try {
+      return (localStorage.getItem('finatic_sdk_type') as SdkType) || 'client';
+    } catch {
+      return 'client';
+    }
+  });
+
+  const setSdkType = useCallback((newSdkType: SdkType) => {
+    console.log('🔄 Setting SDK type to:', newSdkType);
+    setSdkTypeState(newSdkType);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('finatic_sdk_type', newSdkType);
+        console.log('✅ SDK type saved to localStorage:', newSdkType);
+      } catch (e) {
+        console.warn('Failed to save SDK type to localStorage:', e);
+      }
+    }
+  }, []);
+
+  // SDK adapter state
+  const [sdkAdapter, setSdkAdapterState] = useState<SdkAdapter | null>(null);
+
+  // Initialize adapter based on SDK type and client instance
+  useEffect(() => {
+    console.log('🔄 Initializing SDK adapter for type:', sdkType);
+    try {
+      if (sdkType === 'client' && finatic) {
+        // Create ClientSdkAdapter wrapping existing finatic instance
+        const adapter = createSdkAdapter('client', finatic);
+        setSdkAdapterState(adapter);
+        console.log('✅ Client SDK adapter initialized');
+      } else if (sdkType === 'python') {
+        // Create ApiSdkAdapter for Python server SDK
+        const adapter = createSdkAdapter('python');
+        setSdkAdapterState(adapter);
+        console.log('✅ Python Server SDK adapter initialized');
+      } else if (sdkType === 'node') {
+        // Create ApiSdkAdapter for Node server SDK
+        const adapter = createSdkAdapter('node');
+        setSdkAdapterState(adapter);
+        console.log('✅ Node Server SDK adapter initialized');
+      } else if (sdkType === 'client' && !finatic) {
+        setSdkAdapterState(null);
+        console.log('⚠️ Client SDK selected but finatic instance not ready yet');
+      } else {
+        setSdkAdapterState(null);
+        console.log('⚠️ No adapter created - unknown SDK type or not ready');
+      }
+    } catch (error) {
+      console.error('❌ Failed to initialize SDK adapter:', error);
+      setSdkAdapterState(null);
+    }
+  }, [sdkType, finatic]);
+
   const addLog = useCallback((type: LogEntry['type'], message: string) => {
-    setLogs((prev) => [
-      ...prev,
-      { type, message, timestamp: new Date().toLocaleTimeString() },
-    ]);
+    setLogs(prev => [...prev, { type, message, timestamp: new Date().toLocaleTimeString() }]);
   }, []);
 
   const clearLogs = useCallback(() => {
@@ -175,63 +251,86 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const recordMethodCall = useCallback((methodName: string, durationMs: number, bytes: number, isError = false) => {
-    setUsage((prev) => {
-      const rolled = ensureDayRollover(prev);
-      const existing = rolled.methods[methodName] || { count: 0, totalDurationMs: 0, lastDurationMs: 0, errorCount: 0, totalBytes: 0 } as MethodStats;
-      const next: UsageStats = {
-        ...rolled,
-        lastSavedAt: new Date().toISOString(),
-        totals: {
-          apiRequests: rolled.totals.apiRequests,
-          methodCalls: rolled.totals.methodCalls + 1,
-          errors: rolled.totals.errors + (isError ? 1 : 0),
-          totalBytes: rolled.totals.totalBytes + (bytes || 0),
-        },
-        methods: {
-          ...rolled.methods,
-          [methodName]: {
-            count: existing.count + 1,
-            totalDurationMs: existing.totalDurationMs + durationMs,
-            lastDurationMs: durationMs,
-            errorCount: existing.errorCount + (isError ? 1 : 0),
-            totalBytes: existing.totalBytes + (bytes || 0),
+  const recordMethodCall = useCallback(
+    (methodName: string, durationMs: number, bytes: number, isError = false) => {
+      setUsage(prev => {
+        const rolled = ensureDayRollover(prev);
+        const existing =
+          rolled.methods[methodName] ||
+          ({
+            count: 0,
+            totalDurationMs: 0,
+            lastDurationMs: 0,
+            errorCount: 0,
+            totalBytes: 0,
+          } as MethodStats);
+        const next: UsageStats = {
+          ...rolled,
+          lastSavedAt: new Date().toISOString(),
+          totals: {
+            apiRequests: rolled.totals.apiRequests,
+            methodCalls: rolled.totals.methodCalls + 1,
+            errors: rolled.totals.errors + (isError ? 1 : 0),
+            totalBytes: rolled.totals.totalBytes + (bytes || 0),
           },
-        },
-      };
-      return next;
-    });
-  }, [ensureDayRollover]);
+          methods: {
+            ...rolled.methods,
+            [methodName]: {
+              count: existing.count + 1,
+              totalDurationMs: existing.totalDurationMs + durationMs,
+              lastDurationMs: durationMs,
+              errorCount: existing.errorCount + (isError ? 1 : 0),
+              totalBytes: existing.totalBytes + (bytes || 0),
+            },
+          },
+        };
+        return next;
+      });
+    },
+    [ensureDayRollover]
+  );
 
-  const recordApiRequest = useCallback((path: string, method: string, status: number, durationMs: number, bytes: number) => {
-    setUsage((prev) => {
-      const rolled = ensureDayRollover(prev);
-      const key = `${method.toUpperCase()} ${path}`;
-      const existing = rolled.routes[key] || { count: 0, totalDurationMs: 0, lastDurationMs: 0, lastStatus: null, method: method.toUpperCase(), totalBytes: 0 } as RouteStats;
-      const next: UsageStats = {
-        ...rolled,
-        lastSavedAt: new Date().toISOString(),
-        totals: {
-          apiRequests: rolled.totals.apiRequests + 1,
-          methodCalls: rolled.totals.methodCalls,
-          errors: rolled.totals.errors + (status >= 400 ? 1 : 0),
-          totalBytes: rolled.totals.totalBytes + (bytes || 0),
-        },
-        routes: {
-          ...rolled.routes,
-          [key]: {
-            count: existing.count + 1,
-            totalDurationMs: existing.totalDurationMs + durationMs,
-            lastDurationMs: durationMs,
-            lastStatus: status,
+  const recordApiRequest = useCallback(
+    (path: string, method: string, status: number, durationMs: number, bytes: number) => {
+      setUsage(prev => {
+        const rolled = ensureDayRollover(prev);
+        const key = `${method.toUpperCase()} ${path}`;
+        const existing =
+          rolled.routes[key] ||
+          ({
+            count: 0,
+            totalDurationMs: 0,
+            lastDurationMs: 0,
+            lastStatus: null,
             method: method.toUpperCase(),
-            totalBytes: existing.totalBytes + (bytes || 0),
+            totalBytes: 0,
+          } as RouteStats);
+        const next: UsageStats = {
+          ...rolled,
+          lastSavedAt: new Date().toISOString(),
+          totals: {
+            apiRequests: rolled.totals.apiRequests + 1,
+            methodCalls: rolled.totals.methodCalls,
+            errors: rolled.totals.errors + (status >= 400 ? 1 : 0),
+            totalBytes: rolled.totals.totalBytes + (bytes || 0),
           },
-        },
-      };
-      return next;
-    });
-  }, [ensureDayRollover]);
+          routes: {
+            ...rolled.routes,
+            [key]: {
+              count: existing.count + 1,
+              totalDurationMs: existing.totalDurationMs + durationMs,
+              lastDurationMs: durationMs,
+              lastStatus: status,
+              method: method.toUpperCase(),
+              totalBytes: existing.totalBytes + (bytes || 0),
+            },
+          },
+        };
+        return next;
+      });
+    },
+    [ensureDayRollover]
+  );
 
   const clearUsage = useCallback(() => {
     setUsage(() => {
@@ -250,6 +349,52 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const checkAuth = useCallback(async () => {
+    // For server SDKs, use sdkAdapter instead of finatic client
+    const authSource =
+      sdkAdapter && (sdkType === 'python' || sdkType === 'node') ? sdkAdapter : finatic;
+
+    if (!authSource) {
+      setIsAuthed(false);
+      setCurrentUserId(null);
+      return;
+    }
+
+    try {
+      // Use sdkAdapter methods for server SDKs, finatic methods for client SDK
+      const authed =
+        typeof authSource.isAuthed === 'function' ? await authSource.isAuthed() : false;
+      const uid = typeof authSource.getUserId === 'function' ? await authSource.getUserId() : null;
+
+      console.log('🔍 checkAuth() - authed:', authed, 'typeof:', typeof authed);
+      console.log('🔍 checkAuth() - uid:', uid, 'typeof:', typeof uid);
+      console.log(
+        '🔍 checkAuth() - authSource:',
+        authSource === sdkAdapter ? 'sdkAdapter' : 'finatic'
+      );
+
+      setIsAuthed(authed);
+      setCurrentUserId(uid);
+    } catch (error) {
+      console.error('Error checking auth:', error);
+      setIsAuthed(false);
+      setCurrentUserId(null);
+    }
+  }, [finatic, sdkAdapter, sdkType]);
+
+  // Method to directly set authentication state after portal confirmation
+  const setAuthState = useCallback(
+    (isAuthenticated: boolean, userId: string | null) => {
+      console.log('🔍 setAuthState() called with:', { isAuthenticated, userId });
+      setIsAuthed(isAuthenticated);
+      setCurrentUserId(userId);
+      if (isAuthenticated && userId) {
+        addLog('success', `Authentication state updated - User: ${userId}`);
+      }
+    },
+    [addLog]
+  );
+
   const initializeSDK = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -264,43 +409,105 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         addLog('info', `Found stored userId: ${existingUserId}`);
       }
 
+      // Handle server SDK initialization
+      if (sdkType === 'python' || sdkType === 'node') {
+        const baseUrl = sdkType === 'python' ? 'http://localhost:8002' : 'http://localhost:8003';
+        addLog('info', `Initializing ${sdkType} server SDK`);
+        apiBaseUrlRef.current = baseUrl;
+
+        try {
+          // Initialize server SDK by starting a session
+          const response = await fetch(`${baseUrl}/api/session/start`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(
+              `Server SDK initialization failed: ${response.status} ${response.statusText}`
+            );
+          }
+
+          const sessionData = await response.json();
+          if (!sessionData.success) {
+            throw new Error(
+              `Server SDK initialization failed: ${sessionData.error || 'Unknown error'}`
+            );
+          }
+
+          addLog('success', `${sdkType} server SDK session started`);
+          setSessionInfo(
+            `${sdkType.charAt(0).toUpperCase() + sdkType.slice(1)} Server SDK - Session: ${sessionData.data?.session_id || 'started'}`
+          );
+
+          // Clear the client SDK instance since we're using server SDK
+          setFinatic(null);
+
+          setIsLoading(false);
+          return; // Early return for server SDKs
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : 'Failed to initialize server SDK';
+          addLog('error', `Failed to initialize ${sdkType} server SDK: ${msg}`);
+          setError(msg);
+          setSessionInfo(`Failed to initialize ${sdkType} server SDK`);
+
+          // Clear the client SDK instance since we're using server SDK
+          setFinatic(null);
+
+          setIsLoading(false);
+          return;
+        }
+      }
+
       if (useMocks) {
         addLog('info', 'Initializing SDK in MOCK mode');
         setSessionInfo('Mock Mode - No real API calls');
         const apiUrl = process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
         apiBaseUrlRef.current = apiUrl;
-        const initStart = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-        const mockFinatic = await FinaticConnect.init('mock-token', existingUserId || 'mock-user-123', {
-          baseUrl: apiUrl,
-        });
+        const initStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
+        const mockFinatic = await FinaticConnect.init(
+          'mock-token',
+          existingUserId || 'mock-user-123',
+          {
+            baseUrl: apiUrl,
+          }
+        );
         const wrapped = new Proxy(mockFinatic as unknown as Record<string, unknown>, {
           get(target, prop, receiver) {
             const value = Reflect.get(target, prop, receiver);
             if (typeof value === 'function') {
               return function wrappedMethod(this: unknown, ...args: unknown[]) {
-                const start = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+                const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
                 try {
                   const result = (value as Function).apply(target, args);
                   if (result && typeof (result as Promise<unknown>).then === 'function') {
                     return (result as Promise<unknown>)
-                      .then((res) => {
-                        const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                      .then(res => {
+                        const duration =
+                          (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
+                          start;
                         const bytes = estimateBytes(res);
                         recordMethodCall(String(prop), duration, bytes, false);
                         return res;
                       })
-                      .catch((err) => {
-                        const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                      .catch(err => {
+                        const duration =
+                          (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
+                          start;
                         recordMethodCall(String(prop), duration, 0, true);
                         throw err;
                       });
                   }
-                  const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                  const duration =
+                    (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
                   const bytes = estimateBytes(result);
                   recordMethodCall(String(prop), duration, bytes, false);
                   return result;
                 } catch (err) {
-                  const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                  const duration =
+                    (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
                   recordMethodCall(String(prop), duration, 0, true);
                   throw err;
                 }
@@ -310,7 +517,8 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
           },
         });
         setFinatic(wrapped as unknown as FinaticConnect);
-        const initDuration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
+        const initDuration =
+          (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
         recordMethodCall('FinaticConnect.init', initDuration, 0, false);
         addLog('success', 'SDK initialized in MOCK mode');
         return;
@@ -321,38 +529,48 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         setSessionInfo('Mock API Only Mode - Mock API calls, real portal');
         const apiUrl = process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
         apiBaseUrlRef.current = apiUrl;
-        const initStart = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-        const mockFinatic = await FinaticConnect.init('mock-token', existingUserId || 'mock-user-123', {
-          baseUrl: apiUrl,
-        });
+        const initStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
+        const mockFinatic = await FinaticConnect.init(
+          'mock-token',
+          existingUserId || 'mock-user-123',
+          {
+            baseUrl: apiUrl,
+          }
+        );
         const wrapped = new Proxy(mockFinatic as unknown as Record<string, unknown>, {
           get(target, prop, receiver) {
             const value = Reflect.get(target, prop, receiver);
             if (typeof value === 'function') {
               return function wrappedMethod(this: unknown, ...args: unknown[]) {
-                const start = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+                const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
                 try {
                   const result = (value as Function).apply(target, args);
                   if (result && typeof (result as Promise<unknown>).then === 'function') {
                     return (result as Promise<unknown>)
-                      .then((res) => {
-                        const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                      .then(res => {
+                        const duration =
+                          (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
+                          start;
                         const bytes = estimateBytes(res);
                         recordMethodCall(String(prop), duration, bytes, false);
                         return res;
                       })
-                      .catch((err) => {
-                        const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                      .catch(err => {
+                        const duration =
+                          (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
+                          start;
                         recordMethodCall(String(prop), duration, 0, true);
                         throw err;
                       });
                   }
-                  const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                  const duration =
+                    (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
                   const bytes = estimateBytes(result);
                   recordMethodCall(String(prop), duration, bytes, false);
                   return result;
                 } catch (err) {
-                  const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                  const duration =
+                    (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
                   recordMethodCall(String(prop), duration, 0, true);
                   throw err;
                 }
@@ -362,7 +580,8 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
           },
         });
         setFinatic(wrapped as unknown as FinaticConnect);
-        const initDuration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
+        const initDuration =
+          (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
         recordMethodCall('FinaticConnect.init', initDuration, 0, false);
         addLog('success', 'SDK initialized in MOCK API ONLY mode');
         return;
@@ -372,7 +591,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       const apiUrl = process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
       addLog('info', `Using API URL: ${apiUrl}`);
       apiBaseUrlRef.current = apiUrl;
-      const initStart = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const initStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
       const response = await fetch('/api/getToken');
       if (!response.ok) {
         addLog('error', 'Failed to get token from /api/getToken');
@@ -394,29 +613,35 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
           const value = Reflect.get(target, prop, receiver);
           if (typeof value === 'function') {
             return function wrappedMethod(this: unknown, ...args: unknown[]) {
-              const start = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+              const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
               try {
                 const result = (value as Function).apply(target, args);
                 if (result && typeof (result as Promise<unknown>).then === 'function') {
                   return (result as Promise<unknown>)
-                    .then((res) => {
-                      const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                    .then(res => {
+                      const duration =
+                        (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
+                        start;
                       const bytes = estimateBytes(res);
                       recordMethodCall(String(prop), duration, bytes, false);
                       return res;
                     })
-                    .catch((err) => {
-                      const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                    .catch(err => {
+                      const duration =
+                        (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
+                        start;
                       recordMethodCall(String(prop), duration, 0, true);
                       throw err;
                     });
                 }
-                const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                const duration =
+                  (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
                 const bytes = estimateBytes(result);
                 recordMethodCall(String(prop), duration, bytes, false);
                 return result;
               } catch (err) {
-                const duration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
+                const duration =
+                  (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
                 recordMethodCall(String(prop), duration, 0, true);
                 throw err;
               }
@@ -426,8 +651,11 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         },
       });
       setFinatic(wrapped as unknown as FinaticConnect);
-      setSessionInfo(`Real Mode - Authenticated${existingUserId ? ` (User: ${existingUserId})` : ''}`);
-      const initDuration = (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
+      setSessionInfo(
+        `Real Mode - Authenticated${existingUserId ? ` (User: ${existingUserId})` : ''}`
+      );
+      const initDuration =
+        (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
       recordMethodCall('FinaticConnect.init', initDuration, 0, false);
       addLog('success', 'SDK initialized in REAL mode');
     } catch (err) {
@@ -442,12 +670,24 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [addLog, getStoredUserId, estimateBytes, recordMethodCall]);
+  }, [addLog, getStoredUserId, estimateBytes, recordMethodCall, sdkType]);
 
+  // Initialize SDK only on mount, not when stored user ID changes
   useEffect(() => {
     setStoredUserIdState(getStoredUserId());
     void initializeSDK();
-  }, [getStoredUserId, initializeSDK]);
+  }, [initializeSDK]); // Removed getStoredUserId dependency to prevent unnecessary re-initialization
+
+  // Re-initialize when SDK type changes
+  useEffect(() => {
+    void initializeSDK();
+  }, [sdkType, initializeSDK]);
+
+  // Check authentication when SDK is initialized or when stored user ID changes
+  // But don't call initializeSDK again for server SDKs after portal confirmation
+  useEffect(() => {
+    void checkAuth();
+  }, [checkAuth, storedUserId]);
 
   // Persist usage and emit event AFTER state updates to avoid re-entrant updates during render
   useEffect(() => {
@@ -462,10 +702,17 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const originalFetch = window.fetch.bind(window);
-    const instrumentedFetch: typeof window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-      const start = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    const instrumentedFetch: typeof window.fetch = async (
+      input: RequestInfo | URL,
+      init?: RequestInit
+    ) => {
+      const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
       let url: string;
-      let method = (init?.method || (typeof input === 'object' && 'method' in input ? (input as Request).method : 'GET') || 'GET').toUpperCase();
+      let method = (
+        init?.method ||
+        (typeof input === 'object' && 'method' in input ? (input as Request).method : 'GET') ||
+        'GET'
+      ).toUpperCase();
       if (typeof input === 'string') {
         url = input;
       } else if (input instanceof URL) {
@@ -481,7 +728,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       try {
         const response = await originalFetch(input as any, init as any);
         if (isSdkCall && !isLocalNextApi) {
-          const end = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+          const end = typeof performance !== 'undefined' ? performance.now() : Date.now();
           const duration = end - start;
           let bytes = 0;
           try {
@@ -507,7 +754,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         return response;
       } catch (err) {
         if (isSdkCall && !isLocalNextApi) {
-          const end = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+          const end = typeof performance !== 'undefined' ? performance.now() : Date.now();
           const duration = end - start;
           const path = (() => {
             try {
@@ -529,26 +776,56 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     };
   }, [recordApiRequest]);
 
-  const value = useMemo<FinaticContextValue>(() => ({
-    finatic,
-    isLoading,
-    error,
-    isMockMode,
-    sessionInfo,
-    logs,
-    addLog,
-    clearLogs,
-    reinitialize: initializeSDK,
-    storedUserId,
-    setStoredUserId,
-    clearStoredUserId,
-    usage,
-    clearUsage,
-  }), [finatic, isLoading, error, isMockMode, sessionInfo, logs, addLog, clearLogs, initializeSDK, storedUserId, setStoredUserId, clearStoredUserId, usage, clearUsage]);
-
-  return (
-    <FinaticContext.Provider value={value}>{children}</FinaticContext.Provider>
+  const value = useMemo<FinaticContextValue>(
+    () => ({
+      finatic,
+      sdkAdapter,
+      isLoading,
+      error,
+      isMockMode,
+      sessionInfo,
+      logs,
+      addLog,
+      clearLogs,
+      reinitialize: initializeSDK,
+      storedUserId,
+      setStoredUserId,
+      clearStoredUserId,
+      usage,
+      clearUsage,
+      isAuthed,
+      currentUserId,
+      checkAuth,
+      setAuthState,
+      sdkType,
+      setSdkType,
+    }),
+    [
+      finatic,
+      sdkAdapter,
+      isLoading,
+      error,
+      isMockMode,
+      sessionInfo,
+      logs,
+      addLog,
+      clearLogs,
+      initializeSDK,
+      storedUserId,
+      setStoredUserId,
+      clearStoredUserId,
+      usage,
+      clearUsage,
+      isAuthed,
+      currentUserId,
+      checkAuth,
+      setAuthState,
+      sdkType,
+      setSdkType,
+    ]
   );
+
+  return <FinaticContext.Provider value={value}>{children}</FinaticContext.Provider>;
 }
 
 export function useFinatic() {
@@ -558,5 +835,3 @@ export function useFinatic() {
   }
   return ctx;
 }
-
-
