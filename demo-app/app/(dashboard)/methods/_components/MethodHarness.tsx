@@ -1,224 +1,230 @@
-"use client"
+'use client';
 
-import { useEffect, useMemo, useState } from "react"
-import { Loader2, CheckCircle2, XCircle, Clock, ChevronDown, ChevronRight, Minimize2, Maximize2, Info } from "lucide-react"
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  ChevronDown,
+  ChevronRight,
+  Minimize2,
+  Maximize2,
+  Info,
+} from 'lucide-react';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Separator } from "@/components/ui/separator"
-import { useFinatic } from "@/app/providers/FinaticProvider"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
+import { useFinatic } from '@/app/providers/FinaticProvider';
 
 export type MethodExecutionRecord = {
-  status: "idle" | "loading" | "success" | "error"
-  startedAt?: string
-  finishedAt?: string
-  durationMs?: number
-  result?: unknown
-  error?: string
-}
+  status: 'idle' | 'loading' | 'success' | 'error';
+  startedAt?: string;
+  finishedAt?: string;
+  durationMs?: number;
+  result?: unknown;
+  error?: string;
+};
 
 export type MethodField = {
-  name: string
-  label: string
-  placeholder?: string
-  defaultValue?: string
-  type?: "text" | "number"
-  description?: string
-}
+  name: string;
+  label: string;
+  placeholder?: string;
+  defaultValue?: string;
+  type?: 'text' | 'number';
+  description?: string;
+};
 
 export type MethodDefinition = {
-  key: string
-  label: string
-  description?: string
-  methodName?: string
+  key: string;
+  label: string;
+  description?: string;
+  methodName?: string;
   input?:
-    | { type: "none" }
-    | { type: "json"; defaultValue?: string; placeholder?: string }
-    | { type: "fields"; fields: MethodField[] }
+    | { type: 'none' }
+    | { type: 'json'; defaultValue?: string; placeholder?: string }
+    | { type: 'fields'; fields: MethodField[] };
   prepareArgs?: (
     params: {
-      inputValue?: string
-      fieldValues?: Record<string, string>
+      inputValue?: string;
+      fieldValues?: Record<string, string>;
     },
     context: HarnessContext
-  ) => any[] | Promise<any[]>
-  run?: (
-    params: {
-      finatic: any
-      inputValue?: string
-      fieldValues?: Record<string, string>
-      context: HarnessContext
-      helpers: HarnessHelpers
-    }
-  ) => any | Promise<any>
-  buttonLabel?: string
-  dependsOn?: string[]
-  canRun?: (context: HarnessContext) => { allowed: boolean; reason?: string }
-  onSuccess?: (result: unknown, helpers: HarnessHelpers) => void
-  onError?: (error: Error, helpers: HarnessHelpers) => void
-}
+  ) => any[] | Promise<any[]>;
+  run?: (params: {
+    finatic: any;
+    inputValue?: string;
+    fieldValues?: Record<string, string>;
+    context: HarnessContext;
+    helpers: HarnessHelpers;
+  }) => any | Promise<any>;
+  buttonLabel?: string;
+  dependsOn?: string[];
+  canRun?: (context: HarnessContext) => { allowed: boolean; reason?: string };
+  onSuccess?: (result: unknown, helpers: HarnessHelpers) => void;
+  onError?: (error: Error, helpers: HarnessHelpers) => void;
+};
 
 export type MethodGroup = {
-  key: string
-  title: string
-  description?: string
-  methods: MethodDefinition[]
-}
+  key: string;
+  title: string;
+  description?: string;
+  methods: MethodDefinition[];
+};
 
 export type HarnessContext = {
-  records: Record<string, MethodExecutionRecord | undefined>
-  pagination: Record<string, unknown>
-}
+  records: Record<string, MethodExecutionRecord | undefined>;
+  pagination: Record<string, unknown>;
+};
 
 export type HarnessHelpers = {
-  setRecord: (key: string, value: MethodExecutionRecord) => void
+  setRecord: (key: string, value: MethodExecutionRecord) => void;
   updateRecord: (
     key: string,
     updater: (previous?: MethodExecutionRecord) => MethodExecutionRecord
-  ) => void
-  setPagination: (key: string, value: unknown) => void
-  getPagination: <T = unknown>(key: string) => T | undefined
-}
+  ) => void;
+  setPagination: (key: string, value: unknown) => void;
+  getPagination: <T = unknown>(key: string) => T | undefined;
+};
 
 export interface MethodHarnessProps {
-  title: string
-  description?: string
-  methodGroups: MethodGroup[]
+  title: string;
+  description?: string;
+  methodGroups: MethodGroup[];
 }
 
 function isJsonInput(
-  input: MethodDefinition["input"]
-): input is { type: "json"; defaultValue?: string; placeholder?: string } {
-  return input?.type === "json"
+  input: MethodDefinition['input']
+): input is { type: 'json'; defaultValue?: string; placeholder?: string } {
+  return input?.type === 'json';
 }
 
 function isFieldsInput(
-  input: MethodDefinition["input"]
-): input is { type: "fields"; fields: MethodField[] } {
-  return input?.type === "fields"
+  input: MethodDefinition['input']
+): input is { type: 'fields'; fields: MethodField[] } {
+  return input?.type === 'fields';
 }
 
 export function MethodHarness({ title, description, methodGroups }: MethodHarnessProps) {
-  const { finatic, addLog, isLoading, error } = useFinatic()
+  const { finatic, sdkAdapter, addLog, isLoading, error, isAuthed, sdkType, checkAuth } =
+    useFinatic();
 
   const initialFieldState = useMemo(() => {
-    const state: Record<string, Record<string, string>> = {}
+    const state: Record<string, Record<string, string>> = {};
     for (const group of methodGroups) {
       for (const method of group.methods) {
-        if (method.input?.type === "fields") {
-          state[method.key] = {}
+        if (method.input?.type === 'fields') {
+          state[method.key] = {};
           for (const field of method.input.fields) {
-            state[method.key][field.name] = field.defaultValue ?? ""
+            state[method.key][field.name] = field.defaultValue ?? '';
           }
         }
       }
     }
-    return state
-  }, [methodGroups])
+    return state;
+  }, [methodGroups]);
 
   const initialJsonState = useMemo(() => {
-    const state: Record<string, string> = {}
+    const state: Record<string, string> = {};
     for (const group of methodGroups) {
       for (const method of group.methods) {
-        if (method.input?.type === "json") {
-          state[method.key] = method.input.defaultValue ?? ""
+        if (method.input?.type === 'json') {
+          state[method.key] = method.input.defaultValue ?? '';
         }
       }
     }
-    return state
-  }, [methodGroups])
+    return state;
+  }, [methodGroups]);
 
-  const [fieldValues, setFieldValues] = useState(initialFieldState)
-  const [jsonValues, setJsonValues] = useState(initialJsonState)
-  const [records, setRecords] = useState<Record<string, MethodExecutionRecord>>({})
-  const [pagination, setPagination] = useState<Record<string, unknown>>({})
+  const [fieldValues, setFieldValues] = useState(initialFieldState);
+  const [jsonValues, setJsonValues] = useState(initialJsonState);
+  const [records, setRecords] = useState<Record<string, MethodExecutionRecord>>({});
+  const [pagination, setPagination] = useState<Record<string, unknown>>({});
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {}
+    const initial: Record<string, boolean> = {};
     for (const group of methodGroups) {
-      initial[group.key] = true
+      initial[group.key] = true;
     }
-    return initial
-  })
-  const [isRunningAll, setIsRunningAll] = useState(false)
+    return initial;
+  });
+  const [isRunningAll, setIsRunningAll] = useState(false);
   const [lastRunSummary, setLastRunSummary] = useState<{
-    total: number
-    succeeded: { key: string; label: string; durationMs?: number }[]
-    failed: { key: string; label: string }[]
-    averageMs?: number
-    minMs?: number
-    maxMs?: number
-  } | null>(null)
-  const [isAuthed, setIsAuthed] = useState<boolean | null>(null)
-  const [showInfo, setShowInfo] = useState(false)
+    total: number;
+    succeeded: { key: string; label: string; durationMs?: number }[];
+    failed: { key: string; label: string }[];
+    averageMs?: number;
+    minMs?: number;
+    maxMs?: number;
+  } | null>(null);
+  const [showInfo, setShowInfo] = useState(false);
 
   const methodKeyToGroupKey = useMemo(() => {
-    const map: Record<string, string> = {}
+    const map: Record<string, string> = {};
     for (const group of methodGroups) {
       for (const method of group.methods) {
-        map[method.key] = group.key
+        map[method.key] = group.key;
       }
     }
-    return map
-  }, [methodGroups])
+    return map;
+  }, [methodGroups]);
 
   const toggleGroup = (key: string) => {
-    setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }))
-  }
+    setExpandedGroups(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
   const minimizeAllGroups = () => {
-    const minimized: Record<string, boolean> = {}
+    const minimized: Record<string, boolean> = {};
     for (const group of methodGroups) {
-      minimized[group.key] = false
+      minimized[group.key] = false;
     }
-    setExpandedGroups(minimized)
-  }
+    setExpandedGroups(minimized);
+  };
 
   const maximizeAllGroups = () => {
-    const maximized: Record<string, boolean> = {}
+    const maximized: Record<string, boolean> = {};
     for (const group of methodGroups) {
-      maximized[group.key] = true
+      maximized[group.key] = true;
     }
-    setExpandedGroups(maximized)
-  }
+    setExpandedGroups(maximized);
+  };
 
   const anchorToMethod = (methodKey: string) => {
-    const groupKey = methodKeyToGroupKey[methodKey]
+    const groupKey = methodKeyToGroupKey[methodKey];
     if (groupKey) {
-      setExpandedGroups((prev) => ({ ...prev, [groupKey]: true }))
+      setExpandedGroups(prev => ({ ...prev, [groupKey]: true }));
     }
     setTimeout(() => {
-      const el = document.getElementById(`method-${methodKey}`)
+      const el = document.getElementById(`method-${methodKey}`);
       if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" })
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-    }, 0)
-  }
+    }, 0);
+  };
 
   const getRunAllOrder = () => {
-    const all: MethodDefinition[] = []
+    const all: MethodDefinition[] = [];
     for (const group of methodGroups) {
       for (const method of group.methods) {
-        all.push(method)
+        all.push(method);
       }
     }
     // Weight methods so seed page requests run before next-page requests
     // -2: openPortal, -1: closePortal, 0: get*Page (not Next), 1: others, 2: getNext*Page
     const weight = (key: string) => {
-      if (key === "openPortal") return -2
-      if (key === "closePortal") return -1
-      const isNextPage = /^getNext.*Page$/i.test(key)
-      const isSeedPage = /^get.*Page$/i.test(key) && !isNextPage
-      if (isSeedPage) return 0
-      if (isNextPage) return 2
-      return 1
-    }
-    return all
-      .slice()
-      .sort((a, b) => weight(a.key) - weight(b.key))
-  }
+      if (key === 'openPortal') return -2;
+      if (key === 'closePortal') return -1;
+      const isNextPage = /^getNext.*Page$/i.test(key);
+      const isSeedPage = /^get.*Page$/i.test(key) && !isNextPage;
+      if (isSeedPage) return 0;
+      if (isNextPage) return 2;
+      return 1;
+    };
+    return all.slice().sort((a, b) => weight(a.key) - weight(b.key));
+  };
 
   const context: HarnessContext = useMemo(
     () => ({
@@ -226,257 +232,231 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
       pagination,
     }),
     [records, pagination]
-  )
+  );
 
   const helpers: HarnessHelpers = useMemo(
     () => ({
       setRecord: (key, value) => {
-        setRecords((prev) => ({ ...prev, [key]: value }))
+        setRecords(prev => ({ ...prev, [key]: value }));
       },
       updateRecord: (key, updater) => {
-        setRecords((prev) => ({ ...prev, [key]: updater(prev[key]) }))
+        setRecords(prev => ({ ...prev, [key]: updater(prev[key]) }));
       },
       setPagination: (key, value) => {
-        setPagination((prev) => ({ ...prev, [key]: value }))
+        setPagination(prev => ({ ...prev, [key]: value }));
       },
-      getPagination: <T = unknown>(key: string) => pagination[key] as T | undefined,
+      getPagination: <T = unknown,>(key: string) => pagination[key] as T | undefined,
     }),
     [pagination]
-  )
+  );
 
   // Compute test coverage for info panel
   const sdkMethodNames = useMemo(
     () => [
-      "isAuthed",
-      "is_authenticated",
-      "openPortal",
-      "closePortal",
-      "setUserId",
-      "getUserId",
-      "getSessionUser",
-      "disconnectCompany",
-      "getBrokerList",
-      "getBrokerConnections",
-      "getAccounts",
-      "getAccountsPage",
-      "getNextAccountsPage",
-      "getAllAccounts",
-      "getActiveAccounts",
-      "getBalances",
-      "getBalancesPage",
-      "getNextBalancesPage",
-      "getAllBalances",
-      "getOrders",
-      "getOrdersPage",
-      "getNextOrdersPage",
-      "getAllOrders",
-      "getFilledOrders",
-      "getPendingOrders",
-      "getOrdersBySymbol",
-      "getOrdersByBroker",
-      "getPositions",
-      "getPositionsPage",
-      "getNextPositionsPage",
-      "getAllPositions",
-      "getOpenPositions",
-      "getPositionsBySymbol",
-      "getPositionsByBroker",
-      "setBroker",
-      "setAccount",
-      "getTradingContext",
-      "clearTradingContext",
-      "placeOrder",
-      "cancelOrder",
-      "modifyOrder",
-      "placeStockMarketOrder",
-      "placeStockLimitOrder",
-      "placeStockStopOrder",
-      "placeCryptoMarketOrder",
-      "placeCryptoLimitOrder",
-      "placeOptionsMarketOrder",
-      "placeOptionsLimitOrder",
-      "placeFuturesMarketOrder",
-      "placeFuturesLimitOrder",
+      'isAuthed',
+      'is_authenticated',
+      'openPortal',
+      'closePortal',
+      'setUserId',
+      'getUserId',
+      'getSessionUser',
+      'disconnectCompany',
+      'getBrokerList',
+      'getBrokerConnections',
+      'getAccounts',
+      'getAccountsPage',
+      'getNextAccountsPage',
+      'getAllAccounts',
+      'getActiveAccounts',
+      'getBalances',
+      'getBalancesPage',
+      'getNextBalancesPage',
+      'getAllBalances',
+      'getOrders',
+      'getOrdersPage',
+      'getNextOrdersPage',
+      'getAllOrders',
+      'getFilledOrders',
+      'getPendingOrders',
+      'getOrdersBySymbol',
+      'getOrdersByBroker',
+      'getPositions',
+      'getPositionsPage',
+      'getNextPositionsPage',
+      'getAllPositions',
+      'getOpenPositions',
+      'getPositionsBySymbol',
+      'getPositionsByBroker',
+      'setBroker',
+      'setAccount',
+      'getTradingContext',
+      'clearTradingContext',
+      'placeOrder',
+      'cancelOrder',
+      'modifyOrder',
+      'placeStockMarketOrder',
+      'placeStockLimitOrder',
+      'placeStockStopOrder',
+      'placeCryptoMarketOrder',
+      'placeCryptoLimitOrder',
+      'placeOptionsMarketOrder',
+      'placeOptionsLimitOrder',
+      'placeFuturesMarketOrder',
+      'placeFuturesLimitOrder',
     ],
     []
-  )
+  );
 
   const testedMethodNames = useMemo(() => {
-    const names = new Set<string>()
+    const names = new Set<string>();
     for (const group of methodGroups) {
       for (const method of group.methods) {
-        names.add(method.methodName ?? method.key)
+        names.add(method.methodName ?? method.key);
       }
     }
-    return Array.from(names)
-  }, [methodGroups])
+    return Array.from(names);
+  }, [methodGroups]);
 
   const untestedMethodNames = useMemo(
-    () => sdkMethodNames.filter((name) => !testedMethodNames.includes(name)),
+    () => sdkMethodNames.filter(name => !testedMethodNames.includes(name)),
     [sdkMethodNames, testedMethodNames]
-  )
+  );
 
-  // Evaluate SDK auth readiness
-  useEffect(() => {
-    let cancelled = false
-    const checkAuth = async () => {
-      if (!finatic) {
-        if (!cancelled) setIsAuthed(null)
-        return
-      }
-      try {
-        const maybe = (finatic as any).isAuthed?.()
-        const ok = maybe instanceof Promise ? await maybe : maybe
-        if (!cancelled) setIsAuthed(Boolean(ok))
-      } catch {
-        if (!cancelled) setIsAuthed(false)
-      }
-    }
-    void checkAuth()
-    return () => {
-      cancelled = true
-    }
-  }, [finatic])
-
-  const sdkReady = Boolean(finatic) && !isLoading
-  const allReady = sdkReady && isAuthed === true
+  const sdkReady = Boolean(sdkAdapter) && !isLoading;
+  const allReady = sdkReady && isAuthed === true;
 
   const handlePrimaryAction = async () => {
-    if (!finatic) return
+    if (!sdkAdapter) return;
     if (allReady) {
-      await runAllMethods()
-      return
+      await runAllMethods();
+      return;
     }
-    const openPortal = (finatic as any).openPortal
-    if (typeof openPortal === "function") {
-      try {
-        await Promise.resolve(openPortal.call(finatic, { path: "/", mode: "modal" }))
-        // Re-check auth shortly after opening portal
-        setTimeout(async () => {
-          try {
-            const res = (finatic as any).isAuthed?.()
-            const ok = res instanceof Promise ? await res : res
-            setIsAuthed(Boolean(ok))
-          } catch {
-            setIsAuthed(false)
-          }
-        }, 1000)
-      } catch (err) {
-        addLog("error", "Failed to open portal")
-      }
-    } else {
-      addLog("error", "Portal method is not available on the SDK instance")
+    try {
+      await sdkAdapter.openPortal({ path: '/', mode: 'modal' });
+      // Re-check auth shortly after opening portal
+      setTimeout(async () => {
+        await checkAuth();
+      }, 1000);
+    } catch (err) {
+      addLog('error', 'Failed to open portal');
     }
-  }
+  };
 
   const runMethod = async (definition: MethodDefinition): Promise<MethodExecutionRecord> => {
-    if (!finatic) {
-      addLog("error", "Finatic SDK is not ready yet")
-      return { status: "error", error: "SDK not ready" }
+    if (!sdkAdapter) {
+      addLog('error', 'SDK adapter is not ready yet');
+      return { status: 'error', error: 'SDK not ready' };
     }
 
-    const key = definition.key
-    const startedAt = new Date().toISOString()
+    const key = definition.key;
+    const startedAt = new Date().toISOString();
 
-    setRecords((prev) => ({
+    setRecords(prev => ({
       ...prev,
       [key]: {
-        status: "loading",
+        status: 'loading',
         startedAt,
         error: undefined,
         result: undefined,
       },
-    }))
+    }));
 
-    const inputValue = definition.input?.type === "json" ? jsonValues[key] : undefined
+    const inputValue = definition.input?.type === 'json' ? jsonValues[key] : undefined;
     const currentFieldValues =
-      definition.input?.type === "fields" ? fieldValues[key] ?? {} : undefined
+      definition.input?.type === 'fields' ? (fieldValues[key] ?? {}) : undefined;
 
     try {
-      let args: any[] = []
+      let args: any[] = [];
       if (definition.prepareArgs) {
         args = await definition.prepareArgs(
           { inputValue, fieldValues: currentFieldValues },
           context
-        )
+        );
       }
 
-      const startTime = performance.now()
-      let result: unknown
+      const startTime = performance.now();
+      let result: unknown;
       if (definition.run) {
         result = await Promise.resolve(
           definition.run({
-            finatic,
+            finatic: sdkAdapter, // Pass adapter as finatic for backward compatibility
             inputValue,
             fieldValues: currentFieldValues,
             context,
             helpers,
           })
-        )
+        );
       } else {
-        const methodName = definition.methodName ?? definition.key
-        const target = (finatic as unknown as Record<string, unknown>)[methodName]
-        if (typeof target !== "function") {
-          throw new Error(`Method ${methodName} is not available on the Finatic SDK instance`)
+        const methodName = definition.methodName ?? definition.key;
+        const target = (sdkAdapter as unknown as Record<string, unknown>)[methodName];
+        if (typeof target !== 'function') {
+          throw new Error(`Method ${methodName} is not available on the SDK adapter`);
         }
-        result = await Promise.resolve((target as (...args: any[]) => unknown).apply(finatic, args))
+        result = await Promise.resolve(
+          (target as (...args: any[]) => unknown).apply(sdkAdapter, args)
+        );
       }
-      const durationMs = performance.now() - startTime
+      const durationMs = performance.now() - startTime;
 
       const finalRecord: MethodExecutionRecord = {
-        status: "success",
+        status: 'success',
         startedAt,
         finishedAt: new Date().toISOString(),
         durationMs,
         result,
-      }
-      setRecords((prev) => ({
+      };
+      setRecords(prev => ({
         ...prev,
         [key]: finalRecord,
-      }))
+      }));
 
-      definition.onSuccess?.(result, helpers)
-      addLog("success", `${definition.methodName ?? definition.key} succeeded in ${durationMs.toFixed(0)}ms`)
-      return finalRecord
+      definition.onSuccess?.(result, helpers);
+      addLog(
+        'success',
+        `${definition.methodName ?? definition.key} succeeded in ${durationMs.toFixed(0)}ms`
+      );
+      return finalRecord;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error"
+      const message = err instanceof Error ? err.message : 'Unknown error';
       const finalRecord: MethodExecutionRecord = {
-        status: "error",
+        status: 'error',
         startedAt,
         finishedAt: new Date().toISOString(),
         error: message,
-      }
-      setRecords((prev) => ({
+      };
+      setRecords(prev => ({
         ...prev,
         [key]: finalRecord,
-      }))
+      }));
       if (err instanceof Error) {
-        definition.onError?.(err, helpers)
+        definition.onError?.(err, helpers);
       }
-      addLog("error", `${definition.methodName ?? definition.key} failed: ${message}`)
-      return finalRecord
+      addLog('error', `${definition.methodName ?? definition.key} failed: ${message}`);
+      return finalRecord;
     }
-  }
+  };
 
   const runAllMethods = async () => {
-    if (isRunningAll) return
-    setIsRunningAll(true)
-    setLastRunSummary(null)
-    const order = getRunAllOrder()
-    const succeeded: { key: string; label: string; durationMs?: number }[] = []
-    const failed: { key: string; label: string }[] = []
+    if (isRunningAll) return;
+    setIsRunningAll(true);
+    setLastRunSummary(null);
+    const order = getRunAllOrder();
+    const succeeded: { key: string; label: string; durationMs?: number }[] = [];
+    const failed: { key: string; label: string }[] = [];
     for (const method of order) {
-      const record = await runMethod(method)
-      if (record.status === "success") {
-        succeeded.push({ key: method.key, label: method.label, durationMs: record.durationMs })
+      const record = await runMethod(method);
+      if (record.status === 'success') {
+        succeeded.push({ key: method.key, label: method.label, durationMs: record.durationMs });
       } else {
-        failed.push({ key: method.key, label: method.label })
+        failed.push({ key: method.key, label: method.label });
       }
     }
-    const durations = succeeded.map((r) => r.durationMs ?? 0)
-    const averageMs = durations.length ? durations.reduce((a, b) => a + b, 0) / durations.length : undefined
-    const minMs = durations.length ? Math.min(...durations) : undefined
-    const maxMs = durations.length ? Math.max(...durations) : undefined
+    const durations = succeeded.map(r => r.durationMs ?? 0);
+    const averageMs = durations.length
+      ? durations.reduce((a, b) => a + b, 0) / durations.length
+      : undefined;
+    const minMs = durations.length ? Math.min(...durations) : undefined;
+    const maxMs = durations.length ? Math.max(...durations) : undefined;
     setLastRunSummary({
       total: order.length,
       succeeded,
@@ -484,47 +464,47 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
       averageMs,
       minMs,
       maxMs,
-    })
-    setIsRunningAll(false)
-  }
+    });
+    setIsRunningAll(false);
+  };
 
   const renderStatusBadge = (record?: MethodExecutionRecord) => {
     if (!record) {
-      return <Badge variant="secondary">Idle</Badge>
+      return <Badge variant="secondary">Idle</Badge>;
     }
     switch (record.status) {
-      case "loading":
+      case 'loading':
         return (
           <Badge variant="secondary" className="bg-blue-500/10 text-blue-400 border-blue-500/20">
             <Loader2 className="mr-1 h-3 w-3 animate-spin" /> Running
           </Badge>
-        )
-      case "success":
+        );
+      case 'success':
         return (
           <Badge variant="secondary" className="bg-green-500/10 text-green-400 border-green-500/20">
             <CheckCircle2 className="mr-1 h-3 w-3" /> Success
           </Badge>
-        )
-      case "error":
+        );
+      case 'error':
         return (
           <Badge variant="secondary" className="bg-red-500/10 text-red-400 border-red-500/20">
             <XCircle className="mr-1 h-3 w-3" /> Failed
           </Badge>
-        )
+        );
       default:
-        return <Badge variant="secondary">Idle</Badge>
+        return <Badge variant="secondary">Idle</Badge>;
     }
-  }
+  };
 
   const formatResult = (value: unknown) => {
-    if (value == null) return "null"
-    if (typeof value === "string") return value
+    if (value == null) return 'null';
+    if (typeof value === 'string') return value;
     try {
-      return JSON.stringify(value, null, 2)
+      return JSON.stringify(value, null, 2);
     } catch {
-      return String(value)
+      return String(value);
     }
-  }
+  };
 
   return (
     <div className="flex-1 space-y-6 p-6">
@@ -541,7 +521,7 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setShowInfo((prev) => !prev)}
+                onClick={() => setShowInfo(prev => !prev)}
                 className="h-8 w-8 rounded-full"
                 title="Show method coverage"
               >
@@ -568,19 +548,25 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
                 </Button>
               </div>
               <Button
-                className={`ml-2 ${allReady ? "bg-green-600 hover:bg-green-600/90" : "bg-red-600 hover:bg-red-600/90"} text-primary-foreground`}
+                className={`ml-2 ${allReady ? 'bg-green-600 hover:bg-green-600/90' : 'bg-red-600 hover:bg-red-600/90'} text-primary-foreground`}
                 onClick={() => void handlePrimaryAction()}
-                disabled={!finatic || isRunningAll}
-                title={allReady ? "SDK is authenticated. Run all methods." : (!sdkReady ? "SDK not initialized" : "Not authenticated - open portal to connect")}
+                disabled={!sdkAdapter || isRunningAll}
+                title={
+                  allReady
+                    ? 'SDK is authenticated. Run all methods.'
+                    : !sdkReady
+                      ? 'SDK not initialized'
+                      : 'Not authenticated - open portal to connect'
+                }
               >
                 {isRunningAll ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Running all
                   </>
                 ) : allReady ? (
-                  "Run all methods"
+                  'Run all methods'
                 ) : (
-                  "Open portal to connect"
+                  'Open portal to connect'
                 )}
               </Button>
             </div>
@@ -588,22 +574,28 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
               <div className="absolute right-0 mt-2 w-96 rounded-md border border-border bg-card p-3 text-left shadow-lg z-50">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-sm font-medium text-foreground">SDK method coverage</span>
-                  <Badge variant="secondary" className="text-xs">{testedMethodNames.length}/{sdkMethodNames.length} covered</Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    {testedMethodNames.length}/{sdkMethodNames.length} covered
+                  </Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-3 max-h-64 overflow-auto">
                   <div>
                     <label className="text-xs font-medium text-foreground">Tested</label>
                     <ul className="mt-1 space-y-1">
-                      {testedMethodNames.sort().map((name) => (
-                        <li key={`tested-${name}`} className="text-xs text-muted-foreground">{name}</li>
+                      {testedMethodNames.sort().map(name => (
+                        <li key={`tested-${name}`} className="text-xs text-muted-foreground">
+                          {name}
+                        </li>
                       ))}
                     </ul>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-foreground">Not tested</label>
                     <ul className="mt-1 space-y-1">
-                      {untestedMethodNames.sort().map((name) => (
-                        <li key={`untested-${name}`} className="text-xs text-muted-foreground">{name}</li>
+                      {untestedMethodNames.sort().map(name => (
+                        <li key={`untested-${name}`} className="text-xs text-muted-foreground">
+                          {name}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -612,7 +604,11 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
             )}
             {!allReady && (
               <p className="text-xs text-red-400">
-                {!sdkReady ? "SDK is not ready yet" : (isAuthed === false ? "User is not authenticated - open the portal to connect" : "Evaluating authentication...")}
+                {!sdkReady
+                  ? 'SDK is not ready yet'
+                  : !isAuthed
+                    ? 'User is not authenticated - open the portal to connect'
+                    : 'Evaluating authentication...'}
               </p>
             )}
             {error && <p className="text-xs text-red-400">{error}</p>}
@@ -628,7 +624,9 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
               <CardTitle className="text-lg text-foreground">Run summary</CardTitle>
               <div className="text-xs text-muted-foreground">
                 <span className="mr-3">Total: {lastRunSummary.total}</span>
-                <span className="mr-3 text-green-400">Succeeded: {lastRunSummary.succeeded.length}</span>
+                <span className="mr-3 text-green-400">
+                  Succeeded: {lastRunSummary.succeeded.length}
+                </span>
                 <span className="text-red-400">Failed: {lastRunSummary.failed.length}</span>
               </div>
             </div>
@@ -649,7 +647,7 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
               <div className="space-y-2 mb-4">
                 <label className="text-sm font-medium text-foreground">Succeeded methods</label>
                 <div className="flex flex-wrap gap-2">
-                  {lastRunSummary.succeeded.map((m) => (
+                  {lastRunSummary.succeeded.map(m => (
                     <Button
                       key={m.key}
                       variant="secondary"
@@ -666,7 +664,7 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Failed methods</label>
                 <div className="flex flex-wrap gap-2">
-                  {lastRunSummary.failed.map((m) => (
+                  {lastRunSummary.failed.map(m => (
                     <Button
                       key={m.key}
                       variant="destructive"
@@ -684,7 +682,7 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
       )}
 
       <div className="space-y-8">
-        {methodGroups.map((group) => (
+        {methodGroups.map(group => (
           <section key={group.key} className="space-y-4">
             <Card className="bg-card border-border">
               <CardHeader
@@ -712,134 +710,152 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
               {expandedGroups[group.key] && (
                 <CardContent id={`group-${group.key}`} className="pt-0">
                   <div className="grid gap-4 lg:grid-cols-2">
-                  {group.methods.map((method) => {
-                const record = records[method.key]
-                const inputType = method.input?.type ?? "none"
+                    {group.methods.map(method => {
+                      const record = records[method.key];
+                      const inputType = method.input?.type ?? 'none';
 
-                let dependencyMessage: string | null = null
-                if (method.dependsOn?.length) {
-                  const missing = method.dependsOn.find((dep) => records[dep]?.status !== "success")
-                  if (missing) {
-                    dependencyMessage = `Run ${missing} first to populate required data.`
-                  }
-                }
+                      let dependencyMessage: string | null = null;
+                      if (method.dependsOn?.length) {
+                        const missing = method.dependsOn.find(
+                          dep => records[dep]?.status !== 'success'
+                        );
+                        if (missing) {
+                          dependencyMessage = `Run ${missing} first to populate required data.`;
+                        }
+                      }
 
-                if (method.canRun) {
-                  const validation = method.canRun(context)
-                  if (!validation.allowed && validation.reason) {
-                    dependencyMessage = validation.reason
-                  }
-                }
+                      if (method.canRun) {
+                        const validation = method.canRun(context);
+                        if (!validation.allowed && validation.reason) {
+                          dependencyMessage = validation.reason;
+                        }
+                      }
 
-                return (
-                  <Card key={method.key} id={`method-${method.key}`} className="bg-card border-border">
-                    <CardHeader>
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <CardTitle className="text-lg text-foreground">{method.label}</CardTitle>
-                          {method.description && (
-                            <CardDescription className="text-muted-foreground text-sm">
-                              {method.description}
-                            </CardDescription>
-                          )}
-                        </div>
-                        <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground">
-                          {renderStatusBadge(record)}
-                          {record?.durationMs != null && (
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {Math.round(record.durationMs)}ms
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {isJsonInput(method.input) && (
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">Payload</label>
-                          <Textarea
-                            value={jsonValues[method.key] ?? ""}
-                            onChange={(event) => {
-                              const value = event.target.value
-                              setJsonValues((prev) => ({ ...prev, [method.key]: value }))
-                            }}
-                            placeholder={method.input.placeholder ?? "{\n  \"example\": true\n}"}
-                            className="min-h-[160px] font-mono text-xs bg-muted/30 border-border"
-                          />
-                        </div>
-                      )}
+                      return (
+                        <Card
+                          key={method.key}
+                          id={`method-${method.key}`}
+                          className="bg-card border-border"
+                        >
+                          <CardHeader>
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <CardTitle className="text-lg text-foreground">
+                                  {method.label}
+                                </CardTitle>
+                                {method.description && (
+                                  <CardDescription className="text-muted-foreground text-sm">
+                                    {method.description}
+                                  </CardDescription>
+                                )}
+                              </div>
+                              <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground">
+                                {renderStatusBadge(record)}
+                                {record?.durationMs != null && (
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    {Math.round(record.durationMs)}ms
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            {isJsonInput(method.input) && (
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium text-foreground">
+                                  Payload
+                                </label>
+                                <Textarea
+                                  value={jsonValues[method.key] ?? ''}
+                                  onChange={event => {
+                                    const value = event.target.value;
+                                    setJsonValues(prev => ({ ...prev, [method.key]: value }));
+                                  }}
+                                  placeholder={
+                                    method.input.placeholder ?? '{\n  "example": true\n}'
+                                  }
+                                  className="min-h-[160px] font-mono text-xs bg-muted/30 border-border"
+                                />
+                              </div>
+                            )}
 
-                      {isFieldsInput(method.input) && method.input.fields.length ? (
-                        <div className="space-y-3">
-                          {method.input.fields.map((field: MethodField) => (
-                            <div key={field.name} className="space-y-1">
-                              <label className="text-sm font-medium text-foreground">{field.label}</label>
-                              <Input
-                                value={fieldValues[method.key]?.[field.name] ?? ""}
-                                onChange={(event) => {
-                                  const value = event.target.value
-                                  setFieldValues((prev) => ({
-                                    ...prev,
-                                    [method.key]: {
-                                      ...prev[method.key],
-                                      [field.name]: value,
-                                    },
-                                  }))
-                                }}
-                                placeholder={field.placeholder}
-                                type={field.type === "number" ? "number" : "text"}
-                                className="bg-muted/30 border-border"
-                              />
-                              {field.description && (
-                                <p className="text-xs text-muted-foreground">{field.description}</p>
+                            {isFieldsInput(method.input) && method.input.fields.length ? (
+                              <div className="space-y-3">
+                                {method.input.fields.map((field: MethodField) => (
+                                  <div key={field.name} className="space-y-1">
+                                    <label className="text-sm font-medium text-foreground">
+                                      {field.label}
+                                    </label>
+                                    <Input
+                                      value={fieldValues[method.key]?.[field.name] ?? ''}
+                                      onChange={event => {
+                                        const value = event.target.value;
+                                        setFieldValues(prev => ({
+                                          ...prev,
+                                          [method.key]: {
+                                            ...prev[method.key],
+                                            [field.name]: value,
+                                          },
+                                        }));
+                                      }}
+                                      placeholder={field.placeholder}
+                                      type={field.type === 'number' ? 'number' : 'text'}
+                                      className="bg-muted/30 border-border"
+                                    />
+                                    {field.description && (
+                                      <p className="text-xs text-muted-foreground">
+                                        {field.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : null}
+
+                            <div className="space-y-2">
+                              <Button
+                                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                                onClick={() => void runMethod(method)}
+                                disabled={
+                                  !sdkAdapter ||
+                                  record?.status === 'loading' ||
+                                  Boolean(dependencyMessage)
+                                }
+                              >
+                                {record?.status === 'loading' ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Running
+                                  </>
+                                ) : (
+                                  (method.buttonLabel ?? 'Execute')
+                                )}
+                              </Button>
+                              {dependencyMessage && (
+                                <p className="text-xs text-yellow-500">{dependencyMessage}</p>
                               )}
                             </div>
-                          ))}
-                        </div>
-                      ) : null}
 
-                      <div className="space-y-2">
-                        <Button
-                          className="bg-primary text-primary-foreground hover:bg-primary/90"
-                          onClick={() => void runMethod(method)}
-                          disabled={
-                            !finatic ||
-                            record?.status === "loading" ||
-                            Boolean(dependencyMessage)
-                          }
-                        >
-                          {record?.status === "loading" ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Running
-                            </>
-                          ) : (
-                            method.buttonLabel ?? "Execute"
-                          )}
-                        </Button>
-                        {dependencyMessage && (
-                          <p className="text-xs text-yellow-500">{dependencyMessage}</p>
-                        )}
-                      </div>
+                            {record?.status === 'error' && record.error && (
+                              <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-300">
+                                {record.error}
+                              </div>
+                            )}
 
-                      {record?.status === "error" && record.error && (
-                        <div className="rounded border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-300">
-                          {record.error}
-                        </div>
-                      )}
-
-                      {record?.result !== undefined && record.status === "success" && (
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-foreground">Latest result</label>
-                          <pre className="max-h-64 overflow-auto rounded border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-                            {formatResult(record.result)}
-                          </pre>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                )
-                  })}
+                            {record?.result !== undefined && record.status === 'success' && (
+                              <div className="space-y-2">
+                                <label className="text-sm font-medium text-foreground">
+                                  Latest result
+                                </label>
+                                <pre className="max-h-64 overflow-auto rounded border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+                                  {formatResult(record.result)}
+                                </pre>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
                 </CardContent>
               )}
@@ -848,6 +864,5 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
         ))}
       </div>
     </div>
-  )
+  );
 }
-

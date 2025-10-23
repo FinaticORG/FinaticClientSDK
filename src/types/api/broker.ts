@@ -116,7 +116,7 @@ export interface BrokerOrderParams {
   broker: 'robinhood' | 'tasty_trade' | 'ninja_trader';
   order_id?: string; // Optional order_id field for modify operations
   orderType: 'Market' | 'Limit' | 'Stop' | 'StopLimit';
-  assetType: 'Stock' | 'Option' | 'Crypto' | 'Future';
+  assetType: 'equity' | 'equity_option' | 'crypto' | 'forex' | 'future' | 'future_option';
   action: 'Buy' | 'Sell';
   timeInForce: 'day' | 'gtc' | 'gtd' | 'ioc' | 'fok';
   accountNumber: string | number;

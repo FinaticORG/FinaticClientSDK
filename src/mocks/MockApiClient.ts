@@ -331,7 +331,7 @@ export class MockApiClient {
       orderQty: number;
       action: 'Buy' | 'Sell';
       orderType: 'Market' | 'Limit' | 'Stop' | 'StopLimit';
-      assetType: 'Stock' | 'Option' | 'Crypto' | 'Future';
+      assetType: 'equity' | 'equity_option' | 'crypto' | 'forex' | 'future' | 'future_option';
     },
     extras: BrokerExtras = {},
     connection_id?: string
@@ -462,7 +462,7 @@ export class MockApiClient {
         orderQty,
         action,
         orderType: 'Market',
-        assetType: 'Stock',
+        assetType: 'equity',
         timeInForce: 'day',
       },
       extras
@@ -487,7 +487,7 @@ export class MockApiClient {
         orderQty,
         action,
         orderType: 'Limit',
-        assetType: 'Stock',
+        assetType: 'equity',
         timeInForce,
         price,
       },
@@ -513,7 +513,7 @@ export class MockApiClient {
         orderQty,
         action,
         orderType: 'Stop',
-        assetType: 'Stock',
+        assetType: 'equity',
         timeInForce,
         stopPrice,
       },
@@ -536,7 +536,7 @@ export class MockApiClient {
       orderQty: number;
       action: 'Buy' | 'Sell';
       orderType: 'Market';
-      assetType: 'Crypto';
+      assetType: 'crypto';
     } = {
       broker,
       accountNumber,
@@ -544,7 +544,7 @@ export class MockApiClient {
       orderQty: options.quantity || orderQty,
       action,
       orderType: 'Market',
-      assetType: 'Crypto',
+        assetType: 'crypto',
       timeInForce: 'gtc', // Crypto typically uses GTC
     };
 
@@ -567,7 +567,7 @@ export class MockApiClient {
       orderQty: number;
       action: 'Buy' | 'Sell';
       orderType: 'Limit';
-      assetType: 'Crypto';
+      assetType: 'crypto';
     } = {
       broker,
       accountNumber,
@@ -575,7 +575,7 @@ export class MockApiClient {
       orderQty: options.quantity || orderQty,
       action,
       orderType: 'Limit',
-      assetType: 'Crypto',
+        assetType: 'crypto',
       timeInForce,
       price,
     };
@@ -598,7 +598,7 @@ export class MockApiClient {
       orderQty: number;
       action: 'Buy' | 'Sell';
       orderType: 'Market';
-      assetType: 'Option';
+      assetType: 'equity_option';
     } = {
       broker,
       accountNumber,
@@ -606,7 +606,7 @@ export class MockApiClient {
       orderQty,
       action,
       orderType: 'Market',
-      assetType: 'Option',
+        assetType: 'equity_option',
       timeInForce: 'day',
     };
 
@@ -629,7 +629,7 @@ export class MockApiClient {
       orderQty: number;
       action: 'Buy' | 'Sell';
       orderType: 'Limit';
-      assetType: 'Option';
+      assetType: 'equity_option';
     } = {
       broker,
       accountNumber,
@@ -637,7 +637,7 @@ export class MockApiClient {
       orderQty,
       action,
       orderType: 'Limit',
-      assetType: 'Option',
+        assetType: 'equity_option',
       timeInForce,
       price,
     };
