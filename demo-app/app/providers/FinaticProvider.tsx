@@ -90,7 +90,14 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   const [isMockMode, setIsMockMode] = useState(false);
   const [sessionInfo, setSessionInfo] = useState<string>('Not initialized');
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [storedUserId, setStoredUserIdState] = useState<string | null>(null);
+  const [storedUserId, setStoredUserIdState] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      return localStorage.getItem('finatic_user_id');
+    } catch {
+      return null;
+    }
+  });
   const [isAuthed, setIsAuthed] = useState<boolean>(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const apiBaseUrlRef = useRef<string | null>(null);
@@ -200,8 +207,10 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
 
   const setStoredUserId = useCallback((userId: string) => {
     if (typeof window === 'undefined') return;
+    console.log('🔍 setStoredUserId called with:', userId);
     localStorage.setItem('finatic_user_id', userId);
     setStoredUserIdState(userId);
+    console.log('🔍 localStorage set, new value:', localStorage.getItem('finatic_user_id'));
   }, []);
 
   const clearStoredUserId = useCallback(() => {
@@ -417,11 +426,19 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
 
         try {
           // Initialize server SDK by starting a session
+          // Pass stored user ID if available for auto-attachment
+          // Get stored user ID directly from localStorage like the auth page does
+          const directStoredUserId = localStorage.getItem('finatic_user_id');
+          console.log('🔍 storedUserId from state:', storedUserId);
+          console.log('🔍 directStoredUserId from localStorage:', directStoredUserId);
+          const requestBody = directStoredUserId ? { user_id: directStoredUserId } : {};
+          console.log('🔍 Request body being sent:', requestBody);
           const response = await fetch(`${baseUrl}/api/session/start`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
+            body: JSON.stringify(requestBody),
           });
 
           if (!response.ok) {
@@ -439,8 +456,20 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
 
           addLog('success', `${sdkType} server SDK session started`);
           setSessionInfo(
-            `${sdkType.charAt(0).toUpperCase() + sdkType.slice(1)} Server SDK - Session: ${sessionData.data?.session_id || 'started'}`
+            `${sdkType.charAt(0).toUpperCase() + sdkType.slice(1)} Server SDK - Session started`
           );
+
+          // If we started with a user ID, check authentication status
+          if (directStoredUserId) {
+            addLog(
+              'info',
+              `Session started with user ID: ${directStoredUserId}, checking authentication...`
+            );
+            // Trigger authentication check
+            setTimeout(() => {
+              checkAuth();
+            }, 100);
+          }
 
           // Clear the client SDK instance since we're using server SDK
           setFinatic(null);

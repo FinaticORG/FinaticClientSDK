@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { CheckCircle, AlertTriangle, RefreshCw, User, Shield, Trash2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useFinatic } from '@/app/providers/FinaticProvider';
 
 export function AuthenticationPageComponent() {
@@ -25,10 +25,30 @@ export function AuthenticationPageComponent() {
     setStoredUserId,
     clearStoredUserId,
     clearLogs,
+    sdkType,
+    isAuthed,
+    currentUserId: contextUserId,
+    checkAuth,
   } = useFinatic();
   const [userIdInput, setUserIdInput] = useState('');
   const [isAuthedStatus, setIsAuthedStatus] = useState<boolean | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Helper to determine if SDK is ready for auth checks
+  const isSdkReady = useMemo(() => {
+    if (sdkType === 'client') {
+      return !!finatic;
+    } else if (sdkType === 'python' || sdkType === 'node') {
+      return !!sdkAdapter;
+    }
+    return false;
+  }, [sdkType, finatic, sdkAdapter]);
+
+  // Automatically sync local state with context values
+  useEffect(() => {
+    setIsAuthedStatus(isAuthed);
+    setCurrentUserId(contextUserId);
+  }, [isAuthed, contextUserId]);
 
   const connectionBadge = useMemo(() => {
     if (error) {
@@ -56,14 +76,12 @@ export function AuthenticationPageComponent() {
   }, [error, isLoading]);
 
   const handleCheckAuth = async () => {
-    if (!sdkAdapter) return;
+    if (!isSdkReady) return;
     try {
       addLog('info', 'Checking authentication status');
-      const authed = await sdkAdapter.isAuthed();
-      const uid = await sdkAdapter.getUserId();
-      setIsAuthedStatus(authed);
-      setCurrentUserId(uid ?? null);
-      addLog('success', `Auth check - isAuthed: ${authed} - userId: ${uid ?? 'null'}`);
+      // Use the context checkAuth function which handles both client and server SDKs
+      await checkAuth();
+      addLog('success', 'Authentication check completed');
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to check authentication';
       addLog('error', msg);
@@ -71,15 +89,20 @@ export function AuthenticationPageComponent() {
   };
 
   const handleSetUserId = async () => {
-    if (!sdkAdapter) return;
+    if (!isSdkReady) return;
     const value = userIdInput.trim();
     if (!value) return;
     try {
       addLog('info', `Setting userId to ${value}`);
-      await sdkAdapter.setUserId(value);
+      // For server SDKs, we just store the user ID and let the session start handle it
       setStoredUserId(value);
       setUserIdInput('');
-      handleCheckAuth();
+      // Reinitialize to start a new session with the user ID
+      await reinitialize();
+      addLog(
+        'success',
+        `User ID set to ${value}. Please reinitialize the SDK to start a new session.`
+      );
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to set user id';
       addLog('error', msg);
@@ -196,7 +219,7 @@ export function AuthenticationPageComponent() {
             <div className="flex items-center gap-2">
               <Button
                 onClick={() => void handleCheckAuth()}
-                disabled={!finatic}
+                disabled={!isSdkReady}
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 Check Authentication

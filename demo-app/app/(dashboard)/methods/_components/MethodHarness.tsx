@@ -259,38 +259,27 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
       'closePortal',
       'setUserId',
       'getUserId',
-      'getSessionUser',
       'disconnectCompany',
       'getBrokerList',
       'getBrokerConnections',
       'getAccounts',
-      'getAccountsPage',
-      'getNextAccountsPage',
       'getAllAccounts',
       'getActiveAccounts',
       'getBalances',
-      'getBalancesPage',
-      'getNextBalancesPage',
       'getAllBalances',
       'getOrders',
-      'getOrdersPage',
-      'getNextOrdersPage',
       'getAllOrders',
       'getFilledOrders',
       'getPendingOrders',
       'getOrdersBySymbol',
       'getOrdersByBroker',
       'getPositions',
-      'getPositionsPage',
-      'getNextPositionsPage',
       'getAllPositions',
       'getOpenPositions',
       'getPositionsBySymbol',
       'getPositionsByBroker',
       'setBroker',
       'setAccount',
-      'getTradingContext',
-      'clearTradingContext',
       'placeOrder',
       'cancelOrder',
       'modifyOrder',
@@ -850,6 +839,76 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
                                 <pre className="max-h-64 overflow-auto rounded border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
                                   {formatResult(record.result)}
                                 </pre>
+
+                                {/* Pagination controls for methods that return paginated results */}
+                                {record.result &&
+                                  typeof record.result === 'object' &&
+                                  'hasNext' in record.result &&
+                                  'nextPage' in record.result && (
+                                    <div className="mt-3 flex items-center gap-2">
+                                      <label className="text-sm font-medium text-foreground">
+                                        Pagination
+                                      </label>
+                                      <div className="flex gap-2">
+                                        <button
+                                          onClick={async () => {
+                                            try {
+                                              if (
+                                                record.result &&
+                                                typeof record.result === 'object' &&
+                                                'previousPage' in record.result
+                                              ) {
+                                                const prevResult = await (
+                                                  record.result as any
+                                                ).previousPage();
+                                                setRecords(prev => ({
+                                                  ...prev,
+                                                  [record.key]: {
+                                                    ...prev[record.key],
+                                                    result: prevResult,
+                                                  },
+                                                }));
+                                              }
+                                            } catch (error) {
+                                              console.error('Failed to get previous page:', error);
+                                            }
+                                          }}
+                                          disabled={!(record.result as any)?.hasPrevious}
+                                          className="px-3 py-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                          Previous
+                                        </button>
+                                        <button
+                                          onClick={async () => {
+                                            try {
+                                              if (
+                                                record.result &&
+                                                typeof record.result === 'object' &&
+                                                'nextPage' in record.result
+                                              ) {
+                                                const nextResult = await (
+                                                  record.result as any
+                                                ).nextPage();
+                                                setRecords(prev => ({
+                                                  ...prev,
+                                                  [record.key]: {
+                                                    ...prev[record.key],
+                                                    result: nextResult,
+                                                  },
+                                                }));
+                                              }
+                                            } catch (error) {
+                                              console.error('Failed to get next page:', error);
+                                            }
+                                          }}
+                                          disabled={!(record.result as any)?.hasNext}
+                                          className="px-3 py-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                          Next
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
                               </div>
                             )}
                           </CardContent>

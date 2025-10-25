@@ -3,14 +3,7 @@
  */
 
 // Type declarations for Node.js environment
-declare global {
-  // eslint-disable-next-line no-var
-  var process:
-    | {
-        env: Record<string, string | undefined>;
-      }
-    | undefined;
-}
+// Note: process is already declared globally in Node.js types
 
 /**
  * Check if mocks should be used based on environment variables

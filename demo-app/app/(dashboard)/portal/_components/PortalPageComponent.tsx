@@ -131,7 +131,9 @@ export default function PortalPageComponent(): JSX.Element {
         setBrokersError('');
         const list = await sdkAdapter.getBrokerList();
         if (!cancelled) {
-          setAvailableBrokers(list);
+          // Ensure list is always an array
+          const brokerArray = Array.isArray(list) ? list : Object.values(list || {});
+          setAvailableBrokers(brokerArray);
         }
       } catch (err: any) {
         if (!cancelled) {
@@ -449,7 +451,7 @@ export default function PortalPageComponent(): JSX.Element {
                     variant="outline"
                     size="icon"
                     onClick={() => clearStoredUserId()}
-                    disabled={!storedUserId}
+                    disabled={!storedUserId || storedUserId === 'None' || storedUserId === null || storedUserId === undefined}
                     aria-label="Clear stored user"
                   >
                     <Trash2 className="size-4" />
