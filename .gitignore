@@ -9,7 +9,6 @@ lerna-debug.log*
 # Build outputs
 dist/
 build/
-lib/
 *.tsbuildinfo
 
 # Rollup cache
@@ -117,3 +116,4 @@ temp/
 # Local development
 .local
 demo-app/.yarn/
+.yarn/install-state.gz

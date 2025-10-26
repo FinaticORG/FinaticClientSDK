@@ -8,18 +8,22 @@
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
-  "types": "./dist/types/index.d.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",
       "require": "./dist/index.js",
-      "types": "./dist/types/index.d.ts"
+      "types": "./dist/index.d.ts"
     }
   },
   "engines": {
     "node": ">=16.0.0"
   },
+  "workspaces": [
+    "demo-app"
+  ],
   "files": [
+    "src",
     "dist"
   ],
   "scripts": {

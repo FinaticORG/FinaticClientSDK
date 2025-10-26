@@ -1,7 +1,7 @@
 import { EventEmitter } from '../../utils/events';
 import { ApiClient } from './ApiClient';
 import { PortalUI } from '../portal/PortalUI';
-import { SessionError, AuthenticationError, CompanyAccessError } from '../../utils/errors';
+import { SessionError, AuthenticationError, CompanyAccessError, ApiError, ValidationError } from '../../utils/errors';
 import { MockFactory } from '../../mocks/MockFactory';
 import { PaginatedResult } from '../../types/common/pagination';
 import { UserToken, SessionState } from '../../types/api/auth';
@@ -27,6 +27,7 @@ import {
 import { FinaticConnectOptions, PortalOptions } from '../../types/connect';
 import { appendThemeToURL } from '../../utils/themeUtils';
 import { appendBrokerFilterToURL } from '../../utils/brokerUtils';
+// Supabase import removed - SDK no longer depends on Supabase
 
 interface DeviceInfo {
   ip_address: string;
@@ -50,7 +51,7 @@ export class FinaticConnect extends EventEmitter {
   private currentSessionState: string | null = null;
 
   // Session keep-alive mechanism
-  private sessionKeepAliveInterval: number | null = null;
+  private sessionKeepAliveInterval: ReturnType<typeof setInterval> | null = null;
   private readonly SESSION_KEEP_ALIVE_INTERVAL = 1000 * 60 * 5; // 5 minutes
   private readonly SESSION_VALIDATION_TIMEOUT = 1000 * 30; // 30 seconds
   private readonly SESSION_REFRESH_BUFFER_HOURS = 16; // Refresh session at 16 hours
@@ -108,65 +109,97 @@ export class FinaticConnect extends EventEmitter {
     this.registerSessionCleanup();
   }
 
-  private handleTokens(tokens: { access_token?: string; refresh_token?: string }): void {
-    if (!tokens.access_token || !tokens.refresh_token) {
-      return;
-    }
-    // Keep existing user_id or use empty string as fallback
-    const userId = this.userToken?.user_id || '';
-    this.userToken = {
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token,
-      expiresIn: 3600, // Default to 1 hour if not provided
-      user_id: userId,
-      tokenType: 'Bearer',
-      scope: 'api:access',
-    };
+  private async linkUserToSession(userId: string): Promise<boolean> {
+    try {
+      if (!this.sessionId) {
+        console.error('No session ID available for user linking');
+        return false;
+      }
 
-    // Store tokens in ApiClient for automatic refresh
-    const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString(); // 1 hour from now
-    this.apiClient.setTokens(tokens.access_token, tokens.refresh_token, expiresAt, userId);
+      // Call API endpoint to authenticate user with session
+      const response = await this.apiClient.request('/session/authenticate', {
+        method: 'POST',
+        body: {
+          session_id: this.sessionId,
+          user_id: userId,
+        },
+      });
+
+      if (response.error) {
+        console.error('Failed to link user to session:', response.error);
+        return false;
+      }
+
+      console.log('User linked to session successfully');
+      return true;
+    } catch (error) {
+      console.error('Error linking user to session:', error);
+      return false;
+    }
   }
 
   /**
-   * Check if the user is fully authenticated (has userId, access token, and refresh token)
+   * Store user ID for authentication state persistence
+   * @param userId - The user ID to store
+   */
+  private storeUserId(userId: string): void {
+    // Initialize userToken if it doesn't exist
+    if (!this.userToken) {
+      this.userToken = {
+        user_id: userId,
+      };
+    } else {
+      // Update existing userToken with new userId
+      this.userToken.user_id = userId;
+    }
+
+    // Set user ID in ApiClient for session context
+    this.apiClient.setSessionContext(this.sessionId || '', this.companyId, undefined);
+  }
+
+  /**
+   * Check if the user is fully authenticated (has userId in session context)
    * @returns True if the user is fully authenticated and ready for API calls
    */
-  public isAuthed(): boolean {
-    return !!(
-      this.userToken?.accessToken &&
-      this.userToken?.refreshToken &&
-      this.userToken?.user_id
-    );
+  public async isAuthenticated(): Promise<boolean> {
+    // Check internal session context only - no localStorage dependency
+    return this.userToken?.user_id !== undefined && this.userToken?.user_id !== null;
   }
 
-  /**
-   * Check if the client is authenticated (alias for isAuthed for consistency)
-   * @returns True if authenticated, false otherwise
-   */
-  public is_authenticated(): boolean {
-    return this.isAuthed();
-  }
 
   /**
    * Get user's orders with pagination and optional filtering
    * @param params - Query parameters including page, perPage, and filters
    * @returns Promise with paginated result that supports navigation
    */
-  public async getOrders(params?: {
-    page?: number;
-    perPage?: number;
-    filter?: OrdersFilter;
-  }): Promise<PaginatedResult<BrokerDataOrder[]>> {
-    if (!this.isAuthed()) {
+  public async getOrders(
+    page: number = 1,
+    perPage: number = 100,
+    options?: BrokerDataOptions,
+    filters?: OrdersFilter
+  ): Promise<PaginatedResult<BrokerDataOrder[]>> {
+    if (!(await this.isAuthenticated())) {
       throw new AuthenticationError('User is not authenticated');
     }
 
-    const page = params?.page || 1;
-    const perPage = params?.perPage || 100;
-    const filter = params?.filter;
-
-    return this.getOrdersPage(page, perPage, filter);
+    const result = await this.apiClient.getBrokerOrdersPage(page, perPage, filters);
+    
+    // Add navigation methods to the result
+    const paginatedResult = result as any;
+    paginatedResult.next_page = async () => {
+      if (paginatedResult.hasNext) {
+        return this.apiClient.getBrokerOrdersPage(page + 1, perPage, filters);
+      }
+      throw new Error('No next page available');
+    };
+    paginatedResult.previous_page = async () => {
+      if (paginatedResult.has_previous) {
+        return this.apiClient.getBrokerOrdersPage(page - 1, perPage, filters);
+      }
+      throw new Error('No previous page available');
+    };
+    
+    return paginatedResult;
   }
 
   /**
@@ -174,20 +207,34 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Query parameters including page, perPage, and filters
    * @returns Promise with paginated result that supports navigation
    */
-  public async getPositions(params?: {
-    page?: number;
-    perPage?: number;
-    filter?: PositionsFilter;
-  }): Promise<PaginatedResult<BrokerDataPosition[]>> {
-    if (!this.isAuthed()) {
+  public async getPositions(
+    page: number = 1,
+    perPage: number = 100,
+    options?: BrokerDataOptions,
+    filters?: PositionsFilter
+  ): Promise<PaginatedResult<BrokerDataPosition[]>> {
+    if (!(await this.isAuthenticated())) {
       throw new AuthenticationError('User is not authenticated');
     }
 
-    const page = params?.page || 1;
-    const perPage = params?.perPage || 100;
-    const filter = params?.filter;
-
-    return this.getPositionsPage(page, perPage, filter);
+    const result = await this.apiClient.getBrokerPositionsPage(page, perPage, filters);
+    
+    // Add navigation methods to the result
+    const paginatedResult = result as any;
+    paginatedResult.next_page = async () => {
+      if (paginatedResult.hasNext) {
+        return this.apiClient.getBrokerPositionsPage(page + 1, perPage, filters);
+      }
+      throw new Error('No next page available');
+    };
+    paginatedResult.previous_page = async () => {
+      if (paginatedResult.has_previous) {
+        return this.apiClient.getBrokerPositionsPage(page - 1, perPage, filters);
+      }
+      throw new Error('No previous page available');
+    };
+    
+    return paginatedResult;
   }
 
   /**
@@ -195,20 +242,34 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Query parameters including page, perPage, and filters
    * @returns Promise with paginated result that supports navigation
    */
-  public async getAccounts(params?: {
-    page?: number;
-    perPage?: number;
-    filter?: AccountsFilter;
-  }): Promise<PaginatedResult<BrokerDataAccount[]>> {
-    if (!this.isAuthed()) {
+  public async getAccounts(
+    page: number = 1,
+    perPage: number = 100,
+    options?: BrokerDataOptions,
+    filters?: AccountsFilter
+  ): Promise<PaginatedResult<BrokerDataAccount[]>> {
+    if (!(await this.isAuthenticated())) {
       throw new AuthenticationError('User is not authenticated');
     }
 
-    const page = params?.page || 1;
-    const perPage = params?.perPage || 100;
-    const filter = params?.filter;
-
-    return this.getAccountsPage(page, perPage, filter);
+    const result = await this.apiClient.getBrokerAccountsPage(page, perPage, filters);
+    
+    // Add navigation methods to the result
+    const paginatedResult = result as any;
+    paginatedResult.next_page = async () => {
+      if (paginatedResult.hasNext) {
+        return this.apiClient.getBrokerAccountsPage(page + 1, perPage, filters);
+      }
+      throw new Error('No next page available');
+    };
+    paginatedResult.previous_page = async () => {
+      if (paginatedResult.has_previous) {
+        return this.apiClient.getBrokerAccountsPage(page - 1, perPage, filters);
+      }
+      throw new Error('No previous page available');
+    };
+    
+    return paginatedResult;
   }
 
   /**
@@ -216,20 +277,34 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Query parameters including page, perPage, and filters
    * @returns Promise with paginated result that supports navigation
    */
-  public async getBalances(params?: {
-    page?: number;
-    perPage?: number;
-    filter?: BalancesFilter;
-  }): Promise<PaginatedResult<BrokerBalance[]>> {
-    if (!this.isAuthed()) {
+  public async getBalances(
+    page: number = 1,
+    perPage: number = 100,
+    options?: BrokerDataOptions,
+    filters?: BalancesFilter
+  ): Promise<PaginatedResult<BrokerBalance[]>> {
+    if (!(await this.isAuthenticated())) {
       throw new AuthenticationError('User is not authenticated');
     }
 
-    const page = params?.page || 1;
-    const perPage = params?.perPage || 100;
-    const filter = params?.filter;
-
-    return this.getBalancesPage(page, perPage, filter);
+    const result = await this.apiClient.getBrokerBalancesPage(page, perPage, filters);
+    
+    // Add navigation methods to the result
+    const paginatedResult = result as any;
+    paginatedResult.next_page = async () => {
+      if (paginatedResult.hasNext) {
+        return this.apiClient.getBrokerBalancesPage(page + 1, perPage, filters);
+      }
+      throw new Error('No next page available');
+    };
+    paginatedResult.previous_page = async () => {
+      if (paginatedResult.has_previous) {
+        return this.apiClient.getBrokerBalancesPage(page - 1, perPage, filters);
+      }
+      throw new Error('No previous page available');
+    };
+    
+    return paginatedResult;
   }
 
   /**
@@ -304,38 +379,19 @@ export class FinaticConnect extends EventEmitter {
         );
       }
 
-      // If userId is provided, authenticate directly
+      // If userId is provided, try to link user to session
       if (normalizedUserId) {
         try {
-          const authResponse = await FinaticConnect.instance.apiClient.authenticateDirectly(
-            startResponse.data.session_id,
-            normalizedUserId
-          );
-
-          // Convert API response to UserToken format
-          const userToken: UserToken = {
-            accessToken: authResponse.data.access_token,
-            refreshToken: authResponse.data.refresh_token,
-            expiresIn: 3600, // Default to 1 hour
-            user_id: normalizedUserId,
-            tokenType: 'Bearer',
-            scope: 'api:access',
-          };
-
-          // Set the tokens in both FinaticConnect and ApiClient
-          FinaticConnect.instance.userToken = userToken;
-
-          // Set tokens in ApiClient for automatic token management
-          const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString(); // 1 hour from now
-          FinaticConnect.instance.apiClient.setTokens(
-            authResponse.data.access_token,
-            authResponse.data.refresh_token,
-            expiresAt,
-            normalizedUserId
-          );
-
-          // Emit success event
-          FinaticConnect.instance.emit('success', normalizedUserId);
+          // Try to link user to session via API
+          const linked = await FinaticConnect.instance.linkUserToSession(normalizedUserId);
+          if (linked) {
+            // Store user ID for authentication state
+            FinaticConnect.instance.storeUserId(normalizedUserId);
+            // Emit success event
+            FinaticConnect.instance.emit('success', normalizedUserId);
+          } else {
+            console.warn('Failed to link user to session during initialization');
+          }
         } catch (error) {
           FinaticConnect.instance.emit('error', error as Error);
           throw error;
@@ -357,47 +413,28 @@ export class FinaticConnect extends EventEmitter {
    * Get the user and tokens for a completed session
    * @returns Promise with user information and tokens
    */
-  public async getSessionUser(): Promise<Record<string, any>> {
-    if (!this.isAuthed()) {
-      throw new AuthenticationError('User is not authenticated');
-    }
-
-    if (!this.userToken) {
-      throw new AuthenticationError('No user token available');
-    }
-
-    return {
-      user_id: this.userToken.userId,
-      access_token: this.userToken.accessToken,
-      refresh_token: this.userToken.refreshToken,
-      expires_in: this.userToken.expiresIn,
-      token_type: this.userToken.tokenType,
-      scope: this.userToken.scope,
-      company_id: this.companyId,
-    };
-  }
 
   private async initializeWithUser(userId: string): Promise<void> {
     try {
       if (!this.sessionId) {
         throw new SessionError('Session not initialized');
       }
-      this.userToken = await this.apiClient.getUserToken(this.sessionId);
 
-      // Set tokens in ApiClient for automatic token management
-      if (this.userToken) {
-        const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString(); // 1 hour from now
-        this.apiClient.setTokens(
-          this.userToken.accessToken,
-          this.userToken.refreshToken,
-          expiresAt,
-          userId
-        );
+      // Try to link user to session
+      const linked = await this.linkUserToSession(userId);
+      if (!linked) {
+        console.warn('Failed to link user to session during initialization');
+        // Don't throw error, just continue without authentication
+        return;
       }
+
+      // Store user ID for authentication state
+      this.storeUserId(userId);
 
       this.emit('success', userId);
     } catch (error) {
       this.emit('error', error as Error);
+      throw error;
     }
   }
 
@@ -471,6 +508,16 @@ export class FinaticConnect extends EventEmitter {
         themedPortalUrl = url.toString();
       }
 
+      // Add session ID to portal URL so the portal can use it
+      const url = new URL(themedPortalUrl);
+      if (this.sessionId) {
+        url.searchParams.set('session_id', this.sessionId);
+      }
+      if (this.companyId) {
+        url.searchParams.set('company_id', this.companyId);
+      }
+      themedPortalUrl = url.toString();
+
       // Create portal UI if not exists
       if (!this.portalUI) {
         this.portalUI = new PortalUI(this.baseUrl);
@@ -478,15 +525,19 @@ export class FinaticConnect extends EventEmitter {
 
       // Show portal
       this.portalUI.show(themedPortalUrl, this.sessionId || '', {
-        onSuccess: async (userId: string, tokens?: { access_token?: string; refresh_token?: string }) => {
+        onSuccess: async (userId: string) => {
           try {
             if (!this.sessionId) {
               throw new SessionError('Session not initialized');
             }
 
-            // Handle tokens if provided
-            if (tokens?.access_token && tokens?.refresh_token) {
-              this.handleTokens(tokens);
+            // Store the userId for authentication state
+            this.storeUserId(userId);
+
+            // Try to link user to session via API
+            const linked = await this.linkUserToSession(userId);
+            if (!linked) {
+              console.warn('Failed to link user to session, but continuing with authentication');
             }
 
             // Emit portal success event
@@ -586,51 +637,19 @@ export class FinaticConnect extends EventEmitter {
    * Place a new order using the broker order API
    * @param order - Order details with broker context
    */
-  public async placeOrder(order: {
-    symbol: string;
-    quantity: number;
-    side: 'buy' | 'sell';
-    orderType: 'market' | 'limit' | 'stop' | 'stop_limit';
-    price?: number;
-    stopPrice?: number;
-    timeInForce: 'day' | 'gtc' | 'gtd' | 'ioc' | 'fok';
-    broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader';
-    accountNumber?: string;
-    assetType?: 'Stock' | 'Option' | 'Crypto' | 'Future';
-    order_id?: string;
-    connection_id?: string;
-  }): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+  public async placeOrder(order: BrokerOrderParams, extras?: BrokerExtras): Promise<OrderResponse> {
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
-      // Convert order format to match broker API
-      const brokerOrder = {
-        symbol: order.symbol,
-        orderQty: order.quantity,
-        action: order.side === 'buy' ? 'Buy' : ('Sell' as 'Buy' | 'Sell'),
-        orderType:
-          order.orderType === 'market'
-            ? 'Market'
-            : order.orderType === 'limit'
-              ? 'Limit'
-              : order.orderType === 'stop'
-                ? 'Stop'
-                : ('StopLimit' as 'Market' | 'Limit' | 'Stop' | 'StopLimit'),
-        assetType: order.assetType || ('Stock' as 'Stock' | 'Option' | 'Crypto' | 'Future'),
-        timeInForce: order.timeInForce as 'day' | 'gtc' | 'gtd' | 'ioc' | 'fok',
-        price: order.price,
-        stopPrice: order.stopPrice,
-        broker: order.broker,
-        accountNumber: order.accountNumber,
-        order_id: order.order_id,
-      };
-
+      // Use the order parameter directly since it's already BrokerOrderParams
       return await this.apiClient.placeBrokerOrder(
-        this.userToken!.accessToken,
-        brokerOrder,
-        {},
+        order,
+        extras || {},
         order.connection_id
       );
     } catch (error) {
@@ -650,8 +669,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader',
     connection_id?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -684,8 +706,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader',
     connection_id?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -719,38 +744,6 @@ export class FinaticConnect extends EventEmitter {
     }
   }
 
-  /**
-   * Set the broker context for trading
-   * @param broker - The broker to use for trading
-   */
-  public setTradingContextBroker(
-    broker: 'robinhood' | 'tasty_trade' | 'ninja_trader' | 'interactive_brokers' | 'tradestation'
-  ): void {
-    this.apiClient.setBroker(broker);
-  }
-
-  /**
-   * Set the account context for trading
-   * @param accountNumber - The account number to use for trading
-   * @param accountId - Optional account ID
-   */
-  public setTradingContextAccount(accountNumber: string, accountId?: string): void {
-    this.apiClient.setAccount(accountNumber, accountId);
-  }
-
-  /**
-   * Get the current trading context
-   */
-  public getTradingContext(): TradingContext {
-    return this.apiClient.getTradingContext();
-  }
-
-  /**
-   * Clear the trading context
-   */
-  public clearTradingContext(): void {
-    this.apiClient.clearTradingContext();
-  }
 
   /**
    * Place a stock market order (convenience method)
@@ -762,8 +755,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -792,8 +788,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -824,8 +823,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -854,8 +856,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'coinbase' | 'binance' | 'kraken',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -884,8 +889,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'coinbase' | 'binance' | 'kraken',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -914,8 +922,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'tasty_trade' | 'robinhood' | 'ninja_trader',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -944,8 +955,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'tasty_trade' | 'robinhood' | 'ninja_trader',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -974,8 +988,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'ninja_trader' | 'tasty_trade',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -1004,8 +1021,11 @@ export class FinaticConnect extends EventEmitter {
     broker?: 'ninja_trader' | 'tasty_trade',
     accountNumber?: string
   ): Promise<OrderResponse> {
-    if (!this.userToken) {
-      throw new Error('Not initialized with user');
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
+    }
+    if (!this.userToken?.user_id) {
+      throw new AuthenticationError('No user ID available. Please connect a broker first.');
     }
 
     try {
@@ -1029,8 +1049,8 @@ export class FinaticConnect extends EventEmitter {
    * @returns The current user ID or undefined if not authenticated
    * @throws AuthenticationError if user is not authenticated
    */
-  public getUserId(): string | null {
-    if (!this.isAuthed()) {
+  public async getUserId(): Promise<string | null> {
+    if (!(await this.isAuthenticated())) {
       return null;
     }
     if (!this.userToken?.user_id) {
@@ -1044,7 +1064,7 @@ export class FinaticConnect extends EventEmitter {
    * @returns Promise with array of broker information
    */
   public async getBrokerList(): Promise<BrokerInfo[]> {
-    // if (!this.isAuthed()) {
+    // if (!this.isAuthenticated()) {
     //   throw new AuthenticationError('Not authenticated');
     // }
 
@@ -1064,7 +1084,7 @@ export class FinaticConnect extends EventEmitter {
    * @throws AuthenticationError if user is not authenticated
    */
   public async getBrokerConnections(): Promise<BrokerConnection[]> {
-    if (!this.isAuthed()) {
+    if (!(await this.isAuthenticated())) {
       throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
     }
     if (!this.userToken?.user_id) {
@@ -1148,141 +1168,12 @@ export class FinaticConnect extends EventEmitter {
   }
 
   // Pagination methods
-  /**
-   * Get a specific page of orders with pagination metadata
-   * @param page - Page number (default: 1)
-   * @param perPage - Items per page (default: 100)
-   * @param filter - Optional filter parameters
-   * @returns Promise with paginated orders result
-   */
-  public async getOrdersPage(
-    page: number = 1,
-    perPage: number = 100,
-    filter?: OrdersFilter
-  ): Promise<PaginatedResult<BrokerDataOrder[]>> {
-    if (!this.isAuthed()) {
-      throw new AuthenticationError('User is not authenticated');
-    }
 
-    return this.apiClient.getBrokerOrdersPage(page, perPage, filter);
-  }
 
-  /**
-   * Get a specific page of positions with pagination metadata
-   * @param page - Page number (default: 1)
-   * @param perPage - Items per page (default: 100)
-   * @param filter - Optional filter parameters
-   * @returns Promise with paginated positions result
-   */
-  public async getPositionsPage(
-    page: number = 1,
-    perPage: number = 100,
-    filter?: PositionsFilter
-  ): Promise<PaginatedResult<BrokerDataPosition[]>> {
-    if (!this.isAuthed()) {
-      throw new AuthenticationError('User is not authenticated');
-    }
 
-    return this.apiClient.getBrokerPositionsPage(page, perPage, filter);
-  }
 
-  /**
-   * Get a specific page of accounts with pagination metadata
-   * @param page - Page number (default: 1)
-   * @param perPage - Items per page (default: 100)
-   * @param filter - Optional filter parameters
-   * @returns Promise with paginated accounts result
-   */
-  public async getAccountsPage(
-    page: number = 1,
-    perPage: number = 100,
-    filter?: AccountsFilter
-  ): Promise<PaginatedResult<BrokerDataAccount[]>> {
-    if (!this.isAuthed()) {
-      throw new AuthenticationError('User is not authenticated');
-    }
 
-    return this.apiClient.getBrokerAccountsPage(page, perPage, filter);
-  }
 
-  public async getBalancesPage(
-    page: number = 1,
-    perPage: number = 100,
-    filter?: BalancesFilter
-  ): Promise<PaginatedResult<BrokerBalance[]>> {
-    if (!this.isAuthed()) {
-      throw new AuthenticationError('User is not authenticated');
-    }
-
-    return this.apiClient.getBrokerBalancesPage(page, perPage, filter);
-  }
-
-  /**
-   * Get the next page of orders
-   * @param previousResult - The previous paginated result
-   * @returns Promise with next page of orders or null if no more pages
-   */
-  public async getNextOrdersPage(
-    previousResult: PaginatedResult<BrokerDataOrder[]>
-  ): Promise<PaginatedResult<BrokerDataOrder[]> | null> {
-    if (!this.isAuthed()) {
-      throw new AuthenticationError('User is not authenticated');
-    }
-
-    return this.apiClient.getNextPage(previousResult, (offset: number, limit: number) => {
-      const page = Math.floor(offset / limit) + 1;
-      return this.apiClient.getBrokerOrdersPage(page, limit);
-    });
-  }
-
-  /**
-   * Get the next page of positions
-   * @param previousResult - The previous paginated result
-   * @returns Promise with next page of positions or null if no more pages
-   */
-  public async getNextPositionsPage(
-    previousResult: PaginatedResult<BrokerDataPosition[]>
-  ): Promise<PaginatedResult<BrokerDataPosition[]> | null> {
-    if (!this.isAuthed()) {
-      throw new AuthenticationError('User is not authenticated');
-    }
-
-    return this.apiClient.getNextPage(previousResult, (offset: number, limit: number) => {
-      const page = Math.floor(offset / limit) + 1;
-      return this.apiClient.getBrokerPositionsPage(page, limit);
-    });
-  }
-
-  /**
-   * Get the next page of accounts
-   * @param previousResult - The previous paginated result
-   * @returns Promise with next page of accounts or null if no more pages
-   */
-  public async getNextAccountsPage(
-    previousResult: PaginatedResult<BrokerDataAccount[]>
-  ): Promise<PaginatedResult<BrokerDataAccount[]> | null> {
-    if (!this.isAuthed()) {
-      throw new AuthenticationError('User is not authenticated');
-    }
-
-    return this.apiClient.getNextPage(previousResult, (offset: number, limit: number) => {
-      const page = Math.floor(offset / limit) + 1;
-      return this.apiClient.getBrokerAccountsPage(page, limit);
-    });
-  }
-
-  public async getNextBalancesPage(
-    previousResult: PaginatedResult<BrokerBalance[]>
-  ): Promise<PaginatedResult<BrokerBalance[]> | null> {
-    if (!this.isAuthed()) {
-      throw new AuthenticationError('User is not authenticated');
-    }
-
-    return this.apiClient.getNextPage(previousResult, (offset: number, limit: number) => {
-      const page = Math.floor(offset / limit) + 1;
-      return this.apiClient.getBrokerBalancesPage(page, limit);
-    });
-  }
 
   /**
    * Get all orders across all pages (convenience method)
@@ -1290,17 +1181,17 @@ export class FinaticConnect extends EventEmitter {
    * @returns Promise with all orders
    */
   public async getAllOrders(filter?: OrdersFilter): Promise<BrokerDataOrder[]> {
-    if (!this.isAuthed()) {
+    if (!(await this.isAuthenticated())) {
       throw new AuthenticationError('User is not authenticated');
     }
 
     const allData: BrokerDataOrder[] = [];
-    let currentResult = await this.getOrdersPage(1, 100, filter);
+    let currentResult = await this.apiClient.getBrokerOrdersPage(1, 100, filter);
 
     while (currentResult) {
       allData.push(...currentResult.data);
       if (!currentResult.hasNext) break;
-      const nextResult = await this.getNextOrdersPage(currentResult);
+      const nextResult = await currentResult.nextPage();
       if (!nextResult) break;
       currentResult = nextResult;
     }
@@ -1314,17 +1205,17 @@ export class FinaticConnect extends EventEmitter {
    * @returns Promise with all positions
    */
   public async getAllPositions(filter?: PositionsFilter): Promise<BrokerDataPosition[]> {
-    if (!this.isAuthed()) {
+    if (!(await this.isAuthenticated())) {
       throw new AuthenticationError('User is not authenticated');
     }
 
     const allData: BrokerDataPosition[] = [];
-    let currentResult = await this.getPositionsPage(1, 100, filter);
+    let currentResult = await this.apiClient.getBrokerPositionsPage(1, 100, filter);
 
     while (currentResult) {
       allData.push(...currentResult.data);
       if (!currentResult.hasNext) break;
-      const nextResult = await this.getNextPositionsPage(currentResult);
+      const nextResult = await currentResult.nextPage();
       if (!nextResult) break;
       currentResult = nextResult;
     }
@@ -1338,17 +1229,17 @@ export class FinaticConnect extends EventEmitter {
    * @returns Promise with all accounts
    */
   public async getAllAccounts(filter?: AccountsFilter): Promise<BrokerDataAccount[]> {
-    if (!this.isAuthed()) {
+    if (!(await this.isAuthenticated())) {
       throw new AuthenticationError('User is not authenticated');
     }
 
     const allData: BrokerDataAccount[] = [];
-    let currentResult = await this.getAccountsPage(1, 100, filter);
+    let currentResult = await this.apiClient.getBrokerAccountsPage(1, 100, filter);
 
     while (currentResult) {
       allData.push(...currentResult.data);
       if (!currentResult.hasNext) break;
-      const nextResult = await this.getNextAccountsPage(currentResult);
+      const nextResult = await currentResult.nextPage();
       if (!nextResult) break;
       currentResult = nextResult;
     }
@@ -1357,17 +1248,17 @@ export class FinaticConnect extends EventEmitter {
   }
 
   public async getAllBalances(filter?: BalancesFilter): Promise<BrokerBalance[]> {
-    if (!this.isAuthed()) {
+    if (!(await this.isAuthenticated())) {
       throw new AuthenticationError('User is not authenticated');
     }
 
     const allData: BrokerBalance[] = [];
-    let currentResult = await this.getBalancesPage(1, 100, filter);
+    let currentResult = await this.apiClient.getBrokerBalancesPage(1, 100, filter);
 
     while (currentResult) {
       allData.push(...currentResult.data);
       if (!currentResult.hasNext) break;
-      const nextResult = await this.getNextBalancesPage(currentResult);
+      const nextResult = await currentResult.nextPage();
       if (!nextResult) break;
       currentResult = nextResult;
     }
@@ -1420,7 +1311,7 @@ export class FinaticConnect extends EventEmitter {
    * Validate session for keep-alive purposes and handle automatic refresh
    */
   private async validateSessionKeepAlive(): Promise<void> {
-    if (!this.sessionId || !this.isAuthed()) {
+    if (!this.sessionId || !(await this.isAuthenticated())) {
       console.log('[FinaticConnect] Session keep-alive skipped - no active session');
       return;
     }
@@ -1548,7 +1439,6 @@ export class FinaticConnect extends EventEmitter {
       const response = await fetch(`${this.baseUrl}/portal/${sessionId}/complete`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${this.userToken?.accessToken || ''}`,
           'Content-Type': 'application/json',
         },
       });
@@ -1571,7 +1461,7 @@ export class FinaticConnect extends EventEmitter {
    * @throws AuthenticationError if user is not authenticated
    */
   public async disconnectCompany(connectionId: string): Promise<DisconnectCompanyResponse> {
-    if (!this.isAuthed()) {
+    if (!(await this.isAuthenticated())) {
       throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
     }
     if (!this.userToken?.user_id) {
@@ -1581,22 +1471,6 @@ export class FinaticConnect extends EventEmitter {
     return this.apiClient.disconnectCompany(connectionId);
   }
 
-  /**
-   * Get account balances for the authenticated user
-   * @param filters - Optional filters for balances
-   * @returns Promise with balance data
-   */
-  public async getBalances(filters?: any): Promise<any[]> {
-    if (!this.isAuthed()) {
-      throw new AuthenticationError('User is not authenticated');
-    }
+  // Duplicate getBalances method removed - using the paginated version above
 
-    try {
-      const response = await this.apiClient.getBalances(filters);
-      return response.response_data || [];
-    } catch (error) {
-      this.emit('error', error as Error);
-      throw error;
-    }
-  }
 }

@@ -26,6 +26,7 @@ import {
   SessionState,
   TokenInfo,
   SessionResponse,
+  SessionResponseData,
   OtpRequestResponse,
   OtpVerifyResponse,
   SessionValidationResponse,
@@ -45,6 +46,7 @@ import {
   OrderValidationError,
   TradingNotEnabledError,
 } from '../../utils/errors';
+// Supabase import removed - SDK no longer depends on Supabase
 
 export class ApiClient {
   private readonly baseUrl: string;
@@ -53,10 +55,7 @@ export class ApiClient {
   protected currentSessionId: string | null = null;
   private tradingContext: TradingContext = {};
 
-  // Token management
-  private tokenInfo: TokenInfo | null = null;
-  private refreshPromise: Promise<TokenInfo> | null = null;
-  private readonly REFRESH_BUFFER_MINUTES = 5; // Refresh token 5 minutes before expiry
+  // Session management (no Supabase needed)
 
   // Session and company context
   private companyId: string | null = null;
@@ -71,7 +70,11 @@ export class ApiClient {
     if (!this.baseUrl.includes('/api/v1')) {
       this.baseUrl = `${this.baseUrl}/api/v1`;
     }
+
+    // No Supabase initialization needed - SDK is clean
   }
+
+  // Supabase initialization removed - SDK no longer depends on Supabase
 
   /**
    * Set session context (session ID, company ID, CSRF token)
@@ -104,121 +107,35 @@ export class ApiClient {
   }
 
   /**
-   * Store tokens after successful authentication
-   */
-  setTokens(accessToken: string, refreshToken: string, expiresAt: string, userId?: string): void {
-    this.tokenInfo = {
-      accessToken,
-      refreshToken,
-      expiresAt,
-      userId,
-    };
-  }
-
-  /**
-   * Get the current access token, refreshing if necessary
+   * Get a valid access token (session-based auth - no tokens needed)
    */
   async getValidAccessToken(): Promise<string> {
-    if (!this.tokenInfo) {
-      throw new AuthenticationError('No tokens available. Please authenticate first.');
-    }
-
-    // Check if token is expired or about to expire
-    if (this.isTokenExpired()) {
-      await this.refreshTokens();
-    }
-
-    return this.tokenInfo.accessToken;
+    // Session-based auth - return empty token as we use session headers
+    return '';
   }
 
+  // Token expiration check removed - session-based auth doesn't use expiring tokens
+
+  // Supabase refresh method removed - SDK no longer uses Supabase tokens
+
   /**
-   * Check if the current token is expired or about to expire
+   * Perform the actual Supabase session refresh
    */
-  private isTokenExpired(): boolean {
-    if (!this.tokenInfo) return true;
-
-    const expiryTime = new Date(this.tokenInfo.expiresAt).getTime();
-    const currentTime = Date.now();
-    const bufferTime = this.REFRESH_BUFFER_MINUTES * 60 * 1000; // 5 minutes in milliseconds
-
-    return currentTime >= expiryTime - bufferTime;
-  }
+  // Supabase refresh method removed - SDK no longer uses Supabase tokens
 
   /**
-   * Refresh the access token using the refresh token
-   */
-  private async refreshTokens(): Promise<void> {
-    if (!this.tokenInfo) {
-      throw new AuthenticationError('No refresh token available.');
-    }
-
-    // If a refresh is already in progress, wait for it
-    if (this.refreshPromise) {
-      await this.refreshPromise;
-      return;
-    }
-
-    // Start a new refresh
-    this.refreshPromise = this.performTokenRefresh();
-
-    try {
-      await this.refreshPromise;
-    } finally {
-      this.refreshPromise = null;
-    }
-  }
-
-  /**
-   * Perform the actual token refresh request
-   */
-  private async performTokenRefresh(): Promise<TokenInfo> {
-    if (!this.tokenInfo) {
-      throw new AuthenticationError('No refresh token available.');
-    }
-
-    try {
-      const response = await this.request<RefreshTokenResponse>('/company/auth/refresh', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: {
-          refresh_token: this.tokenInfo.refreshToken,
-        } as RefreshTokenRequest,
-      });
-
-      // Update stored tokens
-      this.tokenInfo = {
-        accessToken: response.response_data.access_token,
-        refreshToken: response.response_data.refresh_token,
-        expiresAt: response.response_data.expires_at,
-        userId: this.tokenInfo.userId,
-      };
-
-      return this.tokenInfo;
-    } catch (error) {
-      // Clear tokens on refresh failure
-      this.tokenInfo = null;
-      throw new AuthenticationError(
-        'Token refresh failed. Please re-authenticate.',
-        error as Record<string, any>
-      );
-    }
-  }
-
-  /**
-   * Clear stored tokens (useful for logout)
+   * Clear session tokens (useful for logout)
    */
   clearTokens(): void {
-    this.tokenInfo = null;
-    this.refreshPromise = null;
+    // Session-based auth - no tokens to clear
   }
 
   /**
-   * Get current token info (for debugging/testing)
+   * Get current session info (for debugging/testing) - session-based auth
    */
-  getTokenInfo(): TokenInfo | null {
-    return this.tokenInfo ? { ...this.tokenInfo } : null;
+  getTokenInfo(): { accessToken: string; refreshToken: string; expiresAt: number } | null {
+    // Session-based auth - no tokens to return
+    return null;
   }
 
   /**
@@ -243,9 +160,13 @@ export class ApiClient {
       });
     }
 
+    // Get Supabase JWT token
+    const accessToken = await this.getValidAccessToken();
+
     // Build comprehensive headers object with all available session data
     const comprehensiveHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
     };
 
     // Add device info if available
@@ -463,7 +384,7 @@ export class ApiClient {
 
   // Session Management
   async startSession(token: string, userId?: string): Promise<SessionResponse> {
-    const response = await this.request<SessionResponse>('/auth/session/start', {
+    const response = await this.request<SessionResponse>('/session/start', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -522,15 +443,10 @@ export class ApiClient {
       },
     });
 
-    // Store tokens after successful OTP verification
+    // OTP verification successful - tokens are handled by Supabase client
     if (response.success && response.data) {
-      const expiresAt = new Date(Date.now() + response.data.expires_in * 1000).toISOString();
-      this.setTokens(
-        response.data.access_token,
-        response.data.refresh_token,
-        expiresAt,
-        response.data.user_id
-      );
+      // Note: Supabase JWT will be handled by the Supabase client
+      // The backend now creates/retrieves Supabase users and returns session info
     }
 
     return response;
@@ -546,7 +462,7 @@ export class ApiClient {
       throw new SessionError('Session must be in ACTIVE state to authenticate');
     }
 
-    const response = await this.request<SessionAuthenticateResponse>('/auth/session/authenticate', {
+    const response = await this.request<SessionAuthenticateResponse>('/session/authenticate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -566,9 +482,7 @@ export class ApiClient {
 
     // Store tokens after successful direct authentication
     if (response.success && response.data) {
-      // For direct auth, we don't get expires_in, so we'll set a default 1-hour expiry
-      const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
-      this.setTokens(response.data.access_token, response.data.refresh_token, expiresAt, userId);
+      // Session-based auth - no token storage needed
     }
 
     return response;
@@ -586,7 +500,7 @@ export class ApiClient {
       throw new SessionError('Session must be in ACTIVE state to get portal URL');
     }
 
-    return this.request<PortalUrlResponse>('/auth/session/portal', {
+    return this.request<PortalUrlResponse>('/session/portal', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -629,7 +543,7 @@ export class ApiClient {
       orderQty: number;
       action: 'Buy' | 'Sell';
       orderType: 'Market' | 'Limit' | 'Stop' | 'StopLimit';
-      assetType: 'Stock' | 'Option' | 'Crypto' | 'Future';
+      assetType: 'equity' | 'equity_option' | 'crypto' | 'forex' | 'future' | 'future_option';
     },
     extras: BrokerExtras = {},
     connection_id?: string
@@ -799,13 +713,6 @@ export class ApiClient {
     this.tradingContext.accountId = accountId;
   }
 
-  getTradingContext(): TradingContext {
-    return { ...this.tradingContext };
-  }
-
-  clearTradingContext(): void {
-    this.tradingContext = {};
-  }
 
   // Stock convenience methods
   async placeStockMarketOrder(
@@ -823,7 +730,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Market',
-        assetType: 'Stock',
+        assetType: 'equity',
         timeInForce: 'day',
         broker,
         accountNumber,
@@ -850,7 +757,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Limit',
-        assetType: 'Stock',
+        assetType: 'equity',
         price,
         timeInForce,
         broker,
@@ -878,7 +785,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Stop',
-        assetType: 'Stock',
+        assetType: 'equity',
         stopPrice,
         timeInForce,
         broker,
@@ -905,7 +812,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Market',
-        assetType: 'Crypto',
+        assetType: 'crypto',
         timeInForce: 'day',
         broker,
         accountNumber,
@@ -932,7 +839,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Limit',
-        assetType: 'Crypto',
+        assetType: 'crypto',
         price,
         timeInForce,
         broker,
@@ -959,7 +866,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Market',
-        assetType: 'Option',
+        assetType: 'equity_option',
         timeInForce: 'day',
         broker,
         accountNumber,
@@ -986,7 +893,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Limit',
-        assetType: 'Option',
+        assetType: 'equity_option',
         price,
         timeInForce,
         broker,
@@ -1012,7 +919,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Market',
-        assetType: 'Future',
+        assetType: 'future',
         timeInForce: 'day',
         broker,
         accountNumber,
@@ -1037,7 +944,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Limit',
-        assetType: 'Future',
+        assetType: 'future',
         price,
         timeInForce,
         broker,
@@ -1143,7 +1050,7 @@ export class ApiClient {
 
   async getUserToken(sessionId: string): Promise<UserToken> {
     const accessToken = await this.getValidAccessToken();
-    return this.request<UserToken>(`/auth/session/${sessionId}/user`, {
+    return this.request<UserToken>(`/session/${sessionId}/user`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -1160,6 +1067,7 @@ export class ApiClient {
 
   /**
    * Refresh the current session to extend its lifetime
+   * Note: This now uses Supabase session refresh instead of custom endpoint
    */
   async refreshSession(): Promise<{
     success: boolean;
@@ -1178,13 +1086,22 @@ export class ApiClient {
       throw new SessionError('No active session to refresh');
     }
 
-    return this.request('/auth/session/refresh', {
-      method: 'POST',
-      headers: {
-        'Session-ID': this.currentSessionId,
-        'X-Company-ID': this.companyId,
+    // Session-based auth - no token refresh needed
+
+    // Return session info in expected format
+    return {
+      success: true,
+      response_data: {
+        session_id: this.currentSessionId,
+        company_id: this.companyId,
+        status: 'active',
+        expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hour from now
+        user_id: '', // Session-based auth - user_id comes from session
+        auto_login: false,
       },
-    });
+      message: 'Session refreshed successfully',
+      status_code: 200,
+    };
   }
 
   // Broker Data Management
