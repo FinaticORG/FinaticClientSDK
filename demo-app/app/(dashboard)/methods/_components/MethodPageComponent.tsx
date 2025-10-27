@@ -70,9 +70,10 @@ export function MethodPageComponent() {
       },
       {
         key: 'isAuthed',
-        label: 'Is authed?',
+        label: 'Is authenticated?',
         description: 'Returns true when the SDK has an authenticated session.',
         input: { type: 'none' },
+        methodName: 'isAuthenticated',
       },
       {
         key: 'openPortal',

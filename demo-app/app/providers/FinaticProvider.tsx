@@ -372,7 +372,9 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     try {
       // Use sdkAdapter methods for server SDKs, finatic methods for client SDK
       const authed =
-        typeof authSource.isAuthed === 'function' ? await authSource.isAuthed() : false;
+        typeof authSource.isAuthenticated === 'function'
+          ? await authSource.isAuthenticated()
+          : false;
       const uid = typeof authSource.getUserId === 'function' ? await authSource.getUserId() : null;
 
       console.log('🔍 checkAuth() - authed:', authed, 'typeof:', typeof authed);

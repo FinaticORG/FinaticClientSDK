@@ -253,8 +253,7 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
   // Compute test coverage for info panel
   const sdkMethodNames = useMemo(
     () => [
-      'isAuthed',
-      'is_authenticated',
+      'isAuthenticated',
       'openPortal',
       'closePortal',
       'setUserId',

@@ -18,7 +18,7 @@ export interface PortalOptions {
 // Main SDK adapter interface
 export interface SdkAdapter {
   // Session methods
-  isAuthed(): Promise<boolean>;
+  isAuthenticated(): Promise<boolean>;
   getUserId(): Promise<string | null>;
   setUserId(userId: string): Promise<void>;
   
@@ -82,8 +82,8 @@ export interface SdkAdapter {
 export class ClientSdkAdapter implements SdkAdapter {
   constructor(private client: FinaticConnect) {}
 
-  async isAuthed(): Promise<boolean> {
-    return await this.client.isAuthed();
+  async isAuthenticated(): Promise<boolean> {
+    return await this.client.isAuthenticated();
   }
 
   async getUserId(): Promise<string | null> {
@@ -312,16 +312,16 @@ export class ApiSdkAdapter implements SdkAdapter {
     }
   }
 
-  async isAuthed(): Promise<boolean> {
+  async isAuthenticated(): Promise<boolean> {
     try {
       // makeRequest now returns result.data directly, so for {success:true, data:true} it returns true
       const result = await this.makeRequest<boolean>('GET', '/api/session/is-authed');
-      console.log('🔍 ApiSdkAdapter.isAuthed() result:', result, 'typeof:', typeof result);
+      console.log('🔍 ApiSdkAdapter.isAuthenticated() result:', result, 'typeof:', typeof result);
       
       // result should be a boolean directly from the data field
       return Boolean(result);
     } catch (error) {
-      console.error('🔍 ApiSdkAdapter.isAuthed() error:', error);
+      console.error('🔍 ApiSdkAdapter.isAuthenticated() error:', error);
       return false;
     }
   }
