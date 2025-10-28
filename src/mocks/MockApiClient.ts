@@ -437,13 +437,6 @@ export class MockApiClient {
     console.log('MockApiClient.setAccount Debug - Updated context:', this.tradingContext);
   }
 
-  getTradingContext(): TradingContext {
-    return { ...this.tradingContext };
-  }
-
-  clearTradingContext(): void {
-    this.tradingContext = {};
-  }
 
   // Stock convenience methods
   async placeStockMarketOrder(
@@ -662,7 +655,7 @@ export class MockApiClient {
         orderQty,
         action,
         orderType: 'Market',
-        assetType: 'Future',
+        assetType: 'future',
         timeInForce: 'day',
       },
       extras
@@ -687,7 +680,7 @@ export class MockApiClient {
         orderQty,
         action,
         orderType: 'Limit',
-        assetType: 'Future',
+        assetType: 'future',
         timeInForce,
         price,
       },

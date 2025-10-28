@@ -713,13 +713,6 @@ export class ApiClient {
     this.tradingContext.accountId = accountId;
   }
 
-  getTradingContext(): TradingContext {
-    return { ...this.tradingContext };
-  }
-
-  clearTradingContext(): void {
-    this.tradingContext = {};
-  }
 
   // Stock convenience methods
   async placeStockMarketOrder(
@@ -926,7 +919,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Market',
-        assetType: 'Future',
+        assetType: 'future',
         timeInForce: 'day',
         broker,
         accountNumber,
@@ -951,7 +944,7 @@ export class ApiClient {
         orderQty,
         action,
         orderType: 'Limit',
-        assetType: 'Future',
+        assetType: 'future',
         price,
         timeInForce,
         broker,

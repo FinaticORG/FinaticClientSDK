@@ -18,10 +18,9 @@ export interface PortalOptions {
 // Main SDK adapter interface
 export interface SdkAdapter {
   // Session methods
-  isAuthed(): Promise<boolean>;
+  isAuthenticated(): Promise<boolean>;
   getUserId(): Promise<string | null>;
   setUserId(userId: string): Promise<void>;
-  getSessionUser(): Promise<any>;
   
   // Portal methods - special handling for server SDKs
   openPortal(options: PortalOptions): Promise<void>;
@@ -38,13 +37,11 @@ export interface SdkAdapter {
   getActiveAccounts(): Promise<any[]>;
   getAllAccounts(): Promise<any[]>;
   getAccountsPage?(options?: any): Promise<any>;
-  getNextAccountsPage?(): Promise<any>;
   
   // Trading methods
   getOrders(options?: any): Promise<any>;
   getAllOrders(): Promise<any[]>;
   getOrdersPage?(options?: any): Promise<any>;
-  getNextOrdersPage?(): Promise<any>;
   getFilledOrders?(options?: any): Promise<any[]>;
   getPendingOrders?(options?: any): Promise<any[]>;
   getOrdersBySymbol?(symbol: string): Promise<any[]>;
@@ -54,7 +51,6 @@ export interface SdkAdapter {
   getPositions(options?: any): Promise<any>;
   getAllPositions(): Promise<any[]>;
   getPositionsPage?(options?: any): Promise<any>;
-  getNextPositionsPage?(): Promise<any>;
   getOpenPositions?(options?: any): Promise<any[]>;
   getPositionsBySymbol?(symbol: string): Promise<any[]>;
   getPositionsByBroker?(broker: string): Promise<any[]>;
@@ -63,13 +59,7 @@ export interface SdkAdapter {
   getBalances(options?: any): Promise<any>;
   getAllBalances(): Promise<any[]>;
   getBalancesPage?(options?: any): Promise<any>;
-  getNextBalancesPage?(): Promise<any>;
   
-  // Trading context
-  setBroker(broker: string): void;
-  setAccount(account: string): void;
-  getTradingContext(): any;
-  clearTradingContext?(): void;
   
   // Order operations
   placeOrder(order: any): Promise<any>;
@@ -92,8 +82,8 @@ export interface SdkAdapter {
 export class ClientSdkAdapter implements SdkAdapter {
   constructor(private client: FinaticConnect) {}
 
-  async isAuthed(): Promise<boolean> {
-    return await this.client.isAuthed();
+  async isAuthenticated(): Promise<boolean> {
+    return await this.client.isAuthenticated();
   }
 
   async getUserId(): Promise<string | null> {
@@ -104,9 +94,6 @@ export class ClientSdkAdapter implements SdkAdapter {
     return await this.client.setUserId(userId);
   }
 
-  async getSessionUser(): Promise<any> {
-    return await this.client.getSessionUser();
-  }
 
   async openPortal(options: PortalOptions): Promise<void> {
     // Client SDK handles portal internally with callbacks
@@ -233,13 +220,6 @@ export class ClientSdkAdapter implements SdkAdapter {
     (this.client as any).setAccount(account);
   }
 
-  getTradingContext(): any {
-    return (this.client as any).getTradingContext();
-  }
-
-  clearTradingContext(): void {
-    (this.client as any).clearTradingContext();
-  }
 
   async placeOrder(order: any): Promise<any> {
     return await this.client.placeOrder(order);
@@ -332,16 +312,16 @@ export class ApiSdkAdapter implements SdkAdapter {
     }
   }
 
-  async isAuthed(): Promise<boolean> {
+  async isAuthenticated(): Promise<boolean> {
     try {
       // makeRequest now returns result.data directly, so for {success:true, data:true} it returns true
       const result = await this.makeRequest<boolean>('GET', '/api/session/is-authed');
-      console.log('🔍 ApiSdkAdapter.isAuthed() result:', result, 'typeof:', typeof result);
+      console.log('🔍 ApiSdkAdapter.isAuthenticated() result:', result, 'typeof:', typeof result);
       
       // result should be a boolean directly from the data field
       return Boolean(result);
     } catch (error) {
-      console.error('🔍 ApiSdkAdapter.isAuthed() error:', error);
+      console.error('🔍 ApiSdkAdapter.isAuthenticated() error:', error);
       return false;
     }
   }
@@ -362,9 +342,6 @@ export class ApiSdkAdapter implements SdkAdapter {
     await this.makeRequest('POST', '/api/session/authenticate', { user_id: userId });
   }
 
-  async getSessionUser(): Promise<any> {
-    return await this.makeRequest('GET', '/api/session/user');
-  }
 
   async openPortal(options: PortalOptions): Promise<void> {
     // Store callbacks for later use
@@ -424,15 +401,13 @@ export class ApiSdkAdapter implements SdkAdapter {
         // Extract from response.data
         userInfo = {
           user_id: response.data.user_id || null,
-          company_id: response.data.company_id || null,
-          success: true
+          success: response.data.success || true
         };
       } else if ('user_id' in response) {
         // If response is already the data object with user_id
         userInfo = {
           user_id: response.user_id || null,
-          company_id: response.company_id || null,
-          success: true
+          success: response.success || true
         };
       } else {
         // Fallback - return error info
@@ -746,17 +721,6 @@ export class ApiSdkAdapter implements SdkAdapter {
     });
   }
 
-  getTradingContext(): any {
-    return this.tradingContext;
-  }
-
-  async clearTradingContext(): Promise<void> {
-    this.tradingContext = {};
-    // Clear on server as well if endpoint exists
-    await this.makeRequest('DELETE', '/api/trading/context').catch(() => {
-      // Ignore errors for context clearing
-    });
-  }
 
   async placeOrder(order: any): Promise<any> {
     return await this.makeRequest('POST', '/api/trading/order', order);
