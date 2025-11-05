@@ -327,4 +327,118 @@ export interface DisconnectCompanyResponse {
   };
   message: string;
   status_code: number;
+}
+
+// Order detail types
+export interface OrderFill {
+  id: string;
+  order_id: string;
+  leg_id: string | null;
+  price: number;
+  quantity: number;
+  executed_at: string;
+  execution_id: string | null;
+  trade_id: string | null;
+  venue: string | null;
+  commission_fee: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrderEvent {
+  id: string;
+  order_id: string;
+  order_group_id: string | null;
+  event_type: string | null;
+  event_time: string;
+  event_id: string | null;
+  order_status: string | null;
+  inferred: boolean;
+  confidence: number | null;
+  reason_code: string | null;
+  recorded_at: string | null;
+}
+
+export interface OrderGroup {
+  id: string;
+  user_broker_connection_id: string | null;
+  created_at: string;
+  updated_at: string;
+  orders?: BrokerDataOrder[];
+}
+
+// Position detail types
+export interface PositionLot {
+  id: string;
+  position_id: string | null;
+  user_broker_connection_id: string;
+  broker_provided_account_id: string;
+  instrument_key: string;
+  asset_type: string | null;
+  side: 'long' | 'short' | null;
+  open_quantity: number;
+  closed_quantity: number;
+  remaining_quantity: number;
+  open_price: number;
+  close_price_avg: number | null;
+  cost_basis: number;
+  cost_basis_w_commission: number;
+  realized_pl: number;
+  realized_pl_w_commission: number;
+  lot_opened_at: string;
+  lot_closed_at: string | null;
+  position_group_id: string | null;
+  created_at: string;
+  updated_at: string;
+  position_lot_fills?: PositionLotFill[];
+}
+
+export interface PositionLotFill {
+  id: string;
+  lot_id: string;
+  order_fill_id: string;
+  fill_price: number;
+  fill_quantity: number;
+  executed_at: string;
+  commission_share: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Filter types for detail endpoints
+export interface OrderFillsFilter {
+  connection_id?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface OrderEventsFilter {
+  connection_id?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface OrderGroupsFilter {
+  broker_id?: string;
+  connection_id?: string;
+  limit?: number;
+  offset?: number;
+  created_after?: string;
+  created_before?: string;
+}
+
+export interface PositionLotsFilter {
+  broker_id?: string;
+  connection_id?: string;
+  account_id?: string;
+  symbol?: string;
+  position_id?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface PositionLotFillsFilter {
+  connection_id?: string;
+  limit?: number;
+  offset?: number;
 } 

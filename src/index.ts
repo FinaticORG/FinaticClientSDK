@@ -48,6 +48,16 @@ export type {
   FilteredAccountsResponse,
   FilteredBalancesResponse,
   BrokerConnection,
+  OrderFill,
+  OrderEvent,
+  OrderGroup,
+  PositionLot,
+  PositionLotFill,
+  OrderFillsFilter,
+  OrderEventsFilter,
+  OrderGroupsFilter,
+  PositionLotsFilter,
+  PositionLotFillsFilter,
 } from './types';
 
 export type { FinaticConnectOptions, FinaticUserToken, PortalMessage } from './types/connect';
