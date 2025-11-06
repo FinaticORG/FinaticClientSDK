@@ -7,6 +7,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/app/providers/ThemeProvider"
 import { Suspense } from "react"
 import { FinaticProvider } from "@/app/providers/FinaticProvider"
+import { EnvironmentConfigProvider } from "@/app/providers/EnvironmentConfigProvider"
 
 export const metadata: Metadata = {
   title: "DevPlatform - Developer Tools & Management",
@@ -23,11 +24,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <Suspense fallback={null}>
-          <FinaticProvider>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-              {children}
-            </ThemeProvider>
-          </FinaticProvider>
+          <EnvironmentConfigProvider>
+            <FinaticProvider>
+              <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+                {children}
+              </ThemeProvider>
+            </FinaticProvider>
+          </EnvironmentConfigProvider>
         </Suspense>
         <Analytics />
       </body>

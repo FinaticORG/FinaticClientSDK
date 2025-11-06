@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { EnvironmentSettings } from '@/app/(dashboard)/settings/_components/EnvironmentSettingsComponent';
 import { useFinatic, type SdkType } from '@/app/providers/FinaticProvider';
+import { useEnvironmentConfig, type EnvironmentMode, type EnvironmentType } from '@/app/providers/EnvironmentConfigProvider';
 import {
   Settings,
   Palette,
@@ -36,6 +37,7 @@ import { useState, useEffect } from 'react';
 export function SettingsPageComponent() {
   const { theme, setTheme } = useTheme();
   const { sdkType, setSdkType, sessionInfo } = useFinatic();
+  const { mode, environment, setMode, setEnvironment } = useEnvironmentConfig();
   const [mounted, setMounted] = useState(false);
 
   // Local state for the select to ensure it updates properly
@@ -132,11 +134,137 @@ export function SettingsPageComponent() {
         </div>
       </div>
 
-      <Tabs defaultValue="appearance" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 bg-muted">
+      <Tabs defaultValue="environment" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3 bg-muted">
+          <TabsTrigger value="environment">Environment</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
           <TabsTrigger value="advanced">Advanced</TabsTrigger>
         </TabsList>
+
+        {/* Environment Settings */}
+        <TabsContent value="environment" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Mode Selection (Sandbox/Live) */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-foreground flex items-center gap-2">
+                  <Globe className="w-5 h-5" />
+                  Mode Selection
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  Choose between Sandbox (test) or Live (production) mode
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Tabs value={mode} onValueChange={(value) => setMode(value as EnvironmentMode)}>
+                  <TabsList className="grid w-full grid-cols-2 bg-muted">
+                    <TabsTrigger value="sandbox">Sandbox</TabsTrigger>
+                    <TabsTrigger value="live">Live</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="sandbox" className="mt-4">
+                    <div className="p-4 bg-muted/20 rounded-lg border border-border">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertCircle className="w-4 h-4 text-yellow-500" />
+                        <span className="text-sm font-medium text-foreground">Sandbox Mode</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Uses test data and sandbox API keys. Safe for development and testing.
+                      </p>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="live" className="mt-4">
+                    <div className="p-4 bg-muted/20 rounded-lg border border-border">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="text-sm font-medium text-foreground">Live Mode</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Uses real production data and live API keys. Use with caution.
+                      </p>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+
+            {/* Environment Selection (Dev/Staging/Prod) */}
+            <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="text-foreground flex items-center gap-2">
+                  <Server className="w-5 h-5" />
+                  Environment Selection
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  Choose the API environment to connect to
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-foreground">Environment</Label>
+                  <Select value={environment} onValueChange={(value) => setEnvironment(value as EnvironmentType)}>
+                    <SelectTrigger className="bg-input border-border text-foreground">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="dev">
+                        <div className="flex items-center gap-2">
+                          <Code className="w-4 h-4" />
+                          <div>
+                            <div className="font-medium">Development</div>
+                            <div className="text-xs text-muted-foreground">Local development server</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="staging">
+                        <div className="flex items-center gap-2">
+                          <Globe className="w-4 h-4" />
+                          <div>
+                            <div className="font-medium">Staging</div>
+                            <div className="text-xs text-muted-foreground">Pre-production environment</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="prod">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4" />
+                          <div>
+                            <div className="font-medium">Production</div>
+                            <div className="text-xs text-muted-foreground">Live production environment</div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="p-4 bg-muted/20 rounded-lg border border-border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Monitor className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">Current Configuration</span>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Mode:</span>
+                      <span className="text-foreground font-medium capitalize">{mode}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Environment:</span>
+                      <span className="text-foreground font-medium capitalize">{environment}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Changing the environment will update the API URL and API key used for all requests.
+                    You may need to refresh the page for changes to take full effect.
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
         {/* Appearance Settings */}
         <TabsContent value="appearance" className="space-y-4">

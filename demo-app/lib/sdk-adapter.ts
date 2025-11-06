@@ -46,6 +46,9 @@ export interface SdkAdapter {
   getPendingOrders?(options?: any): Promise<any[]>;
   getOrdersBySymbol?(symbol: string): Promise<any[]>;
   getOrdersByBroker?(broker: string): Promise<any[]>;
+  getOrderFills(orderId: string, filter?: any): Promise<any[]>;
+  getOrderEvents(orderId: string, filter?: any): Promise<any[]>;
+  getOrderGroups(filter?: any): Promise<any[]>;
   
   // Position methods
   getPositions(options?: any): Promise<any>;
@@ -54,6 +57,8 @@ export interface SdkAdapter {
   getOpenPositions?(options?: any): Promise<any[]>;
   getPositionsBySymbol?(symbol: string): Promise<any[]>;
   getPositionsByBroker?(broker: string): Promise<any[]>;
+  getPositionLots(filter?: any): Promise<any[]>;
+  getPositionLotFills(lotId: string, filter?: any): Promise<any[]>;
   
   // Balance methods
   getBalances(options?: any): Promise<any>;
@@ -168,6 +173,18 @@ export class ClientSdkAdapter implements SdkAdapter {
     return await this.client.getOrdersByBroker(broker);
   }
 
+  async getOrderFills(orderId: string, filter?: any): Promise<any[]> {
+    return await this.client.getOrderFills(orderId, filter);
+  }
+
+  async getOrderEvents(orderId: string, filter?: any): Promise<any[]> {
+    return await this.client.getOrderEvents(orderId, filter);
+  }
+
+  async getOrderGroups(filter?: any): Promise<any[]> {
+    return await this.client.getOrderGroups(filter);
+  }
+
   async getPositions(options?: any): Promise<any> {
     return await this.client.getPositions(options);
   }
@@ -194,6 +211,14 @@ export class ClientSdkAdapter implements SdkAdapter {
 
   async getPositionsByBroker(broker: string): Promise<any[]> {
     return await this.client.getPositionsByBroker(broker);
+  }
+
+  async getPositionLots(filter?: any): Promise<any[]> {
+    return await this.client.getPositionLots(filter);
+  }
+
+  async getPositionLotFills(lotId: string, filter?: any): Promise<any[]> {
+    return await this.client.getPositionLotFills(lotId, filter);
   }
 
   async getBalances(options?: any): Promise<any> {
@@ -591,6 +616,60 @@ export class ApiSdkAdapter implements SdkAdapter {
     }
   }
 
+  async getOrderFills(orderId: string, filter?: any): Promise<any[]> {
+    try {
+      const params = new URLSearchParams();
+      if (filter) {
+        Object.entries(filter).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            params.append(key, String(value));
+          }
+        });
+      }
+      const result = await this.makeRequest<any[]>('GET', `/api/trading/orders/${orderId}/fills?${params}`);
+      return Array.isArray(result) ? result : [];
+    } catch (error) {
+      console.error('🔍 getOrderFills error:', error);
+      return [];
+    }
+  }
+
+  async getOrderEvents(orderId: string, filter?: any): Promise<any[]> {
+    try {
+      const params = new URLSearchParams();
+      if (filter) {
+        Object.entries(filter).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            params.append(key, String(value));
+          }
+        });
+      }
+      const result = await this.makeRequest<any[]>('GET', `/api/trading/orders/${orderId}/events?${params}`);
+      return Array.isArray(result) ? result : [];
+    } catch (error) {
+      console.error('🔍 getOrderEvents error:', error);
+      return [];
+    }
+  }
+
+  async getOrderGroups(filter?: any): Promise<any[]> {
+    try {
+      const params = new URLSearchParams();
+      if (filter) {
+        Object.entries(filter).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            params.append(key, String(value));
+          }
+        });
+      }
+      const result = await this.makeRequest<any[]>('GET', `/api/trading/order-groups?${params}`);
+      return Array.isArray(result) ? result : [];
+    } catch (error) {
+      console.error('🔍 getOrderGroups error:', error);
+      return [];
+    }
+  }
+
   async getPositions(options?: any): Promise<any> {
     const params = new URLSearchParams();
     if (options?.page) params.append('page', options.page.toString());
@@ -674,6 +753,42 @@ export class ApiSdkAdapter implements SdkAdapter {
       return filtered;
     } catch (error) {
       console.error('🔍 getPositionsByBroker error:', error);
+      return [];
+    }
+  }
+
+  async getPositionLots(filter?: any): Promise<any[]> {
+    try {
+      const params = new URLSearchParams();
+      if (filter) {
+        Object.entries(filter).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            params.append(key, String(value));
+          }
+        });
+      }
+      const result = await this.makeRequest<any[]>('GET', `/api/trading/positions/lots?${params}`);
+      return Array.isArray(result) ? result : [];
+    } catch (error) {
+      console.error('🔍 getPositionLots error:', error);
+      return [];
+    }
+  }
+
+  async getPositionLotFills(lotId: string, filter?: any): Promise<any[]> {
+    try {
+      const params = new URLSearchParams();
+      if (filter) {
+        Object.entries(filter).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            params.append(key, String(value));
+          }
+        });
+      }
+      const result = await this.makeRequest<any[]>('GET', `/api/trading/positions/lots/${lotId}/fills?${params}`);
+      return Array.isArray(result) ? result : [];
+    } catch (error) {
+      console.error('🔍 getPositionLotFills error:', error);
       return [];
     }
   }

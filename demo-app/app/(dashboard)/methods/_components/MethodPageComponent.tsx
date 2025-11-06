@@ -343,6 +343,86 @@ export function MethodPageComponent() {
           return filter ? [filter] : [];
         },
       },
+      {
+        key: 'getOrderFills',
+        label: 'Get order fills',
+        description: 'Retrieves execution fills for a specific order.',
+        input: {
+          type: 'fields',
+          fields: [
+            {
+              name: 'orderId',
+              label: 'Order id',
+              placeholder: 'order-uuid',
+              description: 'The order ID to get fills for.',
+            },
+            {
+              name: 'filter',
+              label: 'Filter JSON',
+              placeholder: '{"connection_id":"connection-uuid"}',
+              description: 'Optional filter payload (JSON).',
+            },
+          ],
+        },
+        prepareArgs: ({ fieldValues }) => {
+          const orderId = fieldValues?.orderId?.trim();
+          if (!orderId) {
+            throw new Error('Please provide an order id.');
+          }
+          const filter = parseOptionalJson(fieldValues?.filter, 'filter');
+          return [orderId, filter].filter(Boolean);
+        },
+      },
+      {
+        key: 'getOrderEvents',
+        label: 'Get order events',
+        description: 'Retrieves lifecycle events for a specific order.',
+        input: {
+          type: 'fields',
+          fields: [
+            {
+              name: 'orderId',
+              label: 'Order id',
+              placeholder: 'order-uuid',
+              description: 'The order ID to get events for.',
+            },
+            {
+              name: 'filter',
+              label: 'Filter JSON',
+              placeholder: '{"connection_id":"connection-uuid"}',
+              description: 'Optional filter payload (JSON).',
+            },
+          ],
+        },
+        prepareArgs: ({ fieldValues }) => {
+          const orderId = fieldValues?.orderId?.trim();
+          if (!orderId) {
+            throw new Error('Please provide an order id.');
+          }
+          const filter = parseOptionalJson(fieldValues?.filter, 'filter');
+          return [orderId, filter].filter(Boolean);
+        },
+      },
+      {
+        key: 'getOrderGroups',
+        label: 'Get order groups',
+        description: 'Retrieves order groups (related orders grouped together).',
+        input: {
+          type: 'fields',
+          fields: [
+            {
+              name: 'filter',
+              label: 'Filter JSON',
+              placeholder: '{"broker_id":"robinhood","connection_id":"connection-uuid"}',
+              description: 'Optional filter payload (JSON).',
+            },
+          ],
+        },
+        prepareArgs: ({ fieldValues }) => {
+          const filter = parseOptionalJson(fieldValues?.filter, 'filter');
+          return filter ? [filter] : [];
+        },
+      },
     ];
 
     groups.push({
@@ -435,6 +515,56 @@ export function MethodPageComponent() {
         prepareArgs: ({ fieldValues }) => {
           const filter = parseOptionalJson(fieldValues?.filter, 'filter');
           return filter ? [filter] : [];
+        },
+      },
+      {
+        key: 'getPositionLots',
+        label: 'Get position lots',
+        description: 'Retrieves position lots (tax lots) for positions. Essential for tax reporting.',
+        input: {
+          type: 'fields',
+          fields: [
+            {
+              name: 'filter',
+              label: 'Filter JSON',
+              placeholder: '{"broker_id":"robinhood","symbol":"AAPL","position_id":"position-uuid"}',
+              description: 'Optional filter payload (JSON).',
+            },
+          ],
+        },
+        prepareArgs: ({ fieldValues }) => {
+          const filter = parseOptionalJson(fieldValues?.filter, 'filter');
+          return filter ? [filter] : [];
+        },
+      },
+      {
+        key: 'getPositionLotFills',
+        label: 'Get position lot fills',
+        description: 'Retrieves fills for a specific position lot.',
+        input: {
+          type: 'fields',
+          fields: [
+            {
+              name: 'lotId',
+              label: 'Lot id',
+              placeholder: 'lot-uuid',
+              description: 'The position lot ID to get fills for.',
+            },
+            {
+              name: 'filter',
+              label: 'Filter JSON',
+              placeholder: '{"connection_id":"connection-uuid"}',
+              description: 'Optional filter payload (JSON).',
+            },
+          ],
+        },
+        prepareArgs: ({ fieldValues }) => {
+          const lotId = fieldValues?.lotId?.trim();
+          if (!lotId) {
+            throw new Error('Please provide a lot id.');
+          }
+          const filter = parseOptionalJson(fieldValues?.filter, 'filter');
+          return [lotId, filter].filter(Boolean);
         },
       },
     ];
