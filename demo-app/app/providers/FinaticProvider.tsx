@@ -11,7 +11,7 @@ import React, {
 } from 'react';
 import { FinaticConnect } from '@finatic/client';
 import { SdkType, SdkAdapter, createSdkAdapter } from '@/lib/sdk-adapter';
-import { useEnvironmentConfig } from './EnvironmentConfigProvider';
+// Removed: import { useEnvironmentConfig } from './EnvironmentConfigProvider';
 
 export type { SdkType };
 
@@ -85,9 +85,7 @@ interface FinaticContextValue {
 const FinaticContext = createContext<FinaticContextValue | undefined>(undefined);
 
 export function FinaticProvider({ children }: { children: React.ReactNode }) {
-  // Get environment config (provider should be available from layout)
-  const environmentConfig = useEnvironmentConfig();
-  const { mode, environment } = environmentConfig;
+  // Simplified: No longer using mode/environment config
 
   const [finatic, setFinatic] = useState<FinaticConnect | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -95,17 +93,16 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   const [isMockMode, setIsMockMode] = useState(false);
   const [sessionInfo, setSessionInfo] = useState<string>('Not initialized');
   const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [storedUserId, setStoredUserIdState] = useState<string | null>(() => {
-    if (typeof window === 'undefined') return null;
-    try {
-      return localStorage.getItem('finatic_user_id');
-    } catch {
-      return null;
-    }
-  });
+  const [storedUserId, setStoredUserIdState] = useState<string | null>(null);
   const [isAuthed, setIsAuthed] = useState<boolean>(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const apiBaseUrlRef = useRef<string | null>(null);
+  const lastCheckedAuthRef = useRef<{
+    finatic: FinaticConnect | null;
+    sdkAdapter: SdkAdapter | null;
+    sdkType: SdkType;
+  } | null>(null);
+  const isInitializingRef = useRef<boolean>(false);
   const [usage, setUsage] = useState<UsageStats>(() => {
     if (typeof window === 'undefined') {
       const now = new Date();
@@ -165,39 +162,90 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   // SDK adapter state
   const [sdkAdapter, setSdkAdapterState] = useState<SdkAdapter | null>(null);
 
+  // Track last finatic instance we created adapter for
+  const lastFinaticForAdapterRef = useRef<FinaticConnect | null>(null);
+  const lastSdkTypeForAdapterRef = useRef<SdkType | null>(null);
+
   // Initialize adapter based on SDK type and client instance
   // This will re-run when finatic instance changes (after reinitialization)
   useEffect(() => {
-    console.log('🔄 Initializing SDK adapter for type:', sdkType, 'mode:', mode, 'environment:', environment);
+    // Check if we need to recreate the adapter
+    // Use instance ID comparison for more reliable change detection
+    const currentInstanceId = finatic ? (finatic as any).__instanceId : null;
+    const previousInstanceId = lastFinaticForAdapterRef.current
+      ? (lastFinaticForAdapterRef.current as any).__instanceId
+      : null;
+    const finaticChanged = currentInstanceId !== previousInstanceId;
+    const sdkTypeChanged = lastSdkTypeForAdapterRef.current !== sdkType;
+    const needsRecreate = finaticChanged || sdkTypeChanged;
+
+    if (!needsRecreate && sdkAdapter) {
+      // Adapter is still valid, no need to recreate
+      console.log('⏭️ Skipping adapter recreation - instance unchanged', {
+        currentInstanceId,
+        previousInstanceId,
+      });
+      return;
+    }
+
     try {
       if (sdkType === 'client' && finatic) {
-        // Create ClientSdkAdapter wrapping existing finatic instance
+        console.log('🔄 Initializing Client SDK adapter');
+        console.log('🔄 Current finatic instance ID:', currentInstanceId);
+        console.log('🔄 Previous finatic instance ID:', previousInstanceId);
+        console.log('🔄 Instance changed?', finaticChanged);
+        console.log('🔄 Finatic object reference:', finatic);
+
         const adapter = createSdkAdapter('client', finatic);
         setSdkAdapterState(adapter);
-        console.log('✅ Client SDK adapter initialized');
+        // CRITICAL: Store the finatic reference BEFORE setting the adapter state
+        // This ensures the ref is updated synchronously
+        lastFinaticForAdapterRef.current = finatic;
+        lastSdkTypeForAdapterRef.current = sdkType;
+        console.log(
+          '✅ Client SDK adapter initialized with finatic instance ID:',
+          currentInstanceId
+        );
+        console.log('✅ Stored finatic reference in ref:', lastFinaticForAdapterRef.current);
       } else if (sdkType === 'python') {
-        // Create ApiSdkAdapter for Python server SDK
+        console.log('🔄 Initializing Python Server SDK adapter');
         const adapter = createSdkAdapter('python');
         setSdkAdapterState(adapter);
+        lastFinaticForAdapterRef.current = null; // Not applicable for server SDKs
+        lastSdkTypeForAdapterRef.current = sdkType;
         console.log('✅ Python Server SDK adapter initialized');
       } else if (sdkType === 'node') {
-        // Create ApiSdkAdapter for Node server SDK
+        console.log('🔄 Initializing Node Server SDK adapter');
         const adapter = createSdkAdapter('node');
         setSdkAdapterState(adapter);
+        lastFinaticForAdapterRef.current = null; // Not applicable for server SDKs
+        lastSdkTypeForAdapterRef.current = sdkType;
         console.log('✅ Node Server SDK adapter initialized');
       } else if (sdkType === 'client' && !finatic) {
         // Clear adapter if client SDK is selected but finatic instance is not ready
-        setSdkAdapterState(null);
-        console.log('⚠️ Client SDK selected but finatic instance not ready yet');
+        if (sdkAdapter) {
+          setSdkAdapterState(null);
+          lastFinaticForAdapterRef.current = null;
+          lastSdkTypeForAdapterRef.current = null;
+          console.log('⚠️ Client SDK selected but finatic instance not ready yet');
+        }
       } else {
-        setSdkAdapterState(null);
-        console.log('⚠️ No adapter created - unknown SDK type or not ready');
+        // Clear adapter if no valid configuration
+        if (sdkAdapter) {
+          setSdkAdapterState(null);
+          lastFinaticForAdapterRef.current = null;
+          lastSdkTypeForAdapterRef.current = null;
+          console.log('⚠️ No adapter created - unknown SDK type or not ready');
+        }
       }
     } catch (error) {
       console.error('❌ Failed to initialize SDK adapter:', error);
       setSdkAdapterState(null);
+      lastFinaticForAdapterRef.current = null;
+      lastSdkTypeForAdapterRef.current = null;
     }
-  }, [sdkType, finatic, mode, environment]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sdkType, finatic]); // Only reinitialize when SDK type or finatic instance changes, not mode/environment
 
   const addLog = useCallback((type: LogEntry['type'], message: string) => {
     setLogs(prev => [...prev, { type, message, timestamp: new Date().toLocaleTimeString() }]);
@@ -415,50 +463,83 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
 
   // Full cleanup function to clear all SDK-related state
   // This ensures the old SDK instance is completely cleared before creating a new one
-  const clearSDKState = useCallback(() => {
+  const clearSDKState = useCallback(async () => {
     addLog('info', '🔄 Clearing old SDK instance and all related state...');
-    
+
+    // Store the old instance ID for logging before clearing
+    const oldInstanceId = lastFinaticForAdapterRef.current
+      ? (lastFinaticForAdapterRef.current as any).__instanceId
+      : null;
+    if (oldInstanceId) {
+      addLog('info', `🗑️ Clearing old instance ID: ${oldInstanceId}`);
+    }
+
+    // CRITICAL: Close any existing portal before clearing the instance
+    // This ensures the portal doesn't hold references to the old instance
+    const oldFinatic = lastFinaticForAdapterRef.current;
+    if (oldFinatic && typeof (oldFinatic as any).closePortal === 'function') {
+      try {
+        addLog('info', '🔍 Closing existing portal before clearing instance...');
+        await (oldFinatic as any).closePortal();
+        // Small delay to ensure portal is fully closed
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (err) {
+        addLog(
+          'info',
+          `🔍 Error closing portal (may not be open): ${err instanceof Error ? err.message : 'Unknown'}`
+        );
+      }
+    }
+
     // Clear the SDK instance (triggers garbage collection of old instance)
     // This is critical - the old FinaticConnect instance must be nulled before creating new one
-    if (finatic) {
-      addLog('info', 'Clearing existing FinaticConnect instance');
-    }
     setFinatic(null);
-    
+
     // Clear SDK adapter (which may hold references to the old SDK)
-    if (sdkAdapter) {
-      addLog('info', 'Clearing SDK adapter');
-    }
     setSdkAdapterState(null);
-    
+
+    // Clear adapter tracking refs to ensure new adapter is created with new finatic instance
+    lastFinaticForAdapterRef.current = null;
+    lastSdkTypeForAdapterRef.current = null;
+
+    // Clear auth check tracking ref
+    lastCheckedAuthRef.current = null;
+
     // Clear error state
     setError(null);
-    
+
     // Reset session info
     setSessionInfo('Not initialized');
-    
+
     // Clear API base URL ref
     apiBaseUrlRef.current = null;
-    
+
     // Clear mock mode
     setIsMockMode(false);
-    
+
     addLog('success', '✅ SDK state fully cleared - old instance removed');
-  }, [addLog, finatic, sdkAdapter]);
+  }, [addLog]);
 
   const initializeSDK = useCallback(async () => {
+    // Prevent concurrent initialization
+    if (isInitializingRef.current) {
+      console.log('⏸️ SDK initialization already in progress, skipping...');
+      return;
+    }
+
     try {
+      isInitializingRef.current = true;
+
       // FULL CLEANUP: Clear everything before reinitializing
       // This ensures the old SDK instance is completely destroyed and garbage collected
-      clearSDKState();
-      
+      await clearSDKState();
+
       // Small delay to ensure state updates are processed before creating new instance
       // This guarantees the old instance is fully cleared
       await new Promise(resolve => setTimeout(resolve, 0));
-      
+
       setIsLoading(true);
-      addLog('info', `🔄 Reinitializing SDK with mode: ${mode}, environment: ${environment}`);
-      addLog('info', `Using API URL: ${environmentConfig?.getPublicApiUrl() || process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000'}`);
+      addLog('info', `🔄 Reinitializing SDK`);
 
       const useMocks = process.env.NEXT_PUBLIC_FINATIC_USE_MOCKS === 'true';
       const mockApiOnly = process.env.NEXT_PUBLIC_FINATIC_MOCK_API_ONLY === 'true';
@@ -544,14 +625,14 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       if (useMocks) {
         addLog('info', 'Initializing SDK in MOCK mode');
         setSessionInfo('Mock Mode - No real API calls');
-        const apiUrl = environmentConfig?.getPublicApiUrl() || process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
-        apiBaseUrlRef.current = apiUrl;
+        const mockApiUrl = process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
+        apiBaseUrlRef.current = mockApiUrl;
         const initStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
         const mockFinatic = await FinaticConnect.init(
           'mock-token',
           existingUserId || 'mock-user-123',
           {
-            baseUrl: apiUrl,
+            baseUrl: mockApiUrl,
           }
         );
         const wrapped = new Proxy(mockFinatic as unknown as Record<string, unknown>, {
@@ -600,22 +681,22 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         const initDuration =
           (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
         recordMethodCall('FinaticConnect.init', initDuration, 0, false);
-        addLog('success', `✅ SDK fully reinitialized in MOCK mode with mode: ${mode}, environment: ${environment}`);
-        addLog('info', `New SDK instance created using API URL: ${apiUrl}`);
+        addLog('success', `✅ SDK fully reinitialized in MOCK mode`);
+        addLog('info', `New SDK instance created using API URL: ${mockApiUrl}`);
         return;
       }
 
       if (mockApiOnly) {
         addLog('info', 'Initializing SDK in MOCK API ONLY mode');
         setSessionInfo('Mock API Only Mode - Mock API calls, real portal');
-        const apiUrl = environmentConfig?.getPublicApiUrl() || process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
-        apiBaseUrlRef.current = apiUrl;
+        const mockOnlyApiUrl = process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
+        apiBaseUrlRef.current = mockOnlyApiUrl;
         const initStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
         const mockFinatic = await FinaticConnect.init(
           'mock-token',
           existingUserId || 'mock-user-123',
           {
-            baseUrl: apiUrl,
+            baseUrl: mockOnlyApiUrl,
           }
         );
         const wrapped = new Proxy(mockFinatic as unknown as Record<string, unknown>, {
@@ -664,24 +745,21 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         const initDuration =
           (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
         recordMethodCall('FinaticConnect.init', initDuration, 0, false);
-        addLog('success', `✅ SDK fully reinitialized in MOCK API ONLY mode with mode: ${mode}, environment: ${environment}`);
-        addLog('info', `New SDK instance created using API URL: ${apiUrl}`);
+        addLog('success', `✅ SDK fully reinitialized in MOCK API ONLY mode`);
+        addLog('info', `New SDK instance created using API URL: ${mockOnlyApiUrl}`);
         return;
       }
 
       addLog('info', 'Initializing SDK in REAL mode');
-      
-      // Get environment config from context
-      const mode = environmentConfig?.mode || 'live';
-      const environment = environmentConfig?.environment || 'dev';
-      const apiUrl = environmentConfig?.getPublicApiUrl() || process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
-      
-      addLog('info', `Using API URL: ${apiUrl} (mode: ${mode}, env: ${environment})`);
+
+      const apiUrl = process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
+
+      addLog('info', `Using API URL: ${apiUrl}`);
       apiBaseUrlRef.current = apiUrl;
       const initStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
-      
-      // Pass mode and environment to getToken
-      const response = await fetch(`/api/getToken?mode=${mode}&environment=${environment}`);
+
+      // Get token from API
+      const response = await fetch('/api/getToken');
       if (!response.ok) {
         addLog('error', 'Failed to get token from /api/getToken');
         throw new Error('Failed to get token');
@@ -693,9 +771,26 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         throw new Error('No token found in API response');
       }
 
+      addLog(
+        'info',
+        `🔑 Got new token: ${token.substring(0, 20)}..., creating new FinaticConnect instance...`
+      );
+      addLog('info', `🔑 Token full: ${token}`);
+
+      // Create a unique identifier for this instance to track it
+      const instanceId = `finatic_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      addLog('info', `🆔 New instance ID: ${instanceId}`);
+
       const realFinatic = await FinaticConnect.init(token, existingUserId || undefined, {
         baseUrl: apiUrl,
       });
+
+      // Add instance ID to the finatic object for tracking
+      (realFinatic as any).__instanceId = instanceId;
+      (realFinatic as any).__token = token.substring(0, 20) + '...';
+
+      addLog('info', `✅ New FinaticConnect instance created with ID: ${instanceId}`);
+
       // Wrap finatic with a Proxy to track method calls and durations
       const wrapped = new Proxy(realFinatic as unknown as Record<string, unknown>, {
         get(target, prop, receiver) {
@@ -739,15 +834,57 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
           return value;
         },
       });
+
+      // CRITICAL: Set the new finatic instance - this will trigger adapter reinitialization
+      addLog('info', `🔄 Setting new finatic instance in state with ID: ${instanceId}`);
+      console.log('🔍 New finatic instance:', {
+        instanceId,
+        tokenPrefix: token.substring(0, 20),
+        object: wrapped,
+      });
+
+      // Set the new instance - this should trigger the adapter to recreate
       setFinatic(wrapped as unknown as FinaticConnect);
+
+      // Force a state update by using a callback to ensure React processes it
+      // We'll use a small delay to let React batch and process the state update
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Verify the instance was created with the new token by checking a property
+      // This ensures we're using the new instance, not the old one
+      try {
+        const testAuth = await (wrapped as unknown as FinaticConnect).isAuthenticated();
+        addLog('info', `🔍 Verified new instance (${instanceId}) isAuthenticated() = ${testAuth}`);
+
+        const sessionId = (wrapped as any).sessionId;
+        addLog('info', `🔍 Instance sessionId: ${sessionId}`);
+
+        // Force close any existing portal to ensure it uses the new instance
+        try {
+          if (typeof (wrapped as any).closePortal === 'function') {
+            addLog('info', '🔍 Closing any existing portal to ensure fresh start...');
+            await (wrapped as any).closePortal();
+          }
+        } catch (portalErr) {
+          // Portal might not be open, that's fine
+          addLog('info', '🔍 No existing portal to close (or already closed)');
+        }
+      } catch (err) {
+        addLog(
+          'error',
+          `⚠️ Could not verify new instance: ${err instanceof Error ? err.message : 'Unknown error'}`
+        );
+      }
+
       setSessionInfo(
         `Real Mode - Authenticated${existingUserId ? ` (User: ${existingUserId})` : ''}`
       );
       const initDuration =
         (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
       recordMethodCall('FinaticConnect.init', initDuration, 0, false);
-      addLog('success', `✅ SDK fully reinitialized in REAL mode with mode: ${mode}, environment: ${environment}`);
+      addLog('success', `✅ SDK fully reinitialized in REAL mode`);
       addLog('info', `New SDK instance created using API URL: ${apiUrl}`);
+      addLog('info', `🔄 State updated - adapter should reinitialize with new instance`);
     } catch (err) {
       try {
         const initDuration = 0; // keep zero if error before timing start
@@ -759,30 +896,65 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       setSessionInfo('Failed to initialize');
     } finally {
       setIsLoading(false);
+      isInitializingRef.current = false;
     }
-  }, [addLog, getStoredUserId, estimateBytes, recordMethodCall, sdkType, mode, environment, environmentConfig, clearSDKState]);
+  }, [addLog, getStoredUserId, estimateBytes, recordMethodCall, sdkType, clearSDKState]);
 
-  // Initialize SDK only on mount, not when stored user ID changes
+  // Load storedUserId from localStorage after mount to prevent hydration mismatch
   useEffect(() => {
-    setStoredUserIdState(getStoredUserId());
+    const userId = getStoredUserId();
+    if (userId) {
+      setStoredUserIdState(userId);
+    }
+  }, []);
+
+  // Initialize SDK only on mount
+  useEffect(() => {
     void initializeSDK();
-  }, [initializeSDK]); // Removed getStoredUserId dependency to prevent unnecessary re-initialization
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   // Re-initialize when SDK type changes
   useEffect(() => {
+    if (isInitializingRef.current) return; // Skip if already initializing
     void initializeSDK();
-  }, [sdkType, initializeSDK]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sdkType]); // Only depend on sdkType, not initializeSDK function
 
-  // Re-initialize when mode or environment changes
-  useEffect(() => {
-    void initializeSDK();
-  }, [mode, environment, initializeSDK]);
+  // Removed: Re-initialize when mode or environment changes (no longer using mode/environment)
 
-  // Check authentication when SDK is initialized or when stored user ID changes
-  // But don't call initializeSDK again for server SDKs after portal confirmation
+  // Check authentication when SDK is ready (finatic or sdkAdapter changes)
+  // Only check when the SDK instance actually changes, not when checkAuth function reference changes
   useEffect(() => {
-    void checkAuth();
-  }, [checkAuth, storedUserId]);
+    // Check if we've already checked auth for this exact SDK instance
+    const currentInstance = { finatic, sdkAdapter, sdkType };
+    const lastInstance = lastCheckedAuthRef.current;
+
+    // Only check if the instance actually changed
+    if (
+      lastInstance &&
+      lastInstance.finatic === currentInstance.finatic &&
+      lastInstance.sdkAdapter === currentInstance.sdkAdapter &&
+      lastInstance.sdkType === currentInstance.sdkType
+    ) {
+      return; // Already checked auth for this instance
+    }
+
+    // Only check auth if we have a valid SDK instance
+    if (sdkType === 'client' && finatic) {
+      lastCheckedAuthRef.current = currentInstance;
+      void checkAuth();
+    } else if ((sdkType === 'python' || sdkType === 'node') && sdkAdapter) {
+      lastCheckedAuthRef.current = currentInstance;
+      void checkAuth();
+    } else {
+      // No valid SDK instance, clear auth state
+      setIsAuthed(false);
+      setCurrentUserId(null);
+      lastCheckedAuthRef.current = currentInstance;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finatic, sdkAdapter, sdkType]); // Intentionally exclude checkAuth to prevent loops
 
   // Persist usage and emit event AFTER state updates to avoid re-entrant updates during render
   useEffect(() => {

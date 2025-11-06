@@ -359,12 +359,29 @@ export interface OrderEvent {
   recorded_at: string | null;
 }
 
+export interface OrderLeg {
+  id: string;
+  order_id: string;
+  leg_index: number;
+  asset_type: string;
+  broker_provided_symbol: string | null;
+  quantity: number;
+  filled_quantity: number | null;
+  avg_fill_price: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface OrderGroupOrder extends BrokerDataOrder {
+  legs: OrderLeg[];
+}
+
 export interface OrderGroup {
   id: string;
   user_broker_connection_id: string | null;
   created_at: string;
   updated_at: string;
-  orders?: BrokerDataOrder[];
+  orders: OrderGroupOrder[];
 }
 
 // Position detail types
