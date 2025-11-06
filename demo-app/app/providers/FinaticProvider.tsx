@@ -11,6 +11,7 @@ import React, {
 } from 'react';
 import { FinaticConnect } from '@finatic/client';
 import { SdkType, SdkAdapter, createSdkAdapter } from '@/lib/sdk-adapter';
+import { useEnvironmentConfig } from './EnvironmentConfigProvider';
 
 export type { SdkType };
 
@@ -84,6 +85,10 @@ interface FinaticContextValue {
 const FinaticContext = createContext<FinaticContextValue | undefined>(undefined);
 
 export function FinaticProvider({ children }: { children: React.ReactNode }) {
+  // Get environment config (provider should be available from layout)
+  const environmentConfig = useEnvironmentConfig();
+  const { mode, environment } = environmentConfig;
+
   const [finatic, setFinatic] = useState<FinaticConnect | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -161,8 +166,9 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   const [sdkAdapter, setSdkAdapterState] = useState<SdkAdapter | null>(null);
 
   // Initialize adapter based on SDK type and client instance
+  // This will re-run when finatic instance changes (after reinitialization)
   useEffect(() => {
-    console.log('🔄 Initializing SDK adapter for type:', sdkType);
+    console.log('🔄 Initializing SDK adapter for type:', sdkType, 'mode:', mode, 'environment:', environment);
     try {
       if (sdkType === 'client' && finatic) {
         // Create ClientSdkAdapter wrapping existing finatic instance
@@ -180,6 +186,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         setSdkAdapterState(adapter);
         console.log('✅ Node Server SDK adapter initialized');
       } else if (sdkType === 'client' && !finatic) {
+        // Clear adapter if client SDK is selected but finatic instance is not ready
         setSdkAdapterState(null);
         console.log('⚠️ Client SDK selected but finatic instance not ready yet');
       } else {
@@ -190,7 +197,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       console.error('❌ Failed to initialize SDK adapter:', error);
       setSdkAdapterState(null);
     }
-  }, [sdkType, finatic]);
+  }, [sdkType, finatic, mode, environment]);
 
   const addLog = useCallback((type: LogEntry['type'], message: string) => {
     setLogs(prev => [...prev, { type, message, timestamp: new Date().toLocaleTimeString() }]);
@@ -406,10 +413,52 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     [addLog]
   );
 
+  // Full cleanup function to clear all SDK-related state
+  // This ensures the old SDK instance is completely cleared before creating a new one
+  const clearSDKState = useCallback(() => {
+    addLog('info', '🔄 Clearing old SDK instance and all related state...');
+    
+    // Clear the SDK instance (triggers garbage collection of old instance)
+    // This is critical - the old FinaticConnect instance must be nulled before creating new one
+    if (finatic) {
+      addLog('info', 'Clearing existing FinaticConnect instance');
+    }
+    setFinatic(null);
+    
+    // Clear SDK adapter (which may hold references to the old SDK)
+    if (sdkAdapter) {
+      addLog('info', 'Clearing SDK adapter');
+    }
+    setSdkAdapterState(null);
+    
+    // Clear error state
+    setError(null);
+    
+    // Reset session info
+    setSessionInfo('Not initialized');
+    
+    // Clear API base URL ref
+    apiBaseUrlRef.current = null;
+    
+    // Clear mock mode
+    setIsMockMode(false);
+    
+    addLog('success', '✅ SDK state fully cleared - old instance removed');
+  }, [addLog, finatic, sdkAdapter]);
+
   const initializeSDK = useCallback(async () => {
     try {
+      // FULL CLEANUP: Clear everything before reinitializing
+      // This ensures the old SDK instance is completely destroyed and garbage collected
+      clearSDKState();
+      
+      // Small delay to ensure state updates are processed before creating new instance
+      // This guarantees the old instance is fully cleared
+      await new Promise(resolve => setTimeout(resolve, 0));
+      
       setIsLoading(true);
-      setError(null);
+      addLog('info', `🔄 Reinitializing SDK with mode: ${mode}, environment: ${environment}`);
+      addLog('info', `Using API URL: ${environmentConfig?.getPublicApiUrl() || process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000'}`);
 
       const useMocks = process.env.NEXT_PUBLIC_FINATIC_USE_MOCKS === 'true';
       const mockApiOnly = process.env.NEXT_PUBLIC_FINATIC_MOCK_API_ONLY === 'true';
@@ -473,8 +522,8 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
             }, 100);
           }
 
-          // Clear the client SDK instance since we're using server SDK
-          setFinatic(null);
+          // Client SDK instance already cleared in clearSDKState() at start of initializeSDK
+          // Server SDK doesn't use finatic instance, so it remains null
 
           setIsLoading(false);
           return; // Early return for server SDKs
@@ -484,8 +533,8 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
           setError(msg);
           setSessionInfo(`Failed to initialize ${sdkType} server SDK`);
 
-          // Clear the client SDK instance since we're using server SDK
-          setFinatic(null);
+          // Client SDK instance already cleared in clearSDKState() at start of initializeSDK
+          // Error state already managed above
 
           setIsLoading(false);
           return;
@@ -495,7 +544,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       if (useMocks) {
         addLog('info', 'Initializing SDK in MOCK mode');
         setSessionInfo('Mock Mode - No real API calls');
-        const apiUrl = process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
+        const apiUrl = environmentConfig?.getPublicApiUrl() || process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
         apiBaseUrlRef.current = apiUrl;
         const initStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
         const mockFinatic = await FinaticConnect.init(
@@ -551,14 +600,15 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         const initDuration =
           (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
         recordMethodCall('FinaticConnect.init', initDuration, 0, false);
-        addLog('success', 'SDK initialized in MOCK mode');
+        addLog('success', `✅ SDK fully reinitialized in MOCK mode with mode: ${mode}, environment: ${environment}`);
+        addLog('info', `New SDK instance created using API URL: ${apiUrl}`);
         return;
       }
 
       if (mockApiOnly) {
         addLog('info', 'Initializing SDK in MOCK API ONLY mode');
         setSessionInfo('Mock API Only Mode - Mock API calls, real portal');
-        const apiUrl = process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
+        const apiUrl = environmentConfig?.getPublicApiUrl() || process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
         apiBaseUrlRef.current = apiUrl;
         const initStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
         const mockFinatic = await FinaticConnect.init(
@@ -614,16 +664,24 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         const initDuration =
           (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
         recordMethodCall('FinaticConnect.init', initDuration, 0, false);
-        addLog('success', 'SDK initialized in MOCK API ONLY mode');
+        addLog('success', `✅ SDK fully reinitialized in MOCK API ONLY mode with mode: ${mode}, environment: ${environment}`);
+        addLog('info', `New SDK instance created using API URL: ${apiUrl}`);
         return;
       }
 
       addLog('info', 'Initializing SDK in REAL mode');
-      const apiUrl = process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
-      addLog('info', `Using API URL: ${apiUrl}`);
+      
+      // Get environment config from context
+      const mode = environmentConfig?.mode || 'live';
+      const environment = environmentConfig?.environment || 'dev';
+      const apiUrl = environmentConfig?.getPublicApiUrl() || process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
+      
+      addLog('info', `Using API URL: ${apiUrl} (mode: ${mode}, env: ${environment})`);
       apiBaseUrlRef.current = apiUrl;
       const initStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
-      const response = await fetch('/api/getToken');
+      
+      // Pass mode and environment to getToken
+      const response = await fetch(`/api/getToken?mode=${mode}&environment=${environment}`);
       if (!response.ok) {
         addLog('error', 'Failed to get token from /api/getToken');
         throw new Error('Failed to get token');
@@ -688,7 +746,8 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       const initDuration =
         (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
       recordMethodCall('FinaticConnect.init', initDuration, 0, false);
-      addLog('success', 'SDK initialized in REAL mode');
+      addLog('success', `✅ SDK fully reinitialized in REAL mode with mode: ${mode}, environment: ${environment}`);
+      addLog('info', `New SDK instance created using API URL: ${apiUrl}`);
     } catch (err) {
       try {
         const initDuration = 0; // keep zero if error before timing start
@@ -701,7 +760,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [addLog, getStoredUserId, estimateBytes, recordMethodCall, sdkType]);
+  }, [addLog, getStoredUserId, estimateBytes, recordMethodCall, sdkType, mode, environment, environmentConfig, clearSDKState]);
 
   // Initialize SDK only on mount, not when stored user ID changes
   useEffect(() => {
@@ -713,6 +772,11 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     void initializeSDK();
   }, [sdkType, initializeSDK]);
+
+  // Re-initialize when mode or environment changes
+  useEffect(() => {
+    void initializeSDK();
+  }, [mode, environment, initializeSDK]);
 
   // Check authentication when SDK is initialized or when stored user ID changes
   // But don't call initializeSDK again for server SDKs after portal confirmation

@@ -2,8 +2,14 @@ import { NextResponse } from 'next/server';
 
 async function handleRequest(request: Request) {
   try {
+    // Get mode and environment from request headers or query params
+    const url = new URL(request.url);
+    const mode = (url.searchParams.get('mode') || request.headers.get('x-finatic-mode') || 'live') as 'sandbox' | 'live';
+    const environment = (url.searchParams.get('environment') || request.headers.get('x-finatic-environment') || 'dev') as 'dev' | 'staging' | 'prod';
+
     // Log all headers for debugging
     console.log('Request headers:', Object.fromEntries(request.headers.entries()));
+    console.log('Environment config - Mode:', mode, 'Environment:', environment);
 
     // Check if mock mode is enabled
     const isMockMode = process.env.NEXT_PUBLIC_FINATIC_USE_MOCKS === 'true';
@@ -24,9 +30,13 @@ async function handleRequest(request: Request) {
       return NextResponse.json(mockResponse);
     }
 
-    // Get API key from environment variables
-    const apiKey = process.env.FINATIC_API_KEY;
-    const apiUrl = process.env.FINATIC_API_URL || 'http://localhost:8000';
+    // Get API key from environment variables based on mode
+    const apiKeyEnvVar = mode === 'sandbox' ? 'FINATIC_API_KEY_SANDBOX' : 'FINATIC_API_KEY_LIVE';
+    const apiKey = process.env[apiKeyEnvVar] || process.env.FINATIC_API_KEY;
+    
+    // Get API URL from environment variables based on environment
+    const apiUrlEnvVar = `FINATIC_API_URL_${environment.toUpperCase()}`;
+    const apiUrl = process.env[apiUrlEnvVar] || process.env.FINATIC_API_URL || 'http://localhost:8000';
 
     console.log('Using server-side API key:', apiKey ? 'present' : 'missing');
     console.log('Using API URL:', apiUrl);
