@@ -1471,6 +1471,87 @@ export class FinaticConnect extends EventEmitter {
     return this.apiClient.disconnectCompany(connectionId);
   }
 
+  /**
+   * Get order fills for a specific order
+   * @param orderId - The order ID
+   * @param filter - Optional filter parameters
+   * @returns Promise with order fills response
+   */
+  public async getOrderFills(
+    orderId: string,
+    filter?: import('../../types/api/broker').OrderFillsFilter
+  ): Promise<import('../../types/api/broker').OrderFill[]> {
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated');
+    }
+    const response = await this.apiClient.getOrderFills(orderId, filter);
+    return response.response_data;
+  }
+
+  /**
+   * Get order events for a specific order
+   * @param orderId - The order ID
+   * @param filter - Optional filter parameters
+   * @returns Promise with order events response
+   */
+  public async getOrderEvents(
+    orderId: string,
+    filter?: import('../../types/api/broker').OrderEventsFilter
+  ): Promise<import('../../types/api/broker').OrderEvent[]> {
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated');
+    }
+    const response = await this.apiClient.getOrderEvents(orderId, filter);
+    return response.response_data;
+  }
+
+  /**
+   * Get order groups
+   * @param filter - Optional filter parameters
+   * @returns Promise with order groups response
+   */
+  public async getOrderGroups(
+    filter?: import('../../types/api/broker').OrderGroupsFilter
+  ): Promise<import('../../types/api/broker').OrderGroup[]> {
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated');
+    }
+    const response = await this.apiClient.getOrderGroups(filter);
+    return response.response_data;
+  }
+
+  /**
+   * Get position lots (tax lots for positions)
+   * @param filter - Optional filter parameters
+   * @returns Promise with position lots response
+   */
+  public async getPositionLots(
+    filter?: import('../../types/api/broker').PositionLotsFilter
+  ): Promise<import('../../types/api/broker').PositionLot[]> {
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated');
+    }
+    const response = await this.apiClient.getPositionLots(filter);
+    return response.response_data;
+  }
+
+  /**
+   * Get position lot fills for a specific lot
+   * @param lotId - The position lot ID
+   * @param filter - Optional filter parameters
+   * @returns Promise with position lot fills response
+   */
+  public async getPositionLotFills(
+    lotId: string,
+    filter?: import('../../types/api/broker').PositionLotFillsFilter
+  ): Promise<import('../../types/api/broker').PositionLotFill[]> {
+    if (!(await this.isAuthenticated())) {
+      throw new AuthenticationError('User is not authenticated');
+    }
+    const response = await this.apiClient.getPositionLotFills(lotId, filter);
+    return response.response_data;
+  }
+
   // Duplicate getBalances method removed - using the paginated version above
 
 }

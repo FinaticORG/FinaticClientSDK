@@ -356,6 +356,73 @@ if (ordersPage.hasPrevious) {
 // No manual session management required
 ```
 
+## Order and Position Detail Data
+
+### Getting Order Fills
+
+Order fills represent individual execution fills for an order:
+
+```typescript
+// Get fills for a specific order
+const fills = await finatic.getOrderFills('order-123', {
+  connection_id: 'connection-456',
+  limit: 50,
+  offset: 0,
+});
+```
+
+### Getting Order Events
+
+Order events represent lifecycle events for an order:
+
+```typescript
+// Get events for a specific order
+const events = await finatic.getOrderEvents('order-123', {
+  connection_id: 'connection-456',
+  limit: 100,
+});
+```
+
+### Getting Order Groups
+
+Order groups contain multiple related orders:
+
+```typescript
+// Get order groups with filters
+const groups = await finatic.getOrderGroups({
+  broker_id: 'robinhood',
+  connection_id: 'connection-456',
+  created_after: '2024-01-01T00:00:00Z',
+  limit: 50,
+});
+```
+
+### Getting Position Lots (Tax Lots)
+
+Position lots are used for tax reporting and track when positions were opened/closed:
+
+```typescript
+// Get position lots for tax reporting
+const lots = await finatic.getPositionLots({
+  broker_id: 'robinhood',
+  account_id: '123456789',
+  symbol: 'AAPL',
+  limit: 100,
+});
+```
+
+### Getting Position Lot Fills
+
+Position lot fills show the execution details for each lot:
+
+```typescript
+// Get fills for a specific position lot
+const lotFills = await finatic.getPositionLotFills('lot-123', {
+  connection_id: 'connection-456',
+  limit: 50,
+});
+```
+
 ## Type Definitions
 
 The SDK includes comprehensive TypeScript definitions for all data structures:
@@ -368,6 +435,11 @@ The SDK includes comprehensive TypeScript definitions for all data structures:
 - `BrokerConnection`: Connection information
 - `OrderResponse`: Order operation responses
 - `PaginatedResult`: Paginated data responses
+- `OrderFill`: Order fill information
+- `OrderEvent`: Order event information
+- `OrderGroup`: Order group information
+- `PositionLot`: Position lot (tax lot) information
+- `PositionLotFill`: Position lot fill information
 
 ## Error Types
 

@@ -16,6 +16,16 @@ import {
   PositionsFilter,
   AccountsFilter,
   BalancesFilter,
+  OrderFill,
+  OrderEvent,
+  OrderGroup,
+  PositionLot,
+  PositionLotFill,
+  OrderFillsFilter,
+  OrderEventsFilter,
+  OrderGroupsFilter,
+  PositionLotsFilter,
+  PositionLotFillsFilter,
 } from '../../types/api/broker';
 import { TradingContext } from '../../types/api/orders';
 import { ApiPaginationInfo, PaginatedResult } from '../../types/common/pagination';
@@ -1716,6 +1726,253 @@ export class ApiClient {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
+    });
+  }
+
+  /**
+   * Get order fills for a specific order
+   * @param orderId - The order ID
+   * @param filter - Optional filter parameters
+   * @returns Promise with order fills response
+   */
+  async getOrderFills(
+    orderId: string,
+    filter?: OrderFillsFilter
+  ): Promise<{
+    _id: string;
+    response_data: OrderFill[];
+    message: string;
+    status_code: number;
+    warnings: null;
+    errors: null;
+  }> {
+    const accessToken = await this.getValidAccessToken();
+    const params: Record<string, string> = {};
+
+    if (filter?.connection_id) {
+      params.connection_id = filter.connection_id;
+    }
+    if (filter?.limit) {
+      params.limit = filter.limit.toString();
+    }
+    if (filter?.offset) {
+      params.offset = filter.offset.toString();
+    }
+
+    return this.request<{
+      _id: string;
+      response_data: OrderFill[];
+      message: string;
+      status_code: number;
+      warnings: null;
+      errors: null;
+    }>(`/brokers/data/orders/${orderId}/fills`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      params,
+    });
+  }
+
+  /**
+   * Get order events for a specific order
+   * @param orderId - The order ID
+   * @param filter - Optional filter parameters
+   * @returns Promise with order events response
+   */
+  async getOrderEvents(
+    orderId: string,
+    filter?: OrderEventsFilter
+  ): Promise<{
+    _id: string;
+    response_data: OrderEvent[];
+    message: string;
+    status_code: number;
+    warnings: null;
+    errors: null;
+  }> {
+    const accessToken = await this.getValidAccessToken();
+    const params: Record<string, string> = {};
+
+    if (filter?.connection_id) {
+      params.connection_id = filter.connection_id;
+    }
+    if (filter?.limit) {
+      params.limit = filter.limit.toString();
+    }
+    if (filter?.offset) {
+      params.offset = filter.offset.toString();
+    }
+
+    return this.request<{
+      _id: string;
+      response_data: OrderEvent[];
+      message: string;
+      status_code: number;
+      warnings: null;
+      errors: null;
+    }>(`/brokers/data/orders/${orderId}/events`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      params,
+    });
+  }
+
+  /**
+   * Get order groups
+   * @param filter - Optional filter parameters
+   * @returns Promise with order groups response
+   */
+  async getOrderGroups(
+    filter?: OrderGroupsFilter
+  ): Promise<{
+    _id: string;
+    response_data: OrderGroup[];
+    message: string;
+    status_code: number;
+    warnings: null;
+    errors: null;
+  }> {
+    const accessToken = await this.getValidAccessToken();
+    const params: Record<string, string> = {};
+
+    if (filter?.broker_id) {
+      params.broker_id = filter.broker_id;
+    }
+    if (filter?.connection_id) {
+      params.connection_id = filter.connection_id;
+    }
+    if (filter?.limit) {
+      params.limit = filter.limit.toString();
+    }
+    if (filter?.offset) {
+      params.offset = filter.offset.toString();
+    }
+    if (filter?.created_after) {
+      params.created_after = filter.created_after;
+    }
+    if (filter?.created_before) {
+      params.created_before = filter.created_before;
+    }
+
+    return this.request<{
+      _id: string;
+      response_data: OrderGroup[];
+      message: string;
+      status_code: number;
+      warnings: null;
+      errors: null;
+    }>('/brokers/data/orders/groups', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      params,
+    });
+  }
+
+  /**
+   * Get position lots (tax lots for positions)
+   * @param filter - Optional filter parameters
+   * @returns Promise with position lots response
+   */
+  async getPositionLots(
+    filter?: PositionLotsFilter
+  ): Promise<{
+    _id: string;
+    response_data: PositionLot[];
+    message: string;
+    status_code: number;
+    warnings: null;
+    errors: null;
+  }> {
+    const accessToken = await this.getValidAccessToken();
+    const params: Record<string, string> = {};
+
+    if (filter?.broker_id) {
+      params.broker_id = filter.broker_id;
+    }
+    if (filter?.connection_id) {
+      params.connection_id = filter.connection_id;
+    }
+    if (filter?.account_id) {
+      params.account_id = filter.account_id;
+    }
+    if (filter?.symbol) {
+      params.symbol = filter.symbol;
+    }
+    if (filter?.position_id) {
+      params.position_id = filter.position_id;
+    }
+    if (filter?.limit) {
+      params.limit = filter.limit.toString();
+    }
+    if (filter?.offset) {
+      params.offset = filter.offset.toString();
+    }
+
+    return this.request<{
+      _id: string;
+      response_data: PositionLot[];
+      message: string;
+      status_code: number;
+      warnings: null;
+      errors: null;
+    }>('/brokers/data/positions/lots', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      params,
+    });
+  }
+
+  /**
+   * Get position lot fills for a specific lot
+   * @param lotId - The position lot ID
+   * @param filter - Optional filter parameters
+   * @returns Promise with position lot fills response
+   */
+  async getPositionLotFills(
+    lotId: string,
+    filter?: PositionLotFillsFilter
+  ): Promise<{
+    _id: string;
+    response_data: PositionLotFill[];
+    message: string;
+    status_code: number;
+    warnings: null;
+    errors: null;
+  }> {
+    const accessToken = await this.getValidAccessToken();
+    const params: Record<string, string> = {};
+
+    if (filter?.connection_id) {
+      params.connection_id = filter.connection_id;
+    }
+    if (filter?.limit) {
+      params.limit = filter.limit.toString();
+    }
+    if (filter?.offset) {
+      params.offset = filter.offset.toString();
+    }
+
+    return this.request<{
+      _id: string;
+      response_data: PositionLotFill[];
+      message: string;
+      status_code: number;
+      warnings: null;
+      errors: null;
+    }>(`/brokers/data/positions/lots/${lotId}/fills`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      params,
     });
   }
 }

@@ -2,9 +2,6 @@ import { NextResponse } from 'next/server';
 
 async function handleRequest(request: Request) {
   try {
-    // Log all headers for debugging
-    console.log('Request headers:', Object.fromEntries(request.headers.entries()));
-
     // Check if mock mode is enabled
     const isMockMode = process.env.NEXT_PUBLIC_FINATIC_USE_MOCKS === 'true';
 
@@ -24,15 +21,15 @@ async function handleRequest(request: Request) {
       return NextResponse.json(mockResponse);
     }
 
-    // Get API key from environment variables
+    // Get API key and URL from environment variables (simplified)
     const apiKey = process.env.FINATIC_API_KEY;
     const apiUrl = process.env.FINATIC_API_URL || 'http://localhost:8000';
 
-    console.log('Using server-side API key:', apiKey ? 'present' : 'missing');
+    console.log('Using API key:', apiKey ? 'present' : 'missing');
     console.log('Using API URL:', apiUrl);
 
     if (!apiKey) {
-      console.log('No Finatic API key found in environment variables');
+      console.log('No Finatic API key found (FINATIC_API_KEY not set)');
       return NextResponse.json(
         { error: 'Server configuration error - FINATIC_API_KEY not set' },
         { status: 500 }

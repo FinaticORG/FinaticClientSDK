@@ -18,6 +18,7 @@ import {
   EyeOff
 } from "lucide-react"
 import { useState, useEffect } from "react"
+import { useEnvironmentConfig } from "@/app/providers/EnvironmentConfigProvider"
 
 interface EnvironmentVariable {
   key: string
@@ -25,53 +26,152 @@ interface EnvironmentVariable {
   description: string
   isPublic: boolean
   isPassword: boolean
+  isActive?: boolean
+  activeReason?: string
 }
 
-const environmentVariables: EnvironmentVariable[] = [
-  {
-    key: "FINATIC_API_KEY",
-    value: "",
-    description: "Your Finatic API key for authentication",
-    isPublic: false,
-    isPassword: true
-  },
-  {
-    key: "FINATIC_API_URL",
-    value: "",
-    description: "Backend API URL (server-side only)",
-    isPublic: false,
-    isPassword: false
-  },
-  {
-    key: "NEXT_PUBLIC_FINATIC_API_URL",
-    value: "",
-    description: "Public API URL (accessible in browser)",
-    isPublic: true,
-    isPassword: false
-  },
-  {
-    key: "NEXT_PUBLIC_FINATIC_USE_MOCKS",
-    value: "",
-    description: "Enable mock mode for development",
-    isPublic: true,
-    isPassword: false
-  },
-  {
-    key: "NEXT_PUBLIC_FINATIC_MOCK_API_ONLY",
-    value: "",
-    description: "Use only mock data (no real API calls)",
-    isPublic: true,
-    isPassword: false
-  }
-]
+const getAllEnvironmentVariables = (mode: 'sandbox' | 'live', environment: 'dev' | 'staging' | 'prod'): EnvironmentVariable[] => {
+  const baseVars: EnvironmentVariable[] = [
+    // API Keys (mode-specific)
+    {
+      key: "FINATIC_API_KEY",
+      value: "",
+      description: "Default API key (fallback if mode-specific keys not set)",
+      isPublic: false,
+      isPassword: true,
+      isActive: false,
+      activeReason: "Used as fallback only"
+    },
+    {
+      key: "FINATIC_API_KEY_LIVE",
+      value: "",
+      description: "API key for Live mode",
+      isPublic: false,
+      isPassword: true,
+      isActive: mode === 'live',
+      activeReason: mode === 'live' ? "Active (Live mode selected)" : "Inactive (Live mode not selected)"
+    },
+    {
+      key: "FINATIC_API_KEY_SANDBOX",
+      value: "",
+      description: "API key for Sandbox mode",
+      isPublic: false,
+      isPassword: true,
+      isActive: mode === 'sandbox',
+      activeReason: mode === 'sandbox' ? "Active (Sandbox mode selected)" : "Inactive (Sandbox mode not selected)"
+    },
+    // API URLs (environment-specific, server-side)
+    {
+      key: "FINATIC_API_URL",
+      value: "",
+      description: "Default API URL (server-side, fallback if env-specific URLs not set)",
+      isPublic: false,
+      isPassword: false,
+      isActive: false,
+      activeReason: "Used as fallback only"
+    },
+    {
+      key: "FINATIC_API_URL_DEV",
+      value: "",
+      description: "API URL for Development environment (server-side)",
+      isPublic: false,
+      isPassword: false,
+      isActive: environment === 'dev',
+      activeReason: environment === 'dev' ? "Active (Dev environment selected)" : "Inactive (Dev environment not selected)"
+    },
+    {
+      key: "FINATIC_API_URL_STAGING",
+      value: "",
+      description: "API URL for Staging environment (server-side)",
+      isPublic: false,
+      isPassword: false,
+      isActive: environment === 'staging',
+      activeReason: environment === 'staging' ? "Active (Staging environment selected)" : "Inactive (Staging environment not selected)"
+    },
+    {
+      key: "FINATIC_API_URL_PROD",
+      value: "",
+      description: "API URL for Production environment (server-side)",
+      isPublic: false,
+      isPassword: false,
+      isActive: environment === 'prod',
+      activeReason: environment === 'prod' ? "Active (Prod environment selected)" : "Inactive (Prod environment not selected)"
+    },
+    // Public API URLs (environment-specific, client-side)
+    {
+      key: "NEXT_PUBLIC_FINATIC_API_URL",
+      value: "",
+      description: "Default public API URL (accessible in browser, fallback)",
+      isPublic: true,
+      isPassword: false,
+      isActive: false,
+      activeReason: "Used as fallback only"
+    },
+    {
+      key: "NEXT_PUBLIC_FINATIC_API_URL_DEV",
+      value: "",
+      description: "Public API URL for Development environment (accessible in browser)",
+      isPublic: true,
+      isPassword: false,
+      isActive: environment === 'dev',
+      activeReason: environment === 'dev' ? "Active (Dev environment selected)" : "Inactive (Dev environment not selected)"
+    },
+    {
+      key: "NEXT_PUBLIC_FINATIC_API_URL_STAGING",
+      value: "",
+      description: "Public API URL for Staging environment (accessible in browser)",
+      isPublic: true,
+      isPassword: false,
+      isActive: environment === 'staging',
+      activeReason: environment === 'staging' ? "Active (Staging environment selected)" : "Inactive (Staging environment not selected)"
+    },
+    {
+      key: "NEXT_PUBLIC_FINATIC_API_URL_PROD",
+      value: "",
+      description: "Public API URL for Production environment (accessible in browser)",
+      isPublic: true,
+      isPassword: false,
+      isActive: environment === 'prod',
+      activeReason: environment === 'prod' ? "Active (Prod environment selected)" : "Inactive (Prod environment not selected)"
+    },
+    // Mock mode settings
+    {
+      key: "NEXT_PUBLIC_FINATIC_USE_MOCKS",
+      value: "",
+      description: "Enable mock mode for development",
+      isPublic: true,
+      isPassword: false
+    },
+    {
+      key: "NEXT_PUBLIC_FINATIC_MOCK_API_ONLY",
+      value: "",
+      description: "Use only mock data (no real API calls)",
+      isPublic: true,
+      isPassword: false
+    }
+  ]
+
+  return baseVars
+}
 
 export function EnvironmentSettings() {
-  const [envVars, setEnvVars] = useState<EnvironmentVariable[]>(environmentVariables)
+  const { mode, environment } = useEnvironmentConfig()
+  const [envVars, setEnvVars] = useState<EnvironmentVariable[]>(() => getAllEnvironmentVariables(mode, environment))
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isReloading, setIsReloading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({})
+
+  // Update env vars when mode or environment changes
+  useEffect(() => {
+    const updatedVars = getAllEnvironmentVariables(mode, environment)
+    // Preserve existing values
+    setEnvVars(prev => updatedVars.map(newVar => {
+      const existing = prev.find(p => p.key === newVar.key)
+      return existing ? { ...newVar, value: existing.value } : newVar
+    }))
+  }, [mode, environment])
 
   // Load environment variables on component mount
   useEffect(() => {
@@ -258,11 +358,22 @@ export function EnvironmentSettings() {
                     )}
                     <CardTitle className="text-lg text-foreground truncate">{envVar.key}</CardTitle>
                   </div>
-                  {envVar.isPublic && (
-                    <span className="px-2 py-1 text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded inline-block">
-                      PUBLIC
-                    </span>
-                  )}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {envVar.isPublic && (
+                        <span className="px-2 py-1 text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded inline-block">
+                          PUBLIC
+                        </span>
+                      )}
+                      {envVar.isActive !== undefined && (
+                        <span className={`px-2 py-1 text-xs rounded inline-block ${
+                          envVar.isActive 
+                            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+                            : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
+                        }`}>
+                          {envVar.isActive ? 'ACTIVE' : 'INACTIVE'}
+                        </span>
+                      )}
+                    </div>
                 </div>
                 {envVar.isPassword && (
                   <Button
@@ -281,6 +392,11 @@ export function EnvironmentSettings() {
               </div>
               <CardDescription className="text-muted-foreground">
                 {envVar.description}
+                {envVar.activeReason && (
+                  <span className="block mt-1 text-xs italic">
+                    {envVar.activeReason}
+                  </span>
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
