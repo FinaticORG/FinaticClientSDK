@@ -89,22 +89,65 @@ export async function POST(request: NextRequest) {
     }
 
     // Add Finatic API Configuration section
-    if (updatedVars.FINATIC_API_KEY || updatedVars.FINATIC_API_URL) {
-      newContent += '\n# Finatic API Configuration\n';
+    // API Keys (mode-specific)
+    const apiKeyVars = Object.keys(updatedVars).filter(key => 
+      key === 'FINATIC_API_KEY' || 
+      key === 'FINATIC_API_KEY_LIVE' || 
+      key === 'FINATIC_API_KEY_SANDBOX'
+    );
+    if (apiKeyVars.length > 0) {
+      newContent += '\n# Finatic API Keys\n';
       if (updatedVars.FINATIC_API_KEY) {
         newContent += `FINATIC_API_KEY=${updatedVars.FINATIC_API_KEY}\n`;
       }
+      if (updatedVars.FINATIC_API_KEY_LIVE) {
+        newContent += `FINATIC_API_KEY_LIVE=${updatedVars.FINATIC_API_KEY_LIVE}\n`;
+      }
+      if (updatedVars.FINATIC_API_KEY_SANDBOX) {
+        newContent += `FINATIC_API_KEY_SANDBOX=${updatedVars.FINATIC_API_KEY_SANDBOX}\n`;
+      }
+    }
+
+    // API URLs (environment-specific)
+    const apiUrlVars = Object.keys(updatedVars).filter(key => 
+      key === 'FINATIC_API_URL' || 
+      key.startsWith('FINATIC_API_URL_')
+    );
+    if (apiUrlVars.length > 0) {
+      newContent += '\n# Finatic API URLs (Server-side)\n';
       if (updatedVars.FINATIC_API_URL) {
         newContent += `FINATIC_API_URL=${updatedVars.FINATIC_API_URL}\n`;
+      }
+      if (updatedVars.FINATIC_API_URL_DEV) {
+        newContent += `FINATIC_API_URL_DEV=${updatedVars.FINATIC_API_URL_DEV}\n`;
+      }
+      if (updatedVars.FINATIC_API_URL_STAGING) {
+        newContent += `FINATIC_API_URL_STAGING=${updatedVars.FINATIC_API_URL_STAGING}\n`;
+      }
+      if (updatedVars.FINATIC_API_URL_PROD) {
+        newContent += `FINATIC_API_URL_PROD=${updatedVars.FINATIC_API_URL_PROD}\n`;
       }
     }
 
     // Add Next.js Public Variables section
-    const publicVars = Object.keys(updatedVars).filter(key => key.startsWith('NEXT_PUBLIC_'));
+    const publicVars = Object.keys(updatedVars).filter(key => 
+      key.startsWith('NEXT_PUBLIC_') && 
+      !key.includes('USE_MOCKS') && 
+      !key.includes('MOCK_API_ONLY')
+    );
     if (publicVars.length > 0) {
       newContent += '\n# Next.js Public Variables (available in browser)\n';
       if (updatedVars.NEXT_PUBLIC_FINATIC_API_URL) {
         newContent += `NEXT_PUBLIC_FINATIC_API_URL=${updatedVars.NEXT_PUBLIC_FINATIC_API_URL}\n`;
+      }
+      if (updatedVars.NEXT_PUBLIC_FINATIC_API_URL_DEV) {
+        newContent += `NEXT_PUBLIC_FINATIC_API_URL_DEV=${updatedVars.NEXT_PUBLIC_FINATIC_API_URL_DEV}\n`;
+      }
+      if (updatedVars.NEXT_PUBLIC_FINATIC_API_URL_STAGING) {
+        newContent += `NEXT_PUBLIC_FINATIC_API_URL_STAGING=${updatedVars.NEXT_PUBLIC_FINATIC_API_URL_STAGING}\n`;
+      }
+      if (updatedVars.NEXT_PUBLIC_FINATIC_API_URL_PROD) {
+        newContent += `NEXT_PUBLIC_FINATIC_API_URL_PROD=${updatedVars.NEXT_PUBLIC_FINATIC_API_URL_PROD}\n`;
       }
     }
 
