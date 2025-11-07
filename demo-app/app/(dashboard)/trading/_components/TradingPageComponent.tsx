@@ -65,6 +65,7 @@ export function TradingPageComponent() {
     let cancelled = false;
     async function loadConnections() {
       try {
+        if (!sdkAdapter) return;
         const list = await sdkAdapter.getBrokerConnections();
         if (!cancelled) {
           setConnections(list);
@@ -88,11 +89,12 @@ export function TradingPageComponent() {
   useEffect(() => {
     if (!sdkAdapter || !selectedBroker) return;
     try {
-      sdkAdapter.setBroker(selectedBroker as any);
+      sdkAdapter.setBroker?.(selectedBroker as any);
     } catch {}
     let cancelled = false;
     async function loadAccounts() {
       try {
+        if (!sdkAdapter) return;
         const all = await sdkAdapter.getActiveAccounts();
         const filtered = Array.isArray(all)
           ? all.filter((a: any) => a.broker_id === selectedBroker)
@@ -358,8 +360,8 @@ export function TradingPageComponent() {
       // Set context
       try {
         if (sdkAdapter) {
-          sdkAdapter.setBroker(selectedBroker as any);
-          sdkAdapter.setAccount(String(accountNumber));
+          sdkAdapter.setBroker?.(selectedBroker as any);
+          sdkAdapter.setAccount?.(String(accountNumber));
         } else if (finatic) {
           (finatic as any).setBroker(selectedBroker as any);
           (finatic as any).setAccount(String(accountNumber));
