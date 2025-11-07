@@ -55,6 +55,22 @@ type UsageStats = {
 
 const USAGE_STORAGE_KEY = 'finatic_usage_v1';
 
+// Common interface for authentication methods that both FinaticConnect and SdkAdapter implement
+interface AuthSource {
+  isAuthenticated(): Promise<boolean>;
+  getUserId(): Promise<string | null>;
+}
+
+// Type guard to check if an object implements AuthSource
+function isAuthSource(obj: any): obj is AuthSource {
+  return (
+    obj !== null &&
+    typeof obj === 'object' &&
+    typeof obj.isAuthenticated === 'function' &&
+    typeof obj.getUserId === 'function'
+  );
+}
+
 interface FinaticContextValue {
   finatic: FinaticConnect | null;
   // SDK adapter - this is the new way to interact with the SDK
@@ -414,29 +430,32 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const checkAuth = useCallback(async () => {
-    // For server SDKs, use sdkAdapter instead of finatic client
-    const authSource =
-      sdkAdapter && (sdkType === 'python' || sdkType === 'node') ? sdkAdapter : finatic;
-
-    if (!authSource) {
-      setIsAuthed(false);
-      setCurrentUserId(null);
-      return;
-    }
-
     try {
-      // Use sdkAdapter methods for server SDKs, finatic methods for client SDK
-      const authed =
-        typeof authSource.isAuthenticated === 'function'
-          ? await authSource.isAuthenticated()
-          : false;
-      const uid = typeof authSource.getUserId === 'function' ? await authSource.getUserId() : null;
+      let authSource: AuthSource | null = null;
+
+      // Handle server SDKs (python, node) - use sdkAdapter
+      if ((sdkType === 'python' || sdkType === 'node') && sdkAdapter && isAuthSource(sdkAdapter)) {
+        authSource = sdkAdapter;
+      }
+      // Handle client SDK - use finatic instance
+      else if (sdkType === 'client' && finatic && isAuthSource(finatic)) {
+        authSource = finatic;
+      }
+      // No valid SDK instance
+      else {
+        setIsAuthed(false);
+        setCurrentUserId(null);
+        return;
+      }
+
+      const authed = await authSource.isAuthenticated();
+      const uid = await authSource.getUserId();
 
       console.log('🔍 checkAuth() - authed:', authed, 'typeof:', typeof authed);
       console.log('🔍 checkAuth() - uid:', uid, 'typeof:', typeof uid);
       console.log(
         '🔍 checkAuth() - authSource:',
-        authSource === sdkAdapter ? 'sdkAdapter' : 'finatic'
+        sdkType === 'client' ? 'finatic' : 'sdkAdapter'
       );
 
       setIsAuthed(authed);
@@ -853,7 +872,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       // Verify the instance was created with the new token by checking a property
       // This ensures we're using the new instance, not the old one
       try {
-        const testAuth = await (wrapped as unknown as FinaticConnect).isAuthenticated();
+        const testAuth = isAuthSource(wrapped) ? await wrapped.isAuthenticated() : false;
         addLog('info', `🔍 Verified new instance (${instanceId}) isAuthenticated() = ${testAuth}`);
 
         const sessionId = (wrapped as any).sessionId;
