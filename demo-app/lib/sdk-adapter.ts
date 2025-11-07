@@ -205,11 +205,46 @@ export class ClientSdkAdapter implements SdkAdapter {
   constructor(private client: FinaticConnect) {}
 
   async isAuthenticated(): Promise<boolean> {
-    return await (this.client as any).isAuthenticated();
+    // The compiled SDK uses snake_case method names
+    // Try snake_case first (is_authenticated), then camelCase (isAuthenticated)
+    if (typeof (this.client as any).is_authenticated === 'function') {
+      return await (this.client as any).is_authenticated();
+    }
+    if (typeof (this.client as any).isAuthenticated === 'function') {
+      return await (this.client as any).isAuthenticated();
+    }
+    // Try accessing via prototype
+    const proto = Object.getPrototypeOf(this.client);
+    if (proto) {
+      if (typeof (proto as any).is_authenticated === 'function') {
+        return await (proto as any).is_authenticated.call(this.client);
+      }
+      if (typeof (proto as any).isAuthenticated === 'function') {
+        return await (proto as any).isAuthenticated.call(this.client);
+      }
+    }
+    throw new Error('isAuthenticated method not accessible on FinaticConnect instance');
   }
 
   async getUserId(): Promise<string | null> {
-    return await this.client.getUserId();
+    // Try camelCase first (getUserId), then snake_case (get_user_id) as fallback
+    if (typeof (this.client as any).getUserId === 'function') {
+      return await (this.client as any).getUserId();
+    }
+    if (typeof (this.client as any).get_user_id === 'function') {
+      return await (this.client as any).get_user_id();
+    }
+    // Try accessing via prototype
+    const proto = Object.getPrototypeOf(this.client);
+    if (proto) {
+      if (typeof (proto as any).getUserId === 'function') {
+        return await (proto as any).getUserId.call(this.client);
+      }
+      if (typeof (proto as any).get_user_id === 'function') {
+        return await (proto as any).get_user_id.call(this.client);
+      }
+    }
+    throw new Error('getUserId method not accessible on FinaticConnect instance');
   }
 
   async setUserId(userId: string): Promise<void> {

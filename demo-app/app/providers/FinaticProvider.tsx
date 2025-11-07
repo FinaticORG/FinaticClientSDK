@@ -181,6 +181,8 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   // Track last finatic instance we created adapter for
   const lastFinaticForAdapterRef = useRef<FinaticConnect | null>(null);
   const lastSdkTypeForAdapterRef = useRef<SdkType | null>(null);
+  // Store unwrapped finatic instance for adapter (Proxy wrapper breaks method access)
+  const unwrappedFinaticRef = useRef<FinaticConnect | null>(null);
 
   // Initialize adapter based on SDK type and client instance
   // This will re-run when finatic instance changes (after reinitialization)
@@ -206,44 +208,30 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
 
     try {
       if (sdkType === 'client' && finatic) {
-        console.log('🔄 Initializing Client SDK adapter');
-        console.log('🔄 Current finatic instance ID:', currentInstanceId);
-        console.log('🔄 Previous finatic instance ID:', previousInstanceId);
-        console.log('🔄 Instance changed?', finaticChanged);
-        console.log('🔄 Finatic object reference:', finatic);
-
-        const adapter = createSdkAdapter('client', finatic);
+        // Use unwrapped instance for adapter (Proxy wrapper breaks method access)
+        const unwrappedFinatic = unwrappedFinaticRef.current || finatic;
+        const adapter = createSdkAdapter('client', unwrappedFinatic);
         setSdkAdapterState(adapter);
         // CRITICAL: Store the finatic reference BEFORE setting the adapter state
         // This ensures the ref is updated synchronously
         lastFinaticForAdapterRef.current = finatic;
         lastSdkTypeForAdapterRef.current = sdkType;
-        console.log(
-          '✅ Client SDK adapter initialized with finatic instance ID:',
-          currentInstanceId
-        );
-        console.log('✅ Stored finatic reference in ref:', lastFinaticForAdapterRef.current);
       } else if (sdkType === 'python') {
-        console.log('🔄 Initializing Python Server SDK adapter');
         const adapter = createSdkAdapter('python');
         setSdkAdapterState(adapter);
         lastFinaticForAdapterRef.current = null; // Not applicable for server SDKs
         lastSdkTypeForAdapterRef.current = sdkType;
-        console.log('✅ Python Server SDK adapter initialized');
       } else if (sdkType === 'node') {
-        console.log('🔄 Initializing Node Server SDK adapter');
         const adapter = createSdkAdapter('node');
         setSdkAdapterState(adapter);
         lastFinaticForAdapterRef.current = null; // Not applicable for server SDKs
         lastSdkTypeForAdapterRef.current = sdkType;
-        console.log('✅ Node Server SDK adapter initialized');
       } else if (sdkType === 'client' && !finatic) {
         // Clear adapter if client SDK is selected but finatic instance is not ready
         if (sdkAdapter) {
           setSdkAdapterState(null);
           lastFinaticForAdapterRef.current = null;
           lastSdkTypeForAdapterRef.current = null;
-          console.log('⚠️ Client SDK selected but finatic instance not ready yet');
         }
       } else {
         // Clear adapter if no valid configuration
@@ -251,7 +239,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
           setSdkAdapterState(null);
           lastFinaticForAdapterRef.current = null;
           lastSdkTypeForAdapterRef.current = null;
-          console.log('⚠️ No adapter created - unknown SDK type or not ready');
         }
       }
     } catch (error) {
@@ -434,15 +421,32 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       let authSource: AuthSource | null = null;
 
       // Handle server SDKs (python, node) - use sdkAdapter
-      if ((sdkType === 'python' || sdkType === 'node') && sdkAdapter && isAuthSource(sdkAdapter)) {
-        authSource = sdkAdapter;
+      if ((sdkType === 'python' || sdkType === 'node') && sdkAdapter) {
+        if (isAuthSource(sdkAdapter)) {
+          authSource = sdkAdapter;
+        }
       }
-      // Handle client SDK - use finatic instance
-      else if (sdkType === 'client' && finatic && isAuthSource(finatic)) {
-        authSource = finatic;
+      // Handle client SDK - prefer sdkAdapter, fallback to finatic
+      else if (sdkType === 'client') {
+        // For client SDK adapter, trust that it implements the interface
+        // Don't check isAuthSource as the underlying client methods may not be accessible via property access
+        if (sdkAdapter) {
+          authSource = sdkAdapter as unknown as AuthSource;
+        } else if (finatic) {
+          // Try to use finatic directly, but methods may not be accessible
+          try {
+            const testCall = (finatic as any).isAuthenticated;
+            if (typeof testCall === 'function') {
+              authSource = finatic as unknown as AuthSource;
+            }
+          } catch {
+            // Methods not accessible via property access, skip
+          }
+        }
       }
+
       // No valid SDK instance
-      else {
+      if (!authSource) {
         setIsAuthed(false);
         setCurrentUserId(null);
         return;
@@ -450,13 +454,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
 
       const authed = await authSource.isAuthenticated();
       const uid = await authSource.getUserId();
-
-      console.log('🔍 checkAuth() - authed:', authed, 'typeof:', typeof authed);
-      console.log('🔍 checkAuth() - uid:', uid, 'typeof:', typeof uid);
-      console.log(
-        '🔍 checkAuth() - authSource:',
-        sdkType === 'client' ? 'finatic' : 'sdkAdapter'
-      );
 
       setIsAuthed(authed);
       setCurrentUserId(uid);
@@ -520,6 +517,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     // Clear adapter tracking refs to ensure new adapter is created with new finatic instance
     lastFinaticForAdapterRef.current = null;
     lastSdkTypeForAdapterRef.current = null;
+    unwrappedFinaticRef.current = null;
 
     // Clear auth check tracking ref
     lastCheckedAuthRef.current = null;
@@ -654,6 +652,8 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
             baseUrl: mockApiUrl,
           }
         );
+        // Store unwrapped instance for adapter
+        unwrappedFinaticRef.current = mockFinatic;
         const wrapped = new Proxy(mockFinatic as unknown as Record<string, unknown>, {
           get(target, prop, receiver) {
             const value = Reflect.get(target, prop, receiver);
@@ -718,6 +718,8 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
             baseUrl: mockOnlyApiUrl,
           }
         );
+        // Store unwrapped instance for adapter
+        unwrappedFinaticRef.current = mockFinatic;
         const wrapped = new Proxy(mockFinatic as unknown as Record<string, unknown>, {
           get(target, prop, receiver) {
             const value = Reflect.get(target, prop, receiver);
@@ -804,6 +806,9 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         baseUrl: apiUrl,
       });
 
+      // Store unwrapped instance for adapter (Proxy wrapper breaks method access)
+      unwrappedFinaticRef.current = realFinatic;
+
       // Add instance ID to the finatic object for tracking
       (realFinatic as any).__instanceId = instanceId;
       (realFinatic as any).__token = token.substring(0, 20) + '...';
@@ -813,12 +818,17 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       // Wrap finatic with a Proxy to track method calls and durations
       const wrapped = new Proxy(realFinatic as unknown as Record<string, unknown>, {
         get(target, prop, receiver) {
+          // Use Reflect.get with receiver to properly handle prototype chain and 'this' binding
+          // This is critical for accessing class methods correctly
           const value = Reflect.get(target, prop, receiver);
           if (typeof value === 'function') {
-            return function wrappedMethod(this: unknown, ...args: unknown[]) {
+            // Create a wrapper function that preserves the original function's behavior
+            const originalFunction = value as Function;
+            const wrappedFunction = function (this: unknown, ...args: unknown[]) {
               const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
               try {
-                const result = (value as Function).apply(target, args);
+                // Call the original function with the correct 'this' context
+                const result = originalFunction.apply(target, args);
                 if (result && typeof (result as Promise<unknown>).then === 'function') {
                   return (result as Promise<unknown>)
                     .then(res => {
@@ -849,6 +859,17 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
                 throw err;
               }
             };
+            // Copy function properties to maintain compatibility
+            Object.setPrototypeOf(wrappedFunction, Object.getPrototypeOf(originalFunction));
+            Object.defineProperty(wrappedFunction, 'name', {
+              value: originalFunction.name || String(prop),
+              configurable: true,
+            });
+            Object.defineProperty(wrappedFunction, 'length', {
+              value: originalFunction.length,
+              configurable: true,
+            });
+            return wrappedFunction;
           }
           return value;
         },
@@ -856,11 +877,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
 
       // CRITICAL: Set the new finatic instance - this will trigger adapter reinitialization
       addLog('info', `🔄 Setting new finatic instance in state with ID: ${instanceId}`);
-      console.log('🔍 New finatic instance:', {
-        instanceId,
-        tokenPrefix: token.substring(0, 20),
-        object: wrapped,
-      });
 
       // Set the new instance - this should trigger the adapter to recreate
       setFinatic(wrapped as unknown as FinaticConnect);
@@ -960,7 +976,8 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Only check auth if we have a valid SDK instance
-    if (sdkType === 'client' && finatic) {
+    // For client SDK, prefer sdkAdapter if available, otherwise use finatic
+    if (sdkType === 'client' && (sdkAdapter || finatic)) {
       lastCheckedAuthRef.current = currentInstance;
       void checkAuth();
     } else if ((sdkType === 'python' || sdkType === 'node') && sdkAdapter) {
