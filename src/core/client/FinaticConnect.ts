@@ -1,7 +1,13 @@
 import { EventEmitter } from '../../utils/events';
 import { ApiClient } from './ApiClient';
 import { PortalUI } from '../portal/PortalUI';
-import { SessionError, AuthenticationError, CompanyAccessError, ApiError, ValidationError } from '../../utils/errors';
+import {
+  SessionError,
+  AuthenticationError,
+  CompanyAccessError,
+  ApiError,
+  ValidationError,
+} from '../../utils/errors';
 import { MockFactory } from '../../mocks/MockFactory';
 import { PaginatedResult } from '../../types/common/pagination';
 import { UserToken, SessionState } from '../../types/api/auth';
@@ -166,7 +172,6 @@ export class FinaticConnect extends EventEmitter {
     return this.userToken?.user_id !== undefined && this.userToken?.user_id !== null;
   }
 
-
   /**
    * Get user's orders with pagination and optional filtering
    * @param params - Query parameters including page, perPage, and filters
@@ -183,7 +188,7 @@ export class FinaticConnect extends EventEmitter {
     }
 
     const result = await this.apiClient.getBrokerOrdersPage(page, perPage, filters);
-    
+
     // Add navigation methods to the result
     const paginatedResult = result as any;
     paginatedResult.next_page = async () => {
@@ -198,7 +203,7 @@ export class FinaticConnect extends EventEmitter {
       }
       throw new Error('No previous page available');
     };
-    
+
     return paginatedResult;
   }
 
@@ -218,7 +223,7 @@ export class FinaticConnect extends EventEmitter {
     }
 
     const result = await this.apiClient.getBrokerPositionsPage(page, perPage, filters);
-    
+
     // Add navigation methods to the result
     const paginatedResult = result as any;
     paginatedResult.next_page = async () => {
@@ -233,7 +238,7 @@ export class FinaticConnect extends EventEmitter {
       }
       throw new Error('No previous page available');
     };
-    
+
     return paginatedResult;
   }
 
@@ -253,7 +258,7 @@ export class FinaticConnect extends EventEmitter {
     }
 
     const result = await this.apiClient.getBrokerAccountsPage(page, perPage, filters);
-    
+
     // Add navigation methods to the result
     const paginatedResult = result as any;
     paginatedResult.next_page = async () => {
@@ -268,7 +273,7 @@ export class FinaticConnect extends EventEmitter {
       }
       throw new Error('No previous page available');
     };
-    
+
     return paginatedResult;
   }
 
@@ -288,7 +293,7 @@ export class FinaticConnect extends EventEmitter {
     }
 
     const result = await this.apiClient.getBrokerBalancesPage(page, perPage, filters);
-    
+
     // Add navigation methods to the result
     const paginatedResult = result as any;
     paginatedResult.next_page = async () => {
@@ -303,7 +308,7 @@ export class FinaticConnect extends EventEmitter {
       }
       throw new Error('No previous page available');
     };
-    
+
     return paginatedResult;
   }
 
@@ -647,11 +652,7 @@ export class FinaticConnect extends EventEmitter {
 
     try {
       // Use the order parameter directly since it's already BrokerOrderParams
-      return await this.apiClient.placeBrokerOrder(
-        order,
-        extras || {},
-        order.connection_id
-      );
+      return await this.apiClient.placeBrokerOrder(order, extras || {}, order.connection_id);
     } catch (error) {
       this.emit('error', error as Error);
       throw error;
@@ -743,7 +744,6 @@ export class FinaticConnect extends EventEmitter {
       throw error;
     }
   }
-
 
   /**
    * Place a stock market order (convenience method)
@@ -1169,12 +1169,6 @@ export class FinaticConnect extends EventEmitter {
 
   // Pagination methods
 
-
-
-
-
-
-
   /**
    * Get all orders across all pages (convenience method)
    * @param filter - Optional filter parameters
@@ -1553,5 +1547,4 @@ export class FinaticConnect extends EventEmitter {
   }
 
   // Duplicate getBalances method removed - using the paginated version above
-
 }

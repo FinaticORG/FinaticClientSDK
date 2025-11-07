@@ -112,19 +112,51 @@ export interface BrokerInfo {
   is_active: boolean;
 }
 
-export interface BrokerOrderParams {
-  broker: 'robinhood' | 'tasty_trade' | 'ninja_trader';
-  order_id?: string; // Optional order_id field for modify operations
-  orderType: 'Market' | 'Limit' | 'Stop' | 'StopLimit';
+// Base order fields common to all brokers
+// Mirrors the structure from order_place_query_params_request.py examples
+interface BaseOrderParams {
+  orderType: 'market' | 'limit' | 'stop' | 'stop_limit' | 'trailing_stop';
   assetType: 'equity' | 'equity_option' | 'crypto' | 'forex' | 'future' | 'future_option';
-  action: 'Buy' | 'Sell';
+  action: 'buy' | 'sell';
   timeInForce: 'day' | 'gtc' | 'gtd' | 'ioc' | 'fok';
   accountNumber: string | number;
   symbol: string;
   orderQty: number;
-  price?: number;
-  stopPrice?: number;
+  price?: number; // Required for limit and stop_limit orders
+  stopPrice?: number; // Required for stop, stop_limit, and trailing_stop orders
+  limitPrice?: number; // Required for stop_limit orders
+  expireTime?: string; // ISO 8601 format (e.g., "2025-01-15T14:30:00Z"), required for GTD timeInForce
 }
+
+// Robinhood-specific order fields
+// Based on examples in order_place_query_params_request.py
+interface RobinhoodOrderParams extends BaseOrderParams {
+  extendedHours?: boolean; // Default: false
+  marketHours?: 'regular_hours' | 'extended_hours' | 'all_day_hours'; // Default: 'regular_hours'
+}
+
+// NinjaTrader-specific order fields
+// Based on examples in order_place_query_params_request.py
+interface NinjaTraderOrderParams extends BaseOrderParams {
+  accountSpec?: string; // e.g., "MyAcct"
+  isAutomated?: boolean; // Default: true
+  activationTime?: string; // ISO 8601 format
+  text?: string; // Max 64 chars, custom order description
+  pegDifference?: number;
+}
+
+// TastyTrade-specific order fields (structure TBD based on examples)
+interface TastyTradeOrderParams extends BaseOrderParams {
+  // TODO: Add TastyTrade-specific fields when examples are available
+}
+
+// Discriminated union matching the Python request body structure
+// Mirrors BrokerOrderPlaceRequestBody from order_place_query_params_request.py
+export type BrokerOrderParams =
+  | { broker: 'robinhood'; order: RobinhoodOrderParams }
+  | { broker: 'ninja_trader'; order: NinjaTraderOrderParams }
+  | { broker: 'tasty_trade'; order: TastyTradeOrderParams }
+  | { broker: 'tradovate'; order: BaseOrderParams };
 
 export interface BrokerExtras {
   robinhood?: {
@@ -458,4 +490,4 @@ export interface PositionLotFillsFilter {
   connection_id?: string;
   limit?: number;
   offset?: number;
-} 
+}
