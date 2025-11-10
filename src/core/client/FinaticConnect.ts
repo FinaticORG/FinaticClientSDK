@@ -20,6 +20,7 @@ import {
   BrokerBalance,
   BrokerInfo,
   BrokerOrderParams,
+  BrokerExtras,
   BrokerConnection,
   OrdersFilter,
   PositionsFilter,
@@ -651,8 +652,30 @@ export class FinaticConnect extends EventEmitter {
     }
 
     try {
-      // Use the order parameter directly since it's already BrokerOrderParams
-      return await this.apiClient.placeBrokerOrder(order, extras || {}, order.connection_id);
+      // Ensure underlying client has trading context set for compatibility with older builds
+      const brokerFromPayload = (order as any)?.broker;
+      const accountFromPayload = (order as any)?.order?.accountNumber;
+      if (this.apiClient && typeof this.apiClient.setBroker === 'function' && brokerFromPayload) {
+        this.apiClient.setBroker(brokerFromPayload);
+      }
+      if (this.apiClient && typeof this.apiClient.setAccount === 'function' && accountFromPayload) {
+        this.apiClient.setAccount(String(accountFromPayload));
+      }
+
+      // Extract broker and order fields from the discriminated union format
+      // BrokerOrderParams is { broker: '...', order: {...} }
+      const broker = order.broker;
+      const orderDetails = order.order;
+
+      // Flatten the structure for placeBrokerOrder which expects:
+      // { broker: '...', symbol: '...', orderQty: ..., ... }
+      const flattenedParams: any = {
+        broker,
+        ...orderDetails,
+      };
+
+      // connection_id is not part of BrokerOrderParams, so we don't pass it
+      return await this.apiClient.placeBrokerOrder(flattenedParams, extras || {});
     } catch (error) {
       this.emit('error', error as Error);
       throw error;

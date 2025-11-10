@@ -323,51 +323,14 @@ export function TradingPageComponent() {
       // The payload is already in the correct format: { broker: '...', order: {...} }
       let response;
       if (sdkAdapter?.placeOrder) {
+        // SDK adapter expects the discriminated union format
         response = await sdkAdapter.placeOrder(orderPayload);
       } else if (finatic) {
-        // Fallback to FinaticConnect's placeOrder method
-        const { broker, order } = orderPayload;
-        // Extract broker-specific extras from order if present
-        const baseOrder: any = {
-          symbol: order.symbol,
-          orderQty: order.orderQty,
-          action: order.action,
-          orderType: order.orderType,
-          assetType: order.assetType,
-          timeInForce: order.timeInForce,
-          accountNumber: order.accountNumber,
-        };
-        if (order.price !== undefined) baseOrder.price = order.price;
-        if (order.stopPrice !== undefined) baseOrder.stopPrice = order.stopPrice;
-        if (order.expireTime) baseOrder.expireTime = order.expireTime;
-
-        // Separate broker-specific extras
-        const brokerExtras: any = {};
-        const knownFields = [
-          'orderType',
-          'assetType',
-          'action',
-          'timeInForce',
-          'accountNumber',
-          'symbol',
-          'orderQty',
-          'price',
-          'stopPrice',
-          'expireTime',
-        ];
-        for (const [key, value] of Object.entries(order)) {
-          if (!knownFields.includes(key)) {
-            brokerExtras[key] = value;
-          }
-        }
-
-        // Build the discriminated union format for placeOrder
+        // FinaticConnect.placeOrder expects BrokerOrderParams (discriminated union)
+        // which is { broker: '...', order: {...} }
         const orderParams: any = {
-          broker: broker as 'robinhood' | 'tasty_trade' | 'ninja_trader',
-          order: {
-            ...baseOrder,
-            ...brokerExtras,
-          },
+          broker: orderPayload.broker as 'robinhood' | 'tasty_trade' | 'ninja_trader',
+          order: orderPayload.order,
         };
         response = await finatic.placeOrder(orderParams);
       } else {

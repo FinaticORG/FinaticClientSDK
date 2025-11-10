@@ -560,9 +560,28 @@ export class ApiClient {
   ): Promise<OrderResponse> {
     const accessToken = await this.getValidAccessToken();
 
-    // Get broker and account from context or params
-    const broker = params.broker || this.tradingContext.broker;
-    const accountNumber = params.accountNumber || this.tradingContext.accountNumber;
+    // Accept both flattened and nested shapes. If nested, normalize to flattened.
+    const normalizedParams: any = (() => {
+      const incoming: any = params as unknown as Record<string, any>;
+      if (incoming && typeof incoming === 'object' && 'order' in incoming && 'broker' in incoming) {
+        const { broker, order } = incoming;
+        return { broker, ...(order || {}) };
+      }
+      return incoming;
+    })();
+
+    // Get broker and account from context or params (robust extraction)
+    const brokerCandidate =
+      normalizedParams.broker ||
+      (normalizedParams.order && normalizedParams.order.broker) ||
+      this.tradingContext.broker;
+    const accountCandidate =
+      normalizedParams.accountNumber ||
+      (normalizedParams.order && normalizedParams.order.accountNumber) ||
+      this.tradingContext.accountNumber;
+
+    const broker = brokerCandidate ? String(brokerCandidate).trim() : '';
+    const accountNumber = accountCandidate ? String(accountCandidate).trim() : '';
 
     if (!broker) {
       throw new Error('Broker not set. Call setBroker() or pass broker parameter.');
@@ -572,10 +591,18 @@ export class ApiClient {
       throw new Error('Account not set. Call setAccount() or pass accountNumber parameter.');
     }
 
+    // Ensure trading context is synced for downstream calls
+    if (typeof (this as any).setBroker === 'function') {
+      (this as any).setBroker(broker as any);
+    }
+    if (typeof (this as any).setAccount === 'function') {
+      (this as any).setAccount(accountNumber as any);
+    }
+
     // Merge context with provided parameters
     const fullParams: BrokerOrderParams = {
       broker:
-        ((params.broker || this.tradingContext.broker) as
+        ((normalizedParams.broker || this.tradingContext.broker) as
           | 'robinhood'
           | 'tasty_trade'
           | 'ninja_trader') ||
@@ -583,24 +610,87 @@ export class ApiClient {
           throw new Error('Broker not set. Call setBroker() or pass broker parameter.');
         })(),
       accountNumber:
-        params.accountNumber ||
+        normalizedParams.accountNumber ||
         this.tradingContext.accountNumber ||
         (() => {
           throw new Error('Account not set. Call setAccount() or pass accountNumber parameter.');
         })(),
-      symbol: params.symbol,
-      orderQty: params.orderQty,
-      action: params.action,
-      orderType: params.orderType,
-      assetType: params.assetType,
-      timeInForce: params.timeInForce || 'day',
-      price: params.price,
-      stopPrice: params.stopPrice,
-      order_id: params.order_id,
+      symbol: normalizedParams.symbol,
+      orderQty: normalizedParams.orderQty,
+      action: normalizedParams.action,
+      orderType: normalizedParams.orderType,
+      assetType: normalizedParams.assetType,
+      timeInForce: normalizedParams.timeInForce || 'day',
+      price: normalizedParams.price,
+      stopPrice: normalizedParams.stopPrice,
+      order_id: normalizedParams.order_id,
     };
 
+    // Extract broker-specific extras from normalizedParams (e.g., extended_hours, extendedHours, marketHours, etc.)
+    // These fields may be in the order object but should be treated as extras
+    const brokerSpecificExtras: any = {};
+    const brokerName = fullParams.broker;
+
+    if (brokerName === 'robinhood') {
+      // Extract Robinhood-specific fields (accept both snake_case and camelCase)
+      if (normalizedParams.extendedHours !== undefined) {
+        brokerSpecificExtras.extendedHours = normalizedParams.extendedHours;
+      } else if (normalizedParams.extended_hours !== undefined) {
+        brokerSpecificExtras.extendedHours = normalizedParams.extended_hours;
+      }
+      if (normalizedParams.marketHours !== undefined) {
+        brokerSpecificExtras.marketHours = normalizedParams.marketHours;
+      } else if (normalizedParams.market_hours !== undefined) {
+        brokerSpecificExtras.marketHours = normalizedParams.market_hours;
+      }
+      if (normalizedParams.trailType !== undefined) {
+        brokerSpecificExtras.trailType = normalizedParams.trailType;
+      } else if (normalizedParams.trail_type !== undefined) {
+        brokerSpecificExtras.trailType = normalizedParams.trail_type;
+      }
+    } else if (brokerName === 'ninja_trader') {
+      // Extract NinjaTrader-specific fields
+      if (normalizedParams.accountSpec !== undefined) {
+        brokerSpecificExtras.accountSpec = normalizedParams.accountSpec;
+      } else if (normalizedParams.account_spec !== undefined) {
+        brokerSpecificExtras.accountSpec = normalizedParams.account_spec;
+      }
+      if (normalizedParams.isAutomated !== undefined) {
+        brokerSpecificExtras.isAutomated = normalizedParams.isAutomated;
+      } else if (normalizedParams.is_automated !== undefined) {
+        brokerSpecificExtras.isAutomated = normalizedParams.is_automated;
+      }
+    } else if (brokerName === 'tasty_trade') {
+      // Extract TastyTrade-specific fields
+      if (normalizedParams.automatedSource !== undefined) {
+        brokerSpecificExtras.automatedSource = normalizedParams.automatedSource;
+      } else if (normalizedParams.automated_source !== undefined) {
+        brokerSpecificExtras.automatedSource = normalizedParams.automated_source;
+      }
+    }
+
+    // Merge extracted extras with provided extras (extracted extras take precedence)
+    // Merge nested broker-specific objects if they exist
+    const mergedExtras: any = { ...extras };
+    if (brokerName === 'robinhood' && Object.keys(brokerSpecificExtras).length > 0) {
+      mergedExtras.robinhood = {
+        ...(extras?.robinhood || {}),
+        ...brokerSpecificExtras,
+      };
+    } else if (brokerName === 'ninja_trader' && Object.keys(brokerSpecificExtras).length > 0) {
+      mergedExtras.ninjaTrader = {
+        ...(extras?.ninjaTrader || {}),
+        ...brokerSpecificExtras,
+      };
+    } else if (brokerName === 'tasty_trade' && Object.keys(brokerSpecificExtras).length > 0) {
+      mergedExtras.tastyTrade = {
+        ...(extras?.tastyTrade || {}),
+        ...brokerSpecificExtras,
+      };
+    }
+
     // Build request body with camelCase parameter names
-    const requestBody = this.buildOrderRequestBody(fullParams, extras);
+    const requestBody = this.buildOrderRequestBody(fullParams, mergedExtras);
 
     // Add query parameters if connection_id is provided
     const queryParams: Record<string, string> = {};
@@ -722,7 +812,6 @@ export class ApiClient {
     this.tradingContext.accountNumber = accountNumber;
     this.tradingContext.accountId = accountId;
   }
-
 
   // Stock convenience methods
   async placeStockMarketOrder(
@@ -1826,9 +1915,7 @@ export class ApiClient {
    * @param filter - Optional filter parameters
    * @returns Promise with order groups response
    */
-  async getOrderGroups(
-    filter?: OrderGroupsFilter
-  ): Promise<{
+  async getOrderGroups(filter?: OrderGroupsFilter): Promise<{
     _id: string;
     response_data: OrderGroup[];
     message: string;
@@ -1879,9 +1966,7 @@ export class ApiClient {
    * @param filter - Optional filter parameters
    * @returns Promise with position lots response
    */
-  async getPositionLots(
-    filter?: PositionLotsFilter
-  ): Promise<{
+  async getPositionLots(filter?: PositionLotsFilter): Promise<{
     _id: string;
     response_data: PositionLot[];
     message: string;
