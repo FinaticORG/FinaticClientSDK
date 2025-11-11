@@ -1,5 +1,16 @@
 import { PortalTheme, PortalThemeConfig } from '../types/portal';
 import { portalThemePresets } from '../themes/portalPresets';
+import { setupLogger, buildLoggerExtra, LoggerExtra } from '../lib/logger';
+
+const themeLogger = setupLogger('FinaticClientSDK.ThemeUtils', undefined, {
+  codebase: 'FinaticClientSDK',
+});
+
+const buildThemeExtra = (functionName: string, metadata?: Record<string, unknown>): LoggerExtra => ({
+  module: 'ThemeUtils',
+  function: functionName,
+  ...(metadata ? buildLoggerExtra(metadata) : {}),
+});
 
 /**
  * Generate a portal URL with theme parameters
@@ -27,7 +38,10 @@ export function generatePortalThemeURL(baseUrl: string, theme?: PortalTheme): st
 
     return url.toString();
   } catch (error) {
-    console.error('Failed to generate theme URL:', error);
+    themeLogger.exception('Failed to generate theme URL', error, buildThemeExtra('generatePortalThemeURL', {
+      base_url: baseUrl,
+      has_theme: Boolean(theme),
+    }));
     return baseUrl;
   }
 }
@@ -58,7 +72,10 @@ export function appendThemeToURL(baseUrl: string, theme?: PortalTheme): string {
 
     return url.toString();
   } catch (error) {
-    console.error('Failed to append theme to URL:', error);
+    themeLogger.exception('Failed to append theme to URL', error, buildThemeExtra('appendThemeToURL', {
+      base_url: baseUrl,
+      has_theme: Boolean(theme),
+    }));
     return baseUrl;
   }
 }
@@ -118,7 +135,7 @@ export function validateCustomTheme(theme: PortalThemeConfig): boolean {
 
     return true;
   } catch (error) {
-    console.error('Theme validation error:', error);
+    themeLogger.exception('Theme validation error', error, buildThemeExtra('validateCustomTheme'));
     return false;
   }
 }
@@ -135,7 +152,9 @@ export function createCustomThemeFromPreset(
 ): PortalThemeConfig | null {
   const baseTheme = getThemePreset(preset);
   if (!baseTheme) {
-    console.error(`Preset theme '${preset}' not found`);
+    themeLogger.warn('Preset theme not found', buildThemeExtra('createCustomThemeFromPreset', {
+      preset,
+    }));
     return null;
   }
 

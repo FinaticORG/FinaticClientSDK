@@ -27,6 +27,17 @@ import {
 import { FinaticConnectOptions, PortalOptions } from '../../types/connect';
 import { appendThemeToURL } from '../../utils/themeUtils';
 import { appendBrokerFilterToURL } from '../../utils/brokerUtils';
+import { setupLogger, buildLoggerExtra, LoggerExtra } from '../../lib/logger';
+
+const finaticConnectLogger = setupLogger('FinaticClientSDK.FinaticConnect', undefined, {
+  codebase: 'FinaticClientSDK',
+});
+
+const makeFinaticConnectExtra = (functionName: string, metadata?: Record<string, unknown>): LoggerExtra => ({
+  module: 'FinaticConnect',
+  function: functionName,
+  ...(metadata ? buildLoggerExtra(metadata) : {}),
+});
 // Supabase import removed - SDK no longer depends on Supabase
 
 interface DeviceInfo {
@@ -56,6 +67,16 @@ export class FinaticConnect extends EventEmitter {
   private readonly SESSION_VALIDATION_TIMEOUT = 1000 * 30; // 30 seconds
   private readonly SESSION_REFRESH_BUFFER_HOURS = 16; // Refresh session at 16 hours
   private sessionStartTime: number | null = null;
+
+  private readonly logger = finaticConnectLogger;
+
+  private buildLoggerExtra(functionName: string, metadata?: Record<string, unknown>): LoggerExtra {
+    return {
+      module: 'FinaticConnect',
+      function: functionName,
+      ...(metadata ? buildLoggerExtra(metadata) : {}),
+    };
+  }
 
   constructor(options: FinaticConnectOptions, deviceInfo?: DeviceInfo) {
     super();
@@ -112,7 +133,7 @@ export class FinaticConnect extends EventEmitter {
   private async linkUserToSession(userId: string): Promise<boolean> {
     try {
       if (!this.sessionId) {
-        console.error('No session ID available for user linking');
+        this.logger.error('No session ID available for user linking', this.buildLoggerExtra('linkUserToSession'));
         return false;
       }
 
@@ -126,14 +147,20 @@ export class FinaticConnect extends EventEmitter {
       });
 
       if (response.error) {
-        console.error('Failed to link user to session:', response.error);
+        this.logger.error('Failed to link user to session', {
+          ...this.buildLoggerExtra('linkUserToSession', {
+            session_id: this.sessionId,
+            user_id: userId,
+          }),
+          error: response.error,
+        });
         return false;
       }
 
-      console.log('User linked to session successfully');
+      this.logger.info('User linked to session successfully', this.buildLoggerExtra('linkUserToSession', { session_id: this.sessionId, user_id: userId }));
       return true;
     } catch (error) {
-      console.error('Error linking user to session:', error);
+      this.logger.exception('Error linking user to session', error, this.buildLoggerExtra('linkUserToSession', { session_id: this.sessionId, user_id: userId }));
       return false;
     }
   }
@@ -322,7 +349,7 @@ export class FinaticConnect extends EventEmitter {
     // Safari-specific fix: Clear instance if it exists but has no valid session
     // This prevents stale instances from interfering with new requests
     if (FinaticConnect.instance && !FinaticConnect.instance.sessionId) {
-      console.log('[FinaticConnect] Clearing stale instance for Safari compatibility');
+      finaticConnectLogger.debug('Clearing stale instance for Safari compatibility', makeFinaticConnectExtra('init'));
       FinaticConnect.instance = null;
     }
 
@@ -390,7 +417,7 @@ export class FinaticConnect extends EventEmitter {
             // Emit success event
             FinaticConnect.instance.emit('success', normalizedUserId);
           } else {
-            console.warn('Failed to link user to session during initialization');
+            finaticConnectLogger.warn('Failed to link user to session during initialization', makeFinaticConnectExtra('init', { user_id: normalizedUserId }));
           }
         } catch (error) {
           FinaticConnect.instance.emit('error', error as Error);
@@ -423,7 +450,7 @@ export class FinaticConnect extends EventEmitter {
       // Try to link user to session
       const linked = await this.linkUserToSession(userId);
       if (!linked) {
-        console.warn('Failed to link user to session during initialization');
+        this.logger.warn('Failed to link user to session during initialization', this.buildLoggerExtra('initializeWithUser', { user_id: userId }));
         // Don't throw error, just continue without authentication
         return;
       }
@@ -537,7 +564,7 @@ export class FinaticConnect extends EventEmitter {
             // Try to link user to session via API
             const linked = await this.linkUserToSession(userId);
             if (!linked) {
-              console.warn('Failed to link user to session, but continuing with authentication');
+              this.logger.warn('Failed to link user to session, continuing with authentication', this.buildLoggerExtra('openPortal.onSuccess', { user_id: userId }));
             }
 
             // Emit portal success event
@@ -573,7 +600,13 @@ export class FinaticConnect extends EventEmitter {
           options?.onClose?.();
         },
         onEvent: (type: string, data: any) => {
-          console.log('[FinaticConnect] Portal event received:', type, data);
+          this.logger.debug('Portal event received', {
+            ...this.buildLoggerExtra('openPortal.onEvent', {
+              event_type: type,
+              payload_present: Boolean(data),
+            }),
+            event: 'portal-event',
+          });
 
           // Emit generic event
           this.emit('event', type, data);
@@ -1293,7 +1326,7 @@ export class FinaticConnect extends EventEmitter {
       this.validateSessionKeepAlive();
     }, this.SESSION_KEEP_ALIVE_INTERVAL);
 
-    console.log('[FinaticConnect] Session keep-alive started (5-minute intervals)');
+    this.logger.debug('Session keep-alive started', this.buildLoggerExtra('startSessionKeepAlive', { interval_ms: this.SESSION_KEEP_ALIVE_INTERVAL }));
   }
 
   /**
@@ -1303,7 +1336,7 @@ export class FinaticConnect extends EventEmitter {
     if (this.sessionKeepAliveInterval) {
       clearInterval(this.sessionKeepAliveInterval);
       this.sessionKeepAliveInterval = null;
-      console.log('[FinaticConnect] Session keep-alive stopped');
+      this.logger.debug('Session keep-alive stopped', this.buildLoggerExtra('stopSessionKeepAlive'));
     }
   }
 
@@ -1312,12 +1345,12 @@ export class FinaticConnect extends EventEmitter {
    */
   private async validateSessionKeepAlive(): Promise<void> {
     if (!this.sessionId || !(await this.isAuthenticated())) {
-      console.log('[FinaticConnect] Session keep-alive skipped - no active session');
+      this.logger.debug('Session keep-alive skipped - no active session', this.buildLoggerExtra('validateSessionKeepAlive'));
       return;
     }
 
     try {
-      console.log('[FinaticConnect] Validating session for keep-alive...');
+      this.logger.debug('Validating session for keep-alive', this.buildLoggerExtra('validateSessionKeepAlive', { session_id: this.sessionId }));
 
       // Check if we need to refresh the session (at 16 hours)
       if (this.shouldRefreshSession()) {
@@ -1326,10 +1359,10 @@ export class FinaticConnect extends EventEmitter {
       }
 
       // Session keep-alive - assume session is active if we have a session ID
-      console.log('[FinaticConnect] Session keep-alive successful');
+      this.logger.debug('Session keep-alive successful', this.buildLoggerExtra('validateSessionKeepAlive', { session_id: this.sessionId }));
       this.currentSessionState = 'active';
     } catch (error) {
-      console.warn('[FinaticConnect] Session keep-alive error:', error);
+      this.logger.exception('Session keep-alive error', error, this.buildLoggerExtra('validateSessionKeepAlive', { session_id: this.sessionId }));
       // Don't throw errors during keep-alive - just log them
     }
   }
@@ -1346,15 +1379,17 @@ export class FinaticConnect extends EventEmitter {
     const hoursUntilRefresh = this.SESSION_REFRESH_BUFFER_HOURS - sessionAgeHours;
 
     if (hoursUntilRefresh <= 0) {
-      console.log(
-        `[FinaticConnect] Session is ${sessionAgeHours.toFixed(1)} hours old - triggering refresh`
-      );
+      this.logger.info('Session age threshold exceeded - triggering refresh', this.buildLoggerExtra('shouldRefreshSession', {
+        session_age_hours: Number(sessionAgeHours.toFixed(1)),
+      }));
       return true;
     }
 
     // Log when refresh will occur (every 5 minutes during keep-alive)
     if (hoursUntilRefresh <= 1) {
-      console.log(`[FinaticConnect] Session will refresh in ${hoursUntilRefresh.toFixed(1)} hours`);
+      this.logger.debug('Session refresh scheduled', this.buildLoggerExtra('shouldRefreshSession', {
+        hours_until_refresh: Number(hoursUntilRefresh.toFixed(1)),
+      }));
     }
 
     return false;
@@ -1365,26 +1400,35 @@ export class FinaticConnect extends EventEmitter {
    */
   private async refreshSessionAutomatically(): Promise<void> {
     if (!this.sessionId) {
-      console.warn('[FinaticConnect] Cannot refresh session - no session ID');
+      this.logger.warn('Cannot refresh session - missing session ID', this.buildLoggerExtra('refreshSessionAutomatically'));
       return;
     }
 
     try {
-      console.log('[FinaticConnect] Automatically refreshing session (16+ hours old)...');
+      this.logger.info('Automatically refreshing session', this.buildLoggerExtra('refreshSessionAutomatically', {
+        session_id: this.sessionId,
+      }));
       const response = await this.apiClient.refreshSession();
 
       if (response.success) {
-        console.log('[FinaticConnect] Session automatically refreshed successfully');
-        console.log('[FinaticConnect] New session expires at:', response.response_data.expires_at);
+        this.logger.info('Session automatically refreshed successfully', this.buildLoggerExtra('refreshSessionAutomatically', {
+          session_id: this.sessionId,
+          status: response.response_data.status,
+          expires_at: response.response_data.expires_at,
+        }));
         this.currentSessionState = response.response_data.status;
 
         // Update session start time to prevent immediate re-refresh
         this.sessionStartTime = Date.now();
       } else {
-        console.warn('[FinaticConnect] Automatic session refresh failed');
+        this.logger.warn('Automatic session refresh failed', this.buildLoggerExtra('refreshSessionAutomatically', {
+          session_id: this.sessionId,
+        }));
       }
     } catch (error) {
-      console.warn('[FinaticConnect] Automatic session refresh error:', error);
+      this.logger.exception('Automatic session refresh error', error, this.buildLoggerExtra('refreshSessionAutomatically', {
+        session_id: this.sessionId,
+      }));
       // Don't throw errors during automatic refresh - just log them
     }
   }
@@ -1406,7 +1450,9 @@ export class FinaticConnect extends EventEmitter {
   private async handleVisibilityChange(): Promise<void> {
     // For 24-hour sessions, we don't want to complete sessions on visibility changes
     // This prevents sessions from being closed when users switch tabs or apps
-    console.log('[FinaticConnect] Page visibility changed to:', document.visibilityState);
+    this.logger.debug('Page visibility changed', this.buildLoggerExtra('handleVisibilityChange', {
+      visibility_state: document.visibilityState,
+    }));
 
     // Only pause keep-alive when hidden, but don't complete the session
     if (document.visibilityState === 'hidden') {
@@ -1431,7 +1477,7 @@ export class FinaticConnect extends EventEmitter {
 
       if (isMockMode) {
         // Mock the completion response
-        console.log('[FinaticConnect] Mock session completion for session:', sessionId);
+        this.logger.debug('Mock session completion', this.buildLoggerExtra('completeSession', { session_id: sessionId }));
         return;
       }
 
@@ -1444,13 +1490,16 @@ export class FinaticConnect extends EventEmitter {
       });
 
       if (response.ok) {
-        console.log('[FinaticConnect] Session completed successfully');
+        this.logger.info('Session completed successfully', this.buildLoggerExtra('completeSession', { session_id: sessionId }));
       } else {
-        console.warn('[FinaticConnect] Failed to complete session:', response.status);
+        this.logger.warn('Failed to complete session', this.buildLoggerExtra('completeSession', {
+          session_id: sessionId,
+          response_status: response.status,
+        }));
       }
     } catch (error) {
       // Silent failure - don't throw errors during cleanup
-      console.warn('[FinaticConnect] Session cleanup failed:', error);
+      this.logger.exception('Session cleanup failed', error, this.buildLoggerExtra('completeSession', { session_id: sessionId }));
     }
   }
 
