@@ -2,6 +2,18 @@
  * Pagination-related types and classes
  */
 
+import { setupLogger, buildLoggerExtra, LoggerExtra } from '../../lib/logger';
+
+const paginationLogger = setupLogger('FinaticClientSDK.Pagination', undefined, {
+  codebase: 'FinaticClientSDK',
+});
+
+const buildPaginationExtra = (functionName: string, metadata?: Record<string, unknown>): LoggerExtra => ({
+  module: 'PaginatedResult',
+  function: functionName,
+  ...(metadata ? buildLoggerExtra(metadata) : {}),
+});
+
 export interface ApiPaginationInfo {
   has_more: boolean;
   next_offset: number;
@@ -62,7 +74,10 @@ export class PaginatedResult<T> {
     try {
       return await this.navigationCallback(this.metadata.nextOffset, this.metadata.limit);
     } catch (error) {
-      console.error('Error fetching next page:', error);
+      paginationLogger.exception('Error fetching next page', error, buildPaginationExtra('nextPage', {
+        next_offset: this.metadata.nextOffset,
+        limit: this.metadata.limit,
+      }));
       return null;
     }
   }
@@ -76,7 +91,10 @@ export class PaginatedResult<T> {
     try {
       return await this.navigationCallback(previousOffset, this.metadata.limit);
     } catch (error) {
-      console.error('Error fetching previous page:', error);
+      paginationLogger.exception('Error fetching previous page', error, buildPaginationExtra('previousPage', {
+        previous_offset: previousOffset,
+        limit: this.metadata.limit,
+      }));
       return null;
     }
   }
@@ -90,7 +108,11 @@ export class PaginatedResult<T> {
     try {
       return await this.navigationCallback(offset, this.metadata.limit);
     } catch (error) {
-      console.error('Error fetching page:', pageNumber, error);
+      paginationLogger.exception('Error fetching page', error, buildPaginationExtra('goToPage', {
+        page_number: pageNumber,
+        offset,
+        limit: this.metadata.limit,
+      }));
       return null;
     }
   }
@@ -103,7 +125,9 @@ export class PaginatedResult<T> {
     try {
       return await this.navigationCallback(0, this.metadata.limit);
     } catch (error) {
-      console.error('Error fetching first page:', error);
+      paginationLogger.exception('Error fetching first page', error, buildPaginationExtra('firstPage', {
+        limit: this.metadata.limit,
+      }));
       return null;
     }
   }
@@ -127,7 +151,9 @@ export class PaginatedResult<T> {
     try {
       return await findLast(this);
     } catch (error) {
-      console.error('Error fetching last page:', error);
+      paginationLogger.exception('Error fetching last page', error, buildPaginationExtra('lastPage', {
+        limit: this.metadata.limit,
+      }));
       return null;
     }
   }

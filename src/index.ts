@@ -91,6 +91,7 @@ export { PaginatedResult } from './types/common/pagination';
 export * from './utils/errors';
 export * from './utils/events';
 export * from './utils/themeUtils';
+export * from './lib/logger';
 
 // Theme presets
 export { portalThemePresets } from './themes/portalPresets';
