@@ -1,4 +1,10 @@
+import { setupLogger, buildLoggerExtra } from '../lib/logger';
+
 type EventCallback = (...args: any[]) => void;
+
+const eventsLogger = setupLogger('FinaticClientSDK.Events', undefined, {
+  codebase: 'FinaticClientSDK',
+});
 
 export class EventEmitter {
   private events: Map<string, Set<EventCallback>> = new Map();
@@ -30,7 +36,13 @@ export class EventEmitter {
         try {
           callback(...args);
         } catch (error) {
-          console.error(`Error in event handler for ${event}:`, error);
+          eventsLogger.exception('Error in event handler', error, {
+            module: 'EventEmitter',
+            function: 'emit',
+            ...buildLoggerExtra({
+              event_name: event,
+            }),
+          });
         }
       });
     }
