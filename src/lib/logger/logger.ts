@@ -98,31 +98,10 @@ const resolveDefaultLogLevel = (explicitLevel?: LogLevel): LogLevel => {
     resolveEnv('NX_FINATIC_LOG_LEVEL');
 
   if (envLevel) {
-    return parseLogLevel(envLevel, 'debug');
+    return parseLogLevel(envLevel, 'silent');
   }
 
-  const isProd = (() => {
-    try {
-      if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'production') {
-        return true;
-      }
-    } catch {
-      // ignore
-    }
-
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (typeof import.meta !== 'undefined' && (import.meta as any).env?.PROD) {
-        return true;
-      }
-    } catch {
-      // ignore
-    }
-
-    return false;
-  })();
-
-  return isProd ? 'error' : 'debug';
+  return 'silent';
 };
 
 const resolveVerbosity = (): LogVerbosity => {
