@@ -1127,7 +1127,7 @@ export class ApiClient {
       case 'robinhood':
         return {
           ...extras,
-          extendedHours: extras?.extendedHours ?? extras?.extended_hours ?? true,
+          extendedHours: extras?.extendedHours ?? extras?.extended_hours ?? false,
           marketHours: extras?.marketHours ?? extras?.market_hours ?? 'regular_hours',
           trailType: extras?.trailType ?? extras?.trail_type ?? 'percentage',
         };
