@@ -336,7 +336,7 @@ export function EnvironmentSettings() {
       )}
 
       {/* Environment Variables */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {isReloading && (
           <div className="col-span-full flex items-center justify-center p-4 bg-muted/20 rounded-lg border border-border">
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -350,13 +350,15 @@ export function EnvironmentSettings() {
             <CardHeader>
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-start gap-2 mb-2">
                     {envVar.isPassword ? (
-                      <Key className="w-5 h-5 text-foreground flex-shrink-0" />
+                      <Key className="w-5 h-5 text-foreground flex-shrink-0 mt-0.5" />
                     ) : (
-                      <Globe className="w-5 h-5 text-foreground flex-shrink-0" />
+                      <Globe className="w-5 h-5 text-foreground flex-shrink-0 mt-0.5" />
                     )}
-                    <CardTitle className="text-lg text-foreground truncate">{envVar.key}</CardTitle>
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="text-lg text-foreground break-all">{envVar.key}</CardTitle>
+                    </div>
                   </div>
                     <div className="flex items-center gap-2 flex-wrap">
                       {envVar.isPublic && (

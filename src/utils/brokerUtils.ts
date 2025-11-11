@@ -2,6 +2,18 @@
  * Broker filtering utility functions
  */
 
+import { setupLogger, buildLoggerExtra, LoggerExtra } from '../lib/logger';
+
+const brokerLogger = setupLogger('FinaticClientSDK.BrokerUtils', undefined, {
+  codebase: 'FinaticClientSDK',
+});
+
+const buildBrokerExtra = (functionName: string, metadata?: Record<string, unknown>): LoggerExtra => ({
+  module: 'BrokerUtils',
+  function: functionName,
+  ...(metadata ? buildLoggerExtra(metadata) : {}),
+});
+
 // Supported broker names and their corresponding IDs (including aliases)
 const SUPPORTED_BROKERS: Record<string, string> = {
   'alpaca': 'alpaca',
@@ -52,7 +64,11 @@ export function appendBrokerFilterToURL(baseUrl: string, brokerNames?: string[])
     const { brokerIds, warnings } = convertBrokerNamesToIds(brokerNames);
 
     // Log warnings for unsupported broker names
-    warnings.forEach(warning => console.warn(`[FinaticConnect] ${warning}`));
+    warnings.forEach(warning =>
+      brokerLogger.warn('Unsupported broker name provided', buildBrokerExtra('appendBrokerFilterToURL', {
+        warning,
+      })),
+    );
 
     // Only add broker filter if we have valid broker IDs
     if (brokerIds.length > 0) {
@@ -62,7 +78,10 @@ export function appendBrokerFilterToURL(baseUrl: string, brokerNames?: string[])
 
     return url.toString();
   } catch (error) {
-    console.error('Failed to append broker filter to URL:', error);
+    brokerLogger.exception('Failed to append broker filter to URL', error, buildBrokerExtra('appendBrokerFilterToURL', {
+      base_url: baseUrl,
+      brokers_count: brokerNames?.length ?? 0,
+    }));
     return baseUrl;
   }
 }

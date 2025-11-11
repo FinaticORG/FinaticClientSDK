@@ -47,6 +47,11 @@ import {
   OrderValidationError,
 } from '../utils/errors';
 import { MockDataProvider, MockConfig } from './MockDataProvider';
+import { setupLogger, buildLoggerExtra, LoggerExtra } from '../lib/logger';
+
+const mockApiLogger = setupLogger('FinaticClientSDK.MockApiClient', undefined, {
+  codebase: 'FinaticClientSDK',
+});
 
 /**
  * Mock API Client that implements the same interface as the real ApiClient
@@ -71,6 +76,15 @@ export class MockApiClient {
   // Mock data provider
   private mockDataProvider: MockDataProvider;
   private readonly mockApiOnly: boolean;
+  private readonly logger = mockApiLogger;
+
+  private buildLoggerExtra(functionName: string, metadata?: Record<string, unknown>): LoggerExtra {
+    return {
+      module: 'MockApiClient',
+      function: functionName,
+      ...(metadata ? buildLoggerExtra(metadata) : {}),
+    };
+  }
 
   constructor(baseUrl: string, deviceInfo?: DeviceInfo, mockConfig?: MockConfig) {
     this.baseUrl = baseUrl;
@@ -80,9 +94,13 @@ export class MockApiClient {
 
     // Log that mocks are being used
     if (this.mockApiOnly) {
-      console.log('🔧 Finatic SDK: Using MOCK API Client (API only - real portal)');
+      this.logger.info('Using mock API client (API only, real portal)', this.buildLoggerExtra('constructor', {
+        mock_api_only: true,
+      }));
     } else {
-      console.log('🔧 Finatic SDK: Using MOCK API Client');
+      this.logger.info('Using mock API client', this.buildLoggerExtra('constructor', {
+        mock_api_only: false,
+      }));
     }
   }
 
@@ -339,14 +357,12 @@ export class MockApiClient {
     const accessToken = await this.getValidAccessToken();
 
     // Debug logging
-    console.log('MockApiClient.placeBrokerOrder Debug:', {
-      params,
-      tradingContext: this.tradingContext,
-      paramsBroker: params.broker,
-      contextBroker: this.tradingContext.broker,
-      paramsAccountNumber: params.accountNumber,
-      contextAccountNumber: this.tradingContext.accountNumber,
-    });
+    this.logger.debug('placeBrokerOrder parameters', this.buildLoggerExtra('placeBrokerOrder', {
+      has_params_broker: Boolean(params.broker),
+      has_context_broker: Boolean(this.tradingContext.broker),
+      has_params_account: Boolean(params.accountNumber),
+      has_context_account: Boolean(this.tradingContext.accountNumber),
+    }));
 
     const fullParams: BrokerOrderParams = {
       broker:
@@ -374,7 +390,13 @@ export class MockApiClient {
       order_id: params.order_id,
     };
 
-    console.log('MockApiClient.placeBrokerOrder Debug - Final params:', fullParams);
+    this.logger.debug('placeBrokerOrder normalized parameters', this.buildLoggerExtra('placeBrokerOrder', {
+      broker: fullParams.broker,
+      account_number_present: Boolean(fullParams.accountNumber),
+      symbol: fullParams.symbol,
+      order_type: fullParams.orderType,
+      asset_type: fullParams.assetType,
+    }));
     return this.mockDataProvider.mockPlaceOrder(fullParams);
   }
 
@@ -427,14 +449,18 @@ export class MockApiClient {
   }
 
   setAccount(accountNumber: string, accountId?: string): void {
-    console.log('MockApiClient.setAccount Debug:', {
-      accountNumber,
-      accountId,
-      previousContext: { ...this.tradingContext },
-    });
+    this.logger.debug('setAccount invoked', this.buildLoggerExtra('setAccount', {
+      account_number: accountNumber,
+      account_id_present: Boolean(accountId),
+      had_existing_account: Boolean(this.tradingContext.accountNumber),
+    }));
     this.tradingContext.accountNumber = accountNumber;
     this.tradingContext.accountId = accountId;
-    console.log('MockApiClient.setAccount Debug - Updated context:', this.tradingContext);
+    this.logger.debug('setAccount updated context', this.buildLoggerExtra('setAccount', {
+      broker: this.tradingContext.broker,
+      account_number_present: Boolean(this.tradingContext.accountNumber),
+      account_id_present: Boolean(this.tradingContext.accountId),
+    }));
   }
 
 
