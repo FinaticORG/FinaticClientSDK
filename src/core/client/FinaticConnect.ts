@@ -685,14 +685,9 @@ export class FinaticConnect extends EventEmitter {
   /**
    * Cancel a broker order
    * @param orderId - The order ID to cancel
-   * @param broker - Optional broker override
-   * @param connection_id - Optional connection ID for testing bypass
+   * The backend will infer broker, account, and connection from the order record
    */
-  public async cancelOrder(
-    orderId: string,
-    broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader',
-    connection_id?: string
-  ): Promise<OrderResponse> {
+  public async cancelOrder(orderId: string): Promise<OrderResponse> {
     if (!(await this.isAuthenticated())) {
       throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
     }
@@ -701,7 +696,8 @@ export class FinaticConnect extends EventEmitter {
     }
 
     try {
-      return await this.apiClient.cancelBrokerOrder(orderId, broker, {}, connection_id);
+      // New endpoint only requires order_id - backend infers everything else
+      return await this.apiClient.cancelBrokerOrder(orderId);
     } catch (error) {
       this.emit('error', error as Error);
       throw error;

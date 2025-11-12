@@ -434,8 +434,12 @@ export class ClientSdkAdapter implements SdkAdapter {
     return await this.client.placeOrder(order);
   }
 
-  async cancelOrder(orderId: string): Promise<any> {
-    return await this.client.cancelOrder(orderId);
+  async cancelOrder(orderId: string | { orderId: string }): Promise<any> {
+    // Accept either string orderId or object with orderId property for backward compatibility
+    const orderIdString = typeof orderId === 'string' ? orderId : orderId.orderId;
+
+    // New endpoint only requires order_id - backend infers everything else
+    return await this.client.cancelOrder(orderIdString);
   }
 
   async modifyOrder(orderId: string, modifications: any): Promise<any> {

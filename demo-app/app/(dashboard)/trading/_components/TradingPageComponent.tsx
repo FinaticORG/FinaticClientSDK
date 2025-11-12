@@ -392,22 +392,8 @@ export function TradingPageComponent() {
       addLog('error', 'SDK not initialized');
       return;
     }
-    if (!selectedBroker) {
-      addLog('error', 'Select a broker first');
-      return;
-    }
-    if (!selectedAccountId) {
-      addLog('error', 'Select an account first');
-      return;
-    }
     if (!cancelOrderId) {
       addLog('error', 'Enter an order ID to cancel');
-      return;
-    }
-
-    // In live mode, verify broker is connected
-    if (!isMockMode && !isBrokerConnected) {
-      addLog('error', 'Broker must be connected to cancel orders in live mode');
       return;
     }
 
@@ -415,20 +401,11 @@ export function TradingPageComponent() {
     setCancelResponse(null);
 
     try {
-      const accountNumber =
-        selectedAccount?.broker_provided_account_id ||
-        selectedAccount?.account_id ||
-        selectedAccountId;
-
-      const cancelPayload: any = {
-        broker: selectedBroker,
-        orderId: cancelOrderId,
-        accountNumber: accountNumber,
-      };
-
+      // New endpoint only requires order_id as path parameter
+      // Backend infers broker, account, and connection from the order record
       let response;
       if (sdkAdapter?.cancelOrder) {
-        response = await sdkAdapter.cancelOrder(cancelPayload);
+        response = await sdkAdapter.cancelOrder(cancelOrderId);
       } else {
         throw new Error('Cancel order not available');
       }
@@ -443,6 +420,20 @@ export function TradingPageComponent() {
       setCancellingOrder(false);
     }
   };
+
+  // Build the URL preview for cancel order
+  const cancelOrderUrlPreview = useMemo(() => {
+    if (!cancelOrderId) return null;
+
+    // New endpoint only requires order_id as path parameter
+    // Backend infers broker, account, and connection from the order record
+    return {
+      method: 'DELETE',
+      url: `/api/v1/brokers/orders/${cancelOrderId}`,
+      body: null,
+      queryParams: null,
+    };
+  }, [cancelOrderId]);
 
   // Build the payload for modify order (for preview)
   const modifyOrderPayloadPreview = useMemo(() => {
@@ -960,141 +951,85 @@ export function TradingPageComponent() {
 
               {/* Cancel Order Tab */}
               <TabsContent value="cancel" className="space-y-6">
-                {/* Broker and Account Selection */}
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label className="text-foreground">Broker</Label>
-                    <Select value={selectedBroker} onValueChange={setSelectedBroker}>
-                      <SelectTrigger className="bg-input border-border text-foreground">
-                        <SelectValue placeholder="Select a broker" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {brokers.map((b: any) => (
-                          <SelectItem key={b.id} value={b.id}>
-                            {b.display_name || b.name || b.id}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {selectedBroker && (
-                      <div className="flex items-center gap-2">
-                        {!isMockMode && isBrokerConnected && (
-                          <span className="text-xs text-green-600 dark:text-green-400 font-medium">
-                            Connected
-                          </span>
-                        )}
-                        {!isMockMode && !isBrokerConnected && (
-                          <span className="text-xs text-yellow-600 dark:text-yellow-400">
-                            Not connected. Connect it first to cancel orders in live mode.
-                          </span>
-                        )}
-                      </div>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <Label className="text-foreground">Order ID</Label>
+                      <Input
+                        className="bg-input border-border text-foreground"
+                        value={cancelOrderId}
+                        onChange={e => setCancelOrderId(e.target.value)}
+                        placeholder="Enter order ID to cancel"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Enter the broker-provided order ID that you want to cancel. The backend will automatically
+                        infer the broker, account, and connection from the order record.
+                      </p>
+                    </div>
+
+                    {/* URL Preview */}
+                    {cancelOrderUrlPreview && (
+                      <details className="rounded-md border border-border/60 bg-muted/10">
+                        <summary className="cursor-pointer px-3 py-2 text-sm font-medium text-foreground hover:bg-muted/20">
+                          View Request Details
+                        </summary>
+                        <div className="border-t border-border/60 p-3">
+                          <div className="space-y-2">
+                            <div>
+                              <span className="text-xs font-semibold text-foreground">Method: </span>
+                              <span className="text-xs text-foreground font-mono">{cancelOrderUrlPreview.method}</span>
+                            </div>
+                            <div>
+                              <span className="text-xs font-semibold text-foreground">URL: </span>
+                              <span className="text-xs text-foreground font-mono break-all">
+                                {cancelOrderUrlPreview.url}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-xs font-semibold text-foreground">Body: </span>
+                              <span className="text-xs text-muted-foreground font-mono">null</span>
+                            </div>
+                            <div>
+                              <span className="text-xs font-semibold text-foreground">Query Params: </span>
+                              <span className="text-xs text-muted-foreground font-mono">null</span>
+                            </div>
+                          </div>
+                        </div>
+                      </details>
                     )}
+
+                    <div className="flex gap-2 pt-4">
+                      <Button
+                        onClick={cancelOrder}
+                        disabled={!cancelOrderId || cancellingOrder}
+                        variant="destructive"
+                        className="h-9 px-4"
+                      >
+                        {cancellingOrder ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Cancelling...
+                          </>
+                        ) : (
+                          <>Cancel Order</>
+                        )}
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-foreground">Account</Label>
-                    <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
-                      <SelectTrigger className="bg-input border-border text-foreground">
-                        <SelectValue
-                          placeholder={
-                            availableAccounts.length
-                              ? 'Select an account'
-                              : selectedBroker
-                                ? 'No accounts available'
-                                : 'Select broker first'
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableAccounts.map((a: any) => {
-                          const accountId = String(
-                            a.broker_provided_account_id || a.account_id || ''
-                          );
-                          const accountName =
-                            a.account_name ||
-                            a.broker_provided_account_id ||
-                            a.account_id ||
-                            'Unknown Account';
-                          return (
-                            <SelectItem key={accountId} value={accountId}>
-                              {accountName}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                    {selectedAccount && (
-                      <p className="text-xs text-muted-foreground">
-                        Account ID: {selectedAccount.broker_provided_account_id || selectedAccount.account_id}
-                      </p>
-                    )}
+                    <Label className="text-foreground">Response</Label>
+                    <div className="rounded-md border border-border/60 bg-muted/10 p-3 max-h-96 overflow-auto text-xs text-foreground">
+                      {cancelResponse ? (
+                        <pre className="whitespace-pre-wrap break-words font-mono">
+                          {JSON.stringify(cancelResponse, null, 2)}
+                        </pre>
+                      ) : (
+                        <div className="text-muted-foreground">No response yet.</div>
+                      )}
+                    </div>
                   </div>
                 </div>
-
-                {selectedBroker && availableAccounts.length === 0 && !isMockMode && (
-                  <div className="rounded-md border border-yellow-500/20 bg-yellow-500/10 p-3">
-                    <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                      No accounts available for this broker. Make sure the broker is connected and has active accounts.
-                    </p>
-                  </div>
-                )}
-
-                {selectedBroker && availableAccounts.length > 0 && (
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <div className="space-y-3">
-                      <div className="space-y-2">
-                        <Label className="text-foreground">Order ID</Label>
-                        <Input
-                          className="bg-input border-border text-foreground"
-                          value={cancelOrderId}
-                          onChange={e => setCancelOrderId(e.target.value)}
-                          placeholder="Enter order ID to cancel"
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Enter the broker-provided order ID that you want to cancel
-                        </p>
-                      </div>
-
-                      <div className="flex gap-2 pt-4">
-                        <Button
-                          onClick={cancelOrder}
-                          disabled={
-                            !selectedBroker ||
-                            !selectedAccountId ||
-                            !cancelOrderId ||
-                            cancellingOrder ||
-                            (!isMockMode && !isBrokerConnected)
-                          }
-                          variant="destructive"
-                          className="h-9 px-4"
-                        >
-                          {cancellingOrder ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Cancelling...
-                            </>
-                          ) : (
-                            <>Cancel Order</>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-foreground">Response</Label>
-                      <div className="rounded-md border border-border/60 bg-muted/10 p-3 max-h-96 overflow-auto text-xs text-foreground">
-                        {cancelResponse ? (
-                          <pre className="whitespace-pre-wrap break-words font-mono">
-                            {JSON.stringify(cancelResponse, null, 2)}
-                          </pre>
-                        ) : (
-                          <div className="text-muted-foreground">No response yet.</div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
               </TabsContent>
 
               {/* Modify Order Tab */}

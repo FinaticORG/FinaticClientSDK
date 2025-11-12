@@ -712,45 +712,11 @@ export class ApiClient {
     });
   }
 
-  async cancelBrokerOrder(
-    orderId: string,
-    broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader',
-    extras: any = {},
-    connection_id?: string
-  ): Promise<OrderResponse> {
+  async cancelBrokerOrder(orderId: string): Promise<OrderResponse> {
     const accessToken = await this.getValidAccessToken();
 
-    const selectedBroker = broker || this.tradingContext.broker;
-    if (!selectedBroker) {
-      throw new Error('Broker not set. Call setBroker() or pass broker parameter.');
-    }
-
-    const accountNumber = this.tradingContext.accountNumber;
-
-    // Build query parameters as required by API documentation
-    const queryParams: Record<string, string> = {};
-
-    // Add optional parameters if available
-    if (accountNumber) {
-      queryParams.account_number = accountNumber.toString();
-    }
-    if (connection_id) {
-      queryParams.connection_id = connection_id;
-    }
-
-    // Build optional request body if extras are provided
-    let body: any = undefined;
-    if (Object.keys(extras).length > 0) {
-      body = {
-        broker: selectedBroker,
-        order: {
-          order_id: orderId,
-          account_number: accountNumber,
-          ...extras,
-        },
-      };
-    }
-
+    // New endpoint only requires order_id as path parameter
+    // Backend infers broker, account, and connection from the order record
     return this.request<OrderResponse>(`/brokers/orders/${orderId}`, {
       method: 'DELETE',
       headers: {
@@ -759,8 +725,7 @@ export class ApiClient {
         'X-Session-ID': this.currentSessionId || '',
         'X-Device-Info': JSON.stringify(this.deviceInfo),
       },
-      body,
-      params: queryParams,
+      // No body, no query params - just order_id in path
     });
   }
 
