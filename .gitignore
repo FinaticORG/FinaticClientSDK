@@ -117,3 +117,4 @@ temp/
 .local
 demo-app/.yarn/
 .yarn/install-state.gz
+.yarn/releases/yarn-4.11.0.cjs
