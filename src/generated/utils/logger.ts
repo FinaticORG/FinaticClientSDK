@@ -37,7 +37,8 @@ export function getLogger(config?: SdkConfig): Logger {
           return { level: label };
         },
       },
-      timestamp: pino.stdTimeFunctions.isoTime,
+      // Use default timestamp - pino will handle it automatically
+      timestamp: true,
     }),
   };
   

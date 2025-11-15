@@ -79,8 +79,10 @@ export class MarketDataWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('GET', '/api/v1/market-data/futures/historical', { symbol, startDate, endDate, expiration, provider }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -125,10 +127,15 @@ export class MarketDataWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/market-data/futures/historical', { symbol, startDate, endDate, expiration, provider }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -137,7 +144,7 @@ export class MarketDataWrapper {
         action: 'getFuturesHistorical'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)

@@ -69,25 +69,86 @@ export class FinaticConnect extends EventEmitter {
     userId?: string,
     options?: { baseUrl?: string; sdkConfig?: Partial<SdkConfig> }
   ): Promise<FinaticConnect> {
-    // Clear instance if it exists but has no valid session (Safari compatibility)
-    if (FinaticConnect.instance && !FinaticConnect.instance.sessionId) {
-      FinaticConnect.instance = null;
+    // Get logger - try to use SDK logger, fallback to console
+    let logger: any;
+    try {
+      const { getLogger } = require('./utils/logger');
+      logger = getLogger(options?.sdkConfig as SdkConfig | undefined);
+    } catch {
+      // Fallback logger for browser environments where pino might not work correctly
+      logger = console;
     }
+    
+    logger.debug?.('FinaticConnect.init() called', {
+      token: token ? `${token.substring(0, 20)}...` : 'missing',
+      userId,
+      hasOptions: !!options,
+    });
 
-    if (!FinaticConnect.instance) {
-      const connectOptions: FinaticConnectOptions = {
-        token,
-        baseUrl: options?.baseUrl || 'https://api.finatic.dev',
-        ...(options?.sdkConfig ? { sdkConfig: options.sdkConfig } : {}),
-      };
+    try {
+      // Access private instance via type assertion to base class
+      const baseClass = FinaticConnect as any;
+      
+      // Clear instance if it exists but has no valid session (Safari compatibility)
+      if (baseClass.instance && !baseClass.instance.sessionId) {
+        logger.debug?.('Clearing existing instance without sessionId');
+        baseClass.instance = null;
+      }
 
-      FinaticConnect.instance = new FinaticConnect(connectOptions);
+      let instance: FinaticConnect;
 
-      // Start session with the token
-      await FinaticConnect.instance.startSession(token, userId);
+      if (!baseClass.instance) {
+        logger.debug?.('Creating new FinaticConnect instance');
+        const connectOptions: FinaticConnectOptions = {
+          token,
+          baseUrl: options?.baseUrl || 'https://api.finatic.dev',
+          ...(options?.sdkConfig ? { sdkConfig: options.sdkConfig } : {}),
+        };
+
+        instance = new FinaticConnect(connectOptions);
+        baseClass.instance = instance;
+
+        // CRITICAL: Start session with the token - this should make the network call
+        logger.debug?.('Calling startSession() inside init()');
+        await instance.startSession(token, userId);
+        logger.debug?.('startSession() completed in init()');
+      } else {
+        logger.debug?.('Using existing FinaticConnect instance');
+        instance = baseClass.instance as FinaticConnect;
+      }
+
+      // Verify session was initialized correctly
+      const sessionId = instance.getSessionId();
+      if (!sessionId) {
+        const error = new Error(
+          'Session initialization failed: startSession() did not return a session_id. ' +
+          'Please check that the API endpoint returned a valid session response. ' +
+          'The network call to /api/v1/session/start may have failed or returned an invalid response.'
+        );
+        logger.error?.('FinaticConnect.init() failed - no sessionId', error, {});
+        throw error;
+      }
+
+      logger.debug?.('FinaticConnect.init() completed successfully', { sessionId });
+      return instance;
+    } catch (error) {
+      // Re-throw with more context if it's a session initialization error
+      if (error instanceof Error) {
+        if (error.message.includes('Session not initialized')) {
+          const enhancedError = new Error(
+            `Failed to initialize Finatic session: ${error.message}. ` +
+            'This may indicate that startSession() was called but did not successfully create a session. ' +
+            'Please check the API response and ensure the one-time token is valid.'
+          );
+          logger.error?.('FinaticConnect.init() session initialization error', enhancedError, {});
+          throw enhancedError;
+        }
+        logger.error?.('FinaticConnect.init() error', error, {});
+      }
+      
+      // Re-throw other errors as-is
+      throw error;
     }
-
-    return FinaticConnect.instance;
   }
 
   /**
@@ -329,10 +390,21 @@ export class FinaticConnect extends EventEmitter {
     const limit = 100;
     
     while (true) {
-      const result = await this.brokers.getAccounts(undefined, undefined, undefined, undefined, undefined, limit, offset);
-      if (!result || result.length === 0) break;
-      allData.push(...result);
-      if (result.length < limit) break;
+      const result = await this.brokers.getAccounts(
+        filter?.brokerId,
+        filter?.connectionId,
+        filter?.accountType,
+        filter?.status,
+        filter?.currency,
+        limit,
+        offset,
+        filter?.withMetadata
+      );
+      // Ensure result is an array
+      const dataArray = Array.isArray(result) ? result : [];
+      if (!dataArray || dataArray.length === 0) break;
+      allData.push(...dataArray);
+      if (dataArray.length < limit) break;
       offset += limit;
     }
     
@@ -348,10 +420,25 @@ export class FinaticConnect extends EventEmitter {
     const limit = 100;
     
     while (true) {
-      const result = await this.brokers.getOrders(undefined, undefined, undefined, filter?.symbol, filter?.orderStatus, filter?.side, filter?.assetType, limit, offset);
-      if (!result || result.length === 0) break;
-      allData.push(...result);
-      if (result.length < limit) break;
+      const result = await this.brokers.getOrders(
+        filter?.brokerId,
+        filter?.connectionId,
+        filter?.accountId,
+        filter?.symbol,
+        filter?.orderStatus,
+        filter?.side,
+        filter?.assetType,
+        limit,
+        offset,
+        filter?.createdAfter,
+        filter?.createdBefore,
+        filter?.withMetadata
+      );
+      // Ensure result is an array
+      const dataArray = Array.isArray(result) ? result : [];
+      if (!dataArray || dataArray.length === 0) break;
+      allData.push(...dataArray);
+      if (dataArray.length < limit) break;
       offset += limit;
     }
     
@@ -367,10 +454,25 @@ export class FinaticConnect extends EventEmitter {
     const limit = 100;
     
     while (true) {
-      const result = await this.brokers.getPositions(undefined, undefined, undefined, filter?.symbol, filter?.side, filter?.assetType, filter?.positionStatus, limit, offset);
-      if (!result || result.length === 0) break;
-      allData.push(...result);
-      if (result.length < limit) break;
+      const result = await this.brokers.getPositions(
+        filter?.brokerId,
+        filter?.connectionId,
+        filter?.accountId,
+        filter?.symbol,
+        filter?.side,
+        filter?.assetType,
+        filter?.positionStatus,
+        limit,
+        offset,
+        filter?.updatedAfter,
+        filter?.updatedBefore,
+        filter?.withMetadata
+      );
+      // Ensure result is an array
+      const dataArray = Array.isArray(result) ? result : [];
+      if (!dataArray || dataArray.length === 0) break;
+      allData.push(...dataArray);
+      if (dataArray.length < limit) break;
       offset += limit;
     }
     
@@ -386,10 +488,22 @@ export class FinaticConnect extends EventEmitter {
     const limit = 100;
     
     while (true) {
-      const result = await this.brokers.getBalances(undefined, undefined, undefined, filter?.isEndOfDaySnapshot, limit, offset);
-      if (!result || result.length === 0) break;
-      allData.push(...result);
-      if (result.length < limit) break;
+      const result = await this.brokers.getBalances(
+        filter?.brokerId,
+        filter?.connectionId,
+        filter?.accountId,
+        filter?.isEndOfDaySnapshot,
+        limit,
+        offset,
+        filter?.balanceCreatedAfter,
+        filter?.balanceCreatedBefore,
+        filter?.withMetadata
+      );
+      // Ensure result is an array
+      const dataArray = Array.isArray(result) ? result : [];
+      if (!dataArray || dataArray.length === 0) break;
+      allData.push(...dataArray);
+      if (dataArray.length < limit) break;
       offset += limit;
     }
     

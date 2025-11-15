@@ -90,8 +90,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('GET', '/api/v1/brokers/', {  }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -131,10 +133,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/', {  }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -143,7 +150,7 @@ export class BrokersWrapper {
         action: 'getBrokers'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -196,8 +203,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('POST', '/api/v1/brokers/connect', { body }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -221,7 +230,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.connectBrokerApiV1BrokersConnectPost({ brokerConnectionRequest: body,  }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.connectBrokerApiV1BrokersConnectPost({ brokerConnectionRequest: body,  }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -238,10 +247,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('POST', '/api/v1/brokers/connect', { body }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -250,7 +264,7 @@ export class BrokersWrapper {
         action: 'connectBroker'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -300,8 +314,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('GET', '/api/v1/brokers/connections', {  }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -324,7 +340,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.listBrokerConnectionsApiV1BrokersConnectionsGet({ headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.listBrokerConnectionsApiV1BrokersConnectionsGet({ headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -341,10 +357,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/connections', {  }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -353,7 +374,7 @@ export class BrokersWrapper {
         action: 'listBrokerConnections'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -400,8 +421,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('PUT', '/api/v1/brokers/connections/{connection_id}', { connectionId, body }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -426,7 +449,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.updateConnectionApiV1BrokersConnectionsConnectionIdPut({ connectionId: connectionId, brokerConnectionUpdateRequest: body,  }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.updateConnectionApiV1BrokersConnectionsConnectionIdPut({ connectionId: connectionId, brokerConnectionUpdateRequest: body,  }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -443,10 +466,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('PUT', '/api/v1/brokers/connections/{connection_id}', { connectionId, body }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -455,7 +483,7 @@ export class BrokersWrapper {
         action: 'updateConnection'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -502,8 +530,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/connections/{connection_id}', { connectionId }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -527,7 +557,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.deleteConnectionApiV1BrokersConnectionsConnectionIdDelete({ connectionId: connectionId,  }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.deleteConnectionApiV1BrokersConnectionsConnectionIdDelete({ connectionId: connectionId,  }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -544,10 +574,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/connections/{connection_id}', { connectionId }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -556,7 +591,7 @@ export class BrokersWrapper {
         action: 'deleteConnection'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -603,8 +638,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/disconnect/{connection_id}', { connectionId }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -645,10 +682,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/disconnect/{connection_id}', { connectionId }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -657,7 +699,7 @@ export class BrokersWrapper {
         action: 'disconnectBroker'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -707,8 +749,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/disconnect-company/{connection_id}', { connectionId }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -749,10 +793,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/disconnect-company/{connection_id}', { connectionId }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -761,7 +810,7 @@ export class BrokersWrapper {
         action: 'disconnectCompanyFromBroker'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -811,8 +860,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders', { brokerId, connectionId, accountId, symbol, orderStatus, side, assetType, limit, offset, createdAfter, createdBefore, withMetadata }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -847,7 +898,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.getOrdersApiV1BrokersDataOrdersGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(orderStatus !== undefined ? { orderStatus: orderStatus } : {}), ...(side !== undefined ? { side: side } : {}), ...(assetType !== undefined ? { assetType: assetType } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(createdAfter !== undefined ? { createdAfter: createdAfter } : {}), ...(createdBefore !== undefined ? { createdBefore: createdBefore } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getOrdersApiV1BrokersDataOrdersGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(orderStatus !== undefined ? { orderStatus: orderStatus } : {}), ...(side !== undefined ? { side: side } : {}), ...(assetType !== undefined ? { assetType: assetType } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(createdAfter !== undefined ? { createdAfter: createdAfter } : {}), ...(createdBefore !== undefined ? { createdBefore: createdBefore } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -864,10 +915,68 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      // Transform to metadata structure if withMetadata is true
+      let finalResult = result;
+      if (withMetadata === true) {
+        // If result has response_data (snake_case from API), transform it
+        if (result && typeof result === 'object' && 'response_data' in result) {
+          const dataArray = Array.isArray(result.response_data) ? result.response_data : [];
+          const metadata: any = {};
+          
+          // Extract pagination if present
+          if (result.pagination && typeof result.pagination === 'object') {
+            metadata.pagination = result.pagination;
+            if (result.pagination.has_more !== undefined) {
+              metadata.has_more = result.pagination.has_more;
+            }
+          }
+          
+          // Extract warnings if present
+          if (result.warnings && Array.isArray(result.warnings)) {
+            metadata.warnings = result.warnings;
+          }
+          
+          // Extract errors if present
+          if (result.errors && Array.isArray(result.errors)) {
+            metadata.errors = result.errors;
+          }
+          
+          this.logger.debug('getOrders returning metadata structure from response_data', {
+            data_length: dataArray.length,
+            has_pagination: !!metadata.pagination,
+            has_warnings: !!metadata.warnings,
+            has_errors: !!metadata.errors,
+          });
+          
+          finalResult = { data: dataArray, metadata };
+        } else if (result && typeof result === 'object' && 'data' in result && 'metadata' in result && Array.isArray(result.data)) {
+          // If result already has data and metadata structure, return as-is
+          this.logger.debug('getOrders returning metadata structure from unwrapped result', {
+            data_length: result.data?.length,
+            has_metadata: !!result.metadata,
+          });
+          finalResult = result;
+        } else {
+          // Otherwise, return array (or empty array if not an array)
+          finalResult = Array.isArray(result) ? result : [];
+          this.logger.debug('getOrders returning array (no metadata structure found)', {
+            array_length: finalResult.length,
+            result_type: typeof result,
+            result_keys: result && typeof result === 'object' ? Object.keys(result) : [],
+          });
+        }
+      } else {
+        // If withMetadata is false or undefined, return array (or empty array if not an array)
+        finalResult = Array.isArray(result) ? result : [];
+      }
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders', { brokerId, connectionId, accountId, symbol, orderStatus, side, assetType, limit, offset, createdAfter, createdBefore, withMetadata }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -876,7 +985,7 @@ export class BrokersWrapper {
         action: 'getOrders'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -926,8 +1035,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions', { brokerId, connectionId, accountId, symbol, side, assetType, positionStatus, limit, offset, updatedAfter, updatedBefore, withMetadata }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -962,7 +1073,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.getPositionsApiV1BrokersDataPositionsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(side !== undefined ? { side: side } : {}), ...(assetType !== undefined ? { assetType: assetType } : {}), ...(positionStatus !== undefined ? { positionStatus: positionStatus } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(updatedAfter !== undefined ? { updatedAfter: updatedAfter } : {}), ...(updatedBefore !== undefined ? { updatedBefore: updatedBefore } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getPositionsApiV1BrokersDataPositionsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(side !== undefined ? { side: side } : {}), ...(assetType !== undefined ? { assetType: assetType } : {}), ...(positionStatus !== undefined ? { positionStatus: positionStatus } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(updatedAfter !== undefined ? { updatedAfter: updatedAfter } : {}), ...(updatedBefore !== undefined ? { updatedBefore: updatedBefore } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -979,10 +1090,68 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      // Transform to metadata structure if withMetadata is true
+      let finalResult = result;
+      if (withMetadata === true) {
+        // If result has response_data (snake_case from API), transform it
+        if (result && typeof result === 'object' && 'response_data' in result) {
+          const dataArray = Array.isArray(result.response_data) ? result.response_data : [];
+          const metadata: any = {};
+          
+          // Extract pagination if present
+          if (result.pagination && typeof result.pagination === 'object') {
+            metadata.pagination = result.pagination;
+            if (result.pagination.has_more !== undefined) {
+              metadata.has_more = result.pagination.has_more;
+            }
+          }
+          
+          // Extract warnings if present
+          if (result.warnings && Array.isArray(result.warnings)) {
+            metadata.warnings = result.warnings;
+          }
+          
+          // Extract errors if present
+          if (result.errors && Array.isArray(result.errors)) {
+            metadata.errors = result.errors;
+          }
+          
+          this.logger.debug('getPositions returning metadata structure from response_data', {
+            data_length: dataArray.length,
+            has_pagination: !!metadata.pagination,
+            has_warnings: !!metadata.warnings,
+            has_errors: !!metadata.errors,
+          });
+          
+          finalResult = { data: dataArray, metadata };
+        } else if (result && typeof result === 'object' && 'data' in result && 'metadata' in result && Array.isArray(result.data)) {
+          // If result already has data and metadata structure, return as-is
+          this.logger.debug('getPositions returning metadata structure from unwrapped result', {
+            data_length: result.data?.length,
+            has_metadata: !!result.metadata,
+          });
+          finalResult = result;
+        } else {
+          // Otherwise, return array (or empty array if not an array)
+          finalResult = Array.isArray(result) ? result : [];
+          this.logger.debug('getPositions returning array (no metadata structure found)', {
+            array_length: finalResult.length,
+            result_type: typeof result,
+            result_keys: result && typeof result === 'object' ? Object.keys(result) : [],
+          });
+        }
+      } else {
+        // If withMetadata is false or undefined, return array (or empty array if not an array)
+        finalResult = Array.isArray(result) ? result : [];
+      }
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions', { brokerId, connectionId, accountId, symbol, side, assetType, positionStatus, limit, offset, updatedAfter, updatedBefore, withMetadata }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -991,7 +1160,7 @@ export class BrokersWrapper {
         action: 'getPositions'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -1041,8 +1210,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/balances', { brokerId, connectionId, accountId, isEndOfDaySnapshot, limit, offset, balanceCreatedAfter, balanceCreatedBefore, withMetadata }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -1074,7 +1245,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.getBalancesApiV1BrokersDataBalancesGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(isEndOfDaySnapshot !== undefined ? { isEndOfDaySnapshot: isEndOfDaySnapshot } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(balanceCreatedAfter !== undefined ? { balanceCreatedAfter: balanceCreatedAfter } : {}), ...(balanceCreatedBefore !== undefined ? { balanceCreatedBefore: balanceCreatedBefore } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getBalancesApiV1BrokersDataBalancesGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(isEndOfDaySnapshot !== undefined ? { isEndOfDaySnapshot: isEndOfDaySnapshot } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(balanceCreatedAfter !== undefined ? { balanceCreatedAfter: balanceCreatedAfter } : {}), ...(balanceCreatedBefore !== undefined ? { balanceCreatedBefore: balanceCreatedBefore } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -1091,10 +1262,68 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      // Transform to metadata structure if withMetadata is true
+      let finalResult = result;
+      if (withMetadata === true) {
+        // If result has response_data (snake_case from API), transform it
+        if (result && typeof result === 'object' && 'response_data' in result) {
+          const dataArray = Array.isArray(result.response_data) ? result.response_data : [];
+          const metadata: any = {};
+          
+          // Extract pagination if present
+          if (result.pagination && typeof result.pagination === 'object') {
+            metadata.pagination = result.pagination;
+            if (result.pagination.has_more !== undefined) {
+              metadata.has_more = result.pagination.has_more;
+            }
+          }
+          
+          // Extract warnings if present
+          if (result.warnings && Array.isArray(result.warnings)) {
+            metadata.warnings = result.warnings;
+          }
+          
+          // Extract errors if present
+          if (result.errors && Array.isArray(result.errors)) {
+            metadata.errors = result.errors;
+          }
+          
+          this.logger.debug('getBalances returning metadata structure from response_data', {
+            data_length: dataArray.length,
+            has_pagination: !!metadata.pagination,
+            has_warnings: !!metadata.warnings,
+            has_errors: !!metadata.errors,
+          });
+          
+          finalResult = { data: dataArray, metadata };
+        } else if (result && typeof result === 'object' && 'data' in result && 'metadata' in result && Array.isArray(result.data)) {
+          // If result already has data and metadata structure, return as-is
+          this.logger.debug('getBalances returning metadata structure from unwrapped result', {
+            data_length: result.data?.length,
+            has_metadata: !!result.metadata,
+          });
+          finalResult = result;
+        } else {
+          // Otherwise, return array (or empty array if not an array)
+          finalResult = Array.isArray(result) ? result : [];
+          this.logger.debug('getBalances returning array (no metadata structure found)', {
+            array_length: finalResult.length,
+            result_type: typeof result,
+            result_keys: result && typeof result === 'object' ? Object.keys(result) : [],
+          });
+        }
+      } else {
+        // If withMetadata is false or undefined, return array (or empty array if not an array)
+        finalResult = Array.isArray(result) ? result : [];
+      }
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/balances', { brokerId, connectionId, accountId, isEndOfDaySnapshot, limit, offset, balanceCreatedAfter, balanceCreatedBefore, withMetadata }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -1103,7 +1332,7 @@ export class BrokersWrapper {
         action: 'getBalances'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -1153,8 +1382,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/accounts', { brokerId, connectionId, accountType, status, currency, limit, offset, withMetadata }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -1185,7 +1416,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.getAccountsApiV1BrokersDataAccountsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountType !== undefined ? { accountType: accountType } : {}), ...(status !== undefined ? { status: status } : {}), ...(currency !== undefined ? { currency: currency } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getAccountsApiV1BrokersDataAccountsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountType !== undefined ? { accountType: accountType } : {}), ...(status !== undefined ? { status: status } : {}), ...(currency !== undefined ? { currency: currency } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -1202,10 +1433,68 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      // Transform to metadata structure if withMetadata is true
+      let finalResult = result;
+      if (withMetadata === true) {
+        // If result has response_data (snake_case from API), transform it
+        if (result && typeof result === 'object' && 'response_data' in result) {
+          const dataArray = Array.isArray(result.response_data) ? result.response_data : [];
+          const metadata: any = {};
+          
+          // Extract pagination if present
+          if (result.pagination && typeof result.pagination === 'object') {
+            metadata.pagination = result.pagination;
+            if (result.pagination.has_more !== undefined) {
+              metadata.has_more = result.pagination.has_more;
+            }
+          }
+          
+          // Extract warnings if present
+          if (result.warnings && Array.isArray(result.warnings)) {
+            metadata.warnings = result.warnings;
+          }
+          
+          // Extract errors if present
+          if (result.errors && Array.isArray(result.errors)) {
+            metadata.errors = result.errors;
+          }
+          
+          this.logger.debug('getAccounts returning metadata structure from response_data', {
+            data_length: dataArray.length,
+            has_pagination: !!metadata.pagination,
+            has_warnings: !!metadata.warnings,
+            has_errors: !!metadata.errors,
+          });
+          
+          finalResult = { data: dataArray, metadata };
+        } else if (result && typeof result === 'object' && 'data' in result && 'metadata' in result && Array.isArray(result.data)) {
+          // If result already has data and metadata structure, return as-is
+          this.logger.debug('getAccounts returning metadata structure from unwrapped result', {
+            data_length: result.data?.length,
+            has_metadata: !!result.metadata,
+          });
+          finalResult = result;
+        } else {
+          // Otherwise, return array (or empty array if not an array)
+          finalResult = Array.isArray(result) ? result : [];
+          this.logger.debug('getAccounts returning array (no metadata structure found)', {
+            array_length: finalResult.length,
+            result_type: typeof result,
+            result_keys: result && typeof result === 'object' ? Object.keys(result) : [],
+          });
+        }
+      } else {
+        // If withMetadata is false or undefined, return array (or empty array if not an array)
+        finalResult = Array.isArray(result) ? result : [];
+      }
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/accounts', { brokerId, connectionId, accountType, status, currency, limit, offset, withMetadata }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -1214,7 +1503,7 @@ export class BrokersWrapper {
         action: 'getAccounts'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -1263,8 +1552,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/fills', { orderId, connectionId, limit, offset }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -1291,7 +1582,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet({ orderId: orderId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet({ orderId: orderId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -1308,10 +1599,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/fills', { orderId, connectionId, limit, offset }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -1320,7 +1616,7 @@ export class BrokersWrapper {
         action: 'getOrderFills'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -1369,8 +1665,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/events', { orderId, connectionId, limit, offset }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -1397,7 +1695,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet({ orderId: orderId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet({ orderId: orderId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -1414,10 +1712,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/events', { orderId, connectionId, limit, offset }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -1426,7 +1729,7 @@ export class BrokersWrapper {
         action: 'getOrderEvents'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -1475,8 +1778,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/groups', { brokerId, connectionId, limit, offset, createdAfter, createdBefore }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -1505,7 +1810,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.getOrderGroupsApiV1BrokersDataOrdersGroupsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(createdAfter !== undefined ? { createdAfter: createdAfter } : {}), ...(createdBefore !== undefined ? { createdBefore: createdBefore } : {}) }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getOrderGroupsApiV1BrokersDataOrdersGroupsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(createdAfter !== undefined ? { createdAfter: createdAfter } : {}), ...(createdBefore !== undefined ? { createdBefore: createdBefore } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -1522,10 +1827,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/groups', { brokerId, connectionId, limit, offset, createdAfter, createdBefore }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -1534,7 +1844,7 @@ export class BrokersWrapper {
         action: 'getOrderGroups'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -1584,8 +1894,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots', { brokerId, connectionId, accountId, symbol, positionId, limit, offset }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -1615,7 +1927,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.getPositionLotsApiV1BrokersDataPositionsLotsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(positionId !== undefined ? { positionId: positionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getPositionLotsApiV1BrokersDataPositionsLotsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(positionId !== undefined ? { positionId: positionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -1632,10 +1944,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots', { brokerId, connectionId, accountId, symbol, positionId, limit, offset }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -1644,7 +1961,7 @@ export class BrokersWrapper {
         action: 'getPositionLots'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -1693,8 +2010,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots/{lot_id}/fills', { lotId, connectionId, limit, offset }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -1721,7 +2040,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet({ lotId: lotId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet({ lotId: lotId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -1738,10 +2057,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots/{lot_id}/fills', { lotId, connectionId, limit, offset }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -1750,7 +2074,7 @@ export class BrokersWrapper {
         action: 'getPositionLotFills'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -1795,8 +2119,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('GET', '/api/v1/brokers/sandbox-callback/{broker_id}', { brokerId }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -1837,10 +2163,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/sandbox-callback/{broker_id}', { brokerId }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -1849,7 +2180,7 @@ export class BrokersWrapper {
         action: 'sandboxCallback'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -1906,8 +2237,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('GET', '/api/v1/brokers/callback/tastytrade', {  }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -1947,10 +2280,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/callback/tastytrade', {  }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -1959,7 +2297,7 @@ export class BrokersWrapper {
         action: 'oauthCallbackTastytrade'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -2018,8 +2356,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('GET', '/api/v1/brokers/callback/{broker_id}', { brokerId }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -2060,10 +2400,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/callback/{broker_id}', { brokerId }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -2072,7 +2417,7 @@ export class BrokersWrapper {
         action: 'oauthCallback'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -2172,8 +2517,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('POST', '/api/v1/brokers/orders', { body, connectionId }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -2198,7 +2545,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.placeOrderApiV1BrokersOrdersPost({ ...(body !== undefined ? { body: body } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}) }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.placeOrderApiV1BrokersOrdersPost({ ...(body !== undefined ? { body: body } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -2215,10 +2562,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('POST', '/api/v1/brokers/orders', { body, connectionId }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -2227,7 +2579,7 @@ export class BrokersWrapper {
         action: 'placeOrder'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -2277,8 +2629,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/orders/{order_id}', { orderId, body, accountNumber, connectionId }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -2305,7 +2659,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.cancelOrderApiV1BrokersOrdersOrderIdDelete({ orderId: orderId, ...(body !== undefined ? { body: body } : {}), ...(accountNumber !== undefined ? { accountNumber: accountNumber } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}) }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.cancelOrderApiV1BrokersOrdersOrderIdDelete({ orderId: orderId, ...(body !== undefined ? { body: body } : {}), ...(accountNumber !== undefined ? { accountNumber: accountNumber } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -2322,10 +2676,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/orders/{order_id}', { orderId, body, accountNumber, connectionId }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -2334,7 +2693,7 @@ export class BrokersWrapper {
         action: 'cancelOrder'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)
@@ -2384,8 +2743,10 @@ export class BrokersWrapper {
     }
 
     // Check cache (Phase 2B: optional caching)
+    // Portal URLs are single-use tokens - must NOT be cached
+    const shouldCache = !false;
     const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled) {
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
       const cacheKey = generateCacheKey('PATCH', '/api/v1/brokers/orders/{order_id}', { orderId, body, accountNumber, connectionId }, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
@@ -2412,7 +2773,7 @@ export class BrokersWrapper {
         async () => {
           // Apply request interceptors (Phase 2B)
           // Public API methods already handle calling the function, so await directly
-          const apiResponse = await this.api.modifyOrderApiV1BrokersOrdersOrderIdPatch({ orderId: orderId, ...(body !== undefined ? { body: body } : {}), ...(accountNumber !== undefined ? { accountNumber: accountNumber } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}) }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.modifyOrderApiV1BrokersOrdersOrderIdPatch({ orderId: orderId, ...(body !== undefined ? { body: body } : {}), ...(accountNumber !== undefined ? { accountNumber: accountNumber } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           // Apply response interceptors (Phase 2B)
           return await applyResponseInterceptors(result, this.sdkConfig);
@@ -2429,10 +2790,15 @@ export class BrokersWrapper {
         ? response.data       // Axios-style wrapper: { data: ... }
         : response;           // Direct response
       
+
+      const finalResult = result;
+      
+
       // Store in cache (Phase 2B)
-      if (cache && this.sdkConfig?.cacheEnabled) {
+      // Portal URLs are single-use tokens - must NOT be cached
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('PATCH', '/api/v1/brokers/orders/{order_id}', { orderId, body, accountNumber, connectionId }, this.sdkConfig);
-        cache.set(cacheKey, result, this.sdkConfig.cacheTtl || 300);
+        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
       }
       
       // Structured logging (Phase 2B)
@@ -2441,7 +2807,7 @@ export class BrokersWrapper {
         action: 'modifyOrder'
       });
       
-      return result;
+      return finalResult;
       
     } catch (error) {
       // Error handling with interceptors (Phase 2B)

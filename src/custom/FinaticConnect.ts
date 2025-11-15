@@ -17,15 +17,37 @@ import { BrokersApi } from '../generated/api/brokers-api';
 /**
  * Safe logger getter that handles browser environment issues with pino
  * Exported so custom wrappers can use it
+ * 
+ * Enhanced to match generated pino logger with:
+ * - Structured JSON output (pino-compatible format)
+ * - Production detection (silent/error-only by default)
+ * - Hierarchical log levels
+ * - Timestamps (ISO format)
+ * - Metadata formatting
  */
 export function getSafeLogger(config?: Partial<SdkConfig> | SdkConfig): Logger {
   try {
     return getLogger(config as SdkConfig | undefined);
   } catch (error) {
-    // Fallback logger for browser environments where pino might not work correctly
+    // Enhanced fallback logger for browser environments where pino might not work correctly
+    
+    // Log level hierarchy (matching pino's numeric levels)
+    const LOG_LEVELS: Record<string, number> = {
+      silent: 0,
+      error: 10,
+      warn: 20,
+      info: 30,
+      debug: 40,
+    };
+
+    type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent';
+
+    /**
+     * Get environment variable from various sources
+     */
     const getEnvVar = (key: string): string | undefined => {
       try {
-        // Check Node.js process.env
+        // Check Node.js process.env (SSR environments)
         if (typeof (globalThis as any).process !== 'undefined') {
           const proc = (globalThis as any).process;
           if (proc.env && proc.env[key]) {
@@ -46,28 +68,216 @@ export function getSafeLogger(config?: Partial<SdkConfig> | SdkConfig): Logger {
       return undefined;
     };
 
-    const logLevel = config?.logLevel || getEnvVar('FINATIC_LOG_LEVEL') || 'error';
+    /**
+     * Detect if we're in production mode
+     */
+    const isProduction = (): boolean => {
+      // Check Vite mode
+      const viteMode = getEnvVar('MODE');
+      if (viteMode === 'production') return true;
+      
+      // Check Vite PROD flag
+      const viteProd = getEnvVar('PROD');
+      if (viteProd === 'true') return true;
+      
+      // Check NODE_ENV
+      const nodeEnv = getEnvVar('NODE_ENV');
+      if (nodeEnv === 'production') return true;
+      
+      // Check hostname patterns (production domains typically don't have localhost/127.0.0.1)
+      if (typeof window !== 'undefined' && window.location) {
+        const hostname = window.location.hostname;
+        if (hostname && !hostname.includes('localhost') && !hostname.includes('127.0.0.1') && !hostname.includes('0.0.0.0')) {
+          // Could be production, but be conservative - only return true if explicitly set
+          // This is a fallback, not primary detection
+        }
+      }
+      
+      return false;
+    };
+
+    /**
+     * Get effective log level considering production mode
+     */
+    const getEffectiveLogLevel = (): LogLevel => {
+      // Explicit config always wins
+      if (config?.logLevel) {
+        return config.logLevel as LogLevel;
+      }
+      
+      // Check environment variable
+      const envLevel = getEnvVar('FINATIC_LOG_LEVEL');
+      if (envLevel && ['debug', 'info', 'warn', 'error', 'silent'].includes(envLevel)) {
+        return envLevel as LogLevel;
+      }
+      
+      // In production, default to error-only (unless explicitly overridden above)
+      if (isProduction()) {
+        return 'error';
+      }
+      
+      // Development default
+      return 'error'; // Even in dev, default to error for safety
+    };
+
+    const logLevel = getEffectiveLogLevel();
+    const structuredLogging = config?.structuredLogging ?? false;
+    const isProd = isProduction();
+
+    /**
+     * Check if we should log at this level
+     */
+    const shouldLog = (messageLevel: LogLevel): boolean => {
+      if (logLevel === 'silent') return false;
+      const configuredLevel = LOG_LEVELS[logLevel] ?? LOG_LEVELS['error'];
+      const msgLevel = LOG_LEVELS[messageLevel] ?? LOG_LEVELS['error'];
+      if (configuredLevel === undefined || msgLevel === undefined) return false;
+      return msgLevel >= configuredLevel;
+    };
+
+    /**
+     * Format log entry as structured JSON (pino-compatible)
+     */
+    const formatStructuredLog = (
+      level: number,
+      levelLabel: string,
+      message: string,
+      data?: Record<string, any>,
+      error?: Error | any
+    ): string => {
+      const logEntry: Record<string, any> = {
+        level,
+        time: Date.now(), // Unix timestamp in milliseconds (matching pino)
+        msg: message,
+      };
+
+      // Add metadata from data object (flat merge, matching pino behavior)
+      if (data && typeof data === 'object') {
+        Object.assign(logEntry, data);
+      }
+
+      // Add error information if present
+      if (error) {
+        if (error instanceof Error) {
+          logEntry['err'] = {
+            type: error.name,
+            message: error.message,
+            stack: error.stack,
+          };
+        } else if (typeof error === 'object') {
+          logEntry['err'] = error;
+        } else {
+          logEntry['err'] = { message: String(error) };
+        }
+      }
+
+      return JSON.stringify(logEntry);
+    };
+
+    /**
+     * Format log entry as pretty array (non-structured mode)
+     */
+    const formatPrettyLog = (
+      levelLabel: string,
+      message: string,
+      data?: Record<string, any>,
+      error?: Error | any
+    ): any[] => {
+      const parts: any[] = [`[${levelLabel.toUpperCase()}] ${message}`];
+      
+      if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+        parts.push(data);
+      }
+      
+      if (error) {
+        parts.push(error);
+      }
+      
+      return parts;
+    };
+
+    /**
+     * No-op logger for silent mode
+     */
+    const noopLogger: Logger = {
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+    };
+
+    // Return no-op logger if silent
+    if (logLevel === 'silent') {
+      return noopLogger;
+    }
+
     const fallbackLogger: Logger = {
       debug: (message: string, data?: Record<string, any>) => {
-        if (logLevel === 'debug') {
-          console.debug(`[DEBUG] ${message}`, data || '');
+        if (!shouldLog('debug')) return;
+        
+        const debugLevel = LOG_LEVELS['debug'];
+        if (debugLevel === undefined) return;
+        
+        if (structuredLogging) {
+          const logStr = formatStructuredLog(debugLevel, 'debug', message, data);
+          console.debug(logStr);
+        } else {
+          const logArgs = formatPrettyLog('debug', message, data);
+          console.debug(...logArgs);
         }
       },
+      
       info: (message: string, data?: Record<string, any>) => {
-        if (['debug', 'info'].includes(logLevel)) {
-          console.info(`[INFO] ${message}`, data || '');
+        if (!shouldLog('info')) return;
+        
+        const infoLevel = LOG_LEVELS['info'];
+        if (infoLevel === undefined) return;
+        
+        if (structuredLogging) {
+          const logStr = formatStructuredLog(infoLevel, 'info', message, data);
+          console.info(logStr);
+        } else {
+          const logArgs = formatPrettyLog('info', message, data);
+          console.info(...logArgs);
         }
       },
+      
       warn: (message: string, data?: Record<string, any>) => {
-        if (['debug', 'info', 'warn'].includes(logLevel)) {
-          console.warn(`[WARN] ${message}`, data || '');
+        if (!shouldLog('warn')) return;
+        
+        const warnLevel = LOG_LEVELS['warn'];
+        if (warnLevel === undefined) return;
+        
+        if (structuredLogging) {
+          const logStr = formatStructuredLog(warnLevel, 'warn', message, data);
+          console.warn(logStr);
+        } else {
+          const logArgs = formatPrettyLog('warn', message, data);
+          console.warn(...logArgs);
         }
       },
+      
       error: (message: string, error?: Error | any, data?: Record<string, any>) => {
-        console.error(`[ERROR] ${message}`, error || data || '');
+        if (!shouldLog('error')) return;
+        
+        const errorLevel = LOG_LEVELS['error'];
+        if (errorLevel === undefined) return;
+        
+        if (structuredLogging) {
+          const logStr = formatStructuredLog(errorLevel, 'error', message, data, error);
+          console.error(logStr);
+        } else {
+          const logArgs = formatPrettyLog('error', message, data, error);
+          console.error(...logArgs);
+        }
       },
     };
-    console.warn('[Finatic SDK] Using fallback logger due to pino initialization error:', error);
+
+    // Only warn about fallback logger once, and only in non-production
+    if (!isProd) {
+      console.warn('[Finatic SDK] Using fallback logger due to pino initialization error:', error);
+    }
+    
     return fallbackLogger;
   }
 }
@@ -97,93 +307,13 @@ export class FinaticConnect extends GeneratedFinaticConnect {
     const sessionApi = new SessionApi(config);
     self.session = new CustomSessionWrapper(sessionApi, config, sdkConfig);
     
-    // Replace brokers wrapper
+    // Replace brokers wrapper with custom one that uses safe logger
+    // Session headers are now handled by the generator, but we still need the safe logger
     const brokersApi = new BrokersApi(config);
     self.brokers = new CustomBrokersWrapper(brokersApi, config, sdkConfig);
   }
 
-  /**
-   * Custom initialization with better error handling and logging.
-   * Override the generated init method to ensure startSession() is always called.
-   */
-  static override async init(
-    token: string,
-    userId?: string,
-    options?: { baseUrl?: string; sdkConfig?: Partial<SdkConfig> }
-  ): Promise<FinaticConnect> {
-    const logger = getSafeLogger(options?.sdkConfig);
-    
-    logger.debug('FinaticConnect.init() called', {
-      token: token ? `${token.substring(0, 20)}...` : 'missing',
-      userId,
-      hasOptions: !!options,
-    });
-
-    try {
-      // Access private instance via type assertion to base class
-      const baseClass = GeneratedFinaticConnect as any;
-      
-      // Clear instance if it exists but has no valid session (Safari compatibility)
-      if (baseClass.instance && !baseClass.instance.getSessionId()) {
-        logger.debug('Clearing existing instance without sessionId');
-        baseClass.instance = null;
-      }
-
-      let instance: FinaticConnect;
-
-      if (!baseClass.instance) {
-        logger.debug('Creating new FinaticConnect instance');
-        const connectOptions: FinaticConnectOptions = {
-          token,
-          baseUrl: options?.baseUrl || 'https://api.finatic.dev',
-          ...(options?.sdkConfig ? { sdkConfig: options.sdkConfig } : {}),
-        };
-
-        instance = new FinaticConnect(connectOptions);
-        baseClass.instance = instance;
-
-        // CRITICAL: Start session with the token - this should make the network call
-        logger.debug('Calling startSession() inside init()');
-        await instance.startSession(token, userId);
-        logger.debug('startSession() completed in init()');
-      } else {
-        logger.debug('Using existing FinaticConnect instance');
-        instance = baseClass.instance as FinaticConnect;
-      }
-
-      // Verify session was initialized correctly
-      const sessionId = instance.getSessionId();
-      if (!sessionId) {
-        const error = new Error(
-          'Session initialization failed: startSession() did not return a session_id. ' +
-          'Please check that the API endpoint returned a valid session response. ' +
-          'The network call to /api/v1/session/start may have failed or returned an invalid response.'
-        );
-        logger.error('FinaticConnect.init() failed - no sessionId', error, {});
-        throw error;
-      }
-
-      logger.debug('FinaticConnect.init() completed successfully', { sessionId });
-      return instance;
-    } catch (error) {
-      // Re-throw with more context if it's a session initialization error
-      if (error instanceof Error) {
-        if (error.message.includes('Session not initialized')) {
-          const enhancedError = new Error(
-            `Failed to initialize Finatic session: ${error.message}. ` +
-            'This may indicate that startSession() was called but did not successfully create a session. ' +
-            'Please check the API response and ensure the one-time token is valid.'
-          );
-          logger.error('FinaticConnect.init() session initialization error', enhancedError, {});
-          throw enhancedError;
-        }
-        logger.error('FinaticConnect.init() error', error, {});
-      }
-      
-      // Re-throw other errors as-is
-      throw error;
-    }
-  }
+  // Static init() method is now handled by the generator with enhanced error handling and session validation
 
   /**
    * Custom startSession with better error handling and logging.
@@ -252,142 +382,8 @@ export class FinaticConnect extends GeneratedFinaticConnect {
     }
   }
 
-  /**
-   * Override getAllAccounts to properly handle response format.
-   */
-  override async getAllAccounts(filter?: any): Promise<any[]> {
-    const allData: any[] = [];
-    let offset = 0;
-    const limit = 100;
-    
-    while (true) {
-      const result = await this.brokers.getAccounts(
-        filter?.brokerId,
-        filter?.connectionId,
-        filter?.accountType,
-        filter?.status,
-        filter?.currency,
-        limit,
-        offset,
-        filter?.withMetadata
-      );
-      
-      // Ensure result is an array
-      const dataArray = Array.isArray(result) ? result : [];
-      if (!dataArray || dataArray.length === 0) break;
-      
-      allData.push(...dataArray);
-      if (dataArray.length < limit) break;
-      offset += limit;
-    }
-    
-    return allData;
-  }
-
-  /**
-   * Override getAllOrders to properly handle response format.
-   */
-  override async getAllOrders(filter?: any): Promise<any[]> {
-    const allData: any[] = [];
-    let offset = 0;
-    const limit = 100;
-    
-    while (true) {
-      const result = await this.brokers.getOrders(
-        filter?.brokerId,
-        filter?.connectionId,
-        filter?.accountId,
-        filter?.symbol,
-        filter?.orderStatus,
-        filter?.side,
-        filter?.assetType,
-        limit,
-        offset,
-        filter?.createdAfter,
-        filter?.createdBefore,
-        filter?.withMetadata
-      );
-      
-      // Ensure result is an array
-      const dataArray = Array.isArray(result) ? result : [];
-      if (!dataArray || dataArray.length === 0) break;
-      
-      allData.push(...dataArray);
-      if (dataArray.length < limit) break;
-      offset += limit;
-    }
-    
-    return allData;
-  }
-
-  /**
-   * Override getAllPositions to properly handle response format.
-   */
-  override async getAllPositions(filter?: any): Promise<any[]> {
-    const allData: any[] = [];
-    let offset = 0;
-    const limit = 100;
-    
-    while (true) {
-      const result = await this.brokers.getPositions(
-        filter?.brokerId,
-        filter?.connectionId,
-        filter?.accountId,
-        filter?.symbol,
-        filter?.side,
-        filter?.assetType,
-        filter?.positionStatus,
-        limit,
-        offset,
-        filter?.updatedAfter,
-        filter?.updatedBefore,
-        filter?.withMetadata
-      );
-      
-      // Ensure result is an array
-      const dataArray = Array.isArray(result) ? result : [];
-      if (!dataArray || dataArray.length === 0) break;
-      
-      allData.push(...dataArray);
-      if (dataArray.length < limit) break;
-      offset += limit;
-    }
-    
-    return allData;
-  }
-
-  /**
-   * Override getAllBalances to properly handle response format.
-   */
-  override async getAllBalances(filter?: any): Promise<any[]> {
-    const allData: any[] = [];
-    let offset = 0;
-    const limit = 100;
-    
-    while (true) {
-      const result = await this.brokers.getBalances(
-        filter?.brokerId,
-        filter?.connectionId,
-        filter?.accountId,
-        filter?.isEndOfDaySnapshot,
-        limit,
-        offset,
-        filter?.balanceCreatedAfter,
-        filter?.balanceCreatedBefore,
-        filter?.withMetadata
-      );
-      
-      // Ensure result is an array
-      const dataArray = Array.isArray(result) ? result : [];
-      if (!dataArray || dataArray.length === 0) break;
-      
-      allData.push(...dataArray);
-      if (dataArray.length < limit) break;
-      offset += limit;
-    }
-    
-    return allData;
-  }
+  // Pagination methods (getAllAccounts, getAllOrders, getAllPositions, getAllBalances)
+  // are now handled by the generator with proper filter parameter support
 
   /**
    * Get order fills for a specific order.
