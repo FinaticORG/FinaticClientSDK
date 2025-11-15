@@ -1,0 +1,49 @@
+# Source files
+src/
+tests/
+examples/
+
+# Build files
+*.tsbuildinfo
+
+# Config files
+tsconfig.json
+jest.config.js
+.eslintrc.js
+.prettierrc
+
+# Documentation
+docs/
+*.md
+!README.md
+!CHANGELOG.md
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Dependencies
+node_modules/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Environment
+.env
+.env.*
+
+# Scripts
+scripts/
