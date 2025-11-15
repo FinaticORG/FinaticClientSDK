@@ -535,6 +535,13 @@ export class FinaticConnect extends EventEmitter {
         themedPortalUrl = url.toString();
       }
 
+      // Apply mode parameter to portal URL if provided (only if not system, since system is default)
+      if (options?.mode && options.mode !== 'system') {
+        const url = new URL(themedPortalUrl);
+        url.searchParams.set('mode', options.mode);
+        themedPortalUrl = url.toString();
+      }
+
       // Add session ID to portal URL so the portal can use it
       const url = new URL(themedPortalUrl);
       if (this.sessionId) {

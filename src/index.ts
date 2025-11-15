@@ -62,7 +62,7 @@ export type {
   PositionLotFillsFilter,
 } from './types';
 
-export type { FinaticConnectOptions, FinaticUserToken, PortalMessage } from './types/connect';
+export type { FinaticConnectOptions, FinaticUserToken, PortalMessage, PortalOptions } from './types/connect';
 export type {
   PortalProps,
   PortalTheme,
