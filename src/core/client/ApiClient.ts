@@ -690,7 +690,52 @@ export class ApiClient {
     }
 
     // Build request body with camelCase parameter names
-    const requestBody = this.buildOrderRequestBody(fullParams, mergedExtras);
+    // Pass the full payload structure to preserve option fields from the order object
+    const payloadForBuild = (() => {
+      const incoming: any = params as unknown as Record<string, any>;
+      if (incoming && typeof incoming === 'object' && 'order' in incoming && 'broker' in incoming) {
+        // Preserve the original structure with order object - this includes all option fields
+        // Use incoming.order directly since it already contains all fields including option fields
+        return {
+          broker: incoming.broker || fullParams.broker,
+          order: incoming.order,
+        };
+      }
+      // If flattened, reconstruct the nested structure with option fields from normalizedParams
+      // Extract option fields from normalizedParams since they're not in fullParams type
+      const optionFields: any = {};
+      if (normalizedParams.expirationDate !== undefined)
+        optionFields.expirationDate = normalizedParams.expirationDate;
+      if (normalizedParams.strikePrice !== undefined)
+        optionFields.strikePrice = normalizedParams.strikePrice;
+      if (normalizedParams.optionType !== undefined)
+        optionFields.optionType = normalizedParams.optionType;
+      if (normalizedParams.positionEffect !== undefined)
+        optionFields.positionEffect = normalizedParams.positionEffect;
+
+      // Build order object from fullParams
+      // Note: fullParams is typed as BrokerOrderParams but built as flat object, so we access properties directly
+      const fullParamsAny = fullParams as any;
+      const orderFromFullParams: any = {
+        orderType: fullParamsAny.orderType,
+        assetType: fullParamsAny.assetType,
+        action: fullParamsAny.action,
+        timeInForce: fullParamsAny.timeInForce,
+        accountNumber: fullParamsAny.accountNumber,
+        symbol: fullParamsAny.symbol,
+        orderQty: fullParamsAny.orderQty,
+        ...(fullParamsAny.price !== undefined && { price: fullParamsAny.price }),
+        ...(fullParamsAny.stopPrice !== undefined && { stopPrice: fullParamsAny.stopPrice }),
+        ...(fullParamsAny.order_id !== undefined && { order_id: fullParamsAny.order_id }),
+        ...optionFields,
+      };
+
+      return {
+        broker: fullParamsAny.broker,
+        order: orderFromFullParams,
+      };
+    })();
+    const requestBody = this.buildOrderRequestBody(payloadForBuild, mergedExtras);
 
     // Add query parameters if connection_id is provided
     const queryParams: Record<string, string> = {};
@@ -1018,56 +1063,83 @@ export class ApiClient {
     );
   }
 
-  private buildOrderRequestBody(params: BrokerOrderParams, extras: BrokerExtras = {}) {
-    const baseOrder: any = {
-      order_id: params.order_id,
-      orderType: params.orderType,
-      assetType: params.assetType,
-      action: params.action,
-      timeInForce: params.timeInForce,
-      accountNumber: params.accountNumber,
-      symbol: params.symbol,
-      orderQty: params.orderQty,
-    };
+  private buildOrderRequestBody(params: any, extras: BrokerExtras = {}) {
+    // Handle both discriminated union format and flattened format
+    const orderParams = params.order || params;
+    const broker = params.broker || (params as BrokerOrderParams).broker;
 
-    if (params.price !== undefined) baseOrder.price = params.price;
-    if (params.stopPrice !== undefined) baseOrder.stopPrice = params.stopPrice;
+    // Add option fields if present (for equity_option asset type)
+    const optionFields: any = {};
+    if (orderParams.expirationDate !== undefined) {
+      optionFields.expirationDate = orderParams.expirationDate;
+    }
+    if (orderParams.strikePrice !== undefined) {
+      optionFields.strikePrice = orderParams.strikePrice;
+    }
+    if (orderParams.optionType !== undefined) {
+      optionFields.optionType = orderParams.optionType;
+    }
+    if (orderParams.positionEffect !== undefined) {
+      optionFields.positionEffect = orderParams.positionEffect;
+    }
 
     // Apply broker-specific defaults – map camelCase extras property keys to snake_case before merging
-    const brokerExtras = this.applyBrokerDefaults(params.broker, extras);
+    const brokerExtras = this.applyBrokerDefaults(broker, extras);
+
+    // Build final order object:
+    // - Start from the full incoming orderParams so we never drop unknown fields (like option params)
+    // - Overlay brokerExtras (extendedHours, marketHours, etc.)
+    // - Spread optionFields last so option-specific fields are always preserved
+    const finalOrder = {
+      ...orderParams,
+      ...brokerExtras,
+      ...optionFields,
+    };
 
     return {
-      broker: params.broker,
-      order: {
-        ...baseOrder,
-        ...brokerExtras,
-      },
+      broker: broker,
+      order: finalOrder,
     };
   }
 
-  private buildModifyRequestBody(params: Partial<BrokerOrderParams>, extras: any, broker: string) {
+  private buildModifyRequestBody(params: any, extras: any, broker: string) {
+    // Handle both discriminated union format and flattened format
+    const orderParams = params.order || params;
     const order: any = {};
 
-    if (params.order_id !== undefined) order.order_id = params.order_id;
-    if (params.orderType !== undefined) order.orderType = params.orderType;
-    if (params.assetType !== undefined) order.assetType = params.assetType;
-    if (params.action !== undefined) order.action = params.action;
-    if (params.timeInForce !== undefined) order.timeInForce = params.timeInForce;
-    if (params.accountNumber !== undefined) order.accountNumber = params.accountNumber;
-    if (params.symbol !== undefined) order.symbol = params.symbol;
-    if (params.orderQty !== undefined) order.orderQty = params.orderQty;
-    if (params.price !== undefined) order.price = params.price;
-    if (params.stopPrice !== undefined) order.stopPrice = params.stopPrice;
+    if (orderParams.order_id !== undefined) order.order_id = orderParams.order_id;
+    if (orderParams.orderType !== undefined) order.orderType = orderParams.orderType;
+    if (orderParams.assetType !== undefined) order.assetType = orderParams.assetType;
+    if (orderParams.action !== undefined) order.action = orderParams.action;
+    if (orderParams.timeInForce !== undefined) order.timeInForce = orderParams.timeInForce;
+    if (orderParams.accountNumber !== undefined) order.accountNumber = orderParams.accountNumber;
+    if (orderParams.symbol !== undefined) order.symbol = orderParams.symbol;
+    if (orderParams.orderQty !== undefined) order.orderQty = orderParams.orderQty;
+    if (orderParams.price !== undefined) order.price = orderParams.price;
+    if (orderParams.stopPrice !== undefined) order.stopPrice = orderParams.stopPrice;
+
+    // Add option fields if present (for equity_option asset type)
+    const optionFields: any = {};
+    if (orderParams.expirationDate !== undefined)
+      optionFields.expirationDate = orderParams.expirationDate;
+    if (orderParams.strikePrice !== undefined) optionFields.strikePrice = orderParams.strikePrice;
+    if (orderParams.optionType !== undefined) optionFields.optionType = orderParams.optionType;
+    if (orderParams.positionEffect !== undefined)
+      optionFields.positionEffect = orderParams.positionEffect;
 
     // Apply broker-specific defaults (handles snake_case conversion)
     const brokerExtras = this.applyBrokerDefaults(broker, extras);
 
+    // Build final order object - preserve option fields by spreading them last
+    const finalOrder = {
+      ...order,
+      ...brokerExtras,
+      ...optionFields, // Option fields spread last to ensure they're not overwritten
+    };
+
     return {
       broker,
-      order: {
-        ...order,
-        ...brokerExtras,
-      },
+      order: finalOrder,
     };
   }
 
