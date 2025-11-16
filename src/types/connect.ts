@@ -49,6 +49,8 @@ export interface PortalOptions {
   onEvent?: (type: string, data: any) => void;
   /** Optional theme configuration for the portal */
   theme?: PortalTheme;
+  /** Optional color mode (light/dark/system). System uses OS preference. Defaults to system. */
+  mode?: 'light' | 'dark' | 'system';
   /** Optional list of broker names to filter by (only these brokers will be shown) */
   brokers?: string[];
   /** Optional email address to prefill in the portal */

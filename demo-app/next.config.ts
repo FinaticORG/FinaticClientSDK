@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
   transpilePackages: ['@finatic/client'],
   experimental: {
     esmExternals: 'loose',
+    externalDir: true,
+  },
+  webpack: (config) => {
+    config.resolve.alias['@finatic/client'] = path.resolve(__dirname, '../src');
+    return config;
   },
 };
 

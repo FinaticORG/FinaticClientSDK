@@ -1,3 +1,9 @@
+import { setupLogger, buildLoggerExtra, LoggerExtra } from '../../lib/logger';
+
+const portalLogger = setupLogger('FinaticClientSDK.PortalUI', undefined, {
+  codebase: 'FinaticClientSDK',
+});
+
 export class PortalUI {
   private iframe: HTMLIFrameElement | null = null;
   private container: HTMLDivElement | null = null;
@@ -12,12 +18,22 @@ export class PortalUI {
   };
   private originalBodyStyle: string | null = null;
 
+  private readonly logger = portalLogger;
+
   constructor(portalUrl: string) {
     this.createContainer();
   }
 
+  private buildLoggerExtra(functionName: string, metadata?: Record<string, unknown>): LoggerExtra {
+    return {
+      module: 'PortalUI',
+      function: functionName,
+      ...(metadata ? buildLoggerExtra(metadata) : {}),
+    };
+  }
+
   private createContainer(): void {
-    console.debug('[PortalUI] Creating container and iframe');
+    this.logger.debug('Creating portal container and iframe', this.buildLoggerExtra('createContainer'));
     this.container = document.createElement('div');
     this.container.style.cssText = `
             position: fixed;
@@ -74,7 +90,7 @@ export class PortalUI {
 
     this.container.appendChild(this.iframe);
     document.body.appendChild(this.container);
-    console.debug('[PortalUI] Container and iframe created successfully');
+    this.logger.debug('Portal container and iframe created successfully', this.buildLoggerExtra('createContainer'));
   }
 
   /**
@@ -91,7 +107,7 @@ export class PortalUI {
       document.body.style.width = '100%';
       document.body.style.top = `-${window.scrollY}px`;
 
-      console.debug('[PortalUI] Background scroll locked');
+      this.logger.debug('Background scroll locked', this.buildLoggerExtra('lockScroll'));
     }
   }
 
@@ -110,7 +126,7 @@ export class PortalUI {
       window.scrollTo(0, parseInt(scrollY || '0') * -1);
 
       this.originalBodyStyle = null;
-      console.debug('[PortalUI] Background scroll unlocked');
+      this.logger.debug('Background scroll unlocked', this.buildLoggerExtra('unlockScroll'));
     }
   }
 
@@ -168,17 +184,18 @@ export class PortalUI {
   private handleMessage(event: MessageEvent): void {
     // Verify origin matches the portal URL
     if (!this.portalOrigin || event.origin !== this.portalOrigin) {
-      console.warn(
-        '[PortalUI] Received message from unauthorized origin:',
-        event.origin,
-        'Expected:',
-        this.portalOrigin
-      );
+      this.logger.warn('Received message from unauthorized origin', this.buildLoggerExtra('handleMessage', {
+        received_origin: event.origin,
+        expected_origin: this.portalOrigin || 'unknown',
+      }));
       return;
     }
 
     const { type, userId, access_token, refresh_token, error, height, data } = event.data;
-    console.log('[PortalUI] Received message:', event.data);
+    this.logger.debug('Received portal message', this.buildLoggerExtra('handleMessage', {
+      message_type: type,
+      has_data: Boolean(data),
+    }));
 
     switch (type) {
       case 'portal-success': {
@@ -225,19 +242,26 @@ export class PortalUI {
         break;
 
       default:
-        console.warn('[PortalUI] Received unhandled message type:', type);
+        this.logger.warn('Received unhandled message type', this.buildLoggerExtra('handleMessage', {
+          message_type: type,
+        }));
     }
   }
 
   private handlePortalSuccess(userId: string, tokens?: { access_token?: string; refresh_token?: string }): void {
     if (!userId) {
-      console.error('[PortalUI] Missing userId in portal-success message');
+      this.logger.error('Missing userId in portal-success message', this.buildLoggerExtra('handlePortalSuccess'));
       return;
     }
 
-    console.log('[PortalUI] Portal success - User connected:', userId);
+    this.logger.info('Portal success - user connected', this.buildLoggerExtra('handlePortalSuccess', {
+      user_id_present: Boolean(userId),
+      tokens_provided: Boolean(tokens?.access_token && tokens?.refresh_token),
+    }));
     if (tokens?.access_token && tokens?.refresh_token) {
-      console.log('[PortalUI] Tokens received for user:', userId);
+      this.logger.debug('Tokens received for user', this.buildLoggerExtra('handlePortalSuccess', {
+        tokens_provided: true,
+      }));
     }
 
     // Pass userId to parent (SDK will handle tokens internally)
@@ -245,23 +269,30 @@ export class PortalUI {
   }
 
   private handlePortalError(error: string): void {
-    console.error('[PortalUI] Portal error:', error);
+    this.logger.error('Portal error received', this.buildLoggerExtra('handlePortalError', {
+      error_message: error,
+    }));
     this.options?.onError?.(new Error(error || 'Unknown portal error'));
   }
 
   private handlePortalClose(): void {
-    console.log('[PortalUI] Portal closed by user');
+    this.logger.info('Portal closed by user', this.buildLoggerExtra('handlePortalClose'));
     this.options?.onClose?.();
     this.hide();
   }
 
   private handleGenericEvent(data: any): void {
     if (!data || !data.type) {
-      console.warn('[PortalUI] Invalid event data:', data);
+      this.logger.warn('Invalid event data received', this.buildLoggerExtra('handleGenericEvent', {
+        has_type: Boolean(data?.type),
+      }));
       return;
     }
 
-    console.log('[PortalUI] Generic event received:', data.type, data.data);
+    this.logger.debug('Generic event received', this.buildLoggerExtra('handleGenericEvent', {
+      event_type: data.type,
+      payload_present: Boolean(data.data),
+    }));
 
     // Emit the event to be handled by the SDK
     // This will be implemented in FinaticConnect
@@ -272,7 +303,7 @@ export class PortalUI {
 
   private handleSuccess(userId: string): void {
     if (!userId) {
-      console.error('[PortalUI] Missing required fields in success message');
+      this.logger.error('Missing required fields in success message', this.buildLoggerExtra('handleSuccess'));
       return;
     }
 
@@ -281,19 +312,23 @@ export class PortalUI {
   }
 
   private handleError(error: string): void {
-    console.error('[PortalUI] Received error:', error);
+    this.logger.error('Received portal error message', this.buildLoggerExtra('handleError', {
+      error_message: error,
+    }));
     this.options?.onError?.(new Error(error || 'Unknown error'));
   }
 
   private handleClose(): void {
-    console.log('[PortalUI] Received close message');
+    this.logger.debug('Received close message', this.buildLoggerExtra('handleClose'));
     this.options?.onClose?.();
     this.hide();
   }
 
   private handleResize(height: number): void {
     if (height && this.iframe) {
-      console.log('[PortalUI] Received resize message:', height);
+      this.logger.debug('Received resize message', this.buildLoggerExtra('handleResize', {
+        height,
+      }));
       this.iframe.style.height = `${height}px`;
     }
   }

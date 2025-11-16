@@ -31,6 +31,7 @@ import { TradingContext } from '../../types/api/orders';
 import { ApiPaginationInfo, PaginatedResult } from '../../types/common/pagination';
 import { ApiResponse } from '../../types/api/core';
 import { PortalUrlResponse } from '../../types/api/core';
+import { setupLogger, buildLoggerExtra, LoggerExtra } from '../../lib/logger';
 import {
   DeviceInfo,
   SessionState,
@@ -70,6 +71,17 @@ export class ApiClient {
   // Session and company context
   private companyId: string | null = null;
   private csrfToken: string | null = null;
+  private readonly logger = setupLogger('FinaticClientSDK.ApiClient', undefined, {
+    codebase: 'FinaticClientSDK',
+  });
+
+  private buildLoggerExtra(functionName: string, metadata?: Record<string, unknown>): LoggerExtra {
+    return {
+      module: 'ApiClient',
+      function: functionName,
+      ...(metadata ? buildLoggerExtra(metadata) : {}),
+    };
+  }
 
   constructor(baseUrl: string, deviceInfo?: DeviceInfo) {
     this.baseUrl = baseUrl;
@@ -223,15 +235,11 @@ export class ApiClient {
       }
     });
 
-    // Debug logging for development
-    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-      console.log('Request to:', url.toString());
-      console.log('Safari-safe headers:', safariSafeHeaders);
-      console.log('Browser:', navigator.userAgent);
-      console.log('Session ID:', this.currentSessionId);
-      console.log('Company ID:', this.companyId);
-      console.log('CSRF Token:', this.csrfToken);
-    }
+    this.logger.debug('Dispatching API request', this.buildLoggerExtra('request', {
+      url: url.toString(),
+      method: options.method,
+      has_body: Boolean(options.body),
+    }));
 
     const response = await fetch(url.toString(), {
       method: options.method,
@@ -239,16 +247,19 @@ export class ApiClient {
       body: options.body ? JSON.stringify(options.body) : undefined,
     });
 
-    // Debug logging for response
-    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-      console.log('Request was made with headers:', safariSafeHeaders);
-    }
+    this.logger.debug('Received API response', this.buildLoggerExtra('request', {
+      url: url.toString(),
+      status: response.status,
+    }));
 
     if (!response.ok) {
       const error = await response.json();
-      throw this.handleError(response.status, error);
+      const apiError = this.handleError(response.status, error);
+      this.logger.exception('API request failed', apiError, this.buildLoggerExtra('request', {
+        url: url.toString(),
+        status: response.status,
+      }));
+      throw apiError;
     }
 
     const data = await response.json();
@@ -261,12 +272,22 @@ export class ApiClient {
         // Add context that this is an order-related error
         data._isOrderError = true;
       }
-      throw this.handleError(data.status_code || 500, data);
+      const apiError = this.handleError(data.status_code || 500, data);
+      this.logger.exception('API response indicated failure', apiError, this.buildLoggerExtra('request', {
+        url: url.toString(),
+        status: data.status_code || 500,
+      }));
+      throw apiError;
     }
 
     // Check if the response has a status_code field indicating an error (4xx or 5xx)
     if (data && typeof data === 'object' && 'status_code' in data && data.status_code >= 400) {
-      throw this.handleError(data.status_code, data);
+      const apiError = this.handleError(data.status_code, data);
+      this.logger.exception('API status code error', apiError, this.buildLoggerExtra('request', {
+        url: url.toString(),
+        status: data.status_code,
+      }));
+      throw apiError;
     }
 
     // Check if the response has errors field with content
@@ -278,7 +299,12 @@ export class ApiClient {
       Array.isArray(data.errors) &&
       data.errors.length > 0
     ) {
-      throw this.handleError(data.status_code || 500, data);
+      const apiError = this.handleError(data.status_code || 500, data);
+      this.logger.exception('API response contained errors', apiError, this.buildLoggerExtra('request', {
+        url: url.toString(),
+        status: data.status_code || 500,
+      }));
+      throw apiError;
     }
 
     return data;

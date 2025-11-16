@@ -615,7 +615,11 @@ export class ApiSdkAdapter implements SdkAdapter {
         urlParams.append('email', options.email);
       }
       if (options.theme?.preset) {
-        urlParams.append('theme_preset', options.theme.preset);
+        urlParams.append('theme', options.theme.preset);
+      }
+      // Add mode only if not system (system is default, so don't pass it)
+      if (options.mode && options.mode !== 'system') {
+        urlParams.append('mode', options.mode);
       }
 
       const endpoint = `/api/session/portal-url${urlParams.toString() ? '?' + urlParams.toString() : ''}`;

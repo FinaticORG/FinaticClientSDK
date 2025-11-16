@@ -62,7 +62,7 @@ export type {
   PositionLotFillsFilter,
 } from './types';
 
-export type { FinaticConnectOptions, FinaticUserToken, PortalMessage } from './types/connect';
+export type { FinaticConnectOptions, FinaticUserToken, PortalMessage, PortalOptions } from './types/connect';
 export type {
   PortalProps,
   PortalTheme,
@@ -91,6 +91,7 @@ export { PaginatedResult } from './types/common/pagination';
 export * from './utils/errors';
 export * from './utils/events';
 export * from './utils/themeUtils';
+export * from './lib/logger';
 
 // Theme presets
 export { portalThemePresets } from './themes/portalPresets';
