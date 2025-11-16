@@ -22,7 +22,7 @@ import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObj
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
 // @ts-ignore
-import type { FinaticResponseListDict } from '../models';
+import type { FinaticResponseListFuturesHistoricalRow } from '../models';
 // @ts-ignore
 import type { HTTPValidationError } from '../models';
 /**
@@ -107,7 +107,7 @@ export const MarketDataApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getFuturesHistoricalApiV1MarketDataFuturesHistoricalGet(symbol: string, startDate?: string | null, endDate?: string | null, expiration?: string | null, provider?: GetFuturesHistoricalApiV1MarketDataFuturesHistoricalGetProviderEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListDict>> {
+        async getFuturesHistoricalApiV1MarketDataFuturesHistoricalGet(symbol: string, startDate?: string | null, endDate?: string | null, expiration?: string | null, provider?: GetFuturesHistoricalApiV1MarketDataFuturesHistoricalGetProviderEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFuturesHistoricalRow>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getFuturesHistoricalApiV1MarketDataFuturesHistoricalGet(symbol, startDate, endDate, expiration, provider, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['MarketDataApi.getFuturesHistoricalApiV1MarketDataFuturesHistoricalGet']?.[localVarOperationServerIndex]?.url;
@@ -129,7 +129,7 @@ export const MarketDataApiFactory = function (configuration?: Configuration, bas
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getFuturesHistoricalApiV1MarketDataFuturesHistoricalGet(requestParameters: MarketDataApiGetFuturesHistoricalApiV1MarketDataFuturesHistoricalGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListDict> {
+        getFuturesHistoricalApiV1MarketDataFuturesHistoricalGet(requestParameters: MarketDataApiGetFuturesHistoricalApiV1MarketDataFuturesHistoricalGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFuturesHistoricalRow> {
             return localVarFp.getFuturesHistoricalApiV1MarketDataFuturesHistoricalGet(requestParameters.symbol, requestParameters.startDate, requestParameters.endDate, requestParameters.expiration, requestParameters.provider, options).then((request) => request(axios, basePath));
         },
     };
@@ -146,7 +146,7 @@ export interface MarketDataApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getFuturesHistoricalApiV1MarketDataFuturesHistoricalGet(requestParameters: MarketDataApiGetFuturesHistoricalApiV1MarketDataFuturesHistoricalGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListDict>;
+    getFuturesHistoricalApiV1MarketDataFuturesHistoricalGet(requestParameters: MarketDataApiGetFuturesHistoricalApiV1MarketDataFuturesHistoricalGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFuturesHistoricalRow>;
 
 }
 

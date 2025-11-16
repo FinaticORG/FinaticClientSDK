@@ -33,6 +33,7 @@ const RAW_RUNTIME_STATE =
       [null, {\
         "packageLocation": "./",\
         "packageDependencies": [\
+          ["@eslint/js", "npm:9.39.1"],\
           ["@finatic/client", "workspace:."],\
           ["@types/jest", "npm:29.5.14"],\
           ["@types/node", "npm:24.10.1"],\
@@ -52,6 +53,7 @@ const RAW_RUNTIME_STATE =
           ["rimraf", "npm:6.1.0"],\
           ["ts-jest", "virtual:ad58fe2aa2f3bbb7ba204f963bb41b54eaa9fa4cd7b4faccdbfa7ff60fb31bb8bb566cf4acc342281d359997d7106ef3d08650a2be4b4d9815d45d5b110ffd79#npm:29.4.5"],\
           ["typescript", "patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=5786d5"],\
+          ["typescript-eslint", "virtual:ad58fe2aa2f3bbb7ba204f963bb41b54eaa9fa4cd7b4faccdbfa7ff60fb31bb8bb566cf4acc342281d359997d7106ef3d08650a2be4b4d9815d45d5b110ffd79#npm:8.46.4"],\
           ["zod", "npm:1.11.17"]\
         ],\
         "linkType": "SOFT"\
@@ -1054,6 +1056,7 @@ const RAW_RUNTIME_STATE =
       ["workspace:.", {\
         "packageLocation": "./",\
         "packageDependencies": [\
+          ["@eslint/js", "npm:9.39.1"],\
           ["@finatic/client", "workspace:."],\
           ["@types/jest", "npm:29.5.14"],\
           ["@types/node", "npm:24.10.1"],\
@@ -1073,6 +1076,7 @@ const RAW_RUNTIME_STATE =
           ["rimraf", "npm:6.1.0"],\
           ["ts-jest", "virtual:ad58fe2aa2f3bbb7ba204f963bb41b54eaa9fa4cd7b4faccdbfa7ff60fb31bb8bb566cf4acc342281d359997d7106ef3d08650a2be4b4d9815d45d5b110ffd79#npm:29.4.5"],\
           ["typescript", "patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=5786d5"],\
+          ["typescript-eslint", "virtual:ad58fe2aa2f3bbb7ba204f963bb41b54eaa9fa4cd7b4faccdbfa7ff60fb31bb8bb566cf4acc342281d359997d7106ef3d08650a2be4b4d9815d45d5b110ffd79#npm:8.46.4"],\
           ["zod", "npm:1.11.17"]\
         ],\
         "linkType": "SOFT"\
@@ -10519,6 +10523,36 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../../../../../home/vscode/.yarn/berry/cache/typescript-patch-6fda4d02cf-10c0.zip/node_modules/typescript/",\
         "packageDependencies": [\
           ["typescript", "patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=5786d5"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["typescript-eslint", [\
+      ["npm:8.46.4", {\
+        "packageLocation": "../../../../../../home/vscode/.yarn/berry/cache/typescript-eslint-npm-8.46.4-1555d4b4dc-10c0.zip/node_modules/typescript-eslint/",\
+        "packageDependencies": [\
+          ["typescript-eslint", "npm:8.46.4"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:ad58fe2aa2f3bbb7ba204f963bb41b54eaa9fa4cd7b4faccdbfa7ff60fb31bb8bb566cf4acc342281d359997d7106ef3d08650a2be4b4d9815d45d5b110ffd79#npm:8.46.4", {\
+        "packageLocation": "./.yarn/__virtual__/typescript-eslint-virtual-e2f62fe624/7/home/vscode/.yarn/berry/cache/typescript-eslint-npm-8.46.4-1555d4b4dc-10c0.zip/node_modules/typescript-eslint/",\
+        "packageDependencies": [\
+          ["@types/eslint", null],\
+          ["@types/typescript", null],\
+          ["@typescript-eslint/eslint-plugin", "virtual:ad58fe2aa2f3bbb7ba204f963bb41b54eaa9fa4cd7b4faccdbfa7ff60fb31bb8bb566cf4acc342281d359997d7106ef3d08650a2be4b4d9815d45d5b110ffd79#npm:8.46.4"],\
+          ["@typescript-eslint/parser", "virtual:ad58fe2aa2f3bbb7ba204f963bb41b54eaa9fa4cd7b4faccdbfa7ff60fb31bb8bb566cf4acc342281d359997d7106ef3d08650a2be4b4d9815d45d5b110ffd79#npm:8.46.4"],\
+          ["@typescript-eslint/typescript-estree", "virtual:7834ba0c63396f8d5d1ba0482a3733a6cbe90c6f35afbd76259431136a46a0784ddbfab452f9787398245c134d9a8c4735941d648a63c7fce11e9888f542cb34#npm:8.46.4"],\
+          ["@typescript-eslint/utils", "virtual:5cd09b8c14293fe9fd7ee972cf0f70c3e790664492a544529771f479235a0c61ebcc48dc68fb0806e95654501d786a9f2d07c730acd8b169a142061e96d547e7#npm:8.46.4"],\
+          ["eslint", "virtual:ad58fe2aa2f3bbb7ba204f963bb41b54eaa9fa4cd7b4faccdbfa7ff60fb31bb8bb566cf4acc342281d359997d7106ef3d08650a2be4b4d9815d45d5b110ffd79#npm:9.39.1"],\
+          ["typescript", "patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=5786d5"],\
+          ["typescript-eslint", "virtual:ad58fe2aa2f3bbb7ba204f963bb41b54eaa9fa4cd7b4faccdbfa7ff60fb31bb8bb566cf4acc342281d359997d7106ef3d08650a2be4b4d9815d45d5b110ffd79#npm:8.46.4"]\
+        ],\
+        "packagePeers": [\
+          "@types/eslint",\
+          "@types/typescript",\
+          "eslint",\
+          "typescript"\
         ],\
         "linkType": "HARD"\
       }]\

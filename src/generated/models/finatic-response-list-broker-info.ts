@@ -26,6 +26,7 @@ export interface FinaticResponseListBrokerInfo {
      * Whether the request was successful
      */
     'success': boolean;
+    'data'?: Array<BrokerInfo> | null;
     'response_data'?: Array<BrokerInfo> | null;
     'message'?: string | null;
     /**
@@ -33,7 +34,8 @@ export interface FinaticResponseListBrokerInfo {
      */
     'status_code'?: number;
     'warnings'?: Array<FinaticAPIWarning> | null;
-    'errors'?: Array<{ [key: string]: any; }> | null;
+    'errors'?: Array<{ [key: string]: any; } | null> | null;
     'pagination'?: { [key: string]: any; } | null;
+    'meta'?: { [key: string]: any; } | null;
 }
 

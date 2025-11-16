@@ -15,11 +15,13 @@
 
 
 /**
- * Base class for Finatic API warnings.  Attributes ---------- category : str     The warning category (e.g., \"EMPTY_RESPONSE\", \"DEPRECATED\", etc.) message : str     The warning message details : dict[str, Any] | None     Additional warning details, if any
+ * First-class API warning used in responses.  Fields ------ type: str     High-level warning type (e.g., DEPRECATION, RATE_LIMIT). code: str     Stable programmatic code (e.g., BROKER_PARTIAL_DATA). message: str     Human-readable warning message. details: dict[str, Any] | None     Optional structured details.  Back-compat ----------- category: str     Legacy alias for type. If provided, it is mirrored to type.
  */
 export interface FinaticAPIWarning {
-    'category': string;
+    'type'?: string | null;
+    'code'?: string | null;
     'message': string;
     'details'?: { [key: string]: any; } | null;
+    'category'?: string | null;
 }
 

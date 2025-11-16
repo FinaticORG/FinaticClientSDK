@@ -24,6 +24,8 @@ import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError
 // @ts-ignore
 import type { DirectAuthRequest } from '../models';
 // @ts-ignore
+import type { FinaticError } from '../models';
+// @ts-ignore
 import type { FinaticResponsePortalUrlResponse } from '../models';
 // @ts-ignore
 import type { FinaticResponseSessionResponseData } from '../models';
@@ -37,12 +39,6 @@ import type { FinaticResponseTokenData } from '../models';
 import type { FinaticResponseTokenResponseData } from '../models';
 // @ts-ignore
 import type { FinaticapiApiV1RoutersSessionSessionRouterTestWebhookRequest } from '../models';
-// @ts-ignore
-import type { FinaticapiCoreStandardModelsFinaticResponse } from '../models';
-// @ts-ignore
-import type { HTTPValidationError } from '../models';
-// @ts-ignore
-import type { SessionLinkRequest } from '../models';
 // @ts-ignore
 import type { SessionStartRequest } from '../models';
 /**
@@ -192,49 +188,6 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Link Supabase user to existing session.  This endpoint is called after successful Supabase OTP authentication to associate the authenticated user with the portal session.
-         * @summary Link User To Session
-         * @param {string} sessionId Session ID to link user to
-         * @param {SessionLinkRequest} sessionLinkRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        linkUserToSessionApiV1SessionLinkUserPost: async (sessionId: string, sessionLinkRequest: SessionLinkRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'sessionId' is not null or undefined
-            assertParamExists('linkUserToSessionApiV1SessionLinkUserPost', 'sessionId', sessionId)
-            // verify required parameter 'sessionLinkRequest' is not null or undefined
-            assertParamExists('linkUserToSessionApiV1SessionLinkUserPost', 'sessionLinkRequest', sessionLinkRequest)
-            const localVarPath = `/api/v1/session/link-user`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (sessionId !== undefined) {
-                localVarQueryParameter['session_id'] = sessionId;
-            }
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(sessionLinkRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -424,20 +377,6 @@ export const SessionApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Link Supabase user to existing session.  This endpoint is called after successful Supabase OTP authentication to associate the authenticated user with the portal session.
-         * @summary Link User To Session
-         * @param {string} sessionId Session ID to link user to
-         * @param {SessionLinkRequest} sessionLinkRequest 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async linkUserToSessionApiV1SessionLinkUserPost(sessionId: string, sessionLinkRequest: SessionLinkRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticapiCoreStandardModelsFinaticResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.linkUserToSessionApiV1SessionLinkUserPost(sessionId, sessionLinkRequest, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SessionApi.linkUserToSessionApiV1SessionLinkUserPost']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
          * Refresh an existing session by extending its expiration time.  This endpoint allows users to extend their session before it expires. The session will be extended by the default duration (24 hours).
          * @summary Refresh Session
          * @param {string} sessionId Session ID to refresh
@@ -528,16 +467,6 @@ export const SessionApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.initSessionApiV1SessionInitPost(requestParameters.xApiKey, options).then((request) => request(axios, basePath));
         },
         /**
-         * Link Supabase user to existing session.  This endpoint is called after successful Supabase OTP authentication to associate the authenticated user with the portal session.
-         * @summary Link User To Session
-         * @param {SessionApiLinkUserToSessionApiV1SessionLinkUserPostRequest} requestParameters Request parameters.
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        linkUserToSessionApiV1SessionLinkUserPost(requestParameters: SessionApiLinkUserToSessionApiV1SessionLinkUserPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticapiCoreStandardModelsFinaticResponse> {
-            return localVarFp.linkUserToSessionApiV1SessionLinkUserPost(requestParameters.sessionId, requestParameters.sessionLinkRequest, options).then((request) => request(axios, basePath));
-        },
-        /**
          * Refresh an existing session by extending its expiration time.  This endpoint allows users to extend their session before it expires. The session will be extended by the default duration (24 hours).
          * @summary Refresh Session
          * @param {SessionApiRefreshSessionApiV1SessionRefreshPostRequest} requestParameters Request parameters.
@@ -611,15 +540,6 @@ export interface SessionApiInterface {
     initSessionApiV1SessionInitPost(requestParameters: SessionApiInitSessionApiV1SessionInitPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseTokenResponseData>;
 
     /**
-     * Link Supabase user to existing session.  This endpoint is called after successful Supabase OTP authentication to associate the authenticated user with the portal session.
-     * @summary Link User To Session
-     * @param {SessionApiLinkUserToSessionApiV1SessionLinkUserPostRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    linkUserToSessionApiV1SessionLinkUserPost(requestParameters: SessionApiLinkUserToSessionApiV1SessionLinkUserPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticapiCoreStandardModelsFinaticResponse>;
-
-    /**
      * Refresh an existing session by extending its expiration time.  This endpoint allows users to extend their session before it expires. The session will be extended by the default duration (24 hours).
      * @summary Refresh Session
      * @param {SessionApiRefreshSessionApiV1SessionRefreshPostRequest} requestParameters Request parameters.
@@ -685,18 +605,6 @@ export interface SessionApiInitSessionApiV1SessionInitPostRequest {
      * Company API key
      */
     readonly xApiKey: string
-}
-
-/**
- * Request parameters for linkUserToSessionApiV1SessionLinkUserPost operation in SessionApi.
- */
-export interface SessionApiLinkUserToSessionApiV1SessionLinkUserPostRequest {
-    /**
-     * Session ID to link user to
-     */
-    readonly sessionId: string
-
-    readonly sessionLinkRequest: SessionLinkRequest
 }
 
 /**
@@ -776,17 +684,6 @@ export class SessionApi extends BaseAPI implements SessionApiInterface {
      */
     public initSessionApiV1SessionInitPost(requestParameters: SessionApiInitSessionApiV1SessionInitPostRequest, options?: RawAxiosRequestConfig) {
         return SessionApiFp(this.configuration).initSessionApiV1SessionInitPost(requestParameters.xApiKey, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Link Supabase user to existing session.  This endpoint is called after successful Supabase OTP authentication to associate the authenticated user with the portal session.
-     * @summary Link User To Session
-     * @param {SessionApiLinkUserToSessionApiV1SessionLinkUserPostRequest} requestParameters Request parameters.
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     */
-    public linkUserToSessionApiV1SessionLinkUserPost(requestParameters: SessionApiLinkUserToSessionApiV1SessionLinkUserPostRequest, options?: RawAxiosRequestConfig) {
-        return SessionApiFp(this.configuration).linkUserToSessionApiV1SessionLinkUserPost(requestParameters.sessionId, requestParameters.sessionLinkRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

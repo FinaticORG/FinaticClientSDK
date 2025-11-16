@@ -14,6 +14,13 @@
 
 
 
-export * from './api/brokers-api';
-export * from './api/session-api';
+
+export enum AssetType {
+    Stock = 'stock',
+    Option = 'option',
+    Crypto = 'crypto',
+    Future = 'future'
+}
+
+
 

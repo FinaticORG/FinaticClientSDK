@@ -14,6 +14,15 @@
 
 
 
-export * from './api/brokers-api';
-export * from './api/session-api';
+/**
+ * Minimal order leg model; extra fields allowed for broker specifics.
+ */
+export interface OrderLeg {
+    [key: string]: any;
+
+    'symbol'?: string | null;
+    'side'?: string | null;
+    'quantity'?: number | null;
+    'price'?: number | null;
+}
 

@@ -14,6 +14,16 @@
 
 
 
-export * from './api/brokers-api';
-export * from './api/session-api';
+/**
+ * Unified order event response.
+ */
+export interface OrderEventResponse {
+    [key: string]: any;
+
+    'id'?: string | null;
+    'order_id'?: string | null;
+    'event_type'?: string | null;
+    'timestamp'?: string | null;
+    'details'?: { [key: string]: any; } | null;
+}
 

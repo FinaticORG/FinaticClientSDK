@@ -26,6 +26,7 @@ export interface FinaticResponseListBalances {
      * Whether the request was successful
      */
     'success': boolean;
+    'data'?: Array<Balances> | null;
     'response_data'?: Array<Balances> | null;
     'message'?: string | null;
     /**
@@ -35,5 +36,6 @@ export interface FinaticResponseListBalances {
     'warnings'?: Array<FinaticAPIWarning> | null;
     'errors'?: Array<{ [key: string]: any; }> | null;
     'pagination'?: { [key: string]: any; } | null;
+    'meta'?: { [key: string]: any; } | null;
 }
 

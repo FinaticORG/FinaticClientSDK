@@ -14,6 +14,11 @@
 
 
 
-export * from './api/brokers-api';
-export * from './api/session-api';
+
+export enum OrderSide {
+    Buy = 'buy',
+    Sell = 'sell'
+}
+
+
 

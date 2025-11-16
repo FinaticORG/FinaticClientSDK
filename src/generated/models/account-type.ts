@@ -14,6 +14,14 @@
 
 
 
-export * from './api/brokers-api';
-export * from './api/session-api';
+
+export enum AccountType {
+    Margin = 'margin',
+    Cash = 'cash',
+    CryptoWallet = 'crypto_wallet',
+    Live = 'live',
+    Sim = 'sim'
+}
+
+
 

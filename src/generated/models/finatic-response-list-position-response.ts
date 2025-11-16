@@ -26,6 +26,7 @@ export interface FinaticResponseListPositionResponse {
      * Whether the request was successful
      */
     'success': boolean;
+    'data'?: Array<PositionResponse> | null;
     'response_data'?: Array<PositionResponse> | null;
     'message'?: string | null;
     /**
@@ -35,5 +36,6 @@ export interface FinaticResponseListPositionResponse {
     'warnings'?: Array<FinaticAPIWarning> | null;
     'errors'?: Array<{ [key: string]: any; }> | null;
     'pagination'?: { [key: string]: any; } | null;
+    'meta'?: { [key: string]: any; } | null;
 }
 

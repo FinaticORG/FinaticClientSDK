@@ -15,19 +15,19 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
+import type { DisconnectActionResult } from './disconnect-action-result';
+// May contain unused imports in some cases
+// @ts-ignore
 import type { FinaticAPIWarning } from './finatic-apiwarning';
 
-/**
- * A generic response model for Finatic API.  Attributes ----------     data (T | None): The unwrapped response data (canonical field).     response_data (T | None): Legacy alias for data.     message (str | None): The response message. Defaults to None.     status_code (int): The HTTP status code. Defaults to 200.     success (bool): Whether the request was successful. Required.     warnings (list[FinaticAPIWarning] | None): Optional warnings taxonomy.     meta (dict | None): Optional metadata including request_id and trace_id.
- */
-export interface FinaticapiCoreStandardModelsAbstractResponsesFinaticResponse {
+export interface FinaticResponseDisconnectActionResult {
     '_id'?: string;
     /**
      * Whether the request was successful
      */
     'success': boolean;
-    'data'?:  | null;
-    'response_data'?:  | null;
+    'data'?: DisconnectActionResult | null;
+    'response_data'?: DisconnectActionResult | null;
     'message'?: string | null;
     /**
      * HTTP status code

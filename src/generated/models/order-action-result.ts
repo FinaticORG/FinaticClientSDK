@@ -14,6 +14,13 @@
 
 
 
-export * from './api/brokers-api';
-export * from './api/session-api';
+/**
+ * Unified order action result for place/cancel/modify.
+ */
+export interface OrderActionResult {
+    '_id'?: string;
+    'order_id'?: string | null;
+    'status'?: string | null;
+    'message'?: string | null;
+}
 

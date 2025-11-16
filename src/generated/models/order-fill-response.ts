@@ -14,6 +14,17 @@
 
 
 
-export * from './api/brokers-api';
-export * from './api/session-api';
+/**
+ * Unified order fill response.
+ */
+export interface OrderFillResponse {
+    [key: string]: any;
+
+    'id'?: string | null;
+    'order_id'?: string | null;
+    'symbol'?: string | null;
+    'quantity'?: number | null;
+    'price'?: number | null;
+    'timestamp'?: string | null;
+}
 

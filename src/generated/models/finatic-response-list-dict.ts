@@ -23,6 +23,7 @@ export interface FinaticResponseListDict {
      * Whether the request was successful
      */
     'success': boolean;
+    'data'?: Array<{ [key: string]: any; }> | null;
     'response_data'?: Array<{ [key: string]: any; }> | null;
     'message'?: string | null;
     /**
@@ -32,5 +33,6 @@ export interface FinaticResponseListDict {
     'warnings'?: Array<FinaticAPIWarning> | null;
     'errors'?: Array<{ [key: string]: any; }> | null;
     'pagination'?: { [key: string]: any; } | null;
+    'meta'?: { [key: string]: any; } | null;
 }
 

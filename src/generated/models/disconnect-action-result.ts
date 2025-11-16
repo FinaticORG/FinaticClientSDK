@@ -14,6 +14,12 @@
 
 
 
-export * from './api/brokers-api';
-export * from './api/session-api';
+/**
+ * Generic disconnect action result.
+ */
+export interface DisconnectActionResult {
+    '_id'?: string;
+    'success'?: boolean;
+    'message'?: string | null;
+}
 

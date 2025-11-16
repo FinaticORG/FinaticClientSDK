@@ -14,6 +14,16 @@
 
 
 
-export * from './api/brokers-api';
-export * from './api/session-api';
+/**
+ * Position lot fill.
+ */
+export interface PositionLotFillResponse {
+    [key: string]: any;
+
+    'id'?: string | null;
+    'order_id'?: string | null;
+    'quantity'?: number | null;
+    'price'?: number | null;
+    'timestamp'?: string | null;
+}
 

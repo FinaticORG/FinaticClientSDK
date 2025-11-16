@@ -26,6 +26,7 @@ export interface FinaticResponseListUserBrokerConnections {
      * Whether the request was successful
      */
     'success': boolean;
+    'data'?: Array<UserBrokerConnections> | null;
     'response_data'?: Array<UserBrokerConnections> | null;
     'message'?: string | null;
     /**
@@ -35,5 +36,6 @@ export interface FinaticResponseListUserBrokerConnections {
     'warnings'?: Array<FinaticAPIWarning> | null;
     'errors'?: Array<{ [key: string]: any; }> | null;
     'pagination'?: { [key: string]: any; } | null;
+    'meta'?: { [key: string]: any; } | null;
 }
 

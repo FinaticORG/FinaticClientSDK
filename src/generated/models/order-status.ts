@@ -14,6 +14,18 @@
 
 
 
-export * from './api/brokers-api';
-export * from './api/session-api';
+
+export enum OrderStatus {
+    New = 'new',
+    PendingNew = 'pending_new',
+    Filled = 'filled',
+    PartiallyFilled = 'partially_filled',
+    Cancelled = 'cancelled',
+    Rejected = 'rejected',
+    Expired = 'expired',
+    PendingCancel = 'pending_cancel',
+    PendingReplace = 'pending_replace'
+}
+
+
 

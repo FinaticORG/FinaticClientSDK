@@ -14,6 +14,15 @@
 
 
 
-export * from './api/brokers-api';
-export * from './api/session-api';
+/**
+ * Order inside an order group.
+ */
+export interface OrderGroupOrder {
+    [key: string]: any;
+
+    'id'?: string | null;
+    'symbol'?: string | null;
+    'status'?: string | null;
+    'legs'?: Array<{ [key: string]: any; }> | null;
+}
 
