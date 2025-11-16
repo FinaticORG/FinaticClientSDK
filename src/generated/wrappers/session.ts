@@ -809,7 +809,7 @@ export class SessionWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.testWebhookApiV1SessionWebhookTestPost({ finaticapi__api__v1__routers__session__session_router__TestWebhookRequest: { event_type: eventType, ...( sampleData !== undefined ? { sample_data: sampleData } : {}) },  }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.testWebhookApiV1SessionWebhookTestPost({ finaticapiApiV1RoutersSessionSessionRouterTestWebhookRequest: { event_type: eventType, ...( sampleData !== undefined ? { sample_data: sampleData } : {}) },  }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           const result = apiResponse;
           return await applyResponseInterceptors(result, this.sdkConfig);
         },

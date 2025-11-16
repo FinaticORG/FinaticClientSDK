@@ -3,7 +3,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { CheckCircle, AlertTriangle, RefreshCw, User, Shield, Trash2 } from 'lucide-react';
@@ -30,7 +29,6 @@ export function AuthenticationPageComponent() {
     currentUserId: contextUserId,
     checkAuth,
   } = useFinatic();
-  const [userIdInput, setUserIdInput] = useState('');
   const [isAuthedStatus, setIsAuthedStatus] = useState<boolean | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
@@ -84,27 +82,6 @@ export function AuthenticationPageComponent() {
       addLog('success', 'Authentication check completed');
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to check authentication';
-      addLog('error', msg);
-    }
-  };
-
-  const handleSetUserId = async () => {
-    if (!isSdkReady) return;
-    const value = userIdInput.trim();
-    if (!value) return;
-    try {
-      addLog('info', `Setting userId to ${value}`);
-      // For server SDKs, we just store the user ID and let the session start handle it
-      setStoredUserId(value);
-      setUserIdInput('');
-      // Reinitialize to start a new session with the user ID
-      await reinitialize();
-      addLog(
-        'success',
-        `User ID set to ${value}. Please reinitialize the SDK to start a new session.`
-      );
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Failed to set user id';
       addLog('error', msg);
     }
   };
@@ -184,19 +161,6 @@ export function AuthenticationPageComponent() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Input
-                placeholder="Enter user id"
-                value={userIdInput}
-                onChange={e => setUserIdInput(e.target.value)}
-                className="bg-input border-border text-foreground"
-              />
-              <Button
-                onClick={() => void handleSetUserId()}
-                disabled={!userIdInput.trim() || isLoading}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                Set
-              </Button>
               <Button
                 variant="outline"
                 onClick={() => void handleClearUser()}

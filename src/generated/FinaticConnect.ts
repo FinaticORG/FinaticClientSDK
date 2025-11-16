@@ -14,7 +14,6 @@ import { BrokersApi } from './api/brokers-api';
 import { SessionApi } from './api/session-api';
 import { BrokersWrapper } from './wrappers/brokers';
 import { SessionWrapper } from './wrappers/session';
-import * as Models from './models';
 
 export interface FinaticConnectOptions {
   token: string;
@@ -328,6 +327,35 @@ export class FinaticConnect extends EventEmitter {
 
 
   /**
+   * Convert data to plain objects for consistency with other SDKs.
+   * Handles arrays, objects, and ensures no class instances are returned.
+   */
+  private _convertToPlainObject(data: any): any {
+    if (data === null || data === undefined) {
+      return data;
+    }
+    if (Array.isArray(data)) {
+      return data.map(item => this._convertToPlainObject(item));
+    }
+    if (typeof data === 'object') {
+      // Check if it's a class instance (has constructor and constructor.name !== 'Object')
+      if (data.constructor && data.constructor.name !== 'Object' && data.constructor.name !== 'Array') {
+        // Convert class instance to plain object
+        return this._convertToPlainObject({ ...data });
+      }
+      // Recursively convert nested objects
+      const result: any = {};
+      for (const key in data) {
+        if (data.hasOwnProperty(key)) {
+          result[key] = this._convertToPlainObject(data[key]);
+        }
+      }
+      return result;
+    }
+    return data;
+  }
+
+  /**
    * Check if user is authenticated.
    */
   isAuthenticated(): boolean {
@@ -350,31 +378,34 @@ export class FinaticConnect extends EventEmitter {
     
     // Transform broker list to include full logo URLs
     if (Array.isArray(response)) {
-      return response.map((broker: any) => ({
+      const converted = response.map((broker: any) => ({
         ...broker,
         logo_path: broker.logo_path ? `${baseUrl}${broker.logo_path}` : '',
       }));
+      return this._convertToPlainObject(converted);
     }
     
     // Handle FinaticResponse wrapper if present
     if (response && typeof response === 'object' && 'response_data' in response) {
       const responseData = (response as any).response_data;
       if (Array.isArray(responseData)) {
-        return responseData.map((broker: any) => ({
+        const converted = responseData.map((broker: any) => ({
           ...broker,
           logo_path: broker.logo_path ? `${baseUrl}${broker.logo_path}` : '',
         }));
+        return this._convertToPlainObject(converted);
       }
     }
     
-    return response;
+    return this._convertToPlainObject(response);
   }
 
   /**
    * Get user's broker connections.
    */
   async getBrokerConnections(): Promise<any[]> {
-    return await this.brokers.listBrokerConnections();
+    const result = await this.brokers.listBrokerConnections();
+    return this._convertToPlainObject(result);
   }
 
   /**
@@ -404,7 +435,7 @@ export class FinaticConnect extends EventEmitter {
       offset += limit;
     }
     
-    return allData;
+    return this._convertToPlainObject(allData);
   }
 
   /**
@@ -438,7 +469,7 @@ export class FinaticConnect extends EventEmitter {
       offset += limit;
     }
     
-    return allData;
+    return this._convertToPlainObject(allData);
   }
 
   /**
@@ -472,7 +503,7 @@ export class FinaticConnect extends EventEmitter {
       offset += limit;
     }
     
-    return allData;
+    return this._convertToPlainObject(allData);
   }
 
   /**
@@ -503,7 +534,7 @@ export class FinaticConnect extends EventEmitter {
       offset += limit;
     }
     
-    return allData;
+    return this._convertToPlainObject(allData);
   }
 
   /**
@@ -511,7 +542,8 @@ export class FinaticConnect extends EventEmitter {
    */
   async getAccounts(page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
     const offset = (page - 1) * perPage;
-    return await this.brokers.getAccounts(undefined, undefined, undefined, undefined, undefined, perPage, offset);
+    const result = await this.brokers.getAccounts(undefined, undefined, undefined, undefined, undefined, perPage, offset);
+    return this._convertToPlainObject(result);
   }
 
   /**
@@ -519,7 +551,8 @@ export class FinaticConnect extends EventEmitter {
    */
   async getOrders(page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
     const offset = (page - 1) * perPage;
-    return await this.brokers.getOrders(undefined, undefined, undefined, filter?.symbol, filter?.orderStatus, filter?.side, filter?.assetType, perPage, offset);
+    const result = await this.brokers.getOrders(undefined, undefined, undefined, filter?.symbol, filter?.orderStatus, filter?.side, filter?.assetType, perPage, offset);
+    return this._convertToPlainObject(result);
   }
 
   /**
@@ -527,7 +560,8 @@ export class FinaticConnect extends EventEmitter {
    */
   async getPositions(page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
     const offset = (page - 1) * perPage;
-    return await this.brokers.getPositions(undefined, undefined, undefined, filter?.symbol, filter?.side, filter?.assetType, filter?.positionStatus, perPage, offset);
+    const result = await this.brokers.getPositions(undefined, undefined, undefined, filter?.symbol, filter?.side, filter?.assetType, filter?.positionStatus, perPage, offset);
+    return this._convertToPlainObject(result);
   }
 
   /**
@@ -535,37 +569,36 @@ export class FinaticConnect extends EventEmitter {
    */
   async getBalances(page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
     const offset = (page - 1) * perPage;
-    return await this.brokers.getBalances(undefined, undefined, undefined, filter?.isEndOfDaySnapshot, perPage, offset);
+    const result = await this.brokers.getBalances(undefined, undefined, undefined, filter?.isEndOfDaySnapshot, perPage, offset);
+    return this._convertToPlainObject(result);
   }
 
   /**
    * Get only open positions.
    */
   async getOpenPositions(filter?: any): Promise<any[]> {
-    // Use API enum for consistency
-    return await this.getAllPositions({ ...filter, positionStatus: Models.PositionStatus.Open });
+    return await this.getAllPositions({ ...filter, positionStatus: 'active' });
   }
 
   /**
    * Get only filled orders.
    */
   async getFilledOrders(filter?: any): Promise<any[]> {
-    return await this.getAllOrders({ ...filter, orderStatus: Models.OrderStatus.Filled });
+    return await this.getAllOrders({ ...filter, orderStatus: 'filled' });
   }
 
   /**
    * Get only pending orders.
    */
   async getPendingOrders(filter?: any): Promise<any[]> {
-    // API enum has PendingNew, not Pending
-    return await this.getAllOrders({ ...filter, orderStatus: Models.OrderStatus.PendingNew });
+    return await this.getAllOrders({ ...filter, orderStatus: 'new' });
   }
 
   /**
    * Get only active accounts.
    */
   async getActiveAccounts(filter?: any): Promise<any[]> {
-    return await this.getAllAccounts({ ...filter, status: Models.AccountStatus.Active });
+    return await this.getAllAccounts({ ...filter, status: 'active' });
   }
 
   /**
@@ -594,6 +627,158 @@ export class FinaticConnect extends EventEmitter {
    */
   async getPositionsByBroker(brokerId: string, filter?: any): Promise<any[]> {
     return await this.getAllPositions({ ...filter, brokerId });
+  }
+
+  /**
+   * Get all order groups across all pages.
+   */
+  async getAllOrderGroups(filter?: any): Promise<any[]> {
+    const allData: any[] = [];
+    let offset = 0;
+    const limit = 100;
+    
+    while (true) {
+      const result = await this.brokers.getOrderGroups(
+        filter?.brokerId,
+        filter?.connectionId,
+        limit,
+        offset,
+        filter?.createdAfter,
+        filter?.createdBefore
+      );
+      // Ensure result is an array
+      const dataArray = Array.isArray(result) ? result : [];
+      if (!dataArray || dataArray.length === 0) break;
+      allData.push(...dataArray);
+      if (dataArray.length < limit) break;
+      offset += limit;
+    }
+    
+    return this._convertToPlainObject(allData);
+  }
+
+  /**
+   * Get paginated order groups.
+   */
+  async getOrderGroups(page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
+    const offset = (page - 1) * perPage;
+    const result = await this.brokers.getOrderGroups(
+      filter?.brokerId,
+      filter?.connectionId,
+      perPage,
+      offset,
+      filter?.createdAfter,
+      filter?.createdBefore
+    );
+    return this._convertToPlainObject(result);
+  }
+
+  /**
+   * Get all position lots across all pages.
+   */
+  async getAllPositionLots(filter?: any): Promise<any[]> {
+    const allData: any[] = [];
+    let offset = 0;
+    const limit = 100;
+    
+    while (true) {
+      const result = await this.brokers.getPositionLots(
+        filter?.brokerId,
+        filter?.connectionId,
+        filter?.accountId,
+        filter?.symbol,
+        filter?.positionId,
+        limit,
+        offset
+      );
+      // Ensure result is an array
+      const dataArray = Array.isArray(result) ? result : [];
+      if (!dataArray || dataArray.length === 0) break;
+      allData.push(...dataArray);
+      if (dataArray.length < limit) break;
+      offset += limit;
+    }
+    
+    return this._convertToPlainObject(allData);
+  }
+
+  /**
+   * Get paginated position lots.
+   */
+  async getPositionLots(page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
+    const offset = (page - 1) * perPage;
+    const result = await this.brokers.getPositionLots(
+      filter?.brokerId,
+      filter?.connectionId,
+      filter?.accountId,
+      filter?.symbol,
+      filter?.positionId,
+      perPage,
+      offset
+    );
+    return this._convertToPlainObject(result);
+  }
+
+  /**
+   * Disconnect company from broker.
+   */
+  async disconnectCompany(connectionId: string): Promise<any> {
+    if (!this.sessionId) {
+      throw new Error('Session not initialized. Call startSession() first.');
+    }
+    const result = await this.brokers.disconnectCompanyFromBroker(connectionId);
+    return this._convertToPlainObject(result);
+  }
+
+  /**
+   * Get order fills for a specific order.
+   */
+  async getOrderFills(orderId: string, page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
+    if (!this.sessionId) {
+      throw new Error('Session not initialized. Call startSession() first.');
+    }
+    const offset = (page - 1) * perPage;
+    const result = await this.brokers.getOrderFills(
+      orderId,
+      filter?.connectionId,
+      perPage,
+      offset
+    );
+    return this._convertToPlainObject(result);
+  }
+
+  /**
+   * Get order events for a specific order.
+   */
+  async getOrderEvents(orderId: string, page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
+    if (!this.sessionId) {
+      throw new Error('Session not initialized. Call startSession() first.');
+    }
+    const offset = (page - 1) * perPage;
+    const result = await this.brokers.getOrderEvents(
+      orderId,
+      filter?.connectionId,
+      perPage,
+      offset
+    );
+    return this._convertToPlainObject(result);
+  }
+
+  /**
+   * Get position lot fills for a specific lot.
+   */
+  async getPositionLotFills(lotId: string, page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
+    if (!this.sessionId) {
+      throw new Error('Session not initialized. Call startSession() first.');
+    }
+    const offset = (page - 1) * perPage;
+    const result = await this.brokers.getPositionLotFills(
+      lotId,
+      filter?.connectionId,
+      perPage,
+      offset
+    );
+    return this._convertToPlainObject(result);
   }
 
 

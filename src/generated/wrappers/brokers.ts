@@ -14,8 +14,25 @@ import { getLogger, type Logger } from '../utils/logger';
 import { handleError } from '../utils/error-handling';
 import { getCache, generateCacheKey } from '../utils/cache';
 import { applyRequestInterceptors, applyResponseInterceptors, applyErrorInterceptors } from '../utils/interceptors';
+import type { AccountStatus } from '../models';
+import type { Accounts } from '../models';
+import type { Balances } from '../models';
+import type { BrokerInfo } from '../models';
 import type { DisconnectActionResult } from '../models';
 import type { OrderActionResult } from '../models';
+import type { OrderEventResponse } from '../models';
+import type { OrderFillResponse } from '../models';
+import type { OrderGroupResponse } from '../models';
+import type { OrderResponse } from '../models';
+import type { PositionLotFillResponse } from '../models';
+import type { PositionLotResponse } from '../models';
+import type { PositionResponse } from '../models';
+import type { PublicAccountTypeEnum } from '../models';
+import type { PublicAssetTypeEnum } from '../models';
+import type { PublicOrderSideEnum } from '../models';
+import type { PublicOrderStatusEnum } from '../models';
+import type { PublicPositionStatusEnum } from '../models';
+import type { UserBrokerConnections } from '../models';
 
 
 /**
@@ -421,9 +438,9 @@ export class BrokersWrapper {
    * @param connectionId {string}
    * @param accountId {string}
    * @param symbol {string}
-   * @param orderStatus {OrderStatus}
-   * @param side {OrderSide}
-   * @param assetType {AssetType}
+   * @param orderStatus {PublicOrderStatusEnum}
+   * @param side {PublicOrderSideEnum}
+   * @param assetType {PublicAssetTypeEnum}
    * @param limit {number}
    * @param offset {number}
    * @param createdAfter {string}
@@ -441,7 +458,7 @@ export class BrokersWrapper {
    * const result = await finatic.getOrders();
    * ```
    */
-  async getOrders(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, orderStatus?: OrderStatus, side?: OrderSide, assetType?: AssetType, limit?: number, offset?: number, createdAfter?: string, createdBefore?: string, withMetadata?: boolean, withEnvelope?: boolean): Promise<OrderResponse[]> {
+  async getOrders(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, orderStatus?: PublicOrderStatusEnum, side?: PublicOrderSideEnum, assetType?: PublicAssetTypeEnum, limit?: number, offset?: number, createdAfter?: string, createdBefore?: string, withMetadata?: boolean, withEnvelope?: boolean): Promise<OrderResponse[]> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
@@ -560,9 +577,9 @@ export class BrokersWrapper {
    * @param connectionId {string}
    * @param accountId {string}
    * @param symbol {string}
-   * @param side {OrderSide}
-   * @param assetType {AssetType}
-   * @param positionStatus {PositionStatus}
+   * @param side {PublicOrderSideEnum}
+   * @param assetType {PublicAssetTypeEnum}
+   * @param positionStatus {PublicPositionStatusEnum}
    * @param limit {number}
    * @param offset {number}
    * @param updatedAfter {string}
@@ -580,7 +597,7 @@ export class BrokersWrapper {
    * const result = await finatic.getPositions();
    * ```
    */
-  async getPositions(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, side?: OrderSide, assetType?: AssetType, positionStatus?: PositionStatus, limit?: number, offset?: number, updatedAfter?: string, updatedBefore?: string, withMetadata?: boolean, withEnvelope?: boolean): Promise<PositionResponse[]> {
+  async getPositions(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, side?: PublicOrderSideEnum, assetType?: PublicAssetTypeEnum, positionStatus?: PublicPositionStatusEnum, limit?: number, offset?: number, updatedAfter?: string, updatedBefore?: string, withMetadata?: boolean, withEnvelope?: boolean): Promise<PositionResponse[]> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
@@ -830,7 +847,7 @@ export class BrokersWrapper {
 
    * @param brokerId {string}
    * @param connectionId {string}
-   * @param accountType {AccountType}
+   * @param accountType {PublicAccountTypeEnum}
    * @param status {AccountStatus}
    * @param currency {string}
    * @param limit {number}
@@ -848,7 +865,7 @@ export class BrokersWrapper {
    * const result = await finatic.getAccounts();
    * ```
    */
-  async getAccounts(brokerId?: string, connectionId?: string, accountType?: AccountType, status?: AccountStatus, currency?: string, limit?: number, offset?: number, withMetadata?: boolean, withEnvelope?: boolean): Promise<Accounts[]> {
+  async getAccounts(brokerId?: string, connectionId?: string, accountType?: PublicAccountTypeEnum, status?: AccountStatus, currency?: string, limit?: number, offset?: number, withMetadata?: boolean, withEnvelope?: boolean): Promise<Accounts[]> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');

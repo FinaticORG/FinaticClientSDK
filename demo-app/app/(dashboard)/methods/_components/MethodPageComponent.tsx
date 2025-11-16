@@ -40,32 +40,21 @@ export function MethodPageComponent() {
 
     const sessionMethods: MethodDefinition[] = [
       {
-        key: 'setUserId',
-        label: 'Set user id',
-        description: 'Persists the provided user id into the active SDK session.',
-        input: {
-          type: 'fields',
-          fields: [
-            {
-              name: 'userId',
-              label: 'User id',
-              placeholder: 'demo-user-123',
-              defaultValue: 'demo-user-001',
-            },
-          ],
-        },
-        prepareArgs: ({ fieldValues }) => {
-          const value = fieldValues?.userId?.trim();
-          if (!value) {
-            throw new Error('Please provide a user id before executing this method.');
-          }
-          return [value];
-        },
-      },
-      {
         key: 'getUserId',
         label: 'Get user id',
         description: 'Returns the current user id from the SDK session.',
+        input: { type: 'none' },
+      },
+      {
+        key: 'getSessionId',
+        label: 'Get session id',
+        description: 'Returns the current session ID from the SDK session.',
+        input: { type: 'none' },
+      },
+      {
+        key: 'getCompanyId',
+        label: 'Get company id',
+        description: 'Returns the current company ID from the SDK session.',
         input: { type: 'none' },
       },
       {
@@ -79,6 +68,27 @@ export function MethodPageComponent() {
         key: 'openPortal',
         label: 'Open broker portal',
         description: 'Opens the hosted onboarding portal in a modal or new tab.',
+        input: {
+          type: 'json',
+          defaultValue: JSON.stringify(
+            {
+              path: '/',
+              mode: 'modal',
+            },
+            null,
+            2
+          ),
+          placeholder: '{\n  "path": "/",\n  "mode": "modal"\n}',
+        },
+        prepareArgs: ({ inputValue }) => {
+          const payload = parseOptionalJson(inputValue, 'portal options');
+          return payload ? [payload] : [];
+        },
+      },
+      {
+        key: 'getPortalUrl',
+        label: 'Get portal URL',
+        description: 'Returns the portal URL for authentication (server SDKs use this, client SDKs typically use openPortal).',
         input: {
           type: 'json',
           defaultValue: JSON.stringify(
@@ -423,6 +433,25 @@ export function MethodPageComponent() {
           return filter ? [filter] : [];
         },
       },
+      {
+        key: 'getAllOrderGroups',
+        label: 'Get all order groups',
+        description: 'Iterates through pagination to return the full order groups list.',
+        input: {
+          type: 'fields',
+          fields: [
+            {
+              name: 'filter',
+              label: 'Filter JSON',
+              placeholder: '{"broker_id":"robinhood","connection_id":"connection-uuid"}',
+            },
+          ],
+        },
+        prepareArgs: ({ fieldValues }) => {
+          const filter = parseOptionalJson(fieldValues?.filter, 'filter');
+          return filter ? [filter] : [];
+        },
+      },
     ];
 
     groups.push({
@@ -529,6 +558,25 @@ export function MethodPageComponent() {
               label: 'Filter JSON',
               placeholder: '{"broker_id":"robinhood","symbol":"AAPL","position_id":"position-uuid"}',
               description: 'Optional filter payload (JSON).',
+            },
+          ],
+        },
+        prepareArgs: ({ fieldValues }) => {
+          const filter = parseOptionalJson(fieldValues?.filter, 'filter');
+          return filter ? [filter] : [];
+        },
+      },
+      {
+        key: 'getAllPositionLots',
+        label: 'Get all position lots',
+        description: 'Iterates through pagination to return the full position lots list.',
+        input: {
+          type: 'fields',
+          fields: [
+            {
+              name: 'filter',
+              label: 'Filter JSON',
+              placeholder: '{"broker_id":"robinhood","symbol":"AAPL","position_id":"position-uuid"}',
             },
           ],
         },

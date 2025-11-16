@@ -20,10 +20,13 @@ export interface SdkAdapter {
   // Session methods
   isAuthenticated(): Promise<boolean>;
   getUserId(): Promise<string | null>;
+  getSessionId?(): Promise<string | undefined>;
+  getCompanyId?(): Promise<string | undefined>;
   setUserId(userId: string): Promise<void>;
   
   // Portal methods - special handling for server SDKs
   openPortal(options: PortalOptions): Promise<void>;
+  getPortalUrl?(options?: PortalOptions): Promise<string>;
   closePortal?(): Promise<void>;
   confirmPortalAuth?(): Promise<any>; // For server SDKs only
   
@@ -49,6 +52,7 @@ export interface SdkAdapter {
   getOrderFills(orderId: string, filter?: any): Promise<any[]>;
   getOrderEvents(orderId: string, filter?: any): Promise<any[]>;
   getOrderGroups(filter?: any): Promise<any[]>;
+  getAllOrderGroups(filter?: any): Promise<any[]>;
   
   // Position methods
   getPositions(options?: any): Promise<any>;
@@ -58,6 +62,7 @@ export interface SdkAdapter {
   getPositionsBySymbol?(symbol: string): Promise<any[]>;
   getPositionsByBroker?(broker: string): Promise<any[]>;
   getPositionLots(filter?: any): Promise<any[]>;
+  getAllPositionLots(filter?: any): Promise<any[]>;
   getPositionLotFills(lotId: string, filter?: any): Promise<any[]>;
   
   // Balance methods
@@ -95,6 +100,14 @@ export class ClientSdkAdapter implements SdkAdapter {
     return await this.client.getUserId();
   }
 
+  async getSessionId(): Promise<string | undefined> {
+    return Promise.resolve(this.client.getSessionId());
+  }
+
+  async getCompanyId(): Promise<string | undefined> {
+    return Promise.resolve(this.client.getCompanyId());
+  }
+
   async setUserId(userId: string): Promise<void> {
     return await this.client.setUserId(userId);
   }
@@ -103,6 +116,10 @@ export class ClientSdkAdapter implements SdkAdapter {
   async openPortal(options: PortalOptions): Promise<void> {
     // Client SDK handles portal internally with callbacks
     return await (this.client as any).openPortal(options);
+  }
+
+  async getPortalUrl(options?: PortalOptions): Promise<string> {
+    return await this.client.getPortalUrl(options);
   }
 
   async closePortal(): Promise<void> {
@@ -174,15 +191,19 @@ export class ClientSdkAdapter implements SdkAdapter {
   }
 
   async getOrderFills(orderId: string, filter?: any): Promise<any[]> {
-    return await this.client.getOrderFills(orderId, filter);
+    return await this.client.getOrderFills(orderId, 1, 100, filter);
   }
 
   async getOrderEvents(orderId: string, filter?: any): Promise<any[]> {
-    return await this.client.getOrderEvents(orderId, filter);
+    return await this.client.getOrderEvents(orderId, 1, 100, filter);
   }
 
   async getOrderGroups(filter?: any): Promise<any[]> {
     return await this.client.getOrderGroups(filter);
+  }
+
+  async getAllOrderGroups(filter?: any): Promise<any[]> {
+    return await this.client.getAllOrderGroups(filter);
   }
 
   async getPositions(options?: any): Promise<any> {
@@ -217,8 +238,12 @@ export class ClientSdkAdapter implements SdkAdapter {
     return await this.client.getPositionLots(filter);
   }
 
+  async getAllPositionLots(filter?: any): Promise<any[]> {
+    return await this.client.getAllPositionLots(filter);
+  }
+
   async getPositionLotFills(lotId: string, filter?: any): Promise<any[]> {
-    return await this.client.getPositionLotFills(lotId, filter);
+    return await this.client.getPositionLotFills(lotId, 1, 100, filter);
   }
 
   async getBalances(options?: any): Promise<any> {
