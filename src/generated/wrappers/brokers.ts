@@ -14,6 +14,14 @@ import { getLogger, type Logger } from '../utils/logger';
 import { handleError } from '../utils/error-handling';
 import { getCache, generateCacheKey } from '../utils/cache';
 import { applyRequestInterceptors, applyResponseInterceptors, applyErrorInterceptors } from '../utils/interceptors';
+import { coerceEnumValue } from '../utils/enum-coercion';
+import { convertToPlainObject } from '../utils/plain-object';
+import { PublicAccountTypeEnum } from '../models';
+import { PublicAssetTypeEnum } from '../models';
+import { PublicOrderSideEnum } from '../models';
+import { PublicOrderStatusEnum } from '../models';
+import { PublicPositionStatusEnum } from '../models';
+
 import type { AccountStatus } from '../models';
 import type { Accounts } from '../models';
 import type { Balances } from '../models';
@@ -27,12 +35,402 @@ import type { OrderResponse } from '../models';
 import type { PositionLotFillResponse } from '../models';
 import type { PositionLotResponse } from '../models';
 import type { PositionResponse } from '../models';
-import type { PublicAccountTypeEnum } from '../models';
-import type { PublicAssetTypeEnum } from '../models';
-import type { PublicOrderSideEnum } from '../models';
-import type { PublicOrderStatusEnum } from '../models';
-import type { PublicPositionStatusEnum } from '../models';
 import type { UserBrokerConnections } from '../models';
+
+// Phase 2C: Input/Output type definitions
+export interface GetBrokersParams {
+  // No parameters
+}
+
+export interface GetBrokersResponse {
+  success: {
+    data: BrokerInfo[];
+    meta?: Record<string, any>;
+  };
+  Error?: {
+    message: string;
+    code?: string;
+    status?: number;
+    details?: Record<string, any>;
+  };
+  Warning?: Array<{
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  }>;
+}
+
+export interface ListBrokerConnectionsParams {
+  // No parameters
+}
+
+export interface ListBrokerConnectionsResponse {
+  success: {
+    data: UserBrokerConnections[];
+    meta?: Record<string, any>;
+  };
+  Error?: {
+    message: string;
+    code?: string;
+    status?: number;
+    details?: Record<string, any>;
+  };
+  Warning?: Array<{
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  }>;
+}
+
+export interface DisconnectCompanyFromBrokerParams {
+  connectionId: string;
+}
+
+export interface DisconnectCompanyFromBrokerResponse {
+  success: {
+    data: DisconnectActionResult;
+    meta?: Record<string, any>;
+  };
+  Error?: {
+    message: string;
+    code?: string;
+    status?: number;
+    details?: Record<string, any>;
+  };
+  Warning?: Array<{
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  }>;
+}
+
+export interface GetOrdersParams {
+  brokerId?: string;
+  connectionId?: string;
+  accountId?: string;
+  symbol?: string;
+  orderStatus?: PublicOrderStatusEnum;
+  side?: PublicOrderSideEnum;
+  assetType?: PublicAssetTypeEnum;
+  limit?: number;
+  offset?: number;
+  createdAfter?: string;
+  createdBefore?: string;
+  withMetadata?: boolean;
+}
+
+export interface GetOrdersResponse {
+  success: {
+    data: OrderResponse[];
+    meta?: Record<string, any>;
+  };
+  Error?: {
+    message: string;
+    code?: string;
+    status?: number;
+    details?: Record<string, any>;
+  };
+  Warning?: Array<{
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  }>;
+}
+
+export interface GetPositionsParams {
+  brokerId?: string;
+  connectionId?: string;
+  accountId?: string;
+  symbol?: string;
+  side?: PublicOrderSideEnum;
+  assetType?: PublicAssetTypeEnum;
+  positionStatus?: PublicPositionStatusEnum;
+  limit?: number;
+  offset?: number;
+  updatedAfter?: string;
+  updatedBefore?: string;
+  withMetadata?: boolean;
+}
+
+export interface GetPositionsResponse {
+  success: {
+    data: PositionResponse[];
+    meta?: Record<string, any>;
+  };
+  Error?: {
+    message: string;
+    code?: string;
+    status?: number;
+    details?: Record<string, any>;
+  };
+  Warning?: Array<{
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  }>;
+}
+
+export interface GetBalancesParams {
+  brokerId?: string;
+  connectionId?: string;
+  accountId?: string;
+  isEndOfDaySnapshot?: boolean;
+  limit?: number;
+  offset?: number;
+  balanceCreatedAfter?: string;
+  balanceCreatedBefore?: string;
+  withMetadata?: boolean;
+}
+
+export interface GetBalancesResponse {
+  success: {
+    data: Balances[];
+    meta?: Record<string, any>;
+  };
+  Error?: {
+    message: string;
+    code?: string;
+    status?: number;
+    details?: Record<string, any>;
+  };
+  Warning?: Array<{
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  }>;
+}
+
+export interface GetAccountsParams {
+  brokerId?: string;
+  connectionId?: string;
+  accountType?: PublicAccountTypeEnum;
+  status?: AccountStatus;
+  currency?: string;
+  limit?: number;
+  offset?: number;
+  withMetadata?: boolean;
+}
+
+export interface GetAccountsResponse {
+  success: {
+    data: Accounts[];
+    meta?: Record<string, any>;
+  };
+  Error?: {
+    message: string;
+    code?: string;
+    status?: number;
+    details?: Record<string, any>;
+  };
+  Warning?: Array<{
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  }>;
+}
+
+export interface GetOrderFillsParams {
+  orderId: string;
+  connectionId?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface GetOrderFillsResponse {
+  success: {
+    data: OrderFillResponse[];
+    meta?: Record<string, any>;
+  };
+  Error?: {
+    message: string;
+    code?: string;
+    status?: number;
+    details?: Record<string, any>;
+  };
+  Warning?: Array<{
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  }>;
+}
+
+export interface GetOrderEventsParams {
+  orderId: string;
+  connectionId?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface GetOrderEventsResponse {
+  success: {
+    data: OrderEventResponse[];
+    meta?: Record<string, any>;
+  };
+  Error?: {
+    message: string;
+    code?: string;
+    status?: number;
+    details?: Record<string, any>;
+  };
+  Warning?: Array<{
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  }>;
+}
+
+export interface GetOrderGroupsParams {
+  brokerId?: string;
+  connectionId?: string;
+  limit?: number;
+  offset?: number;
+  createdAfter?: string;
+  createdBefore?: string;
+}
+
+export interface GetOrderGroupsResponse {
+  success: {
+    data: OrderGroupResponse[];
+    meta?: Record<string, any>;
+  };
+  Error?: {
+    message: string;
+    code?: string;
+    status?: number;
+    details?: Record<string, any>;
+  };
+  Warning?: Array<{
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  }>;
+}
+
+export interface GetPositionLotsParams {
+  brokerId?: string;
+  connectionId?: string;
+  accountId?: string;
+  symbol?: string;
+  positionId?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface GetPositionLotsResponse {
+  success: {
+    data: PositionLotResponse[];
+    meta?: Record<string, any>;
+  };
+  Error?: {
+    message: string;
+    code?: string;
+    status?: number;
+    details?: Record<string, any>;
+  };
+  Warning?: Array<{
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  }>;
+}
+
+export interface GetPositionLotFillsParams {
+  lotId: string;
+  connectionId?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface GetPositionLotFillsResponse {
+  success: {
+    data: PositionLotFillResponse[];
+    meta?: Record<string, any>;
+  };
+  Error?: {
+    message: string;
+    code?: string;
+    status?: number;
+    details?: Record<string, any>;
+  };
+  Warning?: Array<{
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  }>;
+}
+
+export interface PlaceOrderParams {
+  body?: any;
+  connectionId?: string;
+}
+
+export interface PlaceOrderResponse {
+  success: {
+    data: OrderActionResult;
+    meta?: Record<string, any>;
+  };
+  Error?: {
+    message: string;
+    code?: string;
+    status?: number;
+    details?: Record<string, any>;
+  };
+  Warning?: Array<{
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  }>;
+}
+
+export interface CancelOrderParams {
+  orderId: string;
+  body?: any;
+  accountNumber?: string;
+  connectionId?: string;
+}
+
+export interface CancelOrderResponse {
+  success: {
+    data: OrderActionResult;
+    meta?: Record<string, any>;
+  };
+  Error?: {
+    message: string;
+    code?: string;
+    status?: number;
+    details?: Record<string, any>;
+  };
+  Warning?: Array<{
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  }>;
+}
+
+export interface ModifyOrderParams {
+  orderId: string;
+  body?: any;
+  accountNumber?: string;
+  connectionId?: string;
+}
+
+export interface ModifyOrderResponse {
+  success: {
+    data: OrderActionResult;
+    meta?: Record<string, any>;
+  };
+  Error?: {
+    message: string;
+    code?: string;
+    status?: number;
+    details?: Record<string, any>;
+  };
+  Warning?: Array<{
+    message: string;
+    code?: string;
+    details?: Record<string, any>;
+  }>;
+}
 
 
 /**
@@ -92,19 +490,27 @@ export class BrokersWrapper {
    * FinaticResponse[list[BrokerInfo]]
    *     list of available brokers with their metadata.
 
-   * @param withEnvelope {boolean} return unified envelope when true
-   * @returns {BrokerInfo[]}
+   * @param params {GetBrokersParams} Input parameters object (empty for methods with no parameters)
+   * @returns {Promise<GetBrokersResponse>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/
    * @methodId get_brokers_api_v1_brokers__get
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example usage (auto-generated)
-   * const result = await finatic.getBrokers();
+   * // Example with no parameters
+   * const result = await finatic.getBrokers({});
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
    * ```
    */
-  async getBrokers(withEnvelope?: boolean): Promise<BrokerInfo[]> {
+  async getBrokers(params: GetBrokersParams): Promise<GetBrokersResponse> {
+    // Phase 2C: Extract individual params from input params object
+    // No parameters to extract
+
     // Generate request ID
     const requestId = this._generateRequestId();
 
@@ -112,18 +518,18 @@ export class BrokersWrapper {
     if (this.sdkConfig?.validationEnabled) {
       // TODO: Generate validation schema from endpoint parameters
       // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, {  }, this.sdkConfig);
+      // validateParams(validationSchema, params, this.sdkConfig);
     }
 
     // Check cache (Phase 2B: optional caching)
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/', {  }, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/', params, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached;
+        return cached as GetBrokersResponse;
       }
     }
 
@@ -132,6 +538,7 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/',
+      params: params,
       action: 'getBrokers'
     });
 
@@ -139,34 +546,40 @@ export class BrokersWrapper {
       const response = await retryApiCall(
         async () => {
           const apiResponse = await this.api.getBrokersApiV1BrokersGet({ headers: { 'x-request-id': requestId } });
-          const result = apiResponse;
-          return await applyResponseInterceptors(result, this.sdkConfig);
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
       
-      // Canonical unwrap: AxiosResponse.data.data or Pydantic-like data
+      // Phase 2C: Unwrap API response and transform to standard response structure
       const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      const result = (responseData as any).data;
       
-      if (withEnvelope === true) {
-        const warnings = (responseData as any).warnings;
-        const meta = (responseData as any).meta;
-        const envelope: any = { data: result };
-        if (Array.isArray(warnings)) envelope.warnings = warnings;
-        if (meta) envelope.meta = meta;
-        return envelope;
-      }
+      const apiData = (responseData as any).data;
+      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const meta = (responseData as any).meta;
       
-      const finalResult = result;
+      // Build standard response structure
+      const standardResponse: GetBrokersResponse = {
+        success: {
+          data: convertToPlainObject(apiData) as BrokerInfo[],
+          ...(meta ? { meta } : {}),
+        },
+        ...(warnings && warnings.length > 0 ? {
+          Warning: warnings.map((w: any) => ({
+            message: w.message || String(w),
+            code: w.code,
+            details: w.details || w,
+          })),
+        } : {}),
+      };
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/', {  }, this.sdkConfig);
-        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/', params, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
       this.logger.debug('Get Brokers completed', {
@@ -174,7 +587,8 @@ export class BrokersWrapper {
         action: 'getBrokers'
       });
       
-      return finalResult;
+      // Phase 2C: Return standard response structure (already plain objects)
+      return standardResponse;
       
     } catch (error) {
       try {
@@ -186,7 +600,52 @@ export class BrokersWrapper {
         action: 'getBrokers'
       });
       
-      throw this._handleError(error, requestId);
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        errorMessage = axiosError.response?.data?.message || 
+                       axiosError.response?.statusText || 
+                       axiosError.message || 
+                       errorMessage;
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: GetBrokersResponse = {
+        success: {
+          data: null as any,
+        },
+        Error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
     }
 
     // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
@@ -202,23 +661,31 @@ export class BrokersWrapper {
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns connections that the user has any permissions for.
 
-   * @param withEnvelope {boolean} return unified envelope when true
-   * @returns {UserBrokerConnections[]}
+   * @param params {ListBrokerConnectionsParams} Input parameters object (empty for methods with no parameters)
+   * @returns {Promise<ListBrokerConnectionsResponse>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/connections
    * @methodId list_broker_connections_api_v1_brokers_connections_get
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example usage (auto-generated)
-   * const result = await finatic.listBrokerConnections();
+   * // Example with no parameters
+   * const result = await finatic.listBrokerConnections({});
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
    * ```
    */
-  async listBrokerConnections(withEnvelope?: boolean): Promise<UserBrokerConnections[]> {
+  async listBrokerConnections(params: ListBrokerConnectionsParams): Promise<ListBrokerConnectionsResponse> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
+
+    // Phase 2C: Extract individual params from input params object
+    // No parameters to extract
 
     // Generate request ID
     const requestId = this._generateRequestId();
@@ -227,18 +694,18 @@ export class BrokersWrapper {
     if (this.sdkConfig?.validationEnabled) {
       // TODO: Generate validation schema from endpoint parameters
       // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, {  }, this.sdkConfig);
+      // validateParams(validationSchema, params, this.sdkConfig);
     }
 
     // Check cache (Phase 2B: optional caching)
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/connections', {  }, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/connections', params, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached;
+        return cached as ListBrokerConnectionsResponse;
       }
     }
 
@@ -247,6 +714,7 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/connections',
+      params: params,
       action: 'listBrokerConnections'
     });
 
@@ -254,34 +722,40 @@ export class BrokersWrapper {
       const response = await retryApiCall(
         async () => {
           const apiResponse = await this.api.listBrokerConnectionsApiV1BrokersConnectionsGet({ headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
-          const result = apiResponse;
-          return await applyResponseInterceptors(result, this.sdkConfig);
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
       
-      // Canonical unwrap: AxiosResponse.data.data or Pydantic-like data
+      // Phase 2C: Unwrap API response and transform to standard response structure
       const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      const result = (responseData as any).data;
       
-      if (withEnvelope === true) {
-        const warnings = (responseData as any).warnings;
-        const meta = (responseData as any).meta;
-        const envelope: any = { data: result };
-        if (Array.isArray(warnings)) envelope.warnings = warnings;
-        if (meta) envelope.meta = meta;
-        return envelope;
-      }
+      const apiData = (responseData as any).data;
+      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const meta = (responseData as any).meta;
       
-      const finalResult = result;
+      // Build standard response structure
+      const standardResponse: ListBrokerConnectionsResponse = {
+        success: {
+          data: convertToPlainObject(apiData) as UserBrokerConnections[],
+          ...(meta ? { meta } : {}),
+        },
+        ...(warnings && warnings.length > 0 ? {
+          Warning: warnings.map((w: any) => ({
+            message: w.message || String(w),
+            code: w.code,
+            details: w.details || w,
+          })),
+        } : {}),
+      };
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/connections', {  }, this.sdkConfig);
-        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/connections', params, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
       this.logger.debug('List Broker Connections completed', {
@@ -289,7 +763,8 @@ export class BrokersWrapper {
         action: 'listBrokerConnections'
       });
       
-      return finalResult;
+      // Phase 2C: Return standard response structure (already plain objects)
+      return standardResponse;
       
     } catch (error) {
       try {
@@ -301,7 +776,52 @@ export class BrokersWrapper {
         action: 'listBrokerConnections'
       });
       
-      throw this._handleError(error, requestId);
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        errorMessage = axiosError.response?.data?.message || 
+                       axiosError.response?.statusText || 
+                       axiosError.message || 
+                       errorMessage;
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: ListBrokerConnectionsResponse = {
+        success: {
+          data: null as any,
+        },
+        Error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
     }
 
     // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
@@ -317,24 +837,35 @@ export class BrokersWrapper {
    * If the company is the only one with access, the entire connection is deleted.
    * If other companies have access, only the company's access is removed.
 
-   * @param connectionId {string}
-   * @param withEnvelope {boolean} return unified envelope when true
-   * @returns {DisconnectActionResult}
+   * @param params {DisconnectCompanyFromBrokerParams} Input parameters object
+   * @returns {Promise<DisconnectCompanyFromBrokerResponse>} Standard response with success/Error/Warning structure
    * 
    * Generated from: DELETE /api/v1/brokers/disconnect-company/{connection_id}
    * @methodId disconnect_company_from_broker_api_v1_brokers_disconnect_company__connection_id__delete
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example usage (auto-generated)
-   * const result = await finatic.disconnectCompanyFromBroker('example');
+   * // Minimal example with required parameters only
+   * const result = await finatic.disconnectCompanyFromBroker({
+    connectionId: 'id-123'
+   * });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message);
+   * }
    * ```
    */
-  async disconnectCompanyFromBroker(connectionId: string, withEnvelope?: boolean): Promise<DisconnectActionResult> {
+  async disconnectCompanyFromBroker(params: DisconnectCompanyFromBrokerParams): Promise<DisconnectCompanyFromBrokerResponse> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
+
+    // Phase 2C: Extract individual params from input params object
+    const connectionId = params.connectionId;
 
     // Generate request ID
     const requestId = this._generateRequestId();
@@ -343,18 +874,18 @@ export class BrokersWrapper {
     if (this.sdkConfig?.validationEnabled) {
       // TODO: Generate validation schema from endpoint parameters
       // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, { connectionId }, this.sdkConfig);
+      // validateParams(validationSchema, params, this.sdkConfig);
     }
 
     // Check cache (Phase 2B: optional caching)
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/disconnect-company/{connection_id}', { connectionId }, this.sdkConfig);
+      const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/disconnect-company/{connection_id}', params, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached;
+        return cached as DisconnectCompanyFromBrokerResponse;
       }
     }
 
@@ -363,42 +894,48 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'DELETE',
       path: '/api/v1/brokers/disconnect-company/{connection_id}',
-      connectionId: connectionId,
+      params: params,
       action: 'disconnectCompanyFromBroker'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete({ connectionId: connectionId,  }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
-          const result = apiResponse;
-          return await applyResponseInterceptors(result, this.sdkConfig);
+          const apiResponse = await this.api.disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete({ connectionId: connectionId }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
       
-      // Canonical unwrap: AxiosResponse.data.data or Pydantic-like data
+      // Phase 2C: Unwrap API response and transform to standard response structure
       const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      const result = (responseData as any).data;
       
-      if (withEnvelope === true) {
-        const warnings = (responseData as any).warnings;
-        const meta = (responseData as any).meta;
-        const envelope: any = { data: result };
-        if (Array.isArray(warnings)) envelope.warnings = warnings;
-        if (meta) envelope.meta = meta;
-        return envelope;
-      }
+      const apiData = (responseData as any).data;
+      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const meta = (responseData as any).meta;
       
-      const finalResult = result;
+      // Build standard response structure
+      const standardResponse: DisconnectCompanyFromBrokerResponse = {
+        success: {
+          data: convertToPlainObject(apiData) as DisconnectActionResult,
+          ...(meta ? { meta } : {}),
+        },
+        ...(warnings && warnings.length > 0 ? {
+          Warning: warnings.map((w: any) => ({
+            message: w.message || String(w),
+            code: w.code,
+            details: w.details || w,
+          })),
+        } : {}),
+      };
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/disconnect-company/{connection_id}', { connectionId }, this.sdkConfig);
-        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
+        const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/disconnect-company/{connection_id}', params, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
       this.logger.debug('Disconnect Company From Broker completed', {
@@ -406,7 +943,8 @@ export class BrokersWrapper {
         action: 'disconnectCompanyFromBroker'
       });
       
-      return finalResult;
+      // Phase 2C: Return standard response structure (already plain objects)
+      return standardResponse;
       
     } catch (error) {
       try {
@@ -418,7 +956,52 @@ export class BrokersWrapper {
         action: 'disconnectCompanyFromBroker'
       });
       
-      throw this._handleError(error, requestId);
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        errorMessage = axiosError.response?.data?.message || 
+                       axiosError.response?.statusText || 
+                       axiosError.message || 
+                       errorMessage;
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: DisconnectCompanyFromBrokerResponse = {
+        success: {
+          data: null as any,
+        },
+        Error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
     }
 
     // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
@@ -434,35 +1017,61 @@ export class BrokersWrapper {
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns orders from connections the company has read access to.
 
-   * @param brokerId {string}
-   * @param connectionId {string}
-   * @param accountId {string}
-   * @param symbol {string}
-   * @param orderStatus {PublicOrderStatusEnum}
-   * @param side {PublicOrderSideEnum}
-   * @param assetType {PublicAssetTypeEnum}
-   * @param limit {number}
-   * @param offset {number}
-   * @param createdAfter {string}
-   * @param createdBefore {string}
-   * @param withMetadata {boolean}
-   * @param withEnvelope {boolean} return unified envelope when true
-   * @returns {OrderResponse[]}
+   * @param params {GetOrdersParams} Input parameters object
+   * @returns {Promise<GetOrdersResponse>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/orders
    * @methodId get_orders_api_v1_brokers_data_orders_get
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example usage (auto-generated)
-   * const result = await finatic.getOrders();
+   * // Example with no parameters
+   * const result = await finatic.getOrders({});
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getOrders({
+    brokerId: 'id-123',
+    connectionId: 'id-123',
+    accountId: 'id-123'
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.Warning && result.Warning.length > 0) {
+   *     console.warn('Warnings:', result.Warning);
+   *   }
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message, result.Error.code);
+   * }
    * ```
    */
-  async getOrders(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, orderStatus?: PublicOrderStatusEnum, side?: PublicOrderSideEnum, assetType?: PublicAssetTypeEnum, limit?: number, offset?: number, createdAfter?: string, createdBefore?: string, withMetadata?: boolean, withEnvelope?: boolean): Promise<OrderResponse[]> {
+  async getOrders(params: GetOrdersParams): Promise<GetOrdersResponse> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
+
+    // Phase 2C: Extract individual params from input params object
+    const brokerId = params.brokerId;
+    const connectionId = params.connectionId;
+    const accountId = params.accountId;
+    const symbol = params.symbol;
+    let orderStatus = params.orderStatus !== undefined ? coerceEnumValue(params.orderStatus, PublicOrderStatusEnum, 'orderStatus') : undefined;
+    let side = params.side !== undefined ? coerceEnumValue(params.side, PublicOrderSideEnum, 'side') : undefined;
+    let assetType = params.assetType !== undefined ? coerceEnumValue(params.assetType, PublicAssetTypeEnum, 'assetType') : undefined;
+    const limit = params.limit;
+    const offset = params.offset;
+    const createdAfter = params.createdAfter;
+    const createdBefore = params.createdBefore;
+    const withMetadata = params.withMetadata;
 
     // Generate request ID
     const requestId = this._generateRequestId();
@@ -471,18 +1080,18 @@ export class BrokersWrapper {
     if (this.sdkConfig?.validationEnabled) {
       // TODO: Generate validation schema from endpoint parameters
       // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, { brokerId, connectionId, accountId, symbol, orderStatus, side, assetType, limit, offset, createdAfter, createdBefore, withMetadata }, this.sdkConfig);
+      // validateParams(validationSchema, params, this.sdkConfig);
     }
 
     // Check cache (Phase 2B: optional caching)
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders', { brokerId, connectionId, accountId, symbol, orderStatus, side, assetType, limit, offset, createdAfter, createdBefore, withMetadata }, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders', params, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached;
+        return cached as GetOrdersResponse;
       }
     }
 
@@ -491,18 +1100,7 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/orders',
-      brokerId: brokerId,
-      connectionId: connectionId,
-      accountId: accountId,
-      symbol: symbol,
-      orderStatus: orderStatus,
-      side: side,
-      assetType: assetType,
-      limit: limit,
-      offset: offset,
-      createdAfter: createdAfter,
-      createdBefore: createdBefore,
-      withMetadata: withMetadata,
+      params: params,
       action: 'getOrders'
     });
 
@@ -510,34 +1108,40 @@ export class BrokersWrapper {
       const response = await retryApiCall(
         async () => {
           const apiResponse = await this.api.getOrdersApiV1BrokersDataOrdersGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(orderStatus !== undefined ? { orderStatus: orderStatus } : {}), ...(side !== undefined ? { side: side } : {}), ...(assetType !== undefined ? { assetType: assetType } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(createdAfter !== undefined ? { createdAfter: createdAfter } : {}), ...(createdBefore !== undefined ? { createdBefore: createdBefore } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
-          const result = apiResponse;
-          return await applyResponseInterceptors(result, this.sdkConfig);
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
       
-      // Canonical unwrap: AxiosResponse.data.data or Pydantic-like data
+      // Phase 2C: Unwrap API response and transform to standard response structure
       const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      const result = (responseData as any).data;
       
-      if (withEnvelope === true) {
-        const warnings = (responseData as any).warnings;
-        const meta = (responseData as any).meta;
-        const envelope: any = { data: result };
-        if (Array.isArray(warnings)) envelope.warnings = warnings;
-        if (meta) envelope.meta = meta;
-        return envelope;
-      }
+      const apiData = (responseData as any).data;
+      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const meta = (responseData as any).meta;
       
-      const finalResult = result;
+      // Build standard response structure
+      const standardResponse: GetOrdersResponse = {
+        success: {
+          data: convertToPlainObject(apiData) as OrderResponse[],
+          ...(meta ? { meta } : {}),
+        },
+        ...(warnings && warnings.length > 0 ? {
+          Warning: warnings.map((w: any) => ({
+            message: w.message || String(w),
+            code: w.code,
+            details: w.details || w,
+          })),
+        } : {}),
+      };
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders', { brokerId, connectionId, accountId, symbol, orderStatus, side, assetType, limit, offset, createdAfter, createdBefore, withMetadata }, this.sdkConfig);
-        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders', params, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
       this.logger.debug('Get Orders completed', {
@@ -545,7 +1149,8 @@ export class BrokersWrapper {
         action: 'getOrders'
       });
       
-      return finalResult;
+      // Phase 2C: Return standard response structure (already plain objects)
+      return standardResponse;
       
     } catch (error) {
       try {
@@ -557,7 +1162,52 @@ export class BrokersWrapper {
         action: 'getOrders'
       });
       
-      throw this._handleError(error, requestId);
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        errorMessage = axiosError.response?.data?.message || 
+                       axiosError.response?.statusText || 
+                       axiosError.message || 
+                       errorMessage;
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: GetOrdersResponse = {
+        success: {
+          data: null as any,
+        },
+        Error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
     }
 
     // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
@@ -573,35 +1223,61 @@ export class BrokersWrapper {
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns positions from connections the company has read access to.
 
-   * @param brokerId {string}
-   * @param connectionId {string}
-   * @param accountId {string}
-   * @param symbol {string}
-   * @param side {PublicOrderSideEnum}
-   * @param assetType {PublicAssetTypeEnum}
-   * @param positionStatus {PublicPositionStatusEnum}
-   * @param limit {number}
-   * @param offset {number}
-   * @param updatedAfter {string}
-   * @param updatedBefore {string}
-   * @param withMetadata {boolean}
-   * @param withEnvelope {boolean} return unified envelope when true
-   * @returns {PositionResponse[]}
+   * @param params {GetPositionsParams} Input parameters object
+   * @returns {Promise<GetPositionsResponse>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/positions
    * @methodId get_positions_api_v1_brokers_data_positions_get
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example usage (auto-generated)
-   * const result = await finatic.getPositions();
+   * // Example with no parameters
+   * const result = await finatic.getPositions({});
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getPositions({
+    brokerId: 'id-123',
+    connectionId: 'id-123',
+    accountId: 'id-123'
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.Warning && result.Warning.length > 0) {
+   *     console.warn('Warnings:', result.Warning);
+   *   }
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message, result.Error.code);
+   * }
    * ```
    */
-  async getPositions(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, side?: PublicOrderSideEnum, assetType?: PublicAssetTypeEnum, positionStatus?: PublicPositionStatusEnum, limit?: number, offset?: number, updatedAfter?: string, updatedBefore?: string, withMetadata?: boolean, withEnvelope?: boolean): Promise<PositionResponse[]> {
+  async getPositions(params: GetPositionsParams): Promise<GetPositionsResponse> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
+
+    // Phase 2C: Extract individual params from input params object
+    const brokerId = params.brokerId;
+    const connectionId = params.connectionId;
+    const accountId = params.accountId;
+    const symbol = params.symbol;
+    let side = params.side !== undefined ? coerceEnumValue(params.side, PublicOrderSideEnum, 'side') : undefined;
+    let assetType = params.assetType !== undefined ? coerceEnumValue(params.assetType, PublicAssetTypeEnum, 'assetType') : undefined;
+    let positionStatus = params.positionStatus !== undefined ? coerceEnumValue(params.positionStatus, PublicPositionStatusEnum, 'positionStatus') : undefined;
+    const limit = params.limit;
+    const offset = params.offset;
+    const updatedAfter = params.updatedAfter;
+    const updatedBefore = params.updatedBefore;
+    const withMetadata = params.withMetadata;
 
     // Generate request ID
     const requestId = this._generateRequestId();
@@ -610,18 +1286,18 @@ export class BrokersWrapper {
     if (this.sdkConfig?.validationEnabled) {
       // TODO: Generate validation schema from endpoint parameters
       // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, { brokerId, connectionId, accountId, symbol, side, assetType, positionStatus, limit, offset, updatedAfter, updatedBefore, withMetadata }, this.sdkConfig);
+      // validateParams(validationSchema, params, this.sdkConfig);
     }
 
     // Check cache (Phase 2B: optional caching)
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions', { brokerId, connectionId, accountId, symbol, side, assetType, positionStatus, limit, offset, updatedAfter, updatedBefore, withMetadata }, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions', params, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached;
+        return cached as GetPositionsResponse;
       }
     }
 
@@ -630,18 +1306,7 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/positions',
-      brokerId: brokerId,
-      connectionId: connectionId,
-      accountId: accountId,
-      symbol: symbol,
-      side: side,
-      assetType: assetType,
-      positionStatus: positionStatus,
-      limit: limit,
-      offset: offset,
-      updatedAfter: updatedAfter,
-      updatedBefore: updatedBefore,
-      withMetadata: withMetadata,
+      params: params,
       action: 'getPositions'
     });
 
@@ -649,34 +1314,40 @@ export class BrokersWrapper {
       const response = await retryApiCall(
         async () => {
           const apiResponse = await this.api.getPositionsApiV1BrokersDataPositionsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(side !== undefined ? { side: side } : {}), ...(assetType !== undefined ? { assetType: assetType } : {}), ...(positionStatus !== undefined ? { positionStatus: positionStatus } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(updatedAfter !== undefined ? { updatedAfter: updatedAfter } : {}), ...(updatedBefore !== undefined ? { updatedBefore: updatedBefore } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
-          const result = apiResponse;
-          return await applyResponseInterceptors(result, this.sdkConfig);
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
       
-      // Canonical unwrap: AxiosResponse.data.data or Pydantic-like data
+      // Phase 2C: Unwrap API response and transform to standard response structure
       const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      const result = (responseData as any).data;
       
-      if (withEnvelope === true) {
-        const warnings = (responseData as any).warnings;
-        const meta = (responseData as any).meta;
-        const envelope: any = { data: result };
-        if (Array.isArray(warnings)) envelope.warnings = warnings;
-        if (meta) envelope.meta = meta;
-        return envelope;
-      }
+      const apiData = (responseData as any).data;
+      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const meta = (responseData as any).meta;
       
-      const finalResult = result;
+      // Build standard response structure
+      const standardResponse: GetPositionsResponse = {
+        success: {
+          data: convertToPlainObject(apiData) as PositionResponse[],
+          ...(meta ? { meta } : {}),
+        },
+        ...(warnings && warnings.length > 0 ? {
+          Warning: warnings.map((w: any) => ({
+            message: w.message || String(w),
+            code: w.code,
+            details: w.details || w,
+          })),
+        } : {}),
+      };
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions', { brokerId, connectionId, accountId, symbol, side, assetType, positionStatus, limit, offset, updatedAfter, updatedBefore, withMetadata }, this.sdkConfig);
-        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions', params, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
       this.logger.debug('Get Positions completed', {
@@ -684,7 +1355,8 @@ export class BrokersWrapper {
         action: 'getPositions'
       });
       
-      return finalResult;
+      // Phase 2C: Return standard response structure (already plain objects)
+      return standardResponse;
       
     } catch (error) {
       try {
@@ -696,7 +1368,52 @@ export class BrokersWrapper {
         action: 'getPositions'
       });
       
-      throw this._handleError(error, requestId);
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        errorMessage = axiosError.response?.data?.message || 
+                       axiosError.response?.statusText || 
+                       axiosError.message || 
+                       errorMessage;
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: GetPositionsResponse = {
+        success: {
+          data: null as any,
+        },
+        Error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
     }
 
     // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
@@ -712,32 +1429,58 @@ export class BrokersWrapper {
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns balances from connections the company has read access to.
 
-   * @param brokerId {string}
-   * @param connectionId {string}
-   * @param accountId {string}
-   * @param isEndOfDaySnapshot {boolean}
-   * @param limit {number}
-   * @param offset {number}
-   * @param balanceCreatedAfter {string}
-   * @param balanceCreatedBefore {string}
-   * @param withMetadata {boolean}
-   * @param withEnvelope {boolean} return unified envelope when true
-   * @returns {Balances[]}
+   * @param params {GetBalancesParams} Input parameters object
+   * @returns {Promise<GetBalancesResponse>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/balances
    * @methodId get_balances_api_v1_brokers_data_balances_get
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example usage (auto-generated)
-   * const result = await finatic.getBalances();
+   * // Example with no parameters
+   * const result = await finatic.getBalances({});
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getBalances({
+    brokerId: 'id-123',
+    connectionId: 'id-123',
+    accountId: 'id-123'
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.Warning && result.Warning.length > 0) {
+   *     console.warn('Warnings:', result.Warning);
+   *   }
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message, result.Error.code);
+   * }
    * ```
    */
-  async getBalances(brokerId?: string, connectionId?: string, accountId?: string, isEndOfDaySnapshot?: boolean, limit?: number, offset?: number, balanceCreatedAfter?: string, balanceCreatedBefore?: string, withMetadata?: boolean, withEnvelope?: boolean): Promise<Balances[]> {
+  async getBalances(params: GetBalancesParams): Promise<GetBalancesResponse> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
+
+    // Phase 2C: Extract individual params from input params object
+    const brokerId = params.brokerId;
+    const connectionId = params.connectionId;
+    const accountId = params.accountId;
+    const isEndOfDaySnapshot = params.isEndOfDaySnapshot;
+    const limit = params.limit;
+    const offset = params.offset;
+    const balanceCreatedAfter = params.balanceCreatedAfter;
+    const balanceCreatedBefore = params.balanceCreatedBefore;
+    const withMetadata = params.withMetadata;
 
     // Generate request ID
     const requestId = this._generateRequestId();
@@ -746,18 +1489,18 @@ export class BrokersWrapper {
     if (this.sdkConfig?.validationEnabled) {
       // TODO: Generate validation schema from endpoint parameters
       // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, { brokerId, connectionId, accountId, isEndOfDaySnapshot, limit, offset, balanceCreatedAfter, balanceCreatedBefore, withMetadata }, this.sdkConfig);
+      // validateParams(validationSchema, params, this.sdkConfig);
     }
 
     // Check cache (Phase 2B: optional caching)
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/balances', { brokerId, connectionId, accountId, isEndOfDaySnapshot, limit, offset, balanceCreatedAfter, balanceCreatedBefore, withMetadata }, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/balances', params, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached;
+        return cached as GetBalancesResponse;
       }
     }
 
@@ -766,15 +1509,7 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/balances',
-      brokerId: brokerId,
-      connectionId: connectionId,
-      accountId: accountId,
-      isEndOfDaySnapshot: isEndOfDaySnapshot,
-      limit: limit,
-      offset: offset,
-      balanceCreatedAfter: balanceCreatedAfter,
-      balanceCreatedBefore: balanceCreatedBefore,
-      withMetadata: withMetadata,
+      params: params,
       action: 'getBalances'
     });
 
@@ -782,34 +1517,40 @@ export class BrokersWrapper {
       const response = await retryApiCall(
         async () => {
           const apiResponse = await this.api.getBalancesApiV1BrokersDataBalancesGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(isEndOfDaySnapshot !== undefined ? { isEndOfDaySnapshot: isEndOfDaySnapshot } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(balanceCreatedAfter !== undefined ? { balanceCreatedAfter: balanceCreatedAfter } : {}), ...(balanceCreatedBefore !== undefined ? { balanceCreatedBefore: balanceCreatedBefore } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
-          const result = apiResponse;
-          return await applyResponseInterceptors(result, this.sdkConfig);
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
       
-      // Canonical unwrap: AxiosResponse.data.data or Pydantic-like data
+      // Phase 2C: Unwrap API response and transform to standard response structure
       const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      const result = (responseData as any).data;
       
-      if (withEnvelope === true) {
-        const warnings = (responseData as any).warnings;
-        const meta = (responseData as any).meta;
-        const envelope: any = { data: result };
-        if (Array.isArray(warnings)) envelope.warnings = warnings;
-        if (meta) envelope.meta = meta;
-        return envelope;
-      }
+      const apiData = (responseData as any).data;
+      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const meta = (responseData as any).meta;
       
-      const finalResult = result;
+      // Build standard response structure
+      const standardResponse: GetBalancesResponse = {
+        success: {
+          data: convertToPlainObject(apiData) as Balances[],
+          ...(meta ? { meta } : {}),
+        },
+        ...(warnings && warnings.length > 0 ? {
+          Warning: warnings.map((w: any) => ({
+            message: w.message || String(w),
+            code: w.code,
+            details: w.details || w,
+          })),
+        } : {}),
+      };
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/balances', { brokerId, connectionId, accountId, isEndOfDaySnapshot, limit, offset, balanceCreatedAfter, balanceCreatedBefore, withMetadata }, this.sdkConfig);
-        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/balances', params, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
       this.logger.debug('Get Balances completed', {
@@ -817,7 +1558,8 @@ export class BrokersWrapper {
         action: 'getBalances'
       });
       
-      return finalResult;
+      // Phase 2C: Return standard response structure (already plain objects)
+      return standardResponse;
       
     } catch (error) {
       try {
@@ -829,7 +1571,52 @@ export class BrokersWrapper {
         action: 'getBalances'
       });
       
-      throw this._handleError(error, requestId);
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        errorMessage = axiosError.response?.data?.message || 
+                       axiosError.response?.statusText || 
+                       axiosError.message || 
+                       errorMessage;
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: GetBalancesResponse = {
+        success: {
+          data: null as any,
+        },
+        Error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
     }
 
     // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
@@ -845,31 +1632,57 @@ export class BrokersWrapper {
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns accounts from connections the company has read access to.
 
-   * @param brokerId {string}
-   * @param connectionId {string}
-   * @param accountType {PublicAccountTypeEnum}
-   * @param status {AccountStatus}
-   * @param currency {string}
-   * @param limit {number}
-   * @param offset {number}
-   * @param withMetadata {boolean}
-   * @param withEnvelope {boolean} return unified envelope when true
-   * @returns {Accounts[]}
+   * @param params {GetAccountsParams} Input parameters object
+   * @returns {Promise<GetAccountsResponse>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/accounts
    * @methodId get_accounts_api_v1_brokers_data_accounts_get
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example usage (auto-generated)
-   * const result = await finatic.getAccounts();
+   * // Example with no parameters
+   * const result = await finatic.getAccounts({});
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getAccounts({
+    brokerId: 'id-123',
+    connectionId: 'id-123',
+    accountType: 'cash'
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.Warning && result.Warning.length > 0) {
+   *     console.warn('Warnings:', result.Warning);
+   *   }
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message, result.Error.code);
+   * }
    * ```
    */
-  async getAccounts(brokerId?: string, connectionId?: string, accountType?: PublicAccountTypeEnum, status?: AccountStatus, currency?: string, limit?: number, offset?: number, withMetadata?: boolean, withEnvelope?: boolean): Promise<Accounts[]> {
+  async getAccounts(params: GetAccountsParams): Promise<GetAccountsResponse> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
+
+    // Phase 2C: Extract individual params from input params object
+    const brokerId = params.brokerId;
+    const connectionId = params.connectionId;
+    let accountType = params.accountType !== undefined ? coerceEnumValue(params.accountType, PublicAccountTypeEnum, 'accountType') : undefined;
+    const status = params.status;
+    const currency = params.currency;
+    const limit = params.limit;
+    const offset = params.offset;
+    const withMetadata = params.withMetadata;
 
     // Generate request ID
     const requestId = this._generateRequestId();
@@ -878,18 +1691,18 @@ export class BrokersWrapper {
     if (this.sdkConfig?.validationEnabled) {
       // TODO: Generate validation schema from endpoint parameters
       // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, { brokerId, connectionId, accountType, status, currency, limit, offset, withMetadata }, this.sdkConfig);
+      // validateParams(validationSchema, params, this.sdkConfig);
     }
 
     // Check cache (Phase 2B: optional caching)
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/accounts', { brokerId, connectionId, accountType, status, currency, limit, offset, withMetadata }, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/accounts', params, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached;
+        return cached as GetAccountsResponse;
       }
     }
 
@@ -898,14 +1711,7 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/accounts',
-      brokerId: brokerId,
-      connectionId: connectionId,
-      accountType: accountType,
-      status: status,
-      currency: currency,
-      limit: limit,
-      offset: offset,
-      withMetadata: withMetadata,
+      params: params,
       action: 'getAccounts'
     });
 
@@ -913,34 +1719,40 @@ export class BrokersWrapper {
       const response = await retryApiCall(
         async () => {
           const apiResponse = await this.api.getAccountsApiV1BrokersDataAccountsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountType !== undefined ? { accountType: accountType } : {}), ...(status !== undefined ? { status: status } : {}), ...(currency !== undefined ? { currency: currency } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
-          const result = apiResponse;
-          return await applyResponseInterceptors(result, this.sdkConfig);
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
       
-      // Canonical unwrap: AxiosResponse.data.data or Pydantic-like data
+      // Phase 2C: Unwrap API response and transform to standard response structure
       const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      const result = (responseData as any).data;
       
-      if (withEnvelope === true) {
-        const warnings = (responseData as any).warnings;
-        const meta = (responseData as any).meta;
-        const envelope: any = { data: result };
-        if (Array.isArray(warnings)) envelope.warnings = warnings;
-        if (meta) envelope.meta = meta;
-        return envelope;
-      }
+      const apiData = (responseData as any).data;
+      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const meta = (responseData as any).meta;
       
-      const finalResult = result;
+      // Build standard response structure
+      const standardResponse: GetAccountsResponse = {
+        success: {
+          data: convertToPlainObject(apiData) as Accounts[],
+          ...(meta ? { meta } : {}),
+        },
+        ...(warnings && warnings.length > 0 ? {
+          Warning: warnings.map((w: any) => ({
+            message: w.message || String(w),
+            code: w.code,
+            details: w.details || w,
+          })),
+        } : {}),
+      };
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/accounts', { brokerId, connectionId, accountType, status, currency, limit, offset, withMetadata }, this.sdkConfig);
-        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/accounts', params, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
       this.logger.debug('Get Accounts completed', {
@@ -948,7 +1760,8 @@ export class BrokersWrapper {
         action: 'getAccounts'
       });
       
-      return finalResult;
+      // Phase 2C: Return standard response structure (already plain objects)
+      return standardResponse;
       
     } catch (error) {
       try {
@@ -960,7 +1773,52 @@ export class BrokersWrapper {
         action: 'getAccounts'
       });
       
-      throw this._handleError(error, requestId);
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        errorMessage = axiosError.response?.data?.message || 
+                       axiosError.response?.statusText || 
+                       axiosError.message || 
+                       errorMessage;
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: GetAccountsResponse = {
+        success: {
+          data: null as any,
+        },
+        Error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
     }
 
     // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
@@ -975,27 +1833,58 @@ export class BrokersWrapper {
    *
    * This endpoint returns all execution fills for the specified order.
 
-   * @param orderId {string}
-   * @param connectionId {string}
-   * @param limit {number}
-   * @param offset {number}
-   * @param withEnvelope {boolean} return unified envelope when true
-   * @returns {OrderFillResponse[]}
+   * @param params {GetOrderFillsParams} Input parameters object
+   * @returns {Promise<GetOrderFillsResponse>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/orders/{order_id}/fills
    * @methodId get_order_fills_api_v1_brokers_data_orders__order_id__fills_get
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example usage (auto-generated)
-   * const result = await finatic.getOrderFills('example');
+   * // Minimal example with required parameters only
+   * const result = await finatic.getOrderFills({
+    orderId: 'id-123'
+   * });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getOrderFills({
+    orderId: 'id-123',
+    connectionId: 'id-123',
+    limit: 10,
+    offset: 0
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.Warning && result.Warning.length > 0) {
+   *     console.warn('Warnings:', result.Warning);
+   *   }
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message, result.Error.code);
+   * }
    * ```
    */
-  async getOrderFills(orderId: string, connectionId?: string, limit?: number, offset?: number, withEnvelope?: boolean): Promise<OrderFillResponse[]> {
+  async getOrderFills(params: GetOrderFillsParams): Promise<GetOrderFillsResponse> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
+
+    // Phase 2C: Extract individual params from input params object
+    const orderId = params.orderId;
+    const connectionId = params.connectionId;
+    const limit = params.limit;
+    const offset = params.offset;
 
     // Generate request ID
     const requestId = this._generateRequestId();
@@ -1004,18 +1893,18 @@ export class BrokersWrapper {
     if (this.sdkConfig?.validationEnabled) {
       // TODO: Generate validation schema from endpoint parameters
       // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, { orderId, connectionId, limit, offset }, this.sdkConfig);
+      // validateParams(validationSchema, params, this.sdkConfig);
     }
 
     // Check cache (Phase 2B: optional caching)
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/fills', { orderId, connectionId, limit, offset }, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/fills', params, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached;
+        return cached as GetOrderFillsResponse;
       }
     }
 
@@ -1024,10 +1913,7 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/orders/{order_id}/fills',
-      orderId: orderId,
-      connectionId: connectionId,
-      limit: limit,
-      offset: offset,
+      params: params,
       action: 'getOrderFills'
     });
 
@@ -1035,34 +1921,40 @@ export class BrokersWrapper {
       const response = await retryApiCall(
         async () => {
           const apiResponse = await this.api.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet({ orderId: orderId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
-          const result = apiResponse;
-          return await applyResponseInterceptors(result, this.sdkConfig);
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
       
-      // Canonical unwrap: AxiosResponse.data.data or Pydantic-like data
+      // Phase 2C: Unwrap API response and transform to standard response structure
       const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      const result = (responseData as any).data;
       
-      if (withEnvelope === true) {
-        const warnings = (responseData as any).warnings;
-        const meta = (responseData as any).meta;
-        const envelope: any = { data: result };
-        if (Array.isArray(warnings)) envelope.warnings = warnings;
-        if (meta) envelope.meta = meta;
-        return envelope;
-      }
+      const apiData = (responseData as any).data;
+      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const meta = (responseData as any).meta;
       
-      const finalResult = result;
+      // Build standard response structure
+      const standardResponse: GetOrderFillsResponse = {
+        success: {
+          data: convertToPlainObject(apiData) as OrderFillResponse[],
+          ...(meta ? { meta } : {}),
+        },
+        ...(warnings && warnings.length > 0 ? {
+          Warning: warnings.map((w: any) => ({
+            message: w.message || String(w),
+            code: w.code,
+            details: w.details || w,
+          })),
+        } : {}),
+      };
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/fills', { orderId, connectionId, limit, offset }, this.sdkConfig);
-        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/fills', params, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
       this.logger.debug('Get Order Fills completed', {
@@ -1070,7 +1962,8 @@ export class BrokersWrapper {
         action: 'getOrderFills'
       });
       
-      return finalResult;
+      // Phase 2C: Return standard response structure (already plain objects)
+      return standardResponse;
       
     } catch (error) {
       try {
@@ -1082,7 +1975,52 @@ export class BrokersWrapper {
         action: 'getOrderFills'
       });
       
-      throw this._handleError(error, requestId);
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        errorMessage = axiosError.response?.data?.message || 
+                       axiosError.response?.statusText || 
+                       axiosError.message || 
+                       errorMessage;
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: GetOrderFillsResponse = {
+        success: {
+          data: null as any,
+        },
+        Error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
     }
 
     // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
@@ -1097,27 +2035,58 @@ export class BrokersWrapper {
    *
    * This endpoint returns all lifecycle events for the specified order.
 
-   * @param orderId {string}
-   * @param connectionId {string}
-   * @param limit {number}
-   * @param offset {number}
-   * @param withEnvelope {boolean} return unified envelope when true
-   * @returns {OrderEventResponse[]}
+   * @param params {GetOrderEventsParams} Input parameters object
+   * @returns {Promise<GetOrderEventsResponse>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/orders/{order_id}/events
    * @methodId get_order_events_api_v1_brokers_data_orders__order_id__events_get
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example usage (auto-generated)
-   * const result = await finatic.getOrderEvents('example');
+   * // Minimal example with required parameters only
+   * const result = await finatic.getOrderEvents({
+    orderId: 'id-123'
+   * });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getOrderEvents({
+    orderId: 'id-123',
+    connectionId: 'id-123',
+    limit: 10,
+    offset: 0
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.Warning && result.Warning.length > 0) {
+   *     console.warn('Warnings:', result.Warning);
+   *   }
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message, result.Error.code);
+   * }
    * ```
    */
-  async getOrderEvents(orderId: string, connectionId?: string, limit?: number, offset?: number, withEnvelope?: boolean): Promise<OrderEventResponse[]> {
+  async getOrderEvents(params: GetOrderEventsParams): Promise<GetOrderEventsResponse> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
+
+    // Phase 2C: Extract individual params from input params object
+    const orderId = params.orderId;
+    const connectionId = params.connectionId;
+    const limit = params.limit;
+    const offset = params.offset;
 
     // Generate request ID
     const requestId = this._generateRequestId();
@@ -1126,18 +2095,18 @@ export class BrokersWrapper {
     if (this.sdkConfig?.validationEnabled) {
       // TODO: Generate validation schema from endpoint parameters
       // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, { orderId, connectionId, limit, offset }, this.sdkConfig);
+      // validateParams(validationSchema, params, this.sdkConfig);
     }
 
     // Check cache (Phase 2B: optional caching)
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/events', { orderId, connectionId, limit, offset }, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/events', params, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached;
+        return cached as GetOrderEventsResponse;
       }
     }
 
@@ -1146,10 +2115,7 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/orders/{order_id}/events',
-      orderId: orderId,
-      connectionId: connectionId,
-      limit: limit,
-      offset: offset,
+      params: params,
       action: 'getOrderEvents'
     });
 
@@ -1157,34 +2123,40 @@ export class BrokersWrapper {
       const response = await retryApiCall(
         async () => {
           const apiResponse = await this.api.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet({ orderId: orderId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
-          const result = apiResponse;
-          return await applyResponseInterceptors(result, this.sdkConfig);
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
       
-      // Canonical unwrap: AxiosResponse.data.data or Pydantic-like data
+      // Phase 2C: Unwrap API response and transform to standard response structure
       const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      const result = (responseData as any).data;
       
-      if (withEnvelope === true) {
-        const warnings = (responseData as any).warnings;
-        const meta = (responseData as any).meta;
-        const envelope: any = { data: result };
-        if (Array.isArray(warnings)) envelope.warnings = warnings;
-        if (meta) envelope.meta = meta;
-        return envelope;
-      }
+      const apiData = (responseData as any).data;
+      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const meta = (responseData as any).meta;
       
-      const finalResult = result;
+      // Build standard response structure
+      const standardResponse: GetOrderEventsResponse = {
+        success: {
+          data: convertToPlainObject(apiData) as OrderEventResponse[],
+          ...(meta ? { meta } : {}),
+        },
+        ...(warnings && warnings.length > 0 ? {
+          Warning: warnings.map((w: any) => ({
+            message: w.message || String(w),
+            code: w.code,
+            details: w.details || w,
+          })),
+        } : {}),
+      };
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/events', { orderId, connectionId, limit, offset }, this.sdkConfig);
-        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/events', params, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
       this.logger.debug('Get Order Events completed', {
@@ -1192,7 +2164,8 @@ export class BrokersWrapper {
         action: 'getOrderEvents'
       });
       
-      return finalResult;
+      // Phase 2C: Return standard response structure (already plain objects)
+      return standardResponse;
       
     } catch (error) {
       try {
@@ -1204,7 +2177,52 @@ export class BrokersWrapper {
         action: 'getOrderEvents'
       });
       
-      throw this._handleError(error, requestId);
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        errorMessage = axiosError.response?.data?.message || 
+                       axiosError.response?.statusText || 
+                       axiosError.message || 
+                       errorMessage;
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: GetOrderEventsResponse = {
+        success: {
+          data: null as any,
+        },
+        Error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
     }
 
     // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
@@ -1219,29 +2237,55 @@ export class BrokersWrapper {
    *
    * This endpoint returns order groups that contain multiple orders.
 
-   * @param brokerId {string}
-   * @param connectionId {string}
-   * @param limit {number}
-   * @param offset {number}
-   * @param createdAfter {string}
-   * @param createdBefore {string}
-   * @param withEnvelope {boolean} return unified envelope when true
-   * @returns {OrderGroupResponse[]}
+   * @param params {GetOrderGroupsParams} Input parameters object
+   * @returns {Promise<GetOrderGroupsResponse>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/orders/groups
    * @methodId get_order_groups_api_v1_brokers_data_orders_groups_get
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example usage (auto-generated)
-   * const result = await finatic.getOrderGroups();
+   * // Example with no parameters
+   * const result = await finatic.getOrderGroups({});
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getOrderGroups({
+    brokerId: 'id-123',
+    connectionId: 'id-123',
+    limit: 10
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.Warning && result.Warning.length > 0) {
+   *     console.warn('Warnings:', result.Warning);
+   *   }
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message, result.Error.code);
+   * }
    * ```
    */
-  async getOrderGroups(brokerId?: string, connectionId?: string, limit?: number, offset?: number, createdAfter?: string, createdBefore?: string, withEnvelope?: boolean): Promise<OrderGroupResponse[]> {
+  async getOrderGroups(params: GetOrderGroupsParams): Promise<GetOrderGroupsResponse> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
+
+    // Phase 2C: Extract individual params from input params object
+    const brokerId = params.brokerId;
+    const connectionId = params.connectionId;
+    const limit = params.limit;
+    const offset = params.offset;
+    const createdAfter = params.createdAfter;
+    const createdBefore = params.createdBefore;
 
     // Generate request ID
     const requestId = this._generateRequestId();
@@ -1250,18 +2294,18 @@ export class BrokersWrapper {
     if (this.sdkConfig?.validationEnabled) {
       // TODO: Generate validation schema from endpoint parameters
       // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, { brokerId, connectionId, limit, offset, createdAfter, createdBefore }, this.sdkConfig);
+      // validateParams(validationSchema, params, this.sdkConfig);
     }
 
     // Check cache (Phase 2B: optional caching)
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/groups', { brokerId, connectionId, limit, offset, createdAfter, createdBefore }, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/groups', params, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached;
+        return cached as GetOrderGroupsResponse;
       }
     }
 
@@ -1270,12 +2314,7 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/orders/groups',
-      brokerId: brokerId,
-      connectionId: connectionId,
-      limit: limit,
-      offset: offset,
-      createdAfter: createdAfter,
-      createdBefore: createdBefore,
+      params: params,
       action: 'getOrderGroups'
     });
 
@@ -1283,34 +2322,40 @@ export class BrokersWrapper {
       const response = await retryApiCall(
         async () => {
           const apiResponse = await this.api.getOrderGroupsApiV1BrokersDataOrdersGroupsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(createdAfter !== undefined ? { createdAfter: createdAfter } : {}), ...(createdBefore !== undefined ? { createdBefore: createdBefore } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
-          const result = apiResponse;
-          return await applyResponseInterceptors(result, this.sdkConfig);
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
       
-      // Canonical unwrap: AxiosResponse.data.data or Pydantic-like data
+      // Phase 2C: Unwrap API response and transform to standard response structure
       const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      const result = (responseData as any).data;
       
-      if (withEnvelope === true) {
-        const warnings = (responseData as any).warnings;
-        const meta = (responseData as any).meta;
-        const envelope: any = { data: result };
-        if (Array.isArray(warnings)) envelope.warnings = warnings;
-        if (meta) envelope.meta = meta;
-        return envelope;
-      }
+      const apiData = (responseData as any).data;
+      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const meta = (responseData as any).meta;
       
-      const finalResult = result;
+      // Build standard response structure
+      const standardResponse: GetOrderGroupsResponse = {
+        success: {
+          data: convertToPlainObject(apiData) as OrderGroupResponse[],
+          ...(meta ? { meta } : {}),
+        },
+        ...(warnings && warnings.length > 0 ? {
+          Warning: warnings.map((w: any) => ({
+            message: w.message || String(w),
+            code: w.code,
+            details: w.details || w,
+          })),
+        } : {}),
+      };
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/groups', { brokerId, connectionId, limit, offset, createdAfter, createdBefore }, this.sdkConfig);
-        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/groups', params, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
       this.logger.debug('Get Order Groups completed', {
@@ -1318,7 +2363,8 @@ export class BrokersWrapper {
         action: 'getOrderGroups'
       });
       
-      return finalResult;
+      // Phase 2C: Return standard response structure (already plain objects)
+      return standardResponse;
       
     } catch (error) {
       try {
@@ -1330,7 +2376,52 @@ export class BrokersWrapper {
         action: 'getOrderGroups'
       });
       
-      throw this._handleError(error, requestId);
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        errorMessage = axiosError.response?.data?.message || 
+                       axiosError.response?.statusText || 
+                       axiosError.message || 
+                       errorMessage;
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: GetOrderGroupsResponse = {
+        success: {
+          data: null as any,
+        },
+        Error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
     }
 
     // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
@@ -1346,30 +2437,56 @@ export class BrokersWrapper {
    * This endpoint returns tax lots for positions, which are used for tax reporting.
    * Each lot tracks when a position was opened/closed and at what prices.
 
-   * @param brokerId {string}
-   * @param connectionId {string}
-   * @param accountId {string}
-   * @param symbol {string}
-   * @param positionId {string}
-   * @param limit {number}
-   * @param offset {number}
-   * @param withEnvelope {boolean} return unified envelope when true
-   * @returns {PositionLotResponse[]}
+   * @param params {GetPositionLotsParams} Input parameters object
+   * @returns {Promise<GetPositionLotsResponse>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/positions/lots
    * @methodId get_position_lots_api_v1_brokers_data_positions_lots_get
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example usage (auto-generated)
-   * const result = await finatic.getPositionLots();
+   * // Example with no parameters
+   * const result = await finatic.getPositionLots({});
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getPositionLots({
+    brokerId: 'id-123',
+    connectionId: 'id-123',
+    accountId: 'id-123'
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.Warning && result.Warning.length > 0) {
+   *     console.warn('Warnings:', result.Warning);
+   *   }
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message, result.Error.code);
+   * }
    * ```
    */
-  async getPositionLots(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, positionId?: string, limit?: number, offset?: number, withEnvelope?: boolean): Promise<PositionLotResponse[]> {
+  async getPositionLots(params: GetPositionLotsParams): Promise<GetPositionLotsResponse> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
+
+    // Phase 2C: Extract individual params from input params object
+    const brokerId = params.brokerId;
+    const connectionId = params.connectionId;
+    const accountId = params.accountId;
+    const symbol = params.symbol;
+    const positionId = params.positionId;
+    const limit = params.limit;
+    const offset = params.offset;
 
     // Generate request ID
     const requestId = this._generateRequestId();
@@ -1378,18 +2495,18 @@ export class BrokersWrapper {
     if (this.sdkConfig?.validationEnabled) {
       // TODO: Generate validation schema from endpoint parameters
       // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, { brokerId, connectionId, accountId, symbol, positionId, limit, offset }, this.sdkConfig);
+      // validateParams(validationSchema, params, this.sdkConfig);
     }
 
     // Check cache (Phase 2B: optional caching)
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots', { brokerId, connectionId, accountId, symbol, positionId, limit, offset }, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots', params, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached;
+        return cached as GetPositionLotsResponse;
       }
     }
 
@@ -1398,13 +2515,7 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/positions/lots',
-      brokerId: brokerId,
-      connectionId: connectionId,
-      accountId: accountId,
-      symbol: symbol,
-      positionId: positionId,
-      limit: limit,
-      offset: offset,
+      params: params,
       action: 'getPositionLots'
     });
 
@@ -1412,34 +2523,40 @@ export class BrokersWrapper {
       const response = await retryApiCall(
         async () => {
           const apiResponse = await this.api.getPositionLotsApiV1BrokersDataPositionsLotsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(positionId !== undefined ? { positionId: positionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
-          const result = apiResponse;
-          return await applyResponseInterceptors(result, this.sdkConfig);
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
       
-      // Canonical unwrap: AxiosResponse.data.data or Pydantic-like data
+      // Phase 2C: Unwrap API response and transform to standard response structure
       const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      const result = (responseData as any).data;
       
-      if (withEnvelope === true) {
-        const warnings = (responseData as any).warnings;
-        const meta = (responseData as any).meta;
-        const envelope: any = { data: result };
-        if (Array.isArray(warnings)) envelope.warnings = warnings;
-        if (meta) envelope.meta = meta;
-        return envelope;
-      }
+      const apiData = (responseData as any).data;
+      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const meta = (responseData as any).meta;
       
-      const finalResult = result;
+      // Build standard response structure
+      const standardResponse: GetPositionLotsResponse = {
+        success: {
+          data: convertToPlainObject(apiData) as PositionLotResponse[],
+          ...(meta ? { meta } : {}),
+        },
+        ...(warnings && warnings.length > 0 ? {
+          Warning: warnings.map((w: any) => ({
+            message: w.message || String(w),
+            code: w.code,
+            details: w.details || w,
+          })),
+        } : {}),
+      };
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots', { brokerId, connectionId, accountId, symbol, positionId, limit, offset }, this.sdkConfig);
-        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots', params, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
       this.logger.debug('Get Position Lots completed', {
@@ -1447,7 +2564,8 @@ export class BrokersWrapper {
         action: 'getPositionLots'
       });
       
-      return finalResult;
+      // Phase 2C: Return standard response structure (already plain objects)
+      return standardResponse;
       
     } catch (error) {
       try {
@@ -1459,7 +2577,52 @@ export class BrokersWrapper {
         action: 'getPositionLots'
       });
       
-      throw this._handleError(error, requestId);
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        errorMessage = axiosError.response?.data?.message || 
+                       axiosError.response?.statusText || 
+                       axiosError.message || 
+                       errorMessage;
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: GetPositionLotsResponse = {
+        success: {
+          data: null as any,
+        },
+        Error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
     }
 
     // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
@@ -1474,27 +2637,58 @@ export class BrokersWrapper {
    *
    * This endpoint returns all fills associated with a specific position lot.
 
-   * @param lotId {string}
-   * @param connectionId {string}
-   * @param limit {number}
-   * @param offset {number}
-   * @param withEnvelope {boolean} return unified envelope when true
-   * @returns {PositionLotFillResponse[]}
+   * @param params {GetPositionLotFillsParams} Input parameters object
+   * @returns {Promise<GetPositionLotFillsResponse>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/positions/lots/{lot_id}/fills
    * @methodId get_position_lot_fills_api_v1_brokers_data_positions_lots__lot_id__fills_get
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example usage (auto-generated)
-   * const result = await finatic.getPositionLotFills('example');
+   * // Minimal example with required parameters only
+   * const result = await finatic.getPositionLotFills({
+    lotId: 'id-123'
+   * });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getPositionLotFills({
+    lotId: 'id-123',
+    connectionId: 'id-123',
+    limit: 10,
+    offset: 0
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.Warning && result.Warning.length > 0) {
+   *     console.warn('Warnings:', result.Warning);
+   *   }
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message, result.Error.code);
+   * }
    * ```
    */
-  async getPositionLotFills(lotId: string, connectionId?: string, limit?: number, offset?: number, withEnvelope?: boolean): Promise<PositionLotFillResponse[]> {
+  async getPositionLotFills(params: GetPositionLotFillsParams): Promise<GetPositionLotFillsResponse> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
+
+    // Phase 2C: Extract individual params from input params object
+    const lotId = params.lotId;
+    const connectionId = params.connectionId;
+    const limit = params.limit;
+    const offset = params.offset;
 
     // Generate request ID
     const requestId = this._generateRequestId();
@@ -1503,18 +2697,18 @@ export class BrokersWrapper {
     if (this.sdkConfig?.validationEnabled) {
       // TODO: Generate validation schema from endpoint parameters
       // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, { lotId, connectionId, limit, offset }, this.sdkConfig);
+      // validateParams(validationSchema, params, this.sdkConfig);
     }
 
     // Check cache (Phase 2B: optional caching)
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots/{lot_id}/fills', { lotId, connectionId, limit, offset }, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots/{lot_id}/fills', params, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached;
+        return cached as GetPositionLotFillsResponse;
       }
     }
 
@@ -1523,10 +2717,7 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/positions/lots/{lot_id}/fills',
-      lotId: lotId,
-      connectionId: connectionId,
-      limit: limit,
-      offset: offset,
+      params: params,
       action: 'getPositionLotFills'
     });
 
@@ -1534,34 +2725,40 @@ export class BrokersWrapper {
       const response = await retryApiCall(
         async () => {
           const apiResponse = await this.api.getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet({ lotId: lotId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
-          const result = apiResponse;
-          return await applyResponseInterceptors(result, this.sdkConfig);
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
       
-      // Canonical unwrap: AxiosResponse.data.data or Pydantic-like data
+      // Phase 2C: Unwrap API response and transform to standard response structure
       const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      const result = (responseData as any).data;
       
-      if (withEnvelope === true) {
-        const warnings = (responseData as any).warnings;
-        const meta = (responseData as any).meta;
-        const envelope: any = { data: result };
-        if (Array.isArray(warnings)) envelope.warnings = warnings;
-        if (meta) envelope.meta = meta;
-        return envelope;
-      }
+      const apiData = (responseData as any).data;
+      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const meta = (responseData as any).meta;
       
-      const finalResult = result;
+      // Build standard response structure
+      const standardResponse: GetPositionLotFillsResponse = {
+        success: {
+          data: convertToPlainObject(apiData) as PositionLotFillResponse[],
+          ...(meta ? { meta } : {}),
+        },
+        ...(warnings && warnings.length > 0 ? {
+          Warning: warnings.map((w: any) => ({
+            message: w.message || String(w),
+            code: w.code,
+            details: w.details || w,
+          })),
+        } : {}),
+      };
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots/{lot_id}/fills', { lotId, connectionId, limit, offset }, this.sdkConfig);
-        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots/{lot_id}/fills', params, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
       this.logger.debug('Get Position Lot Fills completed', {
@@ -1569,7 +2766,8 @@ export class BrokersWrapper {
         action: 'getPositionLotFills'
       });
       
-      return finalResult;
+      // Phase 2C: Return standard response structure (already plain objects)
+      return standardResponse;
       
     } catch (error) {
       try {
@@ -1581,7 +2779,52 @@ export class BrokersWrapper {
         action: 'getPositionLotFills'
       });
       
-      throw this._handleError(error, requestId);
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        errorMessage = axiosError.response?.data?.message || 
+                       axiosError.response?.statusText || 
+                       axiosError.message || 
+                       errorMessage;
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: GetPositionLotFillsResponse = {
+        success: {
+          data: null as any,
+        },
+        Error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
     }
 
     // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
@@ -1647,25 +2890,50 @@ export class BrokersWrapper {
    * We are planning to add a new endpoint to fetch the option chain for a particular stock and
    * handle this logic for you, but for now you need to fetch the option chain manually.
 
-   * @param body {any}
-   * @param connectionId {string}
-   * @param withEnvelope {boolean} return unified envelope when true
-   * @returns {OrderActionResult}
+   * @param params {PlaceOrderParams} Input parameters object
+   * @returns {Promise<PlaceOrderResponse>} Standard response with success/Error/Warning structure
    * 
    * Generated from: POST /api/v1/brokers/orders
    * @methodId place_order_api_v1_brokers_orders_post
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example usage (auto-generated)
-   * const result = await finatic.placeOrder();
+   * // Example with no parameters
+   * const result = await finatic.placeOrder({});
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.placeOrder({
+    body: {},
+    connectionId: 'id-123'
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.Warning && result.Warning.length > 0) {
+   *     console.warn('Warnings:', result.Warning);
+   *   }
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message, result.Error.code);
+   * }
    * ```
    */
-  async placeOrder(body?: any, connectionId?: string, withEnvelope?: boolean): Promise<OrderActionResult> {
+  async placeOrder(params: PlaceOrderParams): Promise<PlaceOrderResponse> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
+
+    // Phase 2C: Extract individual params from input params object
+    const body = params.body;
+    const connectionId = params.connectionId;
 
     // Generate request ID
     const requestId = this._generateRequestId();
@@ -1674,18 +2942,18 @@ export class BrokersWrapper {
     if (this.sdkConfig?.validationEnabled) {
       // TODO: Generate validation schema from endpoint parameters
       // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, { body, connectionId }, this.sdkConfig);
+      // validateParams(validationSchema, params, this.sdkConfig);
     }
 
     // Check cache (Phase 2B: optional caching)
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('POST', '/api/v1/brokers/orders', { body, connectionId }, this.sdkConfig);
+      const cacheKey = generateCacheKey('POST', '/api/v1/brokers/orders', params, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached;
+        return cached as PlaceOrderResponse;
       }
     }
 
@@ -1694,43 +2962,48 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'POST',
       path: '/api/v1/brokers/orders',
-      body: body,
-      connectionId: connectionId,
+      params: params,
       action: 'placeOrder'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.placeOrderApiV1BrokersOrdersPost({ ...(body !== undefined ? { body: body } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
-          const result = apiResponse;
-          return await applyResponseInterceptors(result, this.sdkConfig);
+          const apiResponse = await this.api.placeOrderApiV1BrokersOrdersPost({ ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(body !== undefined ? { body: body } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
       
-      // Canonical unwrap: AxiosResponse.data.data or Pydantic-like data
+      // Phase 2C: Unwrap API response and transform to standard response structure
       const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      const result = (responseData as any).data;
       
-      if (withEnvelope === true) {
-        const warnings = (responseData as any).warnings;
-        const meta = (responseData as any).meta;
-        const envelope: any = { data: result };
-        if (Array.isArray(warnings)) envelope.warnings = warnings;
-        if (meta) envelope.meta = meta;
-        return envelope;
-      }
+      const apiData = (responseData as any).data;
+      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const meta = (responseData as any).meta;
       
-      const finalResult = result;
+      // Build standard response structure
+      const standardResponse: PlaceOrderResponse = {
+        success: {
+          data: convertToPlainObject(apiData) as OrderActionResult,
+          ...(meta ? { meta } : {}),
+        },
+        ...(warnings && warnings.length > 0 ? {
+          Warning: warnings.map((w: any) => ({
+            message: w.message || String(w),
+            code: w.code,
+            details: w.details || w,
+          })),
+        } : {}),
+      };
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('POST', '/api/v1/brokers/orders', { body, connectionId }, this.sdkConfig);
-        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
+        const cacheKey = generateCacheKey('POST', '/api/v1/brokers/orders', params, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
       this.logger.debug('Place Order completed', {
@@ -1738,7 +3011,8 @@ export class BrokersWrapper {
         action: 'placeOrder'
       });
       
-      return finalResult;
+      // Phase 2C: Return standard response structure (already plain objects)
+      return standardResponse;
       
     } catch (error) {
       try {
@@ -1750,7 +3024,52 @@ export class BrokersWrapper {
         action: 'placeOrder'
       });
       
-      throw this._handleError(error, requestId);
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        errorMessage = axiosError.response?.data?.message || 
+                       axiosError.response?.statusText || 
+                       axiosError.message || 
+                       errorMessage;
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: PlaceOrderResponse = {
+        success: {
+          data: null as any,
+        },
+        Error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
     }
 
     // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
@@ -1766,27 +3085,58 @@ export class BrokersWrapper {
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Requires trading permissions for the company.
 
-   * @param orderId {string}
-   * @param body {any}
-   * @param accountNumber {string}
-   * @param connectionId {string}
-   * @param withEnvelope {boolean} return unified envelope when true
-   * @returns {OrderActionResult}
+   * @param params {CancelOrderParams} Input parameters object
+   * @returns {Promise<CancelOrderResponse>} Standard response with success/Error/Warning structure
    * 
    * Generated from: DELETE /api/v1/brokers/orders/{order_id}
    * @methodId cancel_order_api_v1_brokers_orders__order_id__delete
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example usage (auto-generated)
-   * const result = await finatic.cancelOrder('example');
+   * // Minimal example with required parameters only
+   * const result = await finatic.cancelOrder({
+    orderId: 'id-123'
+   * });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.cancelOrder({
+    orderId: 'id-123',
+    body: {},
+    accountNumber: 'example',
+    connectionId: 'id-123'
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.Warning && result.Warning.length > 0) {
+   *     console.warn('Warnings:', result.Warning);
+   *   }
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message, result.Error.code);
+   * }
    * ```
    */
-  async cancelOrder(orderId: string, body?: any, accountNumber?: string, connectionId?: string, withEnvelope?: boolean): Promise<OrderActionResult> {
+  async cancelOrder(params: CancelOrderParams): Promise<CancelOrderResponse> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
+
+    // Phase 2C: Extract individual params from input params object
+    const orderId = params.orderId;
+    const body = params.body;
+    const accountNumber = params.accountNumber;
+    const connectionId = params.connectionId;
 
     // Generate request ID
     const requestId = this._generateRequestId();
@@ -1795,18 +3145,18 @@ export class BrokersWrapper {
     if (this.sdkConfig?.validationEnabled) {
       // TODO: Generate validation schema from endpoint parameters
       // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, { orderId, body, accountNumber, connectionId }, this.sdkConfig);
+      // validateParams(validationSchema, params, this.sdkConfig);
     }
 
     // Check cache (Phase 2B: optional caching)
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/orders/{order_id}', { orderId, body, accountNumber, connectionId }, this.sdkConfig);
+      const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/orders/{order_id}', params, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached;
+        return cached as CancelOrderResponse;
       }
     }
 
@@ -1815,45 +3165,48 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'DELETE',
       path: '/api/v1/brokers/orders/{order_id}',
-      orderId: orderId,
-      body: body,
-      accountNumber: accountNumber,
-      connectionId: connectionId,
+      params: params,
       action: 'cancelOrder'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.cancelOrderApiV1BrokersOrdersOrderIdDelete({ orderId: orderId, ...(body !== undefined ? { body: body } : {}), ...(accountNumber !== undefined ? { accountNumber: accountNumber } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
-          const result = apiResponse;
-          return await applyResponseInterceptors(result, this.sdkConfig);
+          const apiResponse = await this.api.cancelOrderApiV1BrokersOrdersOrderIdDelete({ orderId: orderId, ...(accountNumber !== undefined ? { accountNumber: accountNumber } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(body !== undefined ? { body: body } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
       
-      // Canonical unwrap: AxiosResponse.data.data or Pydantic-like data
+      // Phase 2C: Unwrap API response and transform to standard response structure
       const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      const result = (responseData as any).data;
       
-      if (withEnvelope === true) {
-        const warnings = (responseData as any).warnings;
-        const meta = (responseData as any).meta;
-        const envelope: any = { data: result };
-        if (Array.isArray(warnings)) envelope.warnings = warnings;
-        if (meta) envelope.meta = meta;
-        return envelope;
-      }
+      const apiData = (responseData as any).data;
+      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const meta = (responseData as any).meta;
       
-      const finalResult = result;
+      // Build standard response structure
+      const standardResponse: CancelOrderResponse = {
+        success: {
+          data: convertToPlainObject(apiData) as OrderActionResult,
+          ...(meta ? { meta } : {}),
+        },
+        ...(warnings && warnings.length > 0 ? {
+          Warning: warnings.map((w: any) => ({
+            message: w.message || String(w),
+            code: w.code,
+            details: w.details || w,
+          })),
+        } : {}),
+      };
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/orders/{order_id}', { orderId, body, accountNumber, connectionId }, this.sdkConfig);
-        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
+        const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/orders/{order_id}', params, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
       this.logger.debug('Cancel Order completed', {
@@ -1861,7 +3214,8 @@ export class BrokersWrapper {
         action: 'cancelOrder'
       });
       
-      return finalResult;
+      // Phase 2C: Return standard response structure (already plain objects)
+      return standardResponse;
       
     } catch (error) {
       try {
@@ -1873,7 +3227,52 @@ export class BrokersWrapper {
         action: 'cancelOrder'
       });
       
-      throw this._handleError(error, requestId);
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        errorMessage = axiosError.response?.data?.message || 
+                       axiosError.response?.statusText || 
+                       axiosError.message || 
+                       errorMessage;
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: CancelOrderResponse = {
+        success: {
+          data: null as any,
+        },
+        Error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
     }
 
     // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
@@ -1889,27 +3288,58 @@ export class BrokersWrapper {
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Requires trading permissions for the company.
 
-   * @param orderId {string}
-   * @param body {any}
-   * @param accountNumber {string}
-   * @param connectionId {string}
-   * @param withEnvelope {boolean} return unified envelope when true
-   * @returns {OrderActionResult}
+   * @param params {ModifyOrderParams} Input parameters object
+   * @returns {Promise<ModifyOrderResponse>} Standard response with success/Error/Warning structure
    * 
    * Generated from: PATCH /api/v1/brokers/orders/{order_id}
    * @methodId modify_order_api_v1_brokers_orders__order_id__patch
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example usage (auto-generated)
-   * const result = await finatic.modifyOrder('example');
+   * // Minimal example with required parameters only
+   * const result = await finatic.modifyOrder({
+    orderId: 'id-123'
+   * });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.modifyOrder({
+    orderId: 'id-123',
+    body: {},
+    accountNumber: 'example',
+    connectionId: 'id-123'
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.Warning && result.Warning.length > 0) {
+   *     console.warn('Warnings:', result.Warning);
+   *   }
+   * } else if (result.Error) {
+   *   console.error('Error:', result.Error.message, result.Error.code);
+   * }
    * ```
    */
-  async modifyOrder(orderId: string, body?: any, accountNumber?: string, connectionId?: string, withEnvelope?: boolean): Promise<OrderActionResult> {
+  async modifyOrder(params: ModifyOrderParams): Promise<ModifyOrderResponse> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
+
+    // Phase 2C: Extract individual params from input params object
+    const orderId = params.orderId;
+    const body = params.body;
+    const accountNumber = params.accountNumber;
+    const connectionId = params.connectionId;
 
     // Generate request ID
     const requestId = this._generateRequestId();
@@ -1918,18 +3348,18 @@ export class BrokersWrapper {
     if (this.sdkConfig?.validationEnabled) {
       // TODO: Generate validation schema from endpoint parameters
       // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, { orderId, body, accountNumber, connectionId }, this.sdkConfig);
+      // validateParams(validationSchema, params, this.sdkConfig);
     }
 
     // Check cache (Phase 2B: optional caching)
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('PATCH', '/api/v1/brokers/orders/{order_id}', { orderId, body, accountNumber, connectionId }, this.sdkConfig);
+      const cacheKey = generateCacheKey('PATCH', '/api/v1/brokers/orders/{order_id}', params, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached;
+        return cached as ModifyOrderResponse;
       }
     }
 
@@ -1938,45 +3368,48 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'PATCH',
       path: '/api/v1/brokers/orders/{order_id}',
-      orderId: orderId,
-      body: body,
-      accountNumber: accountNumber,
-      connectionId: connectionId,
+      params: params,
       action: 'modifyOrder'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.modifyOrderApiV1BrokersOrdersOrderIdPatch({ orderId: orderId, ...(body !== undefined ? { body: body } : {}), ...(accountNumber !== undefined ? { accountNumber: accountNumber } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
-          const result = apiResponse;
-          return await applyResponseInterceptors(result, this.sdkConfig);
+          const apiResponse = await this.api.modifyOrderApiV1BrokersOrdersOrderIdPatch({ orderId: orderId, ...(accountNumber !== undefined ? { accountNumber: accountNumber } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(body !== undefined ? { body: body } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
       
-      // Canonical unwrap: AxiosResponse.data.data or Pydantic-like data
+      // Phase 2C: Unwrap API response and transform to standard response structure
       const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      const result = (responseData as any).data;
       
-      if (withEnvelope === true) {
-        const warnings = (responseData as any).warnings;
-        const meta = (responseData as any).meta;
-        const envelope: any = { data: result };
-        if (Array.isArray(warnings)) envelope.warnings = warnings;
-        if (meta) envelope.meta = meta;
-        return envelope;
-      }
+      const apiData = (responseData as any).data;
+      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const meta = (responseData as any).meta;
       
-      const finalResult = result;
+      // Build standard response structure
+      const standardResponse: ModifyOrderResponse = {
+        success: {
+          data: convertToPlainObject(apiData) as OrderActionResult,
+          ...(meta ? { meta } : {}),
+        },
+        ...(warnings && warnings.length > 0 ? {
+          Warning: warnings.map((w: any) => ({
+            message: w.message || String(w),
+            code: w.code,
+            details: w.details || w,
+          })),
+        } : {}),
+      };
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('PATCH', '/api/v1/brokers/orders/{order_id}', { orderId, body, accountNumber, connectionId }, this.sdkConfig);
-        cache.set(cacheKey, finalResult, this.sdkConfig.cacheTtl || 300);
+        const cacheKey = generateCacheKey('PATCH', '/api/v1/brokers/orders/{order_id}', params, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
       this.logger.debug('Modify Order completed', {
@@ -1984,7 +3417,8 @@ export class BrokersWrapper {
         action: 'modifyOrder'
       });
       
-      return finalResult;
+      // Phase 2C: Return standard response structure (already plain objects)
+      return standardResponse;
       
     } catch (error) {
       try {
@@ -1996,7 +3430,52 @@ export class BrokersWrapper {
         action: 'modifyOrder'
       });
       
-      throw this._handleError(error, requestId);
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        errorMessage = axiosError.response?.data?.message || 
+                       axiosError.response?.statusText || 
+                       axiosError.message || 
+                       errorMessage;
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: ModifyOrderResponse = {
+        success: {
+          data: null as any,
+        },
+        Error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
     }
 
     // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)

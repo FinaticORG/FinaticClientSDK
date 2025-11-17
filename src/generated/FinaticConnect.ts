@@ -25,6 +25,7 @@ export interface PortalOptions {
   theme?: string | { preset?: string; custom?: Record<string, unknown> };
   brokers?: string[];
   email?: string;
+  mode?: 'light' | 'dark';
   onSuccess?: (userId: string) => void;
   onError?: (error: Error) => void;
   onClose?: () => void;
@@ -40,6 +41,7 @@ export class FinaticConnect extends EventEmitter {
   private csrfToken?: string;
   private portalUI?: PortalUI;
   private userId?: string;
+  private logger: any;
 
   public readonly brokers: BrokersWrapper;
   public readonly session: SessionWrapper;
@@ -51,6 +53,15 @@ export class FinaticConnect extends EventEmitter {
       basePath: options.baseUrl || 'https://api.finatic.dev',
     });
     this.sdkConfig = { ...defaultConfig, ...options.sdkConfig };
+
+    // Initialize logger
+    try {
+      const { getLogger } = require('./utils/logger');
+      this.logger = getLogger(this.sdkConfig);
+    } catch {
+      // Fallback logger for browser environments where pino might not work correctly
+      this.logger = console;
+    }
 
     this.brokers = new BrokersWrapper(new BrokersApi(this.config), this.config, this.sdkConfig);
     this.session = new SessionWrapper(new SessionApi(this.config), this.config, this.sdkConfig);
@@ -104,10 +115,11 @@ export class FinaticConnect extends EventEmitter {
         instance = new FinaticConnect(connectOptions);
         baseClass.instance = instance;
 
-        // CRITICAL: Start session with the token - this should make the network call
-        logger.debug?.('Calling startSession() inside init()');
-        await instance.startSession(token, userId);
-        logger.debug?.('startSession() completed in init()');
+        // CRITICAL: Client SDK init() receives a one-time token directly (not an API key)
+        // Unlike Server SDK, Client SDK does NOT call _initSession() - it goes straight to _startSession()
+        logger.debug?.('Calling _startSession() inside init() with provided token');
+        await instance._startSession(token, userId);
+        logger.debug?.('_startSession() completed in init()');
       } else {
         logger.debug?.('Using existing FinaticConnect instance');
         instance = baseClass.instance as FinaticConnect;
@@ -148,23 +160,26 @@ export class FinaticConnect extends EventEmitter {
   }
 
   /**
-   * Initialize a session by getting a one-time token.
+   * Start a session with a one-time token (internal/private).
+   * 
+   * Note: Client SDK does NOT use _initSession() - the token passed to init() is already a one-time token.
+   * Only Server SDKs use _initSession() to convert API keys to one-time tokens.
    */
-  async initSession(xApiKey: string): Promise<string> {
-    const response = await this.session.initSession(xApiKey);
-    return response.one_time_token || '';
-  }
-
-  /**
-   * Start a session with a one-time token.
-   */
-  async startSession(oneTimeToken: string, userId?: string): Promise<{ session_id: string; company_id: string }> {
+  private async _startSession(oneTimeToken: string, userId?: string): Promise<{ session_id: string; company_id: string }> {
     const requestBody = userId !== undefined ? { user_id: userId } : {};
-    const response = await this.session.startSession(oneTimeToken, requestBody);
-    const sessionId = response.session_id || '';
-    const companyId = response.company_id || '';
+    // Phase 2C: Use typed input object
+    const response = await this.session.startSession({ OneTimeToken: oneTimeToken, body: requestBody });
+    
+    // Phase 2C: Unwrap standard response structure
+    if (response.Error) {
+      throw new Error(response.Error.message || 'Failed to start session');
+    }
+    
+    const data = response.success?.data;
+    const sessionId = data?.session_id || '';
+    const companyId = data?.company_id || '';
     // csrf_token is not in SessionResponseData, get from response headers if available
-    const csrfToken = (response as any).csrf_token || '';
+    const csrfToken = (data as any)?.csrf_token || '';
     
     if (sessionId && companyId) {
       this.setSessionContext(sessionId, companyId, csrfToken);
@@ -186,8 +201,32 @@ export class FinaticConnect extends EventEmitter {
     }
 
     // Get raw portal URL from session wrapper
-    const response = await this.session.getPortalUrl();
-    let portalUrl = response.portal_url || '';
+    const response = await this.session.getPortalUrl({});
+    
+    // Check for errors
+    if (response.Error) {
+      this.logger.error?.('Failed to get portal URL', new Error(response.Error.message), {
+        code: response.Error.code,
+        status: response.Error.status,
+      });
+      throw new Error(response.Error.message || 'Failed to get portal URL');
+    }
+    
+    // Validate response structure
+    if (!response.success?.data?.portal_url) {
+      this.logger.error?.('Invalid portal URL response: missing data', new Error('Invalid response'), {});
+      throw new Error('Invalid portal URL response: missing portal_url');
+    }
+    
+    let portalUrl = response.success.data.portal_url;
+
+    // Validate URL before manipulation
+    try {
+      new URL(portalUrl);
+    } catch (error) {
+      this.logger.error?.('Invalid portal URL from API', error, { portalUrl });
+      throw new Error(`Invalid portal URL received from API: ${portalUrl}`);
+    }
 
     // Append theme if provided
     if (options?.theme) {
@@ -206,6 +245,13 @@ export class FinaticConnect extends EventEmitter {
       portalUrl = url.toString();
     }
 
+    // Append mode if provided (light or dark)
+    if (options?.mode) {
+      const url = new URL(portalUrl);
+      url.searchParams.set('mode', options.mode);
+      portalUrl = url.toString();
+    }
+
     // Add session ID and company ID to URL
     const url = new URL(portalUrl);
     if (this.sessionId) {
@@ -215,6 +261,7 @@ export class FinaticConnect extends EventEmitter {
       url.searchParams.set('company_id', this.companyId);
     }
 
+    this.logger.debug?.('Portal URL generated', { portalUrl: url.toString() });
     return url.toString();
   }
 
@@ -326,34 +373,7 @@ export class FinaticConnect extends EventEmitter {
   }
 
 
-  /**
-   * Convert data to plain objects for consistency with other SDKs.
-   * Handles arrays, objects, and ensures no class instances are returned.
-   */
-  private _convertToPlainObject(data: any): any {
-    if (data === null || data === undefined) {
-      return data;
-    }
-    if (Array.isArray(data)) {
-      return data.map(item => this._convertToPlainObject(item));
-    }
-    if (typeof data === 'object') {
-      // Check if it's a class instance (has constructor and constructor.name !== 'Object')
-      if (data.constructor && data.constructor.name !== 'Object' && data.constructor.name !== 'Array') {
-        // Convert class instance to plain object
-        return this._convertToPlainObject({ ...data });
-      }
-      // Recursively convert nested objects
-      const result: any = {};
-      for (const key in data) {
-        if (data.hasOwnProperty(key)) {
-          result[key] = this._convertToPlainObject(data[key]);
-        }
-      }
-      return result;
-    }
-    return data;
-  }
+  // Phase 2C: _convertToPlainObject removed - now handled in generated methods via convertToPlainObject utility
 
   /**
    * Check if user is authenticated.
@@ -371,45 +391,32 @@ export class FinaticConnect extends EventEmitter {
 
   /**
    * Get list of supported brokers.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getBrokerList(): Promise<any[]> {
-    const response = await this.brokers.getBrokers();
+    const response = await this.brokers.getBrokers({});
+    const brokers = response.success?.data || [];
     const baseUrl = this.config.basePath?.replace('/api/v1', '') || this.options.baseUrl?.replace('/api/v1', '') || 'https://api.finatic.dev';
     
     // Transform broker list to include full logo URLs
-    if (Array.isArray(response)) {
-      const converted = response.map((broker: any) => ({
-        ...broker,
-        logo_path: broker.logo_path ? `${baseUrl}${broker.logo_path}` : '',
-      }));
-      return this._convertToPlainObject(converted);
-    }
-    
-    // Handle FinaticResponse wrapper if present
-    if (response && typeof response === 'object' && 'response_data' in response) {
-      const responseData = (response as any).response_data;
-      if (Array.isArray(responseData)) {
-        const converted = responseData.map((broker: any) => ({
+    return brokers.map((broker: any) => ({
           ...broker,
           logo_path: broker.logo_path ? `${baseUrl}${broker.logo_path}` : '',
         }));
-        return this._convertToPlainObject(converted);
-      }
-    }
-    
-    return this._convertToPlainObject(response);
   }
 
   /**
    * Get user's broker connections.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getBrokerConnections(): Promise<any[]> {
-    const result = await this.brokers.listBrokerConnections();
-    return this._convertToPlainObject(result);
+    const response = await this.brokers.listBrokerConnections({});
+    return response.success?.data || [];
   }
 
   /**
    * Get all accounts across all pages.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getAllAccounts(filter?: any): Promise<any[]> {
     const allData: any[] = [];
@@ -417,29 +424,30 @@ export class FinaticConnect extends EventEmitter {
     const limit = 100;
     
     while (true) {
-      const result = await this.brokers.getAccounts(
-        filter?.brokerId,
-        filter?.connectionId,
-        filter?.accountType,
-        filter?.status,
-        filter?.currency,
+      const response = await this.brokers.getAccounts({
+        brokerId: filter?.brokerId,
+        connectionId: filter?.connectionId,
+        accountType: filter?.accountType, // Will be coerced to enum
+        status: filter?.status, // Will be coerced to enum
+        currency: filter?.currency,
         limit,
         offset,
-        filter?.withMetadata
-      );
-      // Ensure result is an array
-      const dataArray = Array.isArray(result) ? result : [];
-      if (!dataArray || dataArray.length === 0) break;
-      allData.push(...dataArray);
-      if (dataArray.length < limit) break;
+        withMetadata: filter?.withMetadata,
+      });
+      
+      const result = response.success?.data || [];
+      if (!result || result.length === 0) break;
+      allData.push(...result);
+      if (result.length < limit) break;
       offset += limit;
     }
     
-    return this._convertToPlainObject(allData);
+    return allData;
   }
 
   /**
    * Get all orders across all pages.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getAllOrders(filter?: any): Promise<any[]> {
     const allData: any[] = [];
@@ -447,33 +455,34 @@ export class FinaticConnect extends EventEmitter {
     const limit = 100;
     
     while (true) {
-      const result = await this.brokers.getOrders(
-        filter?.brokerId,
-        filter?.connectionId,
-        filter?.accountId,
-        filter?.symbol,
-        filter?.orderStatus,
-        filter?.side,
-        filter?.assetType,
+      const response = await this.brokers.getOrders({
+        brokerId: filter?.brokerId,
+        connectionId: filter?.connectionId,
+        accountId: filter?.accountId,
+        symbol: filter?.symbol,
+        orderStatus: filter?.orderStatus, // Will be coerced to enum
+        side: filter?.side, // Will be coerced to enum
+        assetType: filter?.assetType, // Will be coerced to enum
         limit,
         offset,
-        filter?.createdAfter,
-        filter?.createdBefore,
-        filter?.withMetadata
-      );
-      // Ensure result is an array
-      const dataArray = Array.isArray(result) ? result : [];
-      if (!dataArray || dataArray.length === 0) break;
-      allData.push(...dataArray);
-      if (dataArray.length < limit) break;
+        createdAfter: filter?.createdAfter,
+        createdBefore: filter?.createdBefore,
+        withMetadata: filter?.withMetadata,
+      });
+      
+      const result = response.success?.data || [];
+      if (!result || result.length === 0) break;
+      allData.push(...result);
+      if (result.length < limit) break;
       offset += limit;
     }
     
-    return this._convertToPlainObject(allData);
+    return allData;
   }
 
   /**
    * Get all positions across all pages.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getAllPositions(filter?: any): Promise<any[]> {
     const allData: any[] = [];
@@ -481,33 +490,34 @@ export class FinaticConnect extends EventEmitter {
     const limit = 100;
     
     while (true) {
-      const result = await this.brokers.getPositions(
-        filter?.brokerId,
-        filter?.connectionId,
-        filter?.accountId,
-        filter?.symbol,
-        filter?.side,
-        filter?.assetType,
-        filter?.positionStatus,
+      const response = await this.brokers.getPositions({
+        brokerId: filter?.brokerId,
+        connectionId: filter?.connectionId,
+        accountId: filter?.accountId,
+        symbol: filter?.symbol,
+        side: filter?.side, // Will be coerced to enum
+        assetType: filter?.assetType, // Will be coerced to enum
+        positionStatus: filter?.positionStatus, // Will be coerced to enum
         limit,
         offset,
-        filter?.updatedAfter,
-        filter?.updatedBefore,
-        filter?.withMetadata
-      );
-      // Ensure result is an array
-      const dataArray = Array.isArray(result) ? result : [];
-      if (!dataArray || dataArray.length === 0) break;
-      allData.push(...dataArray);
-      if (dataArray.length < limit) break;
+        updatedAfter: filter?.updatedAfter,
+        updatedBefore: filter?.updatedBefore,
+        withMetadata: filter?.withMetadata,
+      });
+      
+      const result = response.success?.data || [];
+      if (!result || result.length === 0) break;
+      allData.push(...result);
+      if (result.length < limit) break;
       offset += limit;
     }
     
-    return this._convertToPlainObject(allData);
+    return allData;
   }
 
   /**
    * Get all balances across all pages.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getAllBalances(filter?: any): Promise<any[]> {
     const allData: any[] = [];
@@ -515,89 +525,122 @@ export class FinaticConnect extends EventEmitter {
     const limit = 100;
     
     while (true) {
-      const result = await this.brokers.getBalances(
-        filter?.brokerId,
-        filter?.connectionId,
-        filter?.accountId,
-        filter?.isEndOfDaySnapshot,
+      const response = await this.brokers.getBalances({
+        brokerId: filter?.brokerId,
+        connectionId: filter?.connectionId,
+        accountId: filter?.accountId,
+        isEndOfDaySnapshot: filter?.isEndOfDaySnapshot,
         limit,
         offset,
-        filter?.balanceCreatedAfter,
-        filter?.balanceCreatedBefore,
-        filter?.withMetadata
-      );
-      // Ensure result is an array
-      const dataArray = Array.isArray(result) ? result : [];
-      if (!dataArray || dataArray.length === 0) break;
-      allData.push(...dataArray);
-      if (dataArray.length < limit) break;
+        balanceCreatedAfter: filter?.balanceCreatedAfter,
+        balanceCreatedBefore: filter?.balanceCreatedBefore,
+        withMetadata: filter?.withMetadata,
+      });
+      
+      const result = response.success?.data || [];
+      if (!result || result.length === 0) break;
+      allData.push(...result);
+      if (result.length < limit) break;
       offset += limit;
     }
     
-    return this._convertToPlainObject(allData);
+    return allData;
   }
 
   /**
    * Get paginated accounts.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getAccounts(page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
     const offset = (page - 1) * perPage;
-    const result = await this.brokers.getAccounts(undefined, undefined, undefined, undefined, undefined, perPage, offset);
-    return this._convertToPlainObject(result);
+    const response = await this.brokers.getAccounts({
+      limit: perPage,
+      offset,
+    });
+    return response.success?.data || [];
   }
 
   /**
    * Get paginated orders.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getOrders(page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
     const offset = (page - 1) * perPage;
-    const result = await this.brokers.getOrders(undefined, undefined, undefined, filter?.symbol, filter?.orderStatus, filter?.side, filter?.assetType, perPage, offset);
-    return this._convertToPlainObject(result);
+    const response = await this.brokers.getOrders({
+      symbol: filter?.symbol,
+      orderStatus: filter?.orderStatus, // Will be coerced to enum
+      side: filter?.side, // Will be coerced to enum
+      assetType: filter?.assetType, // Will be coerced to enum
+      limit: perPage,
+      offset,
+    });
+    return response.success?.data || [];
   }
 
   /**
    * Get paginated positions.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getPositions(page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
     const offset = (page - 1) * perPage;
-    const result = await this.brokers.getPositions(undefined, undefined, undefined, filter?.symbol, filter?.side, filter?.assetType, filter?.positionStatus, perPage, offset);
-    return this._convertToPlainObject(result);
+    const response = await this.brokers.getPositions({
+      symbol: filter?.symbol,
+      side: filter?.side, // Will be coerced to enum
+      assetType: filter?.assetType, // Will be coerced to enum
+      positionStatus: filter?.positionStatus, // Will be coerced to enum
+      limit: perPage,
+      offset,
+    });
+    return response.success?.data || [];
   }
 
   /**
    * Get paginated balances.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getBalances(page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
     const offset = (page - 1) * perPage;
-    const result = await this.brokers.getBalances(undefined, undefined, undefined, filter?.isEndOfDaySnapshot, perPage, offset);
-    return this._convertToPlainObject(result);
+    const response = await this.brokers.getBalances({
+      isEndOfDaySnapshot: filter?.isEndOfDaySnapshot,
+      limit: perPage,
+      offset,
+    });
+    return response.success?.data || [];
   }
 
   /**
    * Get only open positions.
+   * Phase 2C: Uses enum coercion (case-insensitive string matching).
    */
   async getOpenPositions(filter?: any): Promise<any[]> {
+    // Phase 2C: Enum coercion happens in getAllPositions via typed input object
     return await this.getAllPositions({ ...filter, positionStatus: 'active' });
   }
 
   /**
    * Get only filled orders.
+   * Phase 2C: Uses enum coercion (case-insensitive string matching).
    */
   async getFilledOrders(filter?: any): Promise<any[]> {
+    // Phase 2C: Enum coercion happens in getAllOrders via typed input object
     return await this.getAllOrders({ ...filter, orderStatus: 'filled' });
   }
 
   /**
    * Get only pending orders.
+   * Phase 2C: Uses enum coercion (case-insensitive string matching).
    */
   async getPendingOrders(filter?: any): Promise<any[]> {
+    // Phase 2C: Enum coercion happens in getAllOrders via typed input object
     return await this.getAllOrders({ ...filter, orderStatus: 'new' });
   }
 
   /**
    * Get only active accounts.
+   * Phase 2C: Uses enum coercion (case-insensitive string matching).
    */
   async getActiveAccounts(filter?: any): Promise<any[]> {
+    // Phase 2C: Enum coercion happens in getAllAccounts via typed input object
     return await this.getAllAccounts({ ...filter, status: 'active' });
   }
 
@@ -631,6 +674,7 @@ export class FinaticConnect extends EventEmitter {
 
   /**
    * Get all order groups across all pages.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getAllOrderGroups(filter?: any): Promise<any[]> {
     const allData: any[] = [];
@@ -638,43 +682,45 @@ export class FinaticConnect extends EventEmitter {
     const limit = 100;
     
     while (true) {
-      const result = await this.brokers.getOrderGroups(
-        filter?.brokerId,
-        filter?.connectionId,
+      const response = await this.brokers.getOrderGroups({
+        brokerId: filter?.brokerId,
+        connectionId: filter?.connectionId,
         limit,
         offset,
-        filter?.createdAfter,
-        filter?.createdBefore
-      );
-      // Ensure result is an array
-      const dataArray = Array.isArray(result) ? result : [];
-      if (!dataArray || dataArray.length === 0) break;
-      allData.push(...dataArray);
-      if (dataArray.length < limit) break;
+        createdAfter: filter?.createdAfter,
+        createdBefore: filter?.createdBefore,
+      });
+      
+      const result = response.success?.data || [];
+      if (!result || result.length === 0) break;
+      allData.push(...result);
+      if (result.length < limit) break;
       offset += limit;
     }
     
-    return this._convertToPlainObject(allData);
+    return allData;
   }
 
   /**
    * Get paginated order groups.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getOrderGroups(page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
     const offset = (page - 1) * perPage;
-    const result = await this.brokers.getOrderGroups(
-      filter?.brokerId,
-      filter?.connectionId,
-      perPage,
+    const response = await this.brokers.getOrderGroups({
+      brokerId: filter?.brokerId,
+      connectionId: filter?.connectionId,
+      limit: perPage,
       offset,
-      filter?.createdAfter,
-      filter?.createdBefore
-    );
-    return this._convertToPlainObject(result);
+      createdAfter: filter?.createdAfter,
+      createdBefore: filter?.createdBefore,
+    });
+    return response.success?.data || [];
   }
 
   /**
    * Get all position lots across all pages.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getAllPositionLots(filter?: any): Promise<any[]> {
     const allData: any[] = [];
@@ -682,103 +728,108 @@ export class FinaticConnect extends EventEmitter {
     const limit = 100;
     
     while (true) {
-      const result = await this.brokers.getPositionLots(
-        filter?.brokerId,
-        filter?.connectionId,
-        filter?.accountId,
-        filter?.symbol,
-        filter?.positionId,
+      const response = await this.brokers.getPositionLots({
+        brokerId: filter?.brokerId,
+        connectionId: filter?.connectionId,
+        accountId: filter?.accountId,
+        symbol: filter?.symbol,
+        positionId: filter?.positionId,
         limit,
-        offset
-      );
-      // Ensure result is an array
-      const dataArray = Array.isArray(result) ? result : [];
-      if (!dataArray || dataArray.length === 0) break;
-      allData.push(...dataArray);
-      if (dataArray.length < limit) break;
+        offset,
+      });
+      
+      const result = response.success?.data || [];
+      if (!result || result.length === 0) break;
+      allData.push(...result);
+      if (result.length < limit) break;
       offset += limit;
     }
     
-    return this._convertToPlainObject(allData);
+    return allData;
   }
 
   /**
    * Get paginated position lots.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getPositionLots(page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
     const offset = (page - 1) * perPage;
-    const result = await this.brokers.getPositionLots(
-      filter?.brokerId,
-      filter?.connectionId,
-      filter?.accountId,
-      filter?.symbol,
-      filter?.positionId,
-      perPage,
-      offset
-    );
-    return this._convertToPlainObject(result);
+    const response = await this.brokers.getPositionLots({
+      brokerId: filter?.brokerId,
+      connectionId: filter?.connectionId,
+      accountId: filter?.accountId,
+      symbol: filter?.symbol,
+      positionId: filter?.positionId,
+      limit: perPage,
+      offset,
+    });
+    return response.success?.data || [];
   }
 
   /**
    * Disconnect company from broker.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async disconnectCompany(connectionId: string): Promise<any> {
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
-    const result = await this.brokers.disconnectCompanyFromBroker(connectionId);
-    return this._convertToPlainObject(result);
+    const response = await this.brokers.disconnectCompanyFromBroker({ connectionId });
+    return response.success?.data || null;
   }
 
   /**
    * Get order fills for a specific order.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getOrderFills(orderId: string, page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
     const offset = (page - 1) * perPage;
-    const result = await this.brokers.getOrderFills(
+    const response = await this.brokers.getOrderFills({
       orderId,
-      filter?.connectionId,
-      perPage,
-      offset
-    );
-    return this._convertToPlainObject(result);
+      connectionId: filter?.connectionId,
+      limit: perPage,
+      offset,
+    });
+    return response.success?.data || [];
   }
 
   /**
    * Get order events for a specific order.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getOrderEvents(orderId: string, page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
     const offset = (page - 1) * perPage;
-    const result = await this.brokers.getOrderEvents(
+    const response = await this.brokers.getOrderEvents({
       orderId,
-      filter?.connectionId,
-      perPage,
-      offset
-    );
-    return this._convertToPlainObject(result);
+      connectionId: filter?.connectionId,
+      limit: perPage,
+      offset,
+    });
+    return response.success?.data || [];
   }
 
   /**
    * Get position lot fills for a specific lot.
+   * Phase 2C: Uses typed input objects and handles standard response structure.
    */
   async getPositionLotFills(lotId: string, page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
     const offset = (page - 1) * perPage;
-    const result = await this.brokers.getPositionLotFills(
+    const response = await this.brokers.getPositionLotFills({
       lotId,
-      filter?.connectionId,
-      perPage,
-      offset
-    );
-    return this._convertToPlainObject(result);
+      connectionId: filter?.connectionId,
+      limit: perPage,
+      offset,
+    });
+    return response.success?.data || [];
   }
 
 
@@ -803,7 +854,7 @@ export class FinaticConnect extends EventEmitter {
       symbol,
       order_qty: quantity,
     };
-    return await this.brokers.placeOrder(orderParams);
+    return await this.brokers.placeOrder({ body: orderParams });
   }
 
   /**
@@ -829,7 +880,7 @@ export class FinaticConnect extends EventEmitter {
       order_qty: quantity,
       price,
     };
-    return await this.brokers.placeOrder(orderParams);
+    return await this.brokers.placeOrder({ body: orderParams });
   }
 
   /**
@@ -855,7 +906,7 @@ export class FinaticConnect extends EventEmitter {
       order_qty: quantity,
       stop_price: stopPrice,
     };
-    return await this.brokers.placeOrder(orderParams);
+    return await this.brokers.placeOrder({ body: orderParams });
   }
 
   /**
@@ -878,7 +929,7 @@ export class FinaticConnect extends EventEmitter {
       symbol,
       order_qty: quantity,
     };
-    return await this.brokers.placeOrder(orderParams);
+    return await this.brokers.placeOrder({ body: orderParams });
   }
 
   /**
@@ -904,7 +955,7 @@ export class FinaticConnect extends EventEmitter {
       order_qty: quantity,
       price,
     };
-    return await this.brokers.placeOrder(orderParams);
+    return await this.brokers.placeOrder({ body: orderParams });
   }
 
   /**
@@ -927,7 +978,7 @@ export class FinaticConnect extends EventEmitter {
       symbol,
       order_qty: quantity,
     };
-    return await this.brokers.placeOrder(orderParams);
+    return await this.brokers.placeOrder({ body: orderParams });
   }
 
   /**
@@ -953,7 +1004,7 @@ export class FinaticConnect extends EventEmitter {
       order_qty: quantity,
       price,
     };
-    return await this.brokers.placeOrder(orderParams);
+    return await this.brokers.placeOrder({ body: orderParams });
   }
 
   /**
@@ -976,7 +1027,7 @@ export class FinaticConnect extends EventEmitter {
       symbol,
       order_qty: quantity,
     };
-    return await this.brokers.placeOrder(orderParams);
+    return await this.brokers.placeOrder({ body: orderParams });
   }
 
   /**
@@ -1002,28 +1053,28 @@ export class FinaticConnect extends EventEmitter {
       order_qty: quantity,
       price,
     };
-    return await this.brokers.placeOrder(orderParams);
+    return await this.brokers.placeOrder({ body: orderParams });
   }
 
   /**
    * Place a generic order.
    */
-  async placeOrder(orderParams: any, extras?: any): Promise<any> {
-    return await this.brokers.placeOrder(orderParams, extras);
+  async placeOrder(orderParams: any): Promise<any> {
+    return await this.brokers.placeOrder({ body: orderParams });
   }
 
   /**
    * Modify an existing order.
    */
-  async modifyOrder(orderId: string, orderParams: any, extras?: any): Promise<any> {
-    return await this.brokers.modifyOrder(orderId, orderParams, extras);
+  async modifyOrder(orderId: string, orderParams: any): Promise<any> {
+    return await this.brokers.modifyOrder({ orderId, body: orderParams });
   }
 
   /**
    * Cancel an existing order.
    */
   async cancelOrder(orderId: string, accountNumber?: string, connectionId?: string): Promise<any> {
-    return await this.brokers.cancelOrder(orderId, undefined, accountNumber, connectionId);
+    return await this.brokers.cancelOrder({ orderId, ...(accountNumber ? { accountNumber } : {}), ...(connectionId ? { connectionId } : {}) });
   }
 
 }
