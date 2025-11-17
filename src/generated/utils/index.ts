@@ -1,6 +1,6 @@
 /**
  * Generated utility functions (Phase 2B).
- * 
+ *
  * This file is regenerated on each run - do not edit directly.
  */
 

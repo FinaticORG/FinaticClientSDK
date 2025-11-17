@@ -1,6 +1,6 @@
 /**
  * Generated wrapper functions for session operations (Phase 2A).
- * 
+ *
  * This file is regenerated on each run - do not edit directly.
  * For custom logic, edit src/custom/wrappers/session.ts instead.
  */
@@ -13,7 +13,11 @@ import { retryApiCall } from '../utils/retry';
 import { getLogger, type Logger } from '../utils/logger';
 import { handleError } from '../utils/error-handling';
 import { getCache, generateCacheKey } from '../utils/cache';
-import { applyRequestInterceptors, applyResponseInterceptors, applyErrorInterceptors } from '../utils/interceptors';
+import {
+  applyRequestInterceptors,
+  applyResponseInterceptors,
+  applyErrorInterceptors,
+} from '../utils/interceptors';
 import { coerceEnumValue } from '../utils/enum-coercion';
 import { convertToPlainObject } from '../utils/plain-object';
 
@@ -185,7 +189,6 @@ export interface TestWebhookResponse {
   }>;
 }
 
-
 /**
  * Session wrapper functions.
  * Provides simplified method names and response unwrapping.
@@ -288,82 +291,92 @@ export class SessionWrapper {
       method: 'POST',
       path: '/api/v1/session/init',
       params: params,
-      action: 'initSession'
+      action: 'initSession',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.initSessionApiV1SessionInitPost({ xApiKey: xApiKey }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.initSessionApiV1SessionInitPost(
+            { xApiKey: xApiKey },
+            { headers: { 'x-request-id': requestId } }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Phase 2C: Unwrap API response and transform to standard response structure
-      const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
+      const responseData =
+        response && typeof response === 'object' && 'data' in response
+          ? (response as any).data
+          : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      
+
       const apiData = (responseData as any).data;
-      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const warnings = Array.isArray((responseData as any).warnings)
+        ? (responseData as any).warnings
+        : undefined;
       const meta = (responseData as any).meta;
-      
+
       // Build standard response structure
       const standardResponse: InitSessionResponse = {
         success: {
           data: convertToPlainObject(apiData) as TokenResponseData,
           ...(meta ? { meta } : {}),
         },
-        ...(warnings && warnings.length > 0 ? {
-          Warning: warnings.map((w: any) => ({
-            message: w.message || String(w),
-            code: w.code,
-            details: w.details || w,
-          })),
-        } : {}),
+        ...(warnings && warnings.length > 0
+          ? {
+              Warning: warnings.map((w: any) => ({
+                message: w.message || String(w),
+                code: w.code,
+                details: w.details || w,
+              })),
+            }
+          : {}),
       };
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('POST', '/api/v1/session/init', params, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Init Session completed', {
         request_id: requestId,
-        action: 'initSession'
+        action: 'initSession',
       });
-      
+
       // Phase 2C: Return standard response structure (already plain objects)
       return standardResponse;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Init Session failed', error, {
         request_id: requestId,
-        action: 'initSession'
+        action: 'initSession',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
         errorStatus = axiosError.response?.status;
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
-        errorMessage = axiosError.response?.data?.message || 
-                       axiosError.response?.statusText || 
-                       axiosError.message || 
-                       errorMessage;
+        errorMessage =
+          axiosError.response?.data?.message ||
+          axiosError.response?.statusText ||
+          axiosError.message ||
+          errorMessage;
         errorDetails = {
           status: errorStatus,
           statusText: axiosError.response?.statusText,
@@ -380,7 +393,7 @@ export class SessionWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: InitSessionResponse = {
         success: {
@@ -393,7 +406,7 @@ export class SessionWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -462,82 +475,92 @@ export class SessionWrapper {
       method: 'POST',
       path: '/api/v1/session/start',
       params: params,
-      action: 'startSession'
+      action: 'startSession',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.startSessionApiV1SessionStartPost({ oneTimeToken: OneTimeToken, sessionStartRequest: body }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.startSessionApiV1SessionStartPost(
+            { oneTimeToken: OneTimeToken, sessionStartRequest: body },
+            { headers: { 'x-request-id': requestId } }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Phase 2C: Unwrap API response and transform to standard response structure
-      const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
+      const responseData =
+        response && typeof response === 'object' && 'data' in response
+          ? (response as any).data
+          : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      
+
       const apiData = (responseData as any).data;
-      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const warnings = Array.isArray((responseData as any).warnings)
+        ? (responseData as any).warnings
+        : undefined;
       const meta = (responseData as any).meta;
-      
+
       // Build standard response structure
       const standardResponse: StartSessionResponse = {
         success: {
           data: convertToPlainObject(apiData) as SessionResponseData,
           ...(meta ? { meta } : {}),
         },
-        ...(warnings && warnings.length > 0 ? {
-          Warning: warnings.map((w: any) => ({
-            message: w.message || String(w),
-            code: w.code,
-            details: w.details || w,
-          })),
-        } : {}),
+        ...(warnings && warnings.length > 0
+          ? {
+              Warning: warnings.map((w: any) => ({
+                message: w.message || String(w),
+                code: w.code,
+                details: w.details || w,
+              })),
+            }
+          : {}),
       };
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('POST', '/api/v1/session/start', params, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Start Session completed', {
         request_id: requestId,
-        action: 'startSession'
+        action: 'startSession',
       });
-      
+
       // Phase 2C: Return standard response structure (already plain objects)
       return standardResponse;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Start Session failed', error, {
         request_id: requestId,
-        action: 'startSession'
+        action: 'startSession',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
         errorStatus = axiosError.response?.status;
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
-        errorMessage = axiosError.response?.data?.message || 
-                       axiosError.response?.statusText || 
-                       axiosError.message || 
-                       errorMessage;
+        errorMessage =
+          axiosError.response?.data?.message ||
+          axiosError.response?.statusText ||
+          axiosError.message ||
+          errorMessage;
         errorDetails = {
           status: errorStatus,
           statusText: axiosError.response?.statusText,
@@ -554,7 +577,7 @@ export class SessionWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: StartSessionResponse = {
         success: {
@@ -567,7 +590,7 @@ export class SessionWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -633,82 +656,92 @@ export class SessionWrapper {
       method: 'GET',
       path: '/api/v1/session/portal',
       params: params,
-      action: 'getPortalUrl'
+      action: 'getPortalUrl',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getPortalUrlApiV1SessionPortalGet({ sessionId: this.sessionId! }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getPortalUrlApiV1SessionPortalGet(
+            { sessionId: this.sessionId! },
+            { headers: { 'x-request-id': requestId } }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Phase 2C: Unwrap API response and transform to standard response structure
-      const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
+      const responseData =
+        response && typeof response === 'object' && 'data' in response
+          ? (response as any).data
+          : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      
+
       const apiData = (responseData as any).data;
-      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const warnings = Array.isArray((responseData as any).warnings)
+        ? (responseData as any).warnings
+        : undefined;
       const meta = (responseData as any).meta;
-      
+
       // Build standard response structure
       const standardResponse: GetPortalUrlResponse = {
         success: {
           data: convertToPlainObject(apiData) as PortalUrlResponse,
           ...(meta ? { meta } : {}),
         },
-        ...(warnings && warnings.length > 0 ? {
-          Warning: warnings.map((w: any) => ({
-            message: w.message || String(w),
-            code: w.code,
-            details: w.details || w,
-          })),
-        } : {}),
+        ...(warnings && warnings.length > 0
+          ? {
+              Warning: warnings.map((w: any) => ({
+                message: w.message || String(w),
+                code: w.code,
+                details: w.details || w,
+              })),
+            }
+          : {}),
       };
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/session/portal', params, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Get Portal Url completed', {
         request_id: requestId,
-        action: 'getPortalUrl'
+        action: 'getPortalUrl',
       });
-      
+
       // Phase 2C: Return standard response structure (already plain objects)
       return standardResponse;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Get Portal Url failed', error, {
         request_id: requestId,
-        action: 'getPortalUrl'
+        action: 'getPortalUrl',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
         errorStatus = axiosError.response?.status;
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
-        errorMessage = axiosError.response?.data?.message || 
-                       axiosError.response?.statusText || 
-                       axiosError.message || 
-                       errorMessage;
+        errorMessage =
+          axiosError.response?.data?.message ||
+          axiosError.response?.statusText ||
+          axiosError.message ||
+          errorMessage;
         errorDetails = {
           status: errorStatus,
           statusText: axiosError.response?.statusText,
@@ -725,7 +758,7 @@ export class SessionWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: GetPortalUrlResponse = {
         success: {
@@ -738,7 +771,7 @@ export class SessionWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -801,7 +834,12 @@ export class SessionWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/session/{session_id}/user', params, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'GET',
+        '/api/v1/session/{session_id}/user',
+        params,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -815,82 +853,97 @@ export class SessionWrapper {
       method: 'GET',
       path: '/api/v1/session/{session_id}/user',
       params: params,
-      action: 'getSessionUser'
+      action: 'getSessionUser',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getSessionUserApiV1SessionSessionIdUserGet({ sessionId: sessionId, companyId: this.companyId! }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getSessionUserApiV1SessionSessionIdUserGet(
+            { sessionId: sessionId, companyId: this.companyId! },
+            { headers: { 'x-request-id': requestId } }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Phase 2C: Unwrap API response and transform to standard response structure
-      const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
+      const responseData =
+        response && typeof response === 'object' && 'data' in response
+          ? (response as any).data
+          : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      
+
       const apiData = (responseData as any).data;
-      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const warnings = Array.isArray((responseData as any).warnings)
+        ? (responseData as any).warnings
+        : undefined;
       const meta = (responseData as any).meta;
-      
+
       // Build standard response structure
       const standardResponse: GetSessionUserResponse = {
         success: {
           data: convertToPlainObject(apiData) as SessionUserResponse,
           ...(meta ? { meta } : {}),
         },
-        ...(warnings && warnings.length > 0 ? {
-          Warning: warnings.map((w: any) => ({
-            message: w.message || String(w),
-            code: w.code,
-            details: w.details || w,
-          })),
-        } : {}),
+        ...(warnings && warnings.length > 0
+          ? {
+              Warning: warnings.map((w: any) => ({
+                message: w.message || String(w),
+                code: w.code,
+                details: w.details || w,
+              })),
+            }
+          : {}),
       };
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/session/{session_id}/user', params, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'GET',
+          '/api/v1/session/{session_id}/user',
+          params,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Get Session User completed', {
         request_id: requestId,
-        action: 'getSessionUser'
+        action: 'getSessionUser',
       });
-      
+
       // Phase 2C: Return standard response structure (already plain objects)
       return standardResponse;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Get Session User failed', error, {
         request_id: requestId,
-        action: 'getSessionUser'
+        action: 'getSessionUser',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
         errorStatus = axiosError.response?.status;
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
-        errorMessage = axiosError.response?.data?.message || 
-                       axiosError.response?.statusText || 
-                       axiosError.message || 
-                       errorMessage;
+        errorMessage =
+          axiosError.response?.data?.message ||
+          axiosError.response?.statusText ||
+          axiosError.message ||
+          errorMessage;
         errorDetails = {
           status: errorStatus,
           statusText: axiosError.response?.statusText,
@@ -907,7 +960,7 @@ export class SessionWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: GetSessionUserResponse = {
         success: {
@@ -920,7 +973,7 @@ export class SessionWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -956,7 +1009,9 @@ export class SessionWrapper {
    * }
    * ```
    */
-  async authenticateSession(params: AuthenticateSessionParams): Promise<AuthenticateSessionResponse> {
+  async authenticateSession(
+    params: AuthenticateSessionParams
+  ): Promise<AuthenticateSessionResponse> {
     // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
@@ -980,7 +1035,12 @@ export class SessionWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('POST', '/api/v1/session/authenticate', params, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'POST',
+        '/api/v1/session/authenticate',
+        params,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -994,82 +1054,104 @@ export class SessionWrapper {
       method: 'POST',
       path: '/api/v1/session/authenticate',
       params: params,
-      action: 'authenticateSession'
+      action: 'authenticateSession',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.authenticateSessionApiV1SessionAuthenticatePost({ directAuthRequest: { session_id: sessionId, user_id: userId } }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.authenticateSessionApiV1SessionAuthenticatePost(
+            { directAuthRequest: { session_id: sessionId, user_id: userId } },
+            {
+              headers: {
+                'x-session-id': this.sessionId,
+                'x-company-id': this.companyId,
+                'x-csrf-token': this.csrfToken,
+                'x-request-id': requestId,
+              },
+            }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Phase 2C: Unwrap API response and transform to standard response structure
-      const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
+      const responseData =
+        response && typeof response === 'object' && 'data' in response
+          ? (response as any).data
+          : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      
+
       const apiData = (responseData as any).data;
-      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const warnings = Array.isArray((responseData as any).warnings)
+        ? (responseData as any).warnings
+        : undefined;
       const meta = (responseData as any).meta;
-      
+
       // Build standard response structure
       const standardResponse: AuthenticateSessionResponse = {
         success: {
           data: convertToPlainObject(apiData) as TokenData,
           ...(meta ? { meta } : {}),
         },
-        ...(warnings && warnings.length > 0 ? {
-          Warning: warnings.map((w: any) => ({
-            message: w.message || String(w),
-            code: w.code,
-            details: w.details || w,
-          })),
-        } : {}),
+        ...(warnings && warnings.length > 0
+          ? {
+              Warning: warnings.map((w: any) => ({
+                message: w.message || String(w),
+                code: w.code,
+                details: w.details || w,
+              })),
+            }
+          : {}),
       };
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('POST', '/api/v1/session/authenticate', params, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'POST',
+          '/api/v1/session/authenticate',
+          params,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Authenticate Session completed', {
         request_id: requestId,
-        action: 'authenticateSession'
+        action: 'authenticateSession',
       });
-      
+
       // Phase 2C: Return standard response structure (already plain objects)
       return standardResponse;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Authenticate Session failed', error, {
         request_id: requestId,
-        action: 'authenticateSession'
+        action: 'authenticateSession',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
         errorStatus = axiosError.response?.status;
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
-        errorMessage = axiosError.response?.data?.message || 
-                       axiosError.response?.statusText || 
-                       axiosError.message || 
-                       errorMessage;
+        errorMessage =
+          axiosError.response?.data?.message ||
+          axiosError.response?.statusText ||
+          axiosError.message ||
+          errorMessage;
         errorDetails = {
           status: errorStatus,
           statusText: axiosError.response?.statusText,
@@ -1086,7 +1168,7 @@ export class SessionWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: AuthenticateSessionResponse = {
         success: {
@@ -1099,7 +1181,7 @@ export class SessionWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -1170,82 +1252,97 @@ export class SessionWrapper {
       method: 'POST',
       path: '/api/v1/session/refresh',
       params: params,
-      action: 'refreshSession'
+      action: 'refreshSession',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.refreshSessionApiV1SessionRefreshPost({ sessionId: this.sessionId!, companyId: this.companyId! }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.refreshSessionApiV1SessionRefreshPost(
+            { sessionId: this.sessionId!, companyId: this.companyId! },
+            { headers: { 'x-request-id': requestId } }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Phase 2C: Unwrap API response and transform to standard response structure
-      const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
+      const responseData =
+        response && typeof response === 'object' && 'data' in response
+          ? (response as any).data
+          : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      
+
       const apiData = (responseData as any).data;
-      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const warnings = Array.isArray((responseData as any).warnings)
+        ? (responseData as any).warnings
+        : undefined;
       const meta = (responseData as any).meta;
-      
+
       // Build standard response structure
       const standardResponse: RefreshSessionResponse = {
         success: {
           data: convertToPlainObject(apiData) as SessionResponseData,
           ...(meta ? { meta } : {}),
         },
-        ...(warnings && warnings.length > 0 ? {
-          Warning: warnings.map((w: any) => ({
-            message: w.message || String(w),
-            code: w.code,
-            details: w.details || w,
-          })),
-        } : {}),
+        ...(warnings && warnings.length > 0
+          ? {
+              Warning: warnings.map((w: any) => ({
+                message: w.message || String(w),
+                code: w.code,
+                details: w.details || w,
+              })),
+            }
+          : {}),
       };
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('POST', '/api/v1/session/refresh', params, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'POST',
+          '/api/v1/session/refresh',
+          params,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Refresh Session completed', {
         request_id: requestId,
-        action: 'refreshSession'
+        action: 'refreshSession',
       });
-      
+
       // Phase 2C: Return standard response structure (already plain objects)
       return standardResponse;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Refresh Session failed', error, {
         request_id: requestId,
-        action: 'refreshSession'
+        action: 'refreshSession',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
         errorStatus = axiosError.response?.status;
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
-        errorMessage = axiosError.response?.data?.message || 
-                       axiosError.response?.statusText || 
-                       axiosError.message || 
-                       errorMessage;
+        errorMessage =
+          axiosError.response?.data?.message ||
+          axiosError.response?.statusText ||
+          axiosError.message ||
+          errorMessage;
         errorDetails = {
           status: errorStatus,
           statusText: axiosError.response?.statusText,
@@ -1262,7 +1359,7 @@ export class SessionWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: RefreshSessionResponse = {
         success: {
@@ -1275,7 +1372,7 @@ export class SessionWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -1352,7 +1449,12 @@ export class SessionWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('POST', '/api/v1/session/webhook/test', params, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'POST',
+        '/api/v1/session/webhook/test',
+        params,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -1366,82 +1468,109 @@ export class SessionWrapper {
       method: 'POST',
       path: '/api/v1/session/webhook/test',
       params: params,
-      action: 'testWebhook'
+      action: 'testWebhook',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.testWebhookApiV1SessionWebhookTestPost({ finaticapiApiV1RoutersSessionSessionRouterTestWebhookRequest: { event_type: eventType, ...(sampleData !== undefined ? { sample_data: sampleData } : {}) } }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.testWebhookApiV1SessionWebhookTestPost(
+            {
+              finaticapiApiV1RoutersSessionSessionRouterTestWebhookRequest: {
+                event_type: eventType,
+                ...(sampleData !== undefined ? { sample_data: sampleData } : {}),
+              },
+            },
+            {
+              headers: {
+                'x-session-id': this.sessionId,
+                'x-company-id': this.companyId,
+                'x-csrf-token': this.csrfToken,
+                'x-request-id': requestId,
+              },
+            }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Phase 2C: Unwrap API response and transform to standard response structure
-      const responseData = (response && typeof response === 'object' && 'data' in response) ? (response as any).data : response;
+      const responseData =
+        response && typeof response === 'object' && 'data' in response
+          ? (response as any).data
+          : response;
       if (!(responseData && typeof responseData === 'object' && 'data' in responseData)) {
         throw new Error('Unexpected response shape: missing data');
       }
-      
+
       const apiData = (responseData as any).data;
-      const warnings = Array.isArray((responseData as any).warnings) ? (responseData as any).warnings : undefined;
+      const warnings = Array.isArray((responseData as any).warnings)
+        ? (responseData as any).warnings
+        : undefined;
       const meta = (responseData as any).meta;
-      
+
       // Build standard response structure
       const standardResponse: TestWebhookResponse = {
         success: {
           data: convertToPlainObject(apiData) as ApiTestWebhookResponse,
           ...(meta ? { meta } : {}),
         },
-        ...(warnings && warnings.length > 0 ? {
-          Warning: warnings.map((w: any) => ({
-            message: w.message || String(w),
-            code: w.code,
-            details: w.details || w,
-          })),
-        } : {}),
+        ...(warnings && warnings.length > 0
+          ? {
+              Warning: warnings.map((w: any) => ({
+                message: w.message || String(w),
+                code: w.code,
+                details: w.details || w,
+              })),
+            }
+          : {}),
       };
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('POST', '/api/v1/session/webhook/test', params, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'POST',
+          '/api/v1/session/webhook/test',
+          params,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Test Webhook completed', {
         request_id: requestId,
-        action: 'testWebhook'
+        action: 'testWebhook',
       });
-      
+
       // Phase 2C: Return standard response structure (already plain objects)
       return standardResponse;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Test Webhook failed', error, {
         request_id: requestId,
-        action: 'testWebhook'
+        action: 'testWebhook',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
         errorStatus = axiosError.response?.status;
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
-        errorMessage = axiosError.response?.data?.message || 
-                       axiosError.response?.statusText || 
-                       axiosError.message || 
-                       errorMessage;
+        errorMessage =
+          axiosError.response?.data?.message ||
+          axiosError.response?.statusText ||
+          axiosError.message ||
+          errorMessage;
         errorDetails = {
           status: errorStatus,
           statusText: axiosError.response?.statusText,
@@ -1458,7 +1587,7 @@ export class SessionWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: TestWebhookResponse = {
         success: {
@@ -1471,7 +1600,7 @@ export class SessionWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -1479,5 +1608,4 @@ export class SessionWrapper {
     // TODO Phase 2D: Add orphaned method detection
     // TODO Phase 2D: Add advanced convenience methods
   }
-
 }

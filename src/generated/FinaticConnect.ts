@@ -1,6 +1,6 @@
 /**
  * Main client class for Finatic Client SDK.
- * 
+ *
  * This file is regenerated on each run - do not edit directly.
  * For custom logic, extend this class or use custom wrappers.
  */
@@ -79,7 +79,7 @@ export class FinaticConnect extends EventEmitter {
   ): Promise<FinaticConnect> {
     // Use console for static method logging (instance logger will be initialized in constructor)
     const logger = console;
-    
+
     logger.debug?.('FinaticConnect.init() called', {
       token: token ? `${token.substring(0, 20)}...` : 'missing',
       userId,
@@ -89,7 +89,7 @@ export class FinaticConnect extends EventEmitter {
     try {
       // Access private instance via type assertion to base class
       const baseClass = FinaticConnect as any;
-      
+
       // Clear instance if it exists but has no valid session (Safari compatibility)
       if (baseClass.instance && !baseClass.instance.sessionId) {
         logger.debug?.('Clearing existing instance without sessionId');
@@ -124,8 +124,8 @@ export class FinaticConnect extends EventEmitter {
       if (!sessionId) {
         const error = new Error(
           'Session initialization failed: startSession() did not return a session_id. ' +
-          'Please check that the API endpoint returned a valid session response. ' +
-          'The network call to /api/v1/session/start may have failed or returned an invalid response.'
+            'Please check that the API endpoint returned a valid session response. ' +
+            'The network call to /api/v1/session/start may have failed or returned an invalid response.'
         );
         logger.error?.('FinaticConnect.init() failed - no sessionId', error, {});
         throw error;
@@ -139,15 +139,15 @@ export class FinaticConnect extends EventEmitter {
         if (error.message.includes('Session not initialized')) {
           const enhancedError = new Error(
             `Failed to initialize Finatic session: ${error.message}. ` +
-            'This may indicate that startSession() was called but did not successfully create a session. ' +
-            'Please check the API response and ensure the one-time token is valid.'
+              'This may indicate that startSession() was called but did not successfully create a session. ' +
+              'Please check the API response and ensure the one-time token is valid.'
           );
           logger.error?.('FinaticConnect.init() session initialization error', enhancedError, {});
           throw enhancedError;
         }
         logger.error?.('FinaticConnect.init() error', error, {});
       }
-      
+
       // Re-throw other errors as-is
       throw error;
     }
@@ -155,30 +155,36 @@ export class FinaticConnect extends EventEmitter {
 
   /**
    * Start a session with a one-time token (internal/private).
-   * 
+   *
    * Note: Client SDK does NOT use _initSession() - the token passed to init() is already a one-time token.
    * Only Server SDKs use _initSession() to convert API keys to one-time tokens.
    */
-  private async _startSession(oneTimeToken: string, userId?: string): Promise<{ session_id: string; company_id: string }> {
+  private async _startSession(
+    oneTimeToken: string,
+    userId?: string
+  ): Promise<{ session_id: string; company_id: string }> {
     const requestBody = userId !== undefined ? { user_id: userId } : {};
     // Phase 2C: Use typed input object
-    const response = await this.session.startSession({ OneTimeToken: oneTimeToken, body: requestBody });
-    
+    const response = await this.session.startSession({
+      OneTimeToken: oneTimeToken,
+      body: requestBody,
+    });
+
     // Phase 2C: Unwrap standard response structure
     if (response.Error) {
       throw new Error(response.Error.message || 'Failed to start session');
     }
-    
+
     const data = response.success?.data;
     const sessionId = data?.session_id || '';
     const companyId = data?.company_id || '';
     // csrf_token is not in SessionResponseData, get from response headers if available
     const csrfToken = (data as any)?.csrf_token || '';
-    
+
     if (sessionId && companyId) {
       this.setSessionContext(sessionId, companyId, csrfToken);
     }
-    
+
     return { session_id: sessionId, company_id: companyId };
   }
 
@@ -186,7 +192,7 @@ export class FinaticConnect extends EventEmitter {
    * Get portal URL with optional theme and broker filters.
    * This is where URL manipulation happens (not in session wrapper).
    * Returns the URL - app can use it as needed.
-   * 
+   *
    * Note: For Client SDK, use openPortal() to open in iframe directly.
    */
   async getPortalUrl(options?: PortalOptions): Promise<string> {
@@ -196,7 +202,7 @@ export class FinaticConnect extends EventEmitter {
 
     // Get raw portal URL from session wrapper
     const response = await this.session.getPortalUrl({});
-    
+
     // Check for errors
     if (response.Error) {
       this.logger.error?.('Failed to get portal URL', new Error(response.Error.message), {
@@ -205,13 +211,17 @@ export class FinaticConnect extends EventEmitter {
       });
       throw new Error(response.Error.message || 'Failed to get portal URL');
     }
-    
+
     // Validate response structure
     if (!response.success?.data?.portal_url) {
-      this.logger.error?.('Invalid portal URL response: missing data', new Error('Invalid response'), {});
+      this.logger.error?.(
+        'Invalid portal URL response: missing data',
+        new Error('Invalid response'),
+        {}
+      );
       throw new Error('Invalid portal URL response: missing portal_url');
     }
-    
+
     let portalUrl = response.success.data.portal_url;
 
     // Validate URL before manipulation
@@ -282,24 +292,24 @@ export class FinaticConnect extends EventEmitter {
       onSuccess: (userId: string) => {
         // Store userId for SDK state (portal already linked user to session)
         this.userId = userId;
-        
+
         // Emit portal success event
         this.emit('portal:success', userId);
-        
+
         // Call optional callback
         options?.onSuccess?.(userId);
       },
       onError: (error: Error) => {
         // Emit portal error event
         this.emit('portal:error', error);
-        
+
         // Call optional callback
         options?.onError?.(error);
       },
       onClose: () => {
         // Emit portal close event
         this.emit('portal:close');
-        
+
         // Call optional callback
         options?.onClose?.();
       },
@@ -330,7 +340,7 @@ export class FinaticConnect extends EventEmitter {
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
-    
+
     const response = await this.session.getSessionUser(this.sessionId);
     return {
       user_id: response.user_id || '',
@@ -346,7 +356,7 @@ export class FinaticConnect extends EventEmitter {
     this.sessionId = sessionId;
     this.companyId = companyId;
     this.csrfToken = csrfToken;
-    
+
     // Update all wrappers with session context
     this.brokers.setSessionContext(sessionId, companyId, csrfToken);
     this.session.setSessionContext(sessionId, companyId, csrfToken);
@@ -365,7 +375,6 @@ export class FinaticConnect extends EventEmitter {
   getCompanyId(): string | undefined {
     return this.companyId;
   }
-
 
   // Phase 2C: _convertToPlainObject removed - now handled in generated methods via convertToPlainObject utility
 
@@ -390,13 +399,16 @@ export class FinaticConnect extends EventEmitter {
   async getBrokerList(): Promise<any[]> {
     const response = await this.brokers.getBrokers({});
     const brokers = response.success?.data || [];
-    const baseUrl = this.config.basePath?.replace('/api/v1', '') || this.options.baseUrl?.replace('/api/v1', '') || 'https://api.finatic.dev';
-    
+    const baseUrl =
+      this.config.basePath?.replace('/api/v1', '') ||
+      this.options.baseUrl?.replace('/api/v1', '') ||
+      'https://api.finatic.dev';
+
     // Transform broker list to include full logo URLs
     return brokers.map((broker: any) => ({
-          ...broker,
-          logo_path: broker.logo_path ? `${baseUrl}${broker.logo_path}` : '',
-        }));
+      ...broker,
+      logo_path: broker.logo_path ? `${baseUrl}${broker.logo_path}` : '',
+    }));
   }
 
   /**
@@ -416,7 +428,7 @@ export class FinaticConnect extends EventEmitter {
     const allData: any[] = [];
     let offset = 0;
     const limit = 100;
-    
+
     while (true) {
       const response = await this.brokers.getAccounts({
         brokerId: filter?.brokerId,
@@ -428,14 +440,14 @@ export class FinaticConnect extends EventEmitter {
         offset,
         withMetadata: filter?.withMetadata,
       });
-      
+
       const result = response.success?.data || [];
       if (!result || result.length === 0) break;
       allData.push(...result);
       if (result.length < limit) break;
       offset += limit;
     }
-    
+
     return allData;
   }
 
@@ -447,7 +459,7 @@ export class FinaticConnect extends EventEmitter {
     const allData: any[] = [];
     let offset = 0;
     const limit = 100;
-    
+
     while (true) {
       const response = await this.brokers.getOrders({
         brokerId: filter?.brokerId,
@@ -463,14 +475,14 @@ export class FinaticConnect extends EventEmitter {
         createdBefore: filter?.createdBefore,
         withMetadata: filter?.withMetadata,
       });
-      
+
       const result = response.success?.data || [];
       if (!result || result.length === 0) break;
       allData.push(...result);
       if (result.length < limit) break;
       offset += limit;
     }
-    
+
     return allData;
   }
 
@@ -482,7 +494,7 @@ export class FinaticConnect extends EventEmitter {
     const allData: any[] = [];
     let offset = 0;
     const limit = 100;
-    
+
     while (true) {
       const response = await this.brokers.getPositions({
         brokerId: filter?.brokerId,
@@ -498,14 +510,14 @@ export class FinaticConnect extends EventEmitter {
         updatedBefore: filter?.updatedBefore,
         withMetadata: filter?.withMetadata,
       });
-      
+
       const result = response.success?.data || [];
       if (!result || result.length === 0) break;
       allData.push(...result);
       if (result.length < limit) break;
       offset += limit;
     }
-    
+
     return allData;
   }
 
@@ -517,7 +529,7 @@ export class FinaticConnect extends EventEmitter {
     const allData: any[] = [];
     let offset = 0;
     const limit = 100;
-    
+
     while (true) {
       const response = await this.brokers.getBalances({
         brokerId: filter?.brokerId,
@@ -530,14 +542,14 @@ export class FinaticConnect extends EventEmitter {
         balanceCreatedBefore: filter?.balanceCreatedBefore,
         withMetadata: filter?.withMetadata,
       });
-      
+
       const result = response.success?.data || [];
       if (!result || result.length === 0) break;
       allData.push(...result);
       if (result.length < limit) break;
       offset += limit;
     }
-    
+
     return allData;
   }
 
@@ -674,7 +686,7 @@ export class FinaticConnect extends EventEmitter {
     const allData: any[] = [];
     let offset = 0;
     const limit = 100;
-    
+
     while (true) {
       const response = await this.brokers.getOrderGroups({
         brokerId: filter?.brokerId,
@@ -684,14 +696,14 @@ export class FinaticConnect extends EventEmitter {
         createdAfter: filter?.createdAfter,
         createdBefore: filter?.createdBefore,
       });
-      
+
       const result = response.success?.data || [];
       if (!result || result.length === 0) break;
       allData.push(...result);
       if (result.length < limit) break;
       offset += limit;
     }
-    
+
     return allData;
   }
 
@@ -720,7 +732,7 @@ export class FinaticConnect extends EventEmitter {
     const allData: any[] = [];
     let offset = 0;
     const limit = 100;
-    
+
     while (true) {
       const response = await this.brokers.getPositionLots({
         brokerId: filter?.brokerId,
@@ -731,14 +743,14 @@ export class FinaticConnect extends EventEmitter {
         limit,
         offset,
       });
-      
+
       const result = response.success?.data || [];
       if (!result || result.length === 0) break;
       allData.push(...result);
       if (result.length < limit) break;
       offset += limit;
     }
-    
+
     return allData;
   }
 
@@ -776,7 +788,12 @@ export class FinaticConnect extends EventEmitter {
    * Get order fills for a specific order.
    * Phase 2C: Uses typed input objects and handles standard response structure.
    */
-  async getOrderFills(orderId: string, page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
+  async getOrderFills(
+    orderId: string,
+    page: number = 1,
+    perPage: number = 100,
+    filter?: any
+  ): Promise<any> {
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -794,7 +811,12 @@ export class FinaticConnect extends EventEmitter {
    * Get order events for a specific order.
    * Phase 2C: Uses typed input objects and handles standard response structure.
    */
-  async getOrderEvents(orderId: string, page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
+  async getOrderEvents(
+    orderId: string,
+    page: number = 1,
+    perPage: number = 100,
+    filter?: any
+  ): Promise<any> {
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -812,7 +834,12 @@ export class FinaticConnect extends EventEmitter {
    * Get position lot fills for a specific lot.
    * Phase 2C: Uses typed input objects and handles standard response structure.
    */
-  async getPositionLotFills(lotId: string, page: number = 1, perPage: number = 100, filter?: any): Promise<any> {
+  async getPositionLotFills(
+    lotId: string,
+    page: number = 1,
+    perPage: number = 100,
+    filter?: any
+  ): Promise<any> {
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -825,8 +852,6 @@ export class FinaticConnect extends EventEmitter {
     });
     return response.success?.data || [];
   }
-
-
 
   /**
    * Place a stock market order.
@@ -1068,7 +1093,10 @@ export class FinaticConnect extends EventEmitter {
    * Cancel an existing order.
    */
   async cancelOrder(orderId: string, accountNumber?: string, connectionId?: string): Promise<any> {
-    return await this.brokers.cancelOrder({ orderId, ...(accountNumber ? { accountNumber } : {}), ...(connectionId ? { connectionId } : {}) });
+    return await this.brokers.cancelOrder({
+      orderId,
+      ...(accountNumber ? { accountNumber } : {}),
+      ...(connectionId ? { connectionId } : {}),
+    });
   }
-
 }

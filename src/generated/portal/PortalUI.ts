@@ -1,6 +1,6 @@
 /**
  * Portal UI manager for Client SDK.
- * 
+ *
  * Handles iframe creation, postMessage events, and portal lifecycle.
  * Generated - do not edit directly.
  */
