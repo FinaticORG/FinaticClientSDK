@@ -10,6 +10,7 @@ import { SdkConfig, defaultConfig } from './config';
 import { appendThemeToURL, appendBrokerFilterToURL } from './utils/url-utils';
 import { EventEmitter } from './utils/events';
 import { PortalUI } from './portal/PortalUI';
+import type { Logger } from './utils/logger';
 import { BrokersApi } from './api/brokers-api';
 import { SessionApi } from './api/session-api';
 import { BrokersWrapper } from './wrappers/brokers';
@@ -41,7 +42,7 @@ export class FinaticConnect extends EventEmitter {
   private csrfToken?: string;
   private portalUI?: PortalUI;
   private userId?: string;
-  private logger: any;
+  private logger: Logger;
 
   public readonly brokers: BrokersWrapper;
   public readonly session: SessionWrapper;
@@ -76,15 +77,8 @@ export class FinaticConnect extends EventEmitter {
     userId?: string,
     options?: { baseUrl?: string; sdkConfig?: Partial<SdkConfig> }
   ): Promise<FinaticConnect> {
-    // Get logger - try to use SDK logger, fallback to console
-    let logger: any;
-    try {
-      const { getLogger } = require('./utils/logger');
-      logger = getLogger(options?.sdkConfig as SdkConfig | undefined);
-    } catch {
-      // Fallback logger for browser environments where pino might not work correctly
-      logger = console;
-    }
+    // Use console for static method logging (instance logger will be initialized in constructor)
+    const logger = console;
     
     logger.debug?.('FinaticConnect.init() called', {
       token: token ? `${token.substring(0, 20)}...` : 'missing',

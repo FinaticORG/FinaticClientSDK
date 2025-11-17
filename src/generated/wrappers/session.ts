@@ -397,9 +397,9 @@ export class SessionWrapper {
       return errorResponse;
     }
 
-    // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
-    // TODO Phase 2C: Add orphaned method detection
-    // TODO Phase 2C: Add advanced convenience methods
+    // TODO Phase 2D: Add complex validation schemas (unions, enums, nested)
+    // TODO Phase 2D: Add orphaned method detection
+    // TODO Phase 2D: Add advanced convenience methods
   }
 
   /**
@@ -571,9 +571,9 @@ export class SessionWrapper {
       return errorResponse;
     }
 
-    // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
-    // TODO Phase 2C: Add orphaned method detection
-    // TODO Phase 2C: Add advanced convenience methods
+    // TODO Phase 2D: Add complex validation schemas (unions, enums, nested)
+    // TODO Phase 2D: Add orphaned method detection
+    // TODO Phase 2D: Add advanced convenience methods
   }
 
   /**
@@ -742,9 +742,9 @@ export class SessionWrapper {
       return errorResponse;
     }
 
-    // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
-    // TODO Phase 2C: Add orphaned method detection
-    // TODO Phase 2C: Add advanced convenience methods
+    // TODO Phase 2D: Add complex validation schemas (unions, enums, nested)
+    // TODO Phase 2D: Add orphaned method detection
+    // TODO Phase 2D: Add advanced convenience methods
   }
 
   /**
@@ -924,9 +924,9 @@ export class SessionWrapper {
       return errorResponse;
     }
 
-    // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
-    // TODO Phase 2C: Add orphaned method detection
-    // TODO Phase 2C: Add advanced convenience methods
+    // TODO Phase 2D: Add complex validation schemas (unions, enums, nested)
+    // TODO Phase 2D: Add orphaned method detection
+    // TODO Phase 2D: Add advanced convenience methods
   }
 
   /**
@@ -1103,9 +1103,9 @@ export class SessionWrapper {
       return errorResponse;
     }
 
-    // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
-    // TODO Phase 2C: Add orphaned method detection
-    // TODO Phase 2C: Add advanced convenience methods
+    // TODO Phase 2D: Add complex validation schemas (unions, enums, nested)
+    // TODO Phase 2D: Add orphaned method detection
+    // TODO Phase 2D: Add advanced convenience methods
   }
 
   /**
@@ -1279,9 +1279,9 @@ export class SessionWrapper {
       return errorResponse;
     }
 
-    // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
-    // TODO Phase 2C: Add orphaned method detection
-    // TODO Phase 2C: Add advanced convenience methods
+    // TODO Phase 2D: Add complex validation schemas (unions, enums, nested)
+    // TODO Phase 2D: Add orphaned method detection
+    // TODO Phase 2D: Add advanced convenience methods
   }
 
   /**
@@ -1475,9 +1475,9 @@ export class SessionWrapper {
       return errorResponse;
     }
 
-    // TODO Phase 2C: Add complex validation schemas (unions, enums, nested)
-    // TODO Phase 2C: Add orphaned method detection
-    // TODO Phase 2C: Add advanced convenience methods
+    // TODO Phase 2D: Add complex validation schemas (unions, enums, nested)
+    // TODO Phase 2D: Add orphaned method detection
+    // TODO Phase 2D: Add advanced convenience methods
   }
 
 }

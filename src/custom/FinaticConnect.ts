@@ -17,36 +17,35 @@ import { BrokersApi } from '../generated/api/brokers-api';
 /**
  * Custom FinaticConnect class that extends the generated class.
  * Use this to add custom initialization logic or override methods.
+ * 
+ * NOTE: Custom wrappers (CustomSessionWrapper, CustomBrokersWrapper) are provided
+ * as examples for extending generated wrappers. The generated wrappers are used
+ * by default and include browser-safe logging.
  */
 export class FinaticConnect extends GeneratedFinaticConnect {
   // Marker to verify custom class is being used
   static readonly __CUSTOM_CLASS__ = true;
 
-  /**
-   * Override constructor to use custom wrappers with safe logger
-   */
-  constructor(options: FinaticConnectOptions) {
-    super(options);
-    
-    // Replace wrappers with custom ones that use safe logger
-    // This is needed because the generated wrappers use pino directly
-    // which fails in browser environments
-    const self = this as any;
-    const config = self.config;
-    const sdkConfig = self.sdkConfig;
-    
-    // Replace session wrapper
-    const sessionApi = new SessionApi(config);
-    self.session = new CustomSessionWrapper(sessionApi, config, sdkConfig);
-    
-    // Replace brokers wrapper with custom one that uses safe logger
-    // Session headers are now handled by the generator, but we still need the safe logger
-    const brokersApi = new BrokersApi(config);
-    self.brokers = new CustomBrokersWrapper(brokersApi, config, sdkConfig);
-  }
+  // Custom wrapper examples (commented out - using generated wrappers by default):
+  // To use custom wrappers, uncomment and modify the constructor below:
+  //
+  // constructor(options: FinaticConnectOptions) {
+  //   super(options);
+  //   
+  //   const self = this as any;
+  //   const config = self.config;
+  //   const sdkConfig = self.sdkConfig;
+  //   
+  //   // Replace with custom wrappers if needed
+  //   const sessionApi = new SessionApi(config);
+  //   self.session = new CustomSessionWrapper(sessionApi, config, sdkConfig);
+  //   
+  //   const brokersApi = new BrokersApi(config);
+  //   self.brokers = new CustomBrokersWrapper(brokersApi, config, sdkConfig);
+  // }
 
   // Static init() method is now handled by the generator with enhanced error handling and session validation
-  // init() calls _initSession() (private) to get one-time token, then _startSession() (private) to start session
+  // init() calls _startSession() (private) directly with the provided token (Client SDK doesn't use _initSession)
   // Only init() is exposed to users - startSession() is NOT exposed
 
   // Phase 2C: All convenience methods (getAllAccounts, getAllOrders, getAllPositions, getAllBalances,
