@@ -235,11 +235,14 @@ export class ApiClient {
       }
     });
 
-    this.logger.debug('Dispatching API request', this.buildLoggerExtra('request', {
-      url: url.toString(),
-      method: options.method,
-      has_body: Boolean(options.body),
-    }));
+    this.logger.debug(
+      'Dispatching API request',
+      this.buildLoggerExtra('request', {
+        url: url.toString(),
+        method: options.method,
+        has_body: Boolean(options.body),
+      })
+    );
 
     const response = await fetch(url.toString(), {
       method: options.method,
@@ -247,18 +250,25 @@ export class ApiClient {
       body: options.body ? JSON.stringify(options.body) : undefined,
     });
 
-    this.logger.debug('Received API response', this.buildLoggerExtra('request', {
-      url: url.toString(),
-      status: response.status,
-    }));
+    this.logger.debug(
+      'Received API response',
+      this.buildLoggerExtra('request', {
+        url: url.toString(),
+        status: response.status,
+      })
+    );
 
     if (!response.ok) {
       const error = await response.json();
       const apiError = this.handleError(response.status, error);
-      this.logger.exception('API request failed', apiError, this.buildLoggerExtra('request', {
-        url: url.toString(),
-        status: response.status,
-      }));
+      this.logger.exception(
+        'API request failed',
+        apiError,
+        this.buildLoggerExtra('request', {
+          url: url.toString(),
+          status: response.status,
+        })
+      );
       throw apiError;
     }
 
@@ -273,20 +283,28 @@ export class ApiClient {
         data._isOrderError = true;
       }
       const apiError = this.handleError(data.status_code || 500, data);
-      this.logger.exception('API response indicated failure', apiError, this.buildLoggerExtra('request', {
-        url: url.toString(),
-        status: data.status_code || 500,
-      }));
+      this.logger.exception(
+        'API response indicated failure',
+        apiError,
+        this.buildLoggerExtra('request', {
+          url: url.toString(),
+          status: data.status_code || 500,
+        })
+      );
       throw apiError;
     }
 
     // Check if the response has a status_code field indicating an error (4xx or 5xx)
     if (data && typeof data === 'object' && 'status_code' in data && data.status_code >= 400) {
       const apiError = this.handleError(data.status_code, data);
-      this.logger.exception('API status code error', apiError, this.buildLoggerExtra('request', {
-        url: url.toString(),
-        status: data.status_code,
-      }));
+      this.logger.exception(
+        'API status code error',
+        apiError,
+        this.buildLoggerExtra('request', {
+          url: url.toString(),
+          status: data.status_code,
+        })
+      );
       throw apiError;
     }
 
@@ -300,10 +318,14 @@ export class ApiClient {
       data.errors.length > 0
     ) {
       const apiError = this.handleError(data.status_code || 500, data);
-      this.logger.exception('API response contained errors', apiError, this.buildLoggerExtra('request', {
-        url: url.toString(),
-        status: data.status_code || 500,
-      }));
+      this.logger.exception(
+        'API response contained errors',
+        apiError,
+        this.buildLoggerExtra('request', {
+          url: url.toString(),
+          status: data.status_code || 500,
+        })
+      );
       throw apiError;
     }
 
@@ -586,9 +608,28 @@ export class ApiClient {
   ): Promise<OrderResponse> {
     const accessToken = await this.getValidAccessToken();
 
-    // Get broker and account from context or params
-    const broker = params.broker || this.tradingContext.broker;
-    const accountNumber = params.accountNumber || this.tradingContext.accountNumber;
+    // Accept both flattened and nested shapes. If nested, normalize to flattened.
+    const normalizedParams: any = (() => {
+      const incoming: any = params as unknown as Record<string, any>;
+      if (incoming && typeof incoming === 'object' && 'order' in incoming && 'broker' in incoming) {
+        const { broker, order } = incoming;
+        return { broker, ...(order || {}) };
+      }
+      return incoming;
+    })();
+
+    // Get broker and account from context or params (robust extraction)
+    const brokerCandidate =
+      normalizedParams.broker ||
+      (normalizedParams.order && normalizedParams.order.broker) ||
+      this.tradingContext.broker;
+    const accountCandidate =
+      normalizedParams.accountNumber ||
+      (normalizedParams.order && normalizedParams.order.accountNumber) ||
+      this.tradingContext.accountNumber;
+
+    const broker = brokerCandidate ? String(brokerCandidate).trim() : '';
+    const accountNumber = accountCandidate ? String(accountCandidate).trim() : '';
 
     if (!broker) {
       throw new Error('Broker not set. Call setBroker() or pass broker parameter.');
@@ -598,10 +639,18 @@ export class ApiClient {
       throw new Error('Account not set. Call setAccount() or pass accountNumber parameter.');
     }
 
+    // Ensure trading context is synced for downstream calls
+    if (typeof (this as any).setBroker === 'function') {
+      (this as any).setBroker(broker as any);
+    }
+    if (typeof (this as any).setAccount === 'function') {
+      (this as any).setAccount(accountNumber as any);
+    }
+
     // Merge context with provided parameters
     const fullParams: BrokerOrderParams = {
       broker:
-        ((params.broker || this.tradingContext.broker) as
+        ((normalizedParams.broker || this.tradingContext.broker) as
           | 'robinhood'
           | 'tasty_trade'
           | 'ninja_trader') ||
@@ -609,24 +658,110 @@ export class ApiClient {
           throw new Error('Broker not set. Call setBroker() or pass broker parameter.');
         })(),
       accountNumber:
-        params.accountNumber ||
+        normalizedParams.accountNumber ||
         this.tradingContext.accountNumber ||
         (() => {
           throw new Error('Account not set. Call setAccount() or pass accountNumber parameter.');
         })(),
-      symbol: params.symbol,
-      orderQty: params.orderQty,
-      action: params.action,
-      orderType: params.orderType,
-      assetType: params.assetType,
-      timeInForce: params.timeInForce || 'day',
-      price: params.price,
-      stopPrice: params.stopPrice,
-      order_id: params.order_id,
+      symbol: normalizedParams.symbol,
+      orderQty: normalizedParams.orderQty,
+      action: normalizedParams.action,
+      orderType: normalizedParams.orderType,
+      assetType: normalizedParams.assetType,
+      timeInForce: normalizedParams.timeInForce || 'day',
+      price: normalizedParams.price,
+      stopPrice: normalizedParams.stopPrice,
+      order_id: normalizedParams.order_id,
     };
 
+    // Extract broker-specific extras from normalizedParams (e.g., extended_hours, extendedHours, marketHours, etc.)
+    // These fields may be in the order object but should be treated as extras
+    const brokerSpecificExtras: any = {};
+    const brokerName = fullParams.broker;
+
+    if (brokerName === 'robinhood') {
+      // Extract Robinhood-specific fields (accept both snake_case and camelCase)
+      if (normalizedParams.extendedHours !== undefined) {
+        brokerSpecificExtras.extendedHours = normalizedParams.extendedHours;
+      } else if (normalizedParams.extended_hours !== undefined) {
+        brokerSpecificExtras.extendedHours = normalizedParams.extended_hours;
+      }
+      if (normalizedParams.marketHours !== undefined) {
+        brokerSpecificExtras.marketHours = normalizedParams.marketHours;
+      } else if (normalizedParams.market_hours !== undefined) {
+        brokerSpecificExtras.marketHours = normalizedParams.market_hours;
+      }
+      if (normalizedParams.trailType !== undefined) {
+        brokerSpecificExtras.trailType = normalizedParams.trailType;
+      } else if (normalizedParams.trail_type !== undefined) {
+        brokerSpecificExtras.trailType = normalizedParams.trail_type;
+      }
+    } else if (brokerName === 'ninja_trader') {
+      // Extract NinjaTrader-specific fields
+      if (normalizedParams.accountSpec !== undefined) {
+        brokerSpecificExtras.accountSpec = normalizedParams.accountSpec;
+      } else if (normalizedParams.account_spec !== undefined) {
+        brokerSpecificExtras.accountSpec = normalizedParams.account_spec;
+      }
+      if (normalizedParams.isAutomated !== undefined) {
+        brokerSpecificExtras.isAutomated = normalizedParams.isAutomated;
+      } else if (normalizedParams.is_automated !== undefined) {
+        brokerSpecificExtras.isAutomated = normalizedParams.is_automated;
+      }
+    } else if (brokerName === 'tasty_trade') {
+      // Extract TastyTrade-specific fields
+      if (normalizedParams.automatedSource !== undefined) {
+        brokerSpecificExtras.automatedSource = normalizedParams.automatedSource;
+      } else if (normalizedParams.automated_source !== undefined) {
+        brokerSpecificExtras.automatedSource = normalizedParams.automated_source;
+      }
+    }
+
+    // Merge extracted extras with provided extras (extracted extras take precedence)
+    // Merge nested broker-specific objects if they exist
+    const mergedExtras: any = { ...extras };
+    if (brokerName === 'robinhood' && Object.keys(brokerSpecificExtras).length > 0) {
+      mergedExtras.robinhood = {
+        ...(extras?.robinhood || {}),
+        ...brokerSpecificExtras,
+      };
+    } else if (brokerName === 'ninja_trader' && Object.keys(brokerSpecificExtras).length > 0) {
+      mergedExtras.ninjaTrader = {
+        ...(extras?.ninjaTrader || {}),
+        ...brokerSpecificExtras,
+      };
+    } else if (brokerName === 'tasty_trade' && Object.keys(brokerSpecificExtras).length > 0) {
+      mergedExtras.tastyTrade = {
+        ...(extras?.tastyTrade || {}),
+        ...brokerSpecificExtras,
+      };
+    }
+
     // Build request body with camelCase parameter names
-    const requestBody = this.buildOrderRequestBody(fullParams, extras);
+    // Pass the full payload structure to preserve all fields from the order object
+    // (including multi-leg spreads and any future broker-specific fields).
+    const payloadForBuild = (() => {
+      const incoming: any = params as unknown as Record<string, any>;
+
+      // If caller already used discriminated union format { broker, order: {...} },
+      // keep it exactly as-is so we do not drop fields like "spread".
+      if (incoming && typeof incoming === 'object' && 'order' in incoming && 'broker' in incoming) {
+        return {
+          broker: incoming.broker || brokerName,
+          order: incoming.order,
+        };
+      }
+      // If flattened, build an object that:
+      // - keeps all normalizedParams fields (including "spread", direction, etc.)
+      // - keeps broker at the root
+      // - does NOT include broker inside the order payload
+      const { broker: _ignoredBroker, ...orderParamsForBuild } = normalizedParams;
+      return {
+        broker: brokerName,
+        order: orderParamsForBuild,
+      };
+    })();
+    const requestBody = this.buildOrderRequestBody(payloadForBuild, mergedExtras);
 
     // Add query parameters if connection_id is provided
     const queryParams: Record<string, string> = {};
@@ -648,45 +783,11 @@ export class ApiClient {
     });
   }
 
-  async cancelBrokerOrder(
-    orderId: string,
-    broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader',
-    extras: any = {},
-    connection_id?: string
-  ): Promise<OrderResponse> {
+  async cancelBrokerOrder(orderId: string): Promise<OrderResponse> {
     const accessToken = await this.getValidAccessToken();
 
-    const selectedBroker = broker || this.tradingContext.broker;
-    if (!selectedBroker) {
-      throw new Error('Broker not set. Call setBroker() or pass broker parameter.');
-    }
-
-    const accountNumber = this.tradingContext.accountNumber;
-
-    // Build query parameters as required by API documentation
-    const queryParams: Record<string, string> = {};
-
-    // Add optional parameters if available
-    if (accountNumber) {
-      queryParams.account_number = accountNumber.toString();
-    }
-    if (connection_id) {
-      queryParams.connection_id = connection_id;
-    }
-
-    // Build optional request body if extras are provided
-    let body: any = undefined;
-    if (Object.keys(extras).length > 0) {
-      body = {
-        broker: selectedBroker,
-        order: {
-          order_id: orderId,
-          account_number: accountNumber,
-          ...extras,
-        },
-      };
-    }
-
+    // New endpoint only requires order_id as path parameter
+    // Backend infers broker, account, and connection from the order record
     return this.request<OrderResponse>(`/brokers/orders/${orderId}`, {
       method: 'DELETE',
       headers: {
@@ -695,8 +796,7 @@ export class ApiClient {
         'X-Session-ID': this.currentSessionId || '',
         'X-Device-Info': JSON.stringify(this.deviceInfo),
       },
-      body,
-      params: queryParams,
+      // No body, no query params - just order_id in path
     });
   }
 
@@ -748,7 +848,6 @@ export class ApiClient {
     this.tradingContext.accountNumber = accountNumber;
     this.tradingContext.accountId = accountId;
   }
-
 
   // Stock convenience methods
   async placeStockMarketOrder(
@@ -990,56 +1089,83 @@ export class ApiClient {
     );
   }
 
-  private buildOrderRequestBody(params: BrokerOrderParams, extras: BrokerExtras = {}) {
-    const baseOrder: any = {
-      order_id: params.order_id,
-      orderType: params.orderType,
-      assetType: params.assetType,
-      action: params.action,
-      timeInForce: params.timeInForce,
-      accountNumber: params.accountNumber,
-      symbol: params.symbol,
-      orderQty: params.orderQty,
-    };
+  private buildOrderRequestBody(params: any, extras: BrokerExtras = {}) {
+    // Handle both discriminated union format and flattened format
+    const orderParams = params.order || params;
+    const broker = params.broker || (params as BrokerOrderParams).broker;
 
-    if (params.price !== undefined) baseOrder.price = params.price;
-    if (params.stopPrice !== undefined) baseOrder.stopPrice = params.stopPrice;
+    // Add option fields if present (for equity_option asset type)
+    const optionFields: any = {};
+    if (orderParams.expirationDate !== undefined) {
+      optionFields.expirationDate = orderParams.expirationDate;
+    }
+    if (orderParams.strikePrice !== undefined) {
+      optionFields.strikePrice = orderParams.strikePrice;
+    }
+    if (orderParams.optionType !== undefined) {
+      optionFields.optionType = orderParams.optionType;
+    }
+    if (orderParams.positionEffect !== undefined) {
+      optionFields.positionEffect = orderParams.positionEffect;
+    }
 
     // Apply broker-specific defaults – map camelCase extras property keys to snake_case before merging
-    const brokerExtras = this.applyBrokerDefaults(params.broker, extras);
+    const brokerExtras = this.applyBrokerDefaults(broker, extras);
+
+    // Build final order object:
+    // - Start from the full incoming orderParams so we never drop unknown fields (like option params)
+    // - Overlay brokerExtras (extendedHours, marketHours, etc.)
+    // - Spread optionFields last so option-specific fields are always preserved
+    const finalOrder = {
+      ...orderParams,
+      ...brokerExtras,
+      ...optionFields,
+    };
 
     return {
-      broker: params.broker,
-      order: {
-        ...baseOrder,
-        ...brokerExtras,
-      },
+      broker: broker,
+      order: finalOrder,
     };
   }
 
-  private buildModifyRequestBody(params: Partial<BrokerOrderParams>, extras: any, broker: string) {
+  private buildModifyRequestBody(params: any, extras: any, broker: string) {
+    // Handle both discriminated union format and flattened format
+    const orderParams = params.order || params;
     const order: any = {};
 
-    if (params.order_id !== undefined) order.order_id = params.order_id;
-    if (params.orderType !== undefined) order.orderType = params.orderType;
-    if (params.assetType !== undefined) order.assetType = params.assetType;
-    if (params.action !== undefined) order.action = params.action;
-    if (params.timeInForce !== undefined) order.timeInForce = params.timeInForce;
-    if (params.accountNumber !== undefined) order.accountNumber = params.accountNumber;
-    if (params.symbol !== undefined) order.symbol = params.symbol;
-    if (params.orderQty !== undefined) order.orderQty = params.orderQty;
-    if (params.price !== undefined) order.price = params.price;
-    if (params.stopPrice !== undefined) order.stopPrice = params.stopPrice;
+    if (orderParams.order_id !== undefined) order.order_id = orderParams.order_id;
+    if (orderParams.orderType !== undefined) order.orderType = orderParams.orderType;
+    if (orderParams.assetType !== undefined) order.assetType = orderParams.assetType;
+    if (orderParams.action !== undefined) order.action = orderParams.action;
+    if (orderParams.timeInForce !== undefined) order.timeInForce = orderParams.timeInForce;
+    if (orderParams.accountNumber !== undefined) order.accountNumber = orderParams.accountNumber;
+    if (orderParams.symbol !== undefined) order.symbol = orderParams.symbol;
+    if (orderParams.orderQty !== undefined) order.orderQty = orderParams.orderQty;
+    if (orderParams.price !== undefined) order.price = orderParams.price;
+    if (orderParams.stopPrice !== undefined) order.stopPrice = orderParams.stopPrice;
+
+    // Add option fields if present (for equity_option asset type)
+    const optionFields: any = {};
+    if (orderParams.expirationDate !== undefined)
+      optionFields.expirationDate = orderParams.expirationDate;
+    if (orderParams.strikePrice !== undefined) optionFields.strikePrice = orderParams.strikePrice;
+    if (orderParams.optionType !== undefined) optionFields.optionType = orderParams.optionType;
+    if (orderParams.positionEffect !== undefined)
+      optionFields.positionEffect = orderParams.positionEffect;
 
     // Apply broker-specific defaults (handles snake_case conversion)
     const brokerExtras = this.applyBrokerDefaults(broker, extras);
 
+    // Build final order object - preserve option fields by spreading them last
+    const finalOrder = {
+      ...order,
+      ...brokerExtras,
+      ...optionFields, // Option fields spread last to ensure they're not overwritten
+    };
+
     return {
       broker,
-      order: {
-        ...order,
-        ...brokerExtras,
-      },
+      order: finalOrder,
     };
   }
 
@@ -1064,7 +1190,7 @@ export class ApiClient {
       case 'robinhood':
         return {
           ...extras,
-          extendedHours: extras?.extendedHours ?? extras?.extended_hours ?? true,
+          extendedHours: extras?.extendedHours ?? extras?.extended_hours ?? false,
           marketHours: extras?.marketHours ?? extras?.market_hours ?? 'regular_hours',
           trailType: extras?.trailType ?? extras?.trail_type ?? 'percentage',
         };
@@ -1852,9 +1978,7 @@ export class ApiClient {
    * @param filter - Optional filter parameters
    * @returns Promise with order groups response
    */
-  async getOrderGroups(
-    filter?: OrderGroupsFilter
-  ): Promise<{
+  async getOrderGroups(filter?: OrderGroupsFilter): Promise<{
     _id: string;
     response_data: OrderGroup[];
     message: string;
@@ -1905,9 +2029,7 @@ export class ApiClient {
    * @param filter - Optional filter parameters
    * @returns Promise with position lots response
    */
-  async getPositionLots(
-    filter?: PositionLotsFilter
-  ): Promise<{
+  async getPositionLots(filter?: PositionLotsFilter): Promise<{
     _id: string;
     response_data: PositionLot[];
     message: string;

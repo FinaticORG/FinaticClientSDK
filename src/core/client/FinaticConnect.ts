@@ -1,7 +1,13 @@
 import { EventEmitter } from '../../utils/events';
 import { ApiClient } from './ApiClient';
 import { PortalUI } from '../portal/PortalUI';
-import { SessionError, AuthenticationError, CompanyAccessError, ApiError, ValidationError } from '../../utils/errors';
+import {
+  SessionError,
+  AuthenticationError,
+  CompanyAccessError,
+  ApiError,
+  ValidationError,
+} from '../../utils/errors';
 import { MockFactory } from '../../mocks/MockFactory';
 import { PaginatedResult } from '../../types/common/pagination';
 import { UserToken, SessionState } from '../../types/api/auth';
@@ -14,6 +20,7 @@ import {
   BrokerBalance,
   BrokerInfo,
   BrokerOrderParams,
+  BrokerExtras,
   BrokerConnection,
   OrdersFilter,
   PositionsFilter,
@@ -193,7 +200,6 @@ export class FinaticConnect extends EventEmitter {
     return this.userToken?.user_id !== undefined && this.userToken?.user_id !== null;
   }
 
-
   /**
    * Get user's orders with pagination and optional filtering
    * @param params - Query parameters including page, perPage, and filters
@@ -210,7 +216,7 @@ export class FinaticConnect extends EventEmitter {
     }
 
     const result = await this.apiClient.getBrokerOrdersPage(page, perPage, filters);
-    
+
     // Add navigation methods to the result
     const paginatedResult = result as any;
     paginatedResult.next_page = async () => {
@@ -225,7 +231,7 @@ export class FinaticConnect extends EventEmitter {
       }
       throw new Error('No previous page available');
     };
-    
+
     return paginatedResult;
   }
 
@@ -245,7 +251,7 @@ export class FinaticConnect extends EventEmitter {
     }
 
     const result = await this.apiClient.getBrokerPositionsPage(page, perPage, filters);
-    
+
     // Add navigation methods to the result
     const paginatedResult = result as any;
     paginatedResult.next_page = async () => {
@@ -260,7 +266,7 @@ export class FinaticConnect extends EventEmitter {
       }
       throw new Error('No previous page available');
     };
-    
+
     return paginatedResult;
   }
 
@@ -280,7 +286,7 @@ export class FinaticConnect extends EventEmitter {
     }
 
     const result = await this.apiClient.getBrokerAccountsPage(page, perPage, filters);
-    
+
     // Add navigation methods to the result
     const paginatedResult = result as any;
     paginatedResult.next_page = async () => {
@@ -295,7 +301,7 @@ export class FinaticConnect extends EventEmitter {
       }
       throw new Error('No previous page available');
     };
-    
+
     return paginatedResult;
   }
 
@@ -315,7 +321,7 @@ export class FinaticConnect extends EventEmitter {
     }
 
     const result = await this.apiClient.getBrokerBalancesPage(page, perPage, filters);
-    
+
     // Add navigation methods to the result
     const paginatedResult = result as any;
     paginatedResult.next_page = async () => {
@@ -330,7 +336,7 @@ export class FinaticConnect extends EventEmitter {
       }
       throw new Error('No previous page available');
     };
-    
+
     return paginatedResult;
   }
 
@@ -686,12 +692,30 @@ export class FinaticConnect extends EventEmitter {
     }
 
     try {
-      // Use the order parameter directly since it's already BrokerOrderParams
-      return await this.apiClient.placeBrokerOrder(
-        order,
-        extras || {},
-        order.connection_id
-      );
+      // Ensure underlying client has trading context set for compatibility with older builds
+      const brokerFromPayload = (order as any)?.broker;
+      const accountFromPayload = (order as any)?.order?.accountNumber;
+      if (this.apiClient && typeof this.apiClient.setBroker === 'function' && brokerFromPayload) {
+        this.apiClient.setBroker(brokerFromPayload);
+      }
+      if (this.apiClient && typeof this.apiClient.setAccount === 'function' && accountFromPayload) {
+        this.apiClient.setAccount(String(accountFromPayload));
+      }
+
+      // Extract broker and order fields from the discriminated union format
+      // BrokerOrderParams is { broker: '...', order: {...} }
+      const broker = order.broker;
+      const orderDetails = order.order;
+
+      // Flatten the structure for placeBrokerOrder which expects:
+      // { broker: '...', symbol: '...', orderQty: ..., ... }
+      const flattenedParams: any = {
+        broker,
+        ...orderDetails,
+      };
+
+      // connection_id is not part of BrokerOrderParams, so we don't pass it
+      return await this.apiClient.placeBrokerOrder(flattenedParams, extras || {});
     } catch (error) {
       this.emit('error', error as Error);
       throw error;
@@ -701,14 +725,9 @@ export class FinaticConnect extends EventEmitter {
   /**
    * Cancel a broker order
    * @param orderId - The order ID to cancel
-   * @param broker - Optional broker override
-   * @param connection_id - Optional connection ID for testing bypass
+   * The backend will infer broker, account, and connection from the order record
    */
-  public async cancelOrder(
-    orderId: string,
-    broker?: 'robinhood' | 'tasty_trade' | 'ninja_trader',
-    connection_id?: string
-  ): Promise<OrderResponse> {
+  public async cancelOrder(orderId: string): Promise<OrderResponse> {
     if (!(await this.isAuthenticated())) {
       throw new AuthenticationError('User is not authenticated. Please connect a broker first.');
     }
@@ -717,7 +736,8 @@ export class FinaticConnect extends EventEmitter {
     }
 
     try {
-      return await this.apiClient.cancelBrokerOrder(orderId, broker, {}, connection_id);
+      // New endpoint only requires order_id - backend infers everything else
+      return await this.apiClient.cancelBrokerOrder(orderId);
     } catch (error) {
       this.emit('error', error as Error);
       throw error;
@@ -783,7 +803,6 @@ export class FinaticConnect extends EventEmitter {
       throw error;
     }
   }
-
 
   /**
    * Place a stock market order (convenience method)
@@ -1209,12 +1228,6 @@ export class FinaticConnect extends EventEmitter {
 
   // Pagination methods
 
-
-
-
-
-
-
   /**
    * Get all orders across all pages (convenience method)
    * @param filter - Optional filter parameters
@@ -1609,5 +1622,4 @@ export class FinaticConnect extends EventEmitter {
   }
 
   // Duplicate getBalances method removed - using the paginated version above
-
 }
