@@ -448,6 +448,9 @@ export function TradingPageComponent() {
     Record<string, string>
   >({});
   const [placingPresetId, setPlacingPresetId] = useState<string | null>(null);
+  const [presetResponseById, setPresetResponseById] = useState<
+    Record<string, any>
+  >({});
 
   // Tab state
   const [activeTab, setActiveTab] = useState<'place' | 'cancel' | 'modify'>('place');
@@ -956,6 +959,7 @@ export function TradingPageComponent() {
       }
 
       setPlacingPresetId(preset.id);
+      setPresetResponseById(previous => ({ ...previous, [preset.id]: null }));
 
       try {
         let response;
@@ -974,6 +978,7 @@ export function TradingPageComponent() {
           throw new Error('SDK not available');
         }
 
+        setPresetResponseById(previous => ({ ...previous, [preset.id]: response }));
         setCustomResponse(response);
         addLog(
           'success',
@@ -983,6 +988,8 @@ export function TradingPageComponent() {
         );
       } catch (error: any) {
         const errorMessage = error?.message || 'Preset order failed';
+        const errorResponse = { error: errorMessage };
+        setPresetResponseById(previous => ({ ...previous, [preset.id]: errorResponse }));
         addLog('error', errorMessage);
       } finally {
         setPlacingPresetId(previousId =>
@@ -2347,6 +2354,18 @@ export function TradingPageComponent() {
                                   accountNumber are automatically aligned with
                                   your current selection when placing.
                                 </p>
+                              </div>
+                            )}
+
+                            {/* Response Section */}
+                            {presetResponseById[preset.id] && (
+                              <div className="space-y-2 border-t border-border/60 pt-3">
+                                <Label className="text-xs text-foreground font-medium">Response</Label>
+                                <div className="rounded-md border border-border/60 bg-muted/10 p-3 max-h-64 overflow-auto">
+                                  <pre className="whitespace-pre-wrap break-words text-xs text-foreground font-mono">
+                                    {JSON.stringify(presetResponseById[preset.id], null, 2)}
+                                  </pre>
+                                </div>
                               </div>
                             )}
                           </div>
