@@ -235,11 +235,14 @@ export class ApiClient {
       }
     });
 
-    this.logger.debug('Dispatching API request', this.buildLoggerExtra('request', {
-      url: url.toString(),
-      method: options.method,
-      has_body: Boolean(options.body),
-    }));
+    this.logger.debug(
+      'Dispatching API request',
+      this.buildLoggerExtra('request', {
+        url: url.toString(),
+        method: options.method,
+        has_body: Boolean(options.body),
+      })
+    );
 
     const response = await fetch(url.toString(), {
       method: options.method,
@@ -247,18 +250,25 @@ export class ApiClient {
       body: options.body ? JSON.stringify(options.body) : undefined,
     });
 
-    this.logger.debug('Received API response', this.buildLoggerExtra('request', {
-      url: url.toString(),
-      status: response.status,
-    }));
+    this.logger.debug(
+      'Received API response',
+      this.buildLoggerExtra('request', {
+        url: url.toString(),
+        status: response.status,
+      })
+    );
 
     if (!response.ok) {
       const error = await response.json();
       const apiError = this.handleError(response.status, error);
-      this.logger.exception('API request failed', apiError, this.buildLoggerExtra('request', {
-        url: url.toString(),
-        status: response.status,
-      }));
+      this.logger.exception(
+        'API request failed',
+        apiError,
+        this.buildLoggerExtra('request', {
+          url: url.toString(),
+          status: response.status,
+        })
+      );
       throw apiError;
     }
 
@@ -273,20 +283,28 @@ export class ApiClient {
         data._isOrderError = true;
       }
       const apiError = this.handleError(data.status_code || 500, data);
-      this.logger.exception('API response indicated failure', apiError, this.buildLoggerExtra('request', {
-        url: url.toString(),
-        status: data.status_code || 500,
-      }));
+      this.logger.exception(
+        'API response indicated failure',
+        apiError,
+        this.buildLoggerExtra('request', {
+          url: url.toString(),
+          status: data.status_code || 500,
+        })
+      );
       throw apiError;
     }
 
     // Check if the response has a status_code field indicating an error (4xx or 5xx)
     if (data && typeof data === 'object' && 'status_code' in data && data.status_code >= 400) {
       const apiError = this.handleError(data.status_code, data);
-      this.logger.exception('API status code error', apiError, this.buildLoggerExtra('request', {
-        url: url.toString(),
-        status: data.status_code,
-      }));
+      this.logger.exception(
+        'API status code error',
+        apiError,
+        this.buildLoggerExtra('request', {
+          url: url.toString(),
+          status: data.status_code,
+        })
+      );
       throw apiError;
     }
 
@@ -300,10 +318,14 @@ export class ApiClient {
       data.errors.length > 0
     ) {
       const apiError = this.handleError(data.status_code || 500, data);
-      this.logger.exception('API response contained errors', apiError, this.buildLoggerExtra('request', {
-        url: url.toString(),
-        status: data.status_code || 500,
-      }));
+      this.logger.exception(
+        'API response contained errors',
+        apiError,
+        this.buildLoggerExtra('request', {
+          url: url.toString(),
+          status: data.status_code || 500,
+        })
+      );
       throw apiError;
     }
 
@@ -716,49 +738,27 @@ export class ApiClient {
     }
 
     // Build request body with camelCase parameter names
-    // Pass the full payload structure to preserve option fields from the order object
+    // Pass the full payload structure to preserve all fields from the order object
+    // (including multi-leg spreads and any future broker-specific fields).
     const payloadForBuild = (() => {
       const incoming: any = params as unknown as Record<string, any>;
+
+      // If caller already used discriminated union format { broker, order: {...} },
+      // keep it exactly as-is so we do not drop fields like "spread".
       if (incoming && typeof incoming === 'object' && 'order' in incoming && 'broker' in incoming) {
-        // Preserve the original structure with order object - this includes all option fields
-        // Use incoming.order directly since it already contains all fields including option fields
         return {
-          broker: incoming.broker || fullParams.broker,
+          broker: incoming.broker || brokerName,
           order: incoming.order,
         };
       }
-      // If flattened, reconstruct the nested structure with option fields from normalizedParams
-      // Extract option fields from normalizedParams since they're not in fullParams type
-      const optionFields: any = {};
-      if (normalizedParams.expirationDate !== undefined)
-        optionFields.expirationDate = normalizedParams.expirationDate;
-      if (normalizedParams.strikePrice !== undefined)
-        optionFields.strikePrice = normalizedParams.strikePrice;
-      if (normalizedParams.optionType !== undefined)
-        optionFields.optionType = normalizedParams.optionType;
-      if (normalizedParams.positionEffect !== undefined)
-        optionFields.positionEffect = normalizedParams.positionEffect;
-
-      // Build order object from fullParams
-      // Note: fullParams is typed as BrokerOrderParams but built as flat object, so we access properties directly
-      const fullParamsAny = fullParams as any;
-      const orderFromFullParams: any = {
-        orderType: fullParamsAny.orderType,
-        assetType: fullParamsAny.assetType,
-        action: fullParamsAny.action,
-        timeInForce: fullParamsAny.timeInForce,
-        accountNumber: fullParamsAny.accountNumber,
-        symbol: fullParamsAny.symbol,
-        orderQty: fullParamsAny.orderQty,
-        ...(fullParamsAny.price !== undefined && { price: fullParamsAny.price }),
-        ...(fullParamsAny.stopPrice !== undefined && { stopPrice: fullParamsAny.stopPrice }),
-        ...(fullParamsAny.order_id !== undefined && { order_id: fullParamsAny.order_id }),
-        ...optionFields,
-      };
-
+      // If flattened, build an object that:
+      // - keeps all normalizedParams fields (including "spread", direction, etc.)
+      // - keeps broker at the root
+      // - does NOT include broker inside the order payload
+      const { broker: _ignoredBroker, ...orderParamsForBuild } = normalizedParams;
       return {
-        broker: fullParamsAny.broker,
-        order: orderFromFullParams,
+        broker: brokerName,
+        order: orderParamsForBuild,
       };
     })();
     const requestBody = this.buildOrderRequestBody(payloadForBuild, mergedExtras);
