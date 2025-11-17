@@ -42,6 +42,40 @@ type OrderPresetConfig = {
   defaultOrder: Record<string, unknown>;
 };
 
+/**
+ * Get the nearest Friday date in YYYY-MM-DD format.
+ * If today is Friday, returns today. Otherwise returns the next Friday.
+ * Robinhood options expire on Fridays (weeklies).
+ */
+const getNearestFriday = (): string => {
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 5 = Friday, 6 = Saturday
+  
+  // Calculate days until next Friday
+  // If today is Friday (5), use today (0 days)
+  // If today is Saturday (6), use next Friday (6 days)
+  // Otherwise, use (5 - dayOfWeek) days
+  let daysUntilFriday: number;
+  if (dayOfWeek === 5) {
+    // Today is Friday, use today
+    daysUntilFriday = 0;
+  } else if (dayOfWeek === 6) {
+    // Today is Saturday, use next Friday (6 days)
+    daysUntilFriday = 6;
+  } else {
+    // Monday (1) through Thursday (4), use next Friday
+    daysUntilFriday = 5 - dayOfWeek;
+  }
+  
+  const fridayDate = new Date(today);
+  fridayDate.setDate(today.getDate() + daysUntilFriday);
+  
+  const year = fridayDate.getFullYear();
+  const month = String(fridayDate.getMonth() + 1).padStart(2, '0');
+  const day = String(fridayDate.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
   robinhood: [
     {
@@ -378,11 +412,13 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
 
 /**
  * Build a preset payload for the given broker and account context.
+ * Replaces expiration dates in equity_option orders with the provided expiration date.
  */
 const buildPresetPayloadForContext = (
   brokerId: string,
   accountNumber: string | undefined,
   preset: OrderPresetConfig,
+  equityOptionExpirationDate?: string,
 ) => {
   const payload: any = {
     broker: brokerId,
@@ -393,6 +429,22 @@ const buildPresetPayloadForContext = (
 
   if (accountNumber) {
     payload.order.accountNumber = accountNumber;
+  }
+
+  // Replace expiration dates in equity_option orders
+  if (preset.assetType === 'equity_option' && equityOptionExpirationDate) {
+    // Replace expirationDate in single-leg options
+    if (payload.order.expirationDate) {
+      payload.order.expirationDate = equityOptionExpirationDate;
+    }
+
+    // Replace expirationDate in spread legs
+    if (payload.order.spread && Array.isArray(payload.order.spread)) {
+      payload.order.spread = payload.order.spread.map((leg: any) => ({
+        ...leg,
+        expirationDate: equityOptionExpirationDate,
+      }));
+    }
   }
 
   return payload;
@@ -451,6 +503,8 @@ export function TradingPageComponent() {
   const [presetResponseById, setPresetResponseById] = useState<
     Record<string, any>
   >({});
+  const [expandedResponsePresetIds, setExpandedResponsePresetIds] = useState<Set<string>>(new Set());
+  const [equityOptionExpirationDate, setEquityOptionExpirationDate] = useState<string>(getNearestFriday());
 
   // Tab state
   const [activeTab, setActiveTab] = useState<'place' | 'cancel' | 'modify'>('place');
@@ -685,7 +739,7 @@ export function TradingPageComponent() {
     });
   }, [selectedBroker, connections]);
 
-  // Seed preset payloads when broker or account context changes
+  // Seed preset payloads when broker, account context, or expiration date changes
   useEffect(() => {
     if (!selectedBroker) {
       setPresetPayloadTextById({});
@@ -705,13 +759,16 @@ export function TradingPageComponent() {
 
       for (const preset of presetsForBroker) {
         const existing = previous[preset.id];
-        if (existing) {
+        // Rebuild payload if it's an equity_option preset (to update expiration date)
+        // or if it doesn't exist yet
+        if (existing && preset.assetType !== 'equity_option') {
           next[preset.id] = existing;
         } else {
           const payload = buildPresetPayloadForContext(
             selectedBroker,
             accountNumber || undefined,
             preset,
+            equityOptionExpirationDate,
           );
           next[preset.id] = JSON.stringify(payload, null, 2);
         }
@@ -719,7 +776,7 @@ export function TradingPageComponent() {
 
       return next;
     });
-  }, [selectedBroker, selectedAccount, selectedAccountId]);
+  }, [selectedBroker, selectedAccount, selectedAccountId, equityOptionExpirationDate]);
 
   // Build the payload that will be sent (for preview)
   const orderPayloadPreview = useMemo(() => {
@@ -930,6 +987,7 @@ export function TradingPageComponent() {
               selectedBroker,
               accountNumber,
               preset,
+              equityOptionExpirationDate,
             ),
             null,
             2,
@@ -979,6 +1037,7 @@ export function TradingPageComponent() {
         }
 
         setPresetResponseById(previous => ({ ...previous, [preset.id]: response }));
+        setExpandedResponsePresetIds(previous => new Set(previous).add(preset.id));
         setCustomResponse(response);
         addLog(
           'success',
@@ -990,6 +1049,7 @@ export function TradingPageComponent() {
         const errorMessage = error?.message || 'Preset order failed';
         const errorResponse = { error: errorMessage };
         setPresetResponseById(previous => ({ ...previous, [preset.id]: errorResponse }));
+        setExpandedResponsePresetIds(previous => new Set(previous).add(preset.id));
         addLog('error', errorMessage);
       } finally {
         setPlacingPresetId(previousId =>
@@ -1007,6 +1067,7 @@ export function TradingPageComponent() {
       isBrokerConnected,
       selectedAccount,
       presetPayloadTextById,
+      equityOptionExpirationDate,
     ],
   );
 
@@ -2258,6 +2319,20 @@ export function TradingPageComponent() {
                           </SelectContent>
                         </Select>
                       </div>
+                      {presetAssetFilter === 'equity_option' && (
+                        <div className="space-y-1 flex-1 sm:flex-initial">
+                          <Label className="text-xs text-muted-foreground">Expiration Date</Label>
+                          <Input
+                            type="date"
+                            className="bg-input border-border text-foreground h-8 w-full sm:w-40 text-xs sm:text-sm"
+                            value={equityOptionExpirationDate}
+                            onChange={e => setEquityOptionExpirationDate(e.target.value)}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Sets expiration date for all equity option presets
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -2360,12 +2435,35 @@ export function TradingPageComponent() {
                             {/* Response Section */}
                             {presetResponseById[preset.id] && (
                               <div className="space-y-2 border-t border-border/60 pt-3">
-                                <Label className="text-xs text-foreground font-medium">Response</Label>
-                                <div className="rounded-md border border-border/60 bg-muted/10 p-3 max-h-64 overflow-auto">
-                                  <pre className="whitespace-pre-wrap break-words text-xs text-foreground font-mono">
-                                    {JSON.stringify(presetResponseById[preset.id], null, 2)}
-                                  </pre>
-                                </div>
+                                <button
+                                  type="button"
+                                  className="flex items-center gap-2 text-xs text-foreground font-medium hover:text-foreground/80 transition-colors"
+                                  onClick={() =>
+                                    setExpandedResponsePresetIds(previous => {
+                                      const next = new Set(previous);
+                                      if (next.has(preset.id)) {
+                                        next.delete(preset.id);
+                                      } else {
+                                        next.add(preset.id);
+                                      }
+                                      return next;
+                                    })
+                                  }
+                                >
+                                  <span>Response</span>
+                                  {expandedResponsePresetIds.has(preset.id) ? (
+                                    <ChevronUp className="h-3 w-3" />
+                                  ) : (
+                                    <ChevronDown className="h-3 w-3" />
+                                  )}
+                                </button>
+                                {expandedResponsePresetIds.has(preset.id) && (
+                                  <div className="rounded-md border border-border/60 bg-muted/10 p-3 max-h-64 overflow-auto">
+                                    <pre className="whitespace-pre-wrap break-words text-xs text-foreground font-mono">
+                                      {JSON.stringify(presetResponseById[preset.id], null, 2)}
+                                    </pre>
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
