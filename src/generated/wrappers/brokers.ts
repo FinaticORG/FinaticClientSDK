@@ -187,7 +187,7 @@ export class BrokersWrapper {
   }
 
   // Session context setters (called by session management)
-  setSessionContext(sessionId: string, companyId: string, csrfToken: string) {
+  setSessionContext(sessionId: string, companyId: string, csrfToken: string): void {
     this.sessionId = sessionId;
     this.companyId = companyId;
     this.csrfToken = csrfToken;
@@ -202,7 +202,7 @@ export class BrokersWrapper {
     return retryApiCall(fn);
   }
 
-  protected _handleError(error: any, requestId?: string): Error {
+  protected _handleError(error: unknown, requestId?: string): Error {
     return handleError(error, requestId);
   }
 

@@ -74,6 +74,22 @@ export class FinaticConnect extends EventEmitter {
   /**
    * Static initialization method - creates instance and starts session.
    * This is the recommended way to initialize the Client SDK.
+   * 
+   * @methodId init_client_sdk
+   * @category session
+   * 
+   * @example
+   * ```typescript-client
+   * const finatic = await FinaticConnect.init('your-one-time-token', 'optional-user-id', {
+   *   baseUrl: 'https://api.finatic.dev',
+   *   logLevel: 'debug'
+   * });
+   * ```
+   * 
+   * @param token - One-time token for authentication (required)
+   * @param userId - Optional user ID for direct authentication
+   * @param sdkConfig - Optional SDK configuration overrides
+   * @returns FinaticConnect instance with session already initialized
    */
   static async init(
     token: string,
@@ -257,6 +273,26 @@ export class FinaticConnect extends EventEmitter {
    * Returns the URL - app can use it as needed.
    * 
    * Note: For Client SDK, use openPortal() to open in iframe directly.
+   * 
+   * @methodId get_portal_url_api_v1_session_portal_get
+   * @category session
+   * @param theme - Optional theme preset or custom theme object
+   * @param brokers - Optional array of broker IDs to filter
+   * @param email - Optional email address
+   * @param mode - Optional mode ('light' or 'dark')
+   * @returns Portal URL string
+   * @example
+   * ```typescript-client
+   * const url = await finatic.getPortalUrl('dark', ['broker-1'], 'user@example.com', 'dark');
+   * ```
+   * @example
+   * ```typescript-server
+   * const url = await finatic.getPortalUrl('dark', ['broker-1'], 'user@example.com', 'dark');
+   * ```
+   * @example
+   * ```python
+   * url = await finatic.get_portal_url('dark', ['broker-1'], 'user@example.com', 'dark')
+   * ```
    */
   async getPortalUrl(
     theme?: string | { preset?: string; custom?: Record<string, unknown> },
@@ -356,6 +392,25 @@ export class FinaticConnect extends EventEmitter {
    * Open portal in iframe (Client SDK only).
    * The portal handles user authentication and linking to session at the source of truth.
    * This method just records the userId for SDK state.
+   * 
+   * @methodId open_portal_client_sdk
+   * @category session
+   * @param theme - Optional theme preset or custom theme object
+   * @param brokers - Optional array of broker IDs to filter
+   * @param email - Optional email address
+   * @param mode - Optional mode ('light' or 'dark')
+   * @param onSuccess - Optional callback when portal authentication succeeds
+   * @param onError - Optional callback when portal authentication fails
+   * @param onClose - Optional callback when portal is closed
+   * @returns Promise that resolves when portal is opened
+   * @example
+   * ```typescript-client
+   * await finatic.openPortal('dark', ['broker-1'], 'user@example.com', 'dark', 
+   *   (userId) => console.log('User authenticated:', userId),
+   *   (error) => console.error('Portal error:', error),
+   *   () => console.log('Portal closed')
+   * );
+   * ```
    */
   async openPortal(
     theme?: string | { preset?: string; custom?: Record<string, unknown> },
@@ -409,6 +464,22 @@ export class FinaticConnect extends EventEmitter {
 
   /**
    * Get current user ID (set after portal authentication).
+   * 
+   * @methodId get_user_id_helper
+   * @category session
+   * @returns Current user ID or undefined if not authenticated
+   * @example
+   * ```typescript-client
+   * const userId = finatic.getUserId();
+   * ```
+   * @example
+   * ```typescript-server
+   * const userId = finatic.getUserId();
+   * ```
+   * @example
+   * ```python
+   * user_id = finatic.get_user_id()
+   * ```
    */
   getUserId(): string | undefined {
     return this.userId;
@@ -416,6 +487,22 @@ export class FinaticConnect extends EventEmitter {
 
   /**
    * Check if user is authenticated (has userId).
+   * 
+   * @methodId is_authed_helper
+   * @category session
+   * @returns True if user is authenticated, false otherwise
+   * @example
+   * ```typescript-client
+   * const isAuthenticated = finatic.isAuthed();
+   * ```
+   * @example
+   * ```typescript-server
+   * const isAuthenticated = finatic.isAuthed();
+   * ```
+   * @example
+   * ```python
+   * is_authenticated = finatic.is_authed()
+   * ```
    */
   isAuthed(): boolean {
     return !!this.userId;
@@ -423,6 +510,22 @@ export class FinaticConnect extends EventEmitter {
 
   /**
    * Get session user information after portal authentication.
+   * 
+   * @methodId get_session_user_api_v1_session__session_id__user_get
+   * @category session
+   * @returns Object with user_id and company_id
+   * @example
+   * ```typescript-client
+   * const user = await finatic.getSessionUser();
+   * ```
+   * @example
+   * ```typescript-server
+   * const user = await finatic.getSessionUser();
+   * ```
+   * @example
+   * ```python
+   * user = await finatic.get_session_user()
+   * ```
    */
   async getSessionUser(): Promise<{ user_id: string; company_id: string }> {
     if (!this.sessionId) {
@@ -479,47 +582,6 @@ export class FinaticConnect extends EventEmitter {
 
 
   /**
-   * Start Session
-   * 
-   * Start a session with a one-time token.
-   * 
-   * Convenience method that delegates to session wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: startSession({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
-   */
-  async startSession(params?: Partial<StartSessionParams>): Promise<Awaited<ReturnType<typeof this.session.startSession>>> {
-    return await this.session.startSession((params?.OneTimeToken as any), (params?.body as any));
-  }
-
-  /**
-   * Get Session User
-   * 
-   * Get user information and fresh tokens for a completed session.
-   * 
-   * This endpoint is designed for server SDKs to retrieve user information
-   * and authentication tokens after successful OTP verification.
-   * 
-   * 
-   * Security:
-   * - Requires valid session in ACTIVE state
-   * - Validates device fingerprint binding
-   * - Generates fresh tokens (not returning stored ones)
-   * - Only accessible to authenticated sessions with user_id
-   * - Validates that header session_id matches path session_id
-   * 
-   * Convenience method that delegates to session wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: getSessionUser({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
-   */
-  async getSessionUser(params?: Partial<GetSessionUserParams>): Promise<Awaited<ReturnType<typeof this.session.getSessionUser>>> {
-    return await this.session.getSessionUser((params?.sessionId as any));
-  }
-
-  /**
    * Get Company
    * 
    * Get public company details by ID (no user check, no sensitive data).
@@ -529,6 +591,45 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Optional parameters object. Only include the fields you want to use.
    *                 Example: getCompany({ accountId: "123", limit: 10, offset: 0 })
    * @returns FinaticResponse with success, error, and warning fields
+   * @methodId get_company_api_v1_company__company_id__get
+   * @category company
+   * @example
+   * ```typescript-client
+   * // Minimal example with required parameters only
+   * const result = await finatic.getCompany({ companyId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Minimal example with required parameters only
+   * const result = await finatic.getCompany({ companyId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Minimal example with required parameters only
+   * result = await finatic.get_company(
+   *            company_id='00000000-0000-0000-0000-000000000000'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
    */
   async getCompany(params?: Partial<GetCompanyParams>): Promise<Awaited<ReturnType<typeof this.company.getCompany>>> {
     return await this.company.getCompany((params?.companyId as any));
@@ -552,6 +653,37 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Optional parameters object. Only include the fields you want to use.
    *                 Example: getBrokers({ accountId: "123", limit: 10, offset: 0 })
    * @returns FinaticResponse with success, error, and warning fields
+   * @methodId get_brokers_api_v1_brokers__get
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Example with no parameters
+   * const result = await finatic.getBrokers();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Example with no parameters
+   * const result = await finatic.getBrokers();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Example with no parameters
+   * result = await finatic.get_brokers()
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * ```
    */
   async getBrokers(params?: {}): Promise<Awaited<ReturnType<typeof this.brokers.getBrokers>>> {
     return await this.brokers.getBrokers();
@@ -570,6 +702,37 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Optional parameters object. Only include the fields you want to use.
    *                 Example: getBrokerConnections({ accountId: "123", limit: 10, offset: 0 })
    * @returns FinaticResponse with success, error, and warning fields
+   * @methodId list_broker_connections_api_v1_brokers_connections_get
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Example with no parameters
+   * const result = await finatic.getBrokerConnections();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Example with no parameters
+   * const result = await finatic.getBrokerConnections();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Example with no parameters
+   * result = await finatic.get_broker_connections()
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * ```
    */
   async getBrokerConnections(params?: {}): Promise<Awaited<ReturnType<typeof this.brokers.getBrokerConnections>>> {
     return await this.brokers.getBrokerConnections();
@@ -588,6 +751,45 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Optional parameters object. Only include the fields you want to use.
    *                 Example: disconnectCompanyFromBroker({ accountId: "123", limit: 10, offset: 0 })
    * @returns FinaticResponse with success, error, and warning fields
+   * @methodId disconnect_company_from_broker_api_v1_brokers_disconnect_company__connection_id__delete
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Minimal example with required parameters only
+   * const result = await finatic.disconnectCompanyFromBroker({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Minimal example with required parameters only
+   * const result = await finatic.disconnectCompanyFromBroker({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Minimal example with required parameters only
+   * result = await finatic.disconnect_company_from_broker(
+   *            connection_id='00000000-0000-0000-0000-000000000000'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
    */
   async disconnectCompanyFromBroker(params?: Partial<DisconnectCompanyFromBrokerParams>): Promise<Awaited<ReturnType<typeof this.brokers.disconnectCompanyFromBroker>>> {
     return await this.brokers.disconnectCompanyFromBroker((params?.connectionId as any));
@@ -606,6 +808,69 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Optional parameters object. Only include the fields you want to use.
    *                 Example: getOrders({ accountId: "123", limit: 10, offset: 0 })
    * @returns FinaticResponse with success, error, and warning fields
+   * @methodId get_orders_api_v1_brokers_data_orders_get
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Example with no parameters
+   * const result = await finatic.getOrders();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getOrders({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Example with no parameters
+   * const result = await finatic.getOrders();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Example with no parameters
+   * result = await finatic.get_orders()
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * ```
+   * @example
+   * ```python
+   * # Full example with optional parameters
+   * result = await finatic.get_orders(
+   *            broker_id='alpaca',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            account_id='123456789'
+   * )
+   * 
+   * # Handle response with warnings
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'], result.error['code'])
+   * ```
    */
   async getOrders(params?: Partial<GetOrdersParams>): Promise<Awaited<ReturnType<typeof this.brokers.getOrders>>> {
     return await this.brokers.getOrders(params?.brokerId, params?.connectionId, params?.accountId, params?.symbol, params?.orderStatus, params?.side, params?.assetType, params?.limit, params?.offset, params?.createdAfter, params?.createdBefore, params?.withMetadata);
@@ -624,6 +889,69 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Optional parameters object. Only include the fields you want to use.
    *                 Example: getPositions({ accountId: "123", limit: 10, offset: 0 })
    * @returns FinaticResponse with success, error, and warning fields
+   * @methodId get_positions_api_v1_brokers_data_positions_get
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Example with no parameters
+   * const result = await finatic.getPositions();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getPositions({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Example with no parameters
+   * const result = await finatic.getPositions();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Example with no parameters
+   * result = await finatic.get_positions()
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * ```
+   * @example
+   * ```python
+   * # Full example with optional parameters
+   * result = await finatic.get_positions(
+   *            broker_id='alpaca',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            account_id='123456789'
+   * )
+   * 
+   * # Handle response with warnings
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'], result.error['code'])
+   * ```
    */
   async getPositions(params?: Partial<GetPositionsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getPositions>>> {
     return await this.brokers.getPositions(params?.brokerId, params?.connectionId, params?.accountId, params?.symbol, params?.side, params?.assetType, params?.positionStatus, params?.limit, params?.offset, params?.updatedAfter, params?.updatedBefore, params?.withMetadata);
@@ -642,6 +970,69 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Optional parameters object. Only include the fields you want to use.
    *                 Example: getBalances({ accountId: "123", limit: 10, offset: 0 })
    * @returns FinaticResponse with success, error, and warning fields
+   * @methodId get_balances_api_v1_brokers_data_balances_get
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Example with no parameters
+   * const result = await finatic.getBalances();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getBalances({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Example with no parameters
+   * const result = await finatic.getBalances();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Example with no parameters
+   * result = await finatic.get_balances()
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * ```
+   * @example
+   * ```python
+   * # Full example with optional parameters
+   * result = await finatic.get_balances(
+   *            broker_id='alpaca',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            account_id='123456789'
+   * )
+   * 
+   * # Handle response with warnings
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'], result.error['code'])
+   * ```
    */
   async getBalances(params?: Partial<GetBalancesParams>): Promise<Awaited<ReturnType<typeof this.brokers.getBalances>>> {
     return await this.brokers.getBalances(params?.brokerId, params?.connectionId, params?.accountId, params?.isEndOfDaySnapshot, params?.limit, params?.offset, params?.balanceCreatedAfter, params?.balanceCreatedBefore, params?.withMetadata);
@@ -660,6 +1051,69 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Optional parameters object. Only include the fields you want to use.
    *                 Example: getAccounts({ accountId: "123", limit: 10, offset: 0 })
    * @returns FinaticResponse with success, error, and warning fields
+   * @methodId get_accounts_api_v1_brokers_data_accounts_get
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Example with no parameters
+   * const result = await finatic.getAccounts();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getAccounts({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountType: 'margin' });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Example with no parameters
+   * const result = await finatic.getAccounts();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Example with no parameters
+   * result = await finatic.get_accounts()
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * ```
+   * @example
+   * ```python
+   * # Full example with optional parameters
+   * result = await finatic.get_accounts(
+   *            broker_id='alpaca',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            account_type='margin'
+   * )
+   * 
+   * # Handle response with warnings
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'], result.error['code'])
+   * ```
    */
   async getAccounts(params?: Partial<GetAccountsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getAccounts>>> {
     return await this.brokers.getAccounts(params?.brokerId, params?.connectionId, params?.accountType, params?.status, params?.currency, params?.limit, params?.offset, params?.withMetadata);
@@ -677,6 +1131,78 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Optional parameters object. Only include the fields you want to use.
    *                 Example: getOrderFills({ accountId: "123", limit: 10, offset: 0 })
    * @returns FinaticResponse with success, error, and warning fields
+   * @methodId get_order_fills_api_v1_brokers_data_orders__order_id__fills_get
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Minimal example with required parameters only
+   * const result = await finatic.getOrderFills({ orderId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getOrderFills({ orderId: '00000000-0000-0000-0000-000000000000', connectionId: '00000000-0000-0000-0000-000000000000', limit: 100, offset: 0 });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Minimal example with required parameters only
+   * const result = await finatic.getOrderFills({ orderId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Minimal example with required parameters only
+   * result = await finatic.get_order_fills(
+   *            order_id='00000000-0000-0000-0000-000000000000'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
+   * @example
+   * ```python
+   * # Full example with optional parameters
+   * result = await finatic.get_order_fills(
+   *            order_id='00000000-0000-0000-0000-000000000000',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            limit=100,
+            offset=0
+   * )
+   * 
+   * # Handle response with warnings
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'], result.error['code'])
+   * ```
    */
   async getOrderFills(params?: Partial<GetOrderFillsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getOrderFills>>> {
     return await this.brokers.getOrderFills((params?.orderId as any), params?.connectionId, params?.limit, params?.offset);
@@ -694,6 +1220,78 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Optional parameters object. Only include the fields you want to use.
    *                 Example: getOrderEvents({ accountId: "123", limit: 10, offset: 0 })
    * @returns FinaticResponse with success, error, and warning fields
+   * @methodId get_order_events_api_v1_brokers_data_orders__order_id__events_get
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Minimal example with required parameters only
+   * const result = await finatic.getOrderEvents({ orderId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getOrderEvents({ orderId: '00000000-0000-0000-0000-000000000000', connectionId: '00000000-0000-0000-0000-000000000000', limit: 100, offset: 0 });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Minimal example with required parameters only
+   * const result = await finatic.getOrderEvents({ orderId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Minimal example with required parameters only
+   * result = await finatic.get_order_events(
+   *            order_id='00000000-0000-0000-0000-000000000000'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
+   * @example
+   * ```python
+   * # Full example with optional parameters
+   * result = await finatic.get_order_events(
+   *            order_id='00000000-0000-0000-0000-000000000000',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            limit=100,
+            offset=0
+   * )
+   * 
+   * # Handle response with warnings
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'], result.error['code'])
+   * ```
    */
   async getOrderEvents(params?: Partial<GetOrderEventsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getOrderEvents>>> {
     return await this.brokers.getOrderEvents((params?.orderId as any), params?.connectionId, params?.limit, params?.offset);
@@ -711,6 +1309,69 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Optional parameters object. Only include the fields you want to use.
    *                 Example: getOrderGroups({ accountId: "123", limit: 10, offset: 0 })
    * @returns FinaticResponse with success, error, and warning fields
+   * @methodId get_order_groups_api_v1_brokers_data_orders_groups_get
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Example with no parameters
+   * const result = await finatic.getOrderGroups();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getOrderGroups({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', limit: 100 });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Example with no parameters
+   * const result = await finatic.getOrderGroups();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Example with no parameters
+   * result = await finatic.get_order_groups()
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * ```
+   * @example
+   * ```python
+   * # Full example with optional parameters
+   * result = await finatic.get_order_groups(
+   *            broker_id='alpaca',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            limit=100
+   * )
+   * 
+   * # Handle response with warnings
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'], result.error['code'])
+   * ```
    */
   async getOrderGroups(params?: Partial<GetOrderGroupsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getOrderGroups>>> {
     return await this.brokers.getOrderGroups(params?.brokerId, params?.connectionId, params?.limit, params?.offset, params?.createdAfter, params?.createdBefore);
@@ -729,6 +1390,69 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Optional parameters object. Only include the fields you want to use.
    *                 Example: getPositionLots({ accountId: "123", limit: 10, offset: 0 })
    * @returns FinaticResponse with success, error, and warning fields
+   * @methodId get_position_lots_api_v1_brokers_data_positions_lots_get
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Example with no parameters
+   * const result = await finatic.getPositionLots();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getPositionLots({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Example with no parameters
+   * const result = await finatic.getPositionLots();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Example with no parameters
+   * result = await finatic.get_position_lots()
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * ```
+   * @example
+   * ```python
+   * # Full example with optional parameters
+   * result = await finatic.get_position_lots(
+   *            broker_id='alpaca',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            account_id='123456789'
+   * )
+   * 
+   * # Handle response with warnings
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'], result.error['code'])
+   * ```
    */
   async getPositionLots(params?: Partial<GetPositionLotsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getPositionLots>>> {
     return await this.brokers.getPositionLots(params?.brokerId, params?.connectionId, params?.accountId, params?.symbol, params?.positionId, params?.limit, params?.offset);
@@ -746,6 +1470,78 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Optional parameters object. Only include the fields you want to use.
    *                 Example: getPositionLotFills({ accountId: "123", limit: 10, offset: 0 })
    * @returns FinaticResponse with success, error, and warning fields
+   * @methodId get_position_lot_fills_api_v1_brokers_data_positions_lots__lot_id__fills_get
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Minimal example with required parameters only
+   * const result = await finatic.getPositionLotFills({ lotId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getPositionLotFills({ lotId: '00000000-0000-0000-0000-000000000000', connectionId: '00000000-0000-0000-0000-000000000000', limit: 100, offset: 0 });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Minimal example with required parameters only
+   * const result = await finatic.getPositionLotFills({ lotId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Minimal example with required parameters only
+   * result = await finatic.get_position_lot_fills(
+   *            lot_id='00000000-0000-0000-0000-000000000000'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
+   * @example
+   * ```python
+   * # Full example with optional parameters
+   * result = await finatic.get_position_lot_fills(
+   *            lot_id='00000000-0000-0000-0000-000000000000',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            limit=100,
+            offset=0
+   * )
+   * 
+   * # Handle response with warnings
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'], result.error['code'])
+   * ```
    */
   async getPositionLotFills(params?: Partial<GetPositionLotFillsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getPositionLotFills>>> {
     return await this.brokers.getPositionLotFills((params?.lotId as any), params?.connectionId, params?.limit, params?.offset);
@@ -756,9 +1552,61 @@ export class FinaticConnect extends EventEmitter {
    * Get all Orders across all pages.
    * Auto-generated from paginated endpoint.
    * 
+   * This method automatically paginates through all pages and returns all items in a single response.
+   * It uses the underlying getOrders method with internal pagination handling.
+   * 
    * @param params - Optional parameters object. Only include the fields you want to filter by.
    *                 Example: getAllOrders({ accountId: "123", symbol: "AAPL" })
    * @returns FinaticResponse with success, error, and warning fields containing array of all items
+   * @methodId get_all_orders_api_v1_brokers_data_orders_get
+   * @category brokers
+   * @example
+   * ```typescript-server
+   * // Get all items with optional filters
+   * const result = await finatic.getAllOrders({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Get all items with optional filters
+   * const result = await finatic.getAllOrders({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Get all items with optional filters
+   * result = await finatic.get_all_orders(
+   *            broker_id='alpaca',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            account_id='123456789'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Total items:', len(result.success['data']))
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
    */
   async getAllOrders(params?: Partial<GetOrdersParams>): Promise<FinaticResponse<OrderResponse[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
@@ -814,9 +1662,61 @@ export class FinaticConnect extends EventEmitter {
    * Get all Positions across all pages.
    * Auto-generated from paginated endpoint.
    * 
+   * This method automatically paginates through all pages and returns all items in a single response.
+   * It uses the underlying getPositions method with internal pagination handling.
+   * 
    * @param params - Optional parameters object. Only include the fields you want to filter by.
-   *                 Example: getAllOrders({ accountId: "123", symbol: "AAPL" })
+   *                 Example: getAllPositions({ accountId: "123", symbol: "AAPL" })
    * @returns FinaticResponse with success, error, and warning fields containing array of all items
+   * @methodId get_all_positions_api_v1_brokers_data_positions_get
+   * @category brokers
+   * @example
+   * ```typescript-server
+   * // Get all items with optional filters
+   * const result = await finatic.getAllPositions({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Get all items with optional filters
+   * const result = await finatic.getAllPositions({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Get all items with optional filters
+   * result = await finatic.get_all_positions(
+   *            broker_id='alpaca',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            account_id='123456789'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Total items:', len(result.success['data']))
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
    */
   async getAllPositions(params?: Partial<GetPositionsParams>): Promise<FinaticResponse<PositionResponse[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
@@ -872,9 +1772,61 @@ export class FinaticConnect extends EventEmitter {
    * Get all Balances across all pages.
    * Auto-generated from paginated endpoint.
    * 
+   * This method automatically paginates through all pages and returns all items in a single response.
+   * It uses the underlying getBalances method with internal pagination handling.
+   * 
    * @param params - Optional parameters object. Only include the fields you want to filter by.
-   *                 Example: getAllOrders({ accountId: "123", symbol: "AAPL" })
+   *                 Example: getAllBalances({ accountId: "123", symbol: "AAPL" })
    * @returns FinaticResponse with success, error, and warning fields containing array of all items
+   * @methodId get_all_balances_api_v1_brokers_data_balances_get
+   * @category brokers
+   * @example
+   * ```typescript-server
+   * // Get all items with optional filters
+   * const result = await finatic.getAllBalances({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Get all items with optional filters
+   * const result = await finatic.getAllBalances({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Get all items with optional filters
+   * result = await finatic.get_all_balances(
+   *            broker_id='alpaca',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            account_id='123456789'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Total items:', len(result.success['data']))
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
    */
   async getAllBalances(params?: Partial<GetBalancesParams>): Promise<FinaticResponse<Balances[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
@@ -930,9 +1882,61 @@ export class FinaticConnect extends EventEmitter {
    * Get all Accounts across all pages.
    * Auto-generated from paginated endpoint.
    * 
+   * This method automatically paginates through all pages and returns all items in a single response.
+   * It uses the underlying getAccounts method with internal pagination handling.
+   * 
    * @param params - Optional parameters object. Only include the fields you want to filter by.
-   *                 Example: getAllOrders({ accountId: "123", symbol: "AAPL" })
+   *                 Example: getAllAccounts({ accountId: "123", symbol: "AAPL" })
    * @returns FinaticResponse with success, error, and warning fields containing array of all items
+   * @methodId get_all_accounts_api_v1_brokers_data_accounts_get
+   * @category brokers
+   * @example
+   * ```typescript-server
+   * // Get all items with optional filters
+   * const result = await finatic.getAllAccounts({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountType: 'margin' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Get all items with optional filters
+   * const result = await finatic.getAllAccounts({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountType: 'margin' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Get all items with optional filters
+   * result = await finatic.get_all_accounts(
+   *            broker_id='alpaca',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            account_type='margin'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Total items:', len(result.success['data']))
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
    */
   async getAllAccounts(params?: Partial<GetAccountsParams>): Promise<FinaticResponse<Accounts[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
@@ -988,9 +1992,59 @@ export class FinaticConnect extends EventEmitter {
    * Get all OrderFills across all pages.
    * Auto-generated from paginated endpoint.
    * 
+   * This method automatically paginates through all pages and returns all items in a single response.
+   * It uses the underlying getOrderFills method with internal pagination handling.
+   * 
    * @param params - Optional parameters object. Only include the fields you want to filter by.
-   *                 Example: getAllOrders({ accountId: "123", symbol: "AAPL" })
+   *                 Example: getAllOrderFills({ accountId: "123", symbol: "AAPL" })
    * @returns FinaticResponse with success, error, and warning fields containing array of all items
+   * @methodId get_all_order_fills_api_v1_brokers_data_orders__order_id__fills_get
+   * @category brokers
+   * @example
+   * ```typescript-server
+   * // Get all items with optional filters
+   * const result = await finatic.getAllOrderFills({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Get all items with optional filters
+   * const result = await finatic.getAllOrderFills({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Get all items with optional filters
+   * result = await finatic.get_all_order_fills(
+   *            connection_id='00000000-0000-0000-0000-000000000000'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Total items:', len(result.success['data']))
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
    */
   async getAllOrderFills(params?: Partial<GetOrderFillsParams>): Promise<FinaticResponse<OrderFillResponse[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
@@ -1046,9 +2100,59 @@ export class FinaticConnect extends EventEmitter {
    * Get all OrderEvents across all pages.
    * Auto-generated from paginated endpoint.
    * 
+   * This method automatically paginates through all pages and returns all items in a single response.
+   * It uses the underlying getOrderEvents method with internal pagination handling.
+   * 
    * @param params - Optional parameters object. Only include the fields you want to filter by.
-   *                 Example: getAllOrders({ accountId: "123", symbol: "AAPL" })
+   *                 Example: getAllOrderEvents({ accountId: "123", symbol: "AAPL" })
    * @returns FinaticResponse with success, error, and warning fields containing array of all items
+   * @methodId get_all_order_events_api_v1_brokers_data_orders__order_id__events_get
+   * @category brokers
+   * @example
+   * ```typescript-server
+   * // Get all items with optional filters
+   * const result = await finatic.getAllOrderEvents({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Get all items with optional filters
+   * const result = await finatic.getAllOrderEvents({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Get all items with optional filters
+   * result = await finatic.get_all_order_events(
+   *            connection_id='00000000-0000-0000-0000-000000000000'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Total items:', len(result.success['data']))
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
    */
   async getAllOrderEvents(params?: Partial<GetOrderEventsParams>): Promise<FinaticResponse<OrderEventResponse[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
@@ -1104,9 +2208,61 @@ export class FinaticConnect extends EventEmitter {
    * Get all OrderGroups across all pages.
    * Auto-generated from paginated endpoint.
    * 
+   * This method automatically paginates through all pages and returns all items in a single response.
+   * It uses the underlying getOrderGroups method with internal pagination handling.
+   * 
    * @param params - Optional parameters object. Only include the fields you want to filter by.
-   *                 Example: getAllOrders({ accountId: "123", symbol: "AAPL" })
+   *                 Example: getAllOrderGroups({ accountId: "123", symbol: "AAPL" })
    * @returns FinaticResponse with success, error, and warning fields containing array of all items
+   * @methodId get_all_order_groups_api_v1_brokers_data_orders_groups_get
+   * @category brokers
+   * @example
+   * ```typescript-server
+   * // Get all items with optional filters
+   * const result = await finatic.getAllOrderGroups({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', createdAfter: '2024-01-01T00:00:00Z' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Get all items with optional filters
+   * const result = await finatic.getAllOrderGroups({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', createdAfter: '2024-01-01T00:00:00Z' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Get all items with optional filters
+   * result = await finatic.get_all_order_groups(
+   *            broker_id='alpaca',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            created_after='2024-01-01T00:00:00Z'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Total items:', len(result.success['data']))
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
    */
   async getAllOrderGroups(params?: Partial<GetOrderGroupsParams>): Promise<FinaticResponse<OrderGroupResponse[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
@@ -1162,9 +2318,61 @@ export class FinaticConnect extends EventEmitter {
    * Get all PositionLots across all pages.
    * Auto-generated from paginated endpoint.
    * 
+   * This method automatically paginates through all pages and returns all items in a single response.
+   * It uses the underlying getPositionLots method with internal pagination handling.
+   * 
    * @param params - Optional parameters object. Only include the fields you want to filter by.
-   *                 Example: getAllOrders({ accountId: "123", symbol: "AAPL" })
+   *                 Example: getAllPositionLots({ accountId: "123", symbol: "AAPL" })
    * @returns FinaticResponse with success, error, and warning fields containing array of all items
+   * @methodId get_all_position_lots_api_v1_brokers_data_positions_lots_get
+   * @category brokers
+   * @example
+   * ```typescript-server
+   * // Get all items with optional filters
+   * const result = await finatic.getAllPositionLots({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Get all items with optional filters
+   * const result = await finatic.getAllPositionLots({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Get all items with optional filters
+   * result = await finatic.get_all_position_lots(
+   *            broker_id='alpaca',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            account_id='123456789'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Total items:', len(result.success['data']))
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
    */
   async getAllPositionLots(params?: Partial<GetPositionLotsParams>): Promise<FinaticResponse<PositionLotResponse[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
@@ -1220,9 +2428,59 @@ export class FinaticConnect extends EventEmitter {
    * Get all PositionLotFills across all pages.
    * Auto-generated from paginated endpoint.
    * 
+   * This method automatically paginates through all pages and returns all items in a single response.
+   * It uses the underlying getPositionLotFills method with internal pagination handling.
+   * 
    * @param params - Optional parameters object. Only include the fields you want to filter by.
-   *                 Example: getAllOrders({ accountId: "123", symbol: "AAPL" })
+   *                 Example: getAllPositionLotFills({ accountId: "123", symbol: "AAPL" })
    * @returns FinaticResponse with success, error, and warning fields containing array of all items
+   * @methodId get_all_position_lot_fills_api_v1_brokers_data_positions_lots__lot_id__fills_get
+   * @category brokers
+   * @example
+   * ```typescript-server
+   * // Get all items with optional filters
+   * const result = await finatic.getAllPositionLotFills({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Get all items with optional filters
+   * const result = await finatic.getAllPositionLotFills({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Get all items with optional filters
+   * result = await finatic.get_all_position_lot_fills(
+   *            connection_id='00000000-0000-0000-0000-000000000000'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Total items:', len(result.success['data']))
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
    */
   async getAllPositionLotFills(params?: Partial<GetPositionLotFillsParams>): Promise<FinaticResponse<PositionLotFillResponse[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
