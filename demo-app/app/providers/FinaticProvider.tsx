@@ -414,9 +414,9 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const checkAuth = useCallback(async () => {
-    // For server SDKs, use sdkAdapter instead of finatic client
-    const authSource =
-      sdkAdapter && (sdkType === 'python' || sdkType === 'node') ? sdkAdapter : finatic;
+    // Always use sdkAdapter when available (it wraps both client and server SDKs)
+    // For client SDK, sdkAdapter provides isAuthenticated() wrapper around finatic.isAuthed()
+    const authSource = sdkAdapter || finatic;
 
     if (!authSource) {
       setIsAuthed(false);
@@ -425,11 +425,15 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      // Use sdkAdapter methods for server SDKs, finatic methods for client SDK
-      const authed =
-        typeof authSource.isAuthenticated === 'function'
-          ? await authSource.isAuthenticated()
-          : false;
+      // Check for isAuthenticated() method (sdkAdapter) or isAuthed() method (finatic directly)
+      let authed = false;
+      if (typeof authSource.isAuthenticated === 'function') {
+        authed = await authSource.isAuthenticated();
+      } else if (typeof (authSource as any).isAuthed === 'function') {
+        // Direct finatic instance uses isAuthed()
+        authed = (authSource as any).isAuthed();
+      }
+      
       const uid = typeof authSource.getUserId === 'function' ? await authSource.getUserId() : null;
 
       console.log('🔍 checkAuth() - authed:', authed, 'typeof:', typeof authed);
@@ -765,9 +769,11 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Failed to get token');
       }
       const responseData = await response.json();
-      const token = responseData.data?.one_time_token;
+      // Handle new FinaticResponse structure: success.data.one_time_token
+      const token = responseData.success?.data?.one_time_token;
       if (!token) {
         addLog('error', 'No token found in API response');
+        console.error('Response data:', responseData);
         throw new Error('No token found in API response');
       }
 
@@ -853,8 +859,9 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       // Verify the instance was created with the new token by checking a property
       // This ensures we're using the new instance, not the old one
       try {
-        const testAuth = await (wrapped as unknown as FinaticConnect).isAuthenticated();
-        addLog('info', `🔍 Verified new instance (${instanceId}) isAuthenticated() = ${testAuth}`);
+        // SDK uses isAuthed() method, not isAuthenticated()
+        const testAuth = (wrapped as unknown as FinaticConnect).isAuthed();
+        addLog('info', `🔍 Verified new instance (${instanceId}) isAuthed() = ${testAuth}`);
 
         const sessionId = (wrapped as any).sessionId;
         addLog('info', `🔍 Instance sessionId: ${sessionId}`);

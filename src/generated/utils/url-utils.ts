@@ -1,6 +1,6 @@
 /**
  * URL utility functions for portal URL manipulation.
- *
+ * 
  * Generated - do not edit directly.
  */
 
@@ -10,10 +10,7 @@
  * @param theme The theme configuration (preset string or custom object)
  * @returns The portal URL with theme parameters appended
  */
-export function appendThemeToURL(
-  baseUrl: string,
-  theme?: string | { preset?: string; custom?: Record<string, unknown> }
-): string {
+export function appendThemeToURL(baseUrl: string, theme?: string | { preset?: string; custom?: Record<string, unknown> }): string {
   if (!theme) {
     return baseUrl;
   }

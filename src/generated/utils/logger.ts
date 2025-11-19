@@ -1,8 +1,8 @@
 /**
  * Structured logger utility with browser-safe fallback (Phase 2C).
- *
+ * 
  * Generated - do not edit directly.
- *
+ * 
  * This logger automatically falls back to console-based logging when pino fails
  * in browser environments (Vite, Next.js, etc.).
  */
@@ -37,7 +37,7 @@ function getEnvVar(key: string): string | undefined {
   } catch {
     // Ignore if process is not available
   }
-
+  
   // Check for Vite env vars in browser
   if (typeof window !== 'undefined') {
     const importMeta = (globalThis as any).import?.meta;
@@ -55,15 +55,15 @@ function isProduction(): boolean {
   // Check Vite mode
   const viteMode = getEnvVar('MODE');
   if (viteMode === 'production') return true;
-
+  
   // Check Vite PROD flag
   const viteProd = getEnvVar('PROD');
   if (viteProd === 'true') return true;
-
+  
   // Check NODE_ENV
   const nodeEnv = getEnvVar('NODE_ENV');
   if (nodeEnv === 'production') return true;
-
+  
   return false;
 }
 
@@ -75,7 +75,7 @@ function isBrowser(): boolean {
   if (typeof window !== 'undefined') {
     return true;
   }
-
+  
   // Check for globalThis in browser-like environments
   if (typeof globalThis !== 'undefined') {
     // In browsers, process might be polyfilled but process.stdout won't exist
@@ -89,7 +89,7 @@ function isBrowser(): boolean {
       return typeof window !== 'undefined';
     }
   }
-
+  
   return false;
 }
 
@@ -100,16 +100,16 @@ export function getLogger(config?: SdkConfig): Logger {
   if (_loggerInstance) {
     return _loggerInstance;
   }
-
+  
   // In browser environments, skip pino entirely and use browser-safe logger
   if (isBrowser()) {
     return getBrowserSafeLogger(config);
   }
-
+  
   // Try to use pino first (Node.js environments)
   try {
     const logLevel = (config?.logLevel || getEnvVar('FINATIC_LOG_LEVEL') || 'error') as LogLevel;
-
+    
     const pinoConfig: pino.LoggerOptions = {
       level: logLevel === 'silent' ? 'silent' : logLevel,
       ...(config?.structuredLogging !== false && {
@@ -121,7 +121,7 @@ export function getLogger(config?: SdkConfig): Logger {
         timestamp: true,
       }),
     };
-
+    
     _loggerInstance = pino(pinoConfig) as unknown as Logger;
     return _loggerInstance;
   } catch (error) {
@@ -151,18 +151,18 @@ function getBrowserSafeLogger(config?: SdkConfig, pinoError?: any): Logger {
     if (config?.logLevel) {
       return config.logLevel as LogLevel;
     }
-
+    
     // Check environment variable
     const envLevel = getEnvVar('FINATIC_LOG_LEVEL');
     if (envLevel && ['debug', 'info', 'warn', 'error', 'silent'].includes(envLevel)) {
       return envLevel as LogLevel;
     }
-
+    
     // In production, default to error-only (unless explicitly overridden above)
     if (isProduction()) {
       return 'error';
     }
-
+    
     // Development default
     return 'error'; // Even in dev, default to error for safety
   };
@@ -231,15 +231,15 @@ function getBrowserSafeLogger(config?: SdkConfig, pinoError?: any): Logger {
     error?: Error | any
   ): any[] => {
     const parts: any[] = [`[${levelLabel.toUpperCase()}] ${message}`];
-
+    
     if (data && typeof data === 'object' && Object.keys(data).length > 0) {
       parts.push(data);
     }
-
+    
     if (error) {
       parts.push(error);
     }
-
+    
     return parts;
   };
 
@@ -262,10 +262,10 @@ function getBrowserSafeLogger(config?: SdkConfig, pinoError?: any): Logger {
   const fallbackLogger: Logger = {
     debug: (message: string, data?: Record<string, any>) => {
       if (!shouldLog('debug')) return;
-
+      
       const debugLevel = LOG_LEVELS['debug'];
       if (debugLevel === undefined) return;
-
+      
       if (structuredLogging) {
         const logStr = formatStructuredLog(debugLevel, 'debug', message, data);
         console.debug(logStr);
@@ -274,13 +274,13 @@ function getBrowserSafeLogger(config?: SdkConfig, pinoError?: any): Logger {
         console.debug(...logArgs);
       }
     },
-
+    
     info: (message: string, data?: Record<string, any>) => {
       if (!shouldLog('info')) return;
-
+      
       const infoLevel = LOG_LEVELS['info'];
       if (infoLevel === undefined) return;
-
+      
       if (structuredLogging) {
         const logStr = formatStructuredLog(infoLevel, 'info', message, data);
         console.info(logStr);
@@ -289,13 +289,13 @@ function getBrowserSafeLogger(config?: SdkConfig, pinoError?: any): Logger {
         console.info(...logArgs);
       }
     },
-
+    
     warn: (message: string, data?: Record<string, any>) => {
       if (!shouldLog('warn')) return;
-
+      
       const warnLevel = LOG_LEVELS['warn'];
       if (warnLevel === undefined) return;
-
+      
       if (structuredLogging) {
         const logStr = formatStructuredLog(warnLevel, 'warn', message, data);
         console.warn(logStr);
@@ -304,13 +304,13 @@ function getBrowserSafeLogger(config?: SdkConfig, pinoError?: any): Logger {
         console.warn(...logArgs);
       }
     },
-
+    
     error: (message: string, error?: Error | any, data?: Record<string, any>) => {
       if (!shouldLog('error')) return;
-
+      
       const errorLevel = LOG_LEVELS['error'];
       if (errorLevel === undefined) return;
-
+      
       if (structuredLogging) {
         const logStr = formatStructuredLog(errorLevel, 'error', message, data, error);
         console.error(logStr);
@@ -323,12 +323,9 @@ function getBrowserSafeLogger(config?: SdkConfig, pinoError?: any): Logger {
 
   // Only warn about fallback logger if pino failed (not if we're in browser)
   if (pinoError && !isProd) {
-    console.warn(
-      '[Finatic SDK] Using fallback logger due to pino initialization error:',
-      pinoError
-    );
+    console.warn('[Finatic SDK] Using fallback logger due to pino initialization error:', pinoError);
   }
-
+  
   _loggerInstance = fallbackLogger;
   return _loggerInstance;
 }

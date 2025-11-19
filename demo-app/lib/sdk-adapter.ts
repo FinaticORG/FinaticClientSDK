@@ -92,12 +92,24 @@ export interface SdkAdapter {
 export class ClientSdkAdapter implements SdkAdapter {
   constructor(private client: FinaticConnect) {}
 
+  // Helper to extract data from FinaticResponse
+  private extractData<T>(response: any): T {
+    if (response?.success?.data !== undefined) {
+      return response.success.data as T;
+    }
+    // Fallback for direct data (backward compatibility)
+    return response as T;
+  }
+
   async isAuthenticated(): Promise<boolean> {
-    return await this.client.isAuthenticated();
+    // SDK uses isAuthed() method, not isAuthenticated()
+    return this.client.isAuthed();
   }
 
   async getUserId(): Promise<string | null> {
-    return await this.client.getUserId();
+    // SDK returns string | undefined, but adapter should return string | null
+    const userId = this.client.getUserId();
+    return userId ?? null;
   }
 
   async getSessionId(): Promise<string | undefined> {
@@ -112,211 +124,121 @@ export class ClientSdkAdapter implements SdkAdapter {
     return await this.client.setUserId(userId);
   }
 
-
   async openPortal(options: PortalOptions): Promise<void> {
     // Client SDK handles portal internally with callbacks
-    return await (this.client as any).openPortal(options);
+    return await this.client.openPortal(
+      options.theme,
+      options.brokers,
+      options.email,
+      options.mode as 'light' | 'dark' | undefined,
+      options.onSuccess,
+      options.onError,
+      options.onClose
+    );
   }
 
   async getPortalUrl(options?: PortalOptions): Promise<string> {
-    return await this.client.getPortalUrl(options);
+    return await this.client.getPortalUrl(options?.theme, options?.brokers, options?.email, options?.mode as 'light' | 'dark' | undefined);
   }
 
   async closePortal(): Promise<void> {
-    return await (this.client as any).closePortal();
+    // Client SDK doesn't have closePortal method - portal UI handles this
+    return Promise.resolve();
   }
 
   async getBrokerList(): Promise<any[]> {
-    return await this.client.getBrokerList();
+    const response = await this.client.getBrokers();
+    return this.extractData<any[]>(response);
   }
 
   async getBrokerConnections(): Promise<any[]> {
-    return await this.client.getBrokerConnections();
+    const response = await this.client.getBrokerConnections();
+    return this.extractData<any[]>(response);
   }
 
-  async disconnectCompany(companyId: string): Promise<void> {
-    return await this.client.disconnectCompany(companyId);
+  async disconnectCompany(connectionId: string): Promise<void> {
+    // SDK method is disconnectCompanyFromBroker and expects { connectionId: string }
+    await this.client.disconnectCompanyFromBroker({ connectionId });
   }
 
-  async getAccounts(options?: any): Promise<any> {
-    return await this.client.getAccounts(options);
+  async getCompany(companyId: string): Promise<any> {
+    const response = await this.client.getCompany({ companyId });
+    return this.extractData(response);
   }
 
-  async getActiveAccounts(): Promise<any[]> {
-    return await this.client.getActiveAccounts();
+  async getAccounts(filter?: any): Promise<any> {
+    const response = await this.client.getAccounts(filter || {});
+    return this.extractData(response);
   }
 
-  async getAllAccounts(): Promise<any[]> {
-    return await this.client.getAllAccounts();
+  async getAllAccounts(filter?: any): Promise<any[]> {
+    const response = await this.client.getAllAccounts(filter || {});
+    return this.extractData<any[]>(response);
   }
 
-  async getAccountsPage(options?: any): Promise<any> {
-    return await this.client.getAccountsPage(options);
+  async getBalances(filter?: any): Promise<any> {
+    const response = await this.client.getBalances(filter || {});
+    return this.extractData(response);
   }
 
-  async getNextAccountsPage(): Promise<any> {
-    return await this.client.getNextAccountsPage();
+  async getAllBalances(filter?: any): Promise<any[]> {
+    const response = await this.client.getAllBalances(filter || {});
+    return this.extractData<any[]>(response);
   }
 
-  async getOrders(options?: any): Promise<any> {
-    return await this.client.getOrders(options);
+  async getOrders(filter?: any): Promise<any> {
+    const response = await this.client.getOrders(filter || {});
+    return this.extractData(response);
   }
 
-  async getAllOrders(): Promise<any[]> {
-    return await this.client.getAllOrders();
+  async getAllOrders(filter?: any): Promise<any[]> {
+    const response = await this.client.getAllOrders(filter || {});
+    return this.extractData<any[]>(response);
   }
 
-  async getOrdersPage(options?: any): Promise<any> {
-    return await this.client.getOrdersPage(options);
+  async getPositions(filter?: any): Promise<any> {
+    const response = await this.client.getPositions(filter || {});
+    return this.extractData(response);
   }
 
-  async getNextOrdersPage(): Promise<any> {
-    return await this.client.getNextOrdersPage();
+  async getAllPositions(filter?: any): Promise<any[]> {
+    const response = await this.client.getAllPositions(filter || {});
+    return this.extractData<any[]>(response);
   }
 
-  async getFilledOrders(options?: any): Promise<any[]> {
-    return await this.client.getFilledOrders(options);
+  async getOrderFills(orderId: string, filter?: any): Promise<any> {
+    const response = await this.client.getOrderFills({ orderId, ...(filter || {}) });
+    return this.extractData(response);
   }
 
-  async getPendingOrders(options?: any): Promise<any[]> {
-    return await this.client.getPendingOrders(options);
+  async getOrderEvents(orderId: string, filter?: any): Promise<any> {
+    const response = await this.client.getOrderEvents({ orderId, ...(filter || {}) });
+    return this.extractData(response);
   }
 
-  async getOrdersBySymbol(symbol: string): Promise<any[]> {
-    return await this.client.getOrdersBySymbol(symbol);
-  }
-
-  async getOrdersByBroker(broker: string): Promise<any[]> {
-    return await this.client.getOrdersByBroker(broker);
-  }
-
-  async getOrderFills(orderId: string, filter?: any): Promise<any[]> {
-    return await this.client.getOrderFills(orderId, 1, 100, filter);
-  }
-
-  async getOrderEvents(orderId: string, filter?: any): Promise<any[]> {
-    return await this.client.getOrderEvents(orderId, 1, 100, filter);
-  }
-
-  async getOrderGroups(filter?: any): Promise<any[]> {
-    return await this.client.getOrderGroups(filter);
+  async getOrderGroups(filter?: any): Promise<any> {
+    const response = await this.client.getOrderGroups(filter || {});
+    return this.extractData(response);
   }
 
   async getAllOrderGroups(filter?: any): Promise<any[]> {
-    return await this.client.getAllOrderGroups(filter);
+    const response = await this.client.getAllOrderGroups(filter || {});
+    return this.extractData<any[]>(response);
   }
 
-  async getPositions(options?: any): Promise<any> {
-    return await this.client.getPositions(options);
-  }
-
-  async getAllPositions(): Promise<any[]> {
-    return await this.client.getAllPositions();
-  }
-
-  async getPositionsPage(options?: any): Promise<any> {
-    return await this.client.getPositionsPage(options);
-  }
-
-  async getNextPositionsPage(): Promise<any> {
-    return await this.client.getNextPositionsPage();
-  }
-
-  async getOpenPositions(options?: any): Promise<any[]> {
-    return await this.client.getOpenPositions(options);
-  }
-
-  async getPositionsBySymbol(symbol: string): Promise<any[]> {
-    return await this.client.getPositionsBySymbol(symbol);
-  }
-
-  async getPositionsByBroker(broker: string): Promise<any[]> {
-    return await this.client.getPositionsByBroker(broker);
-  }
-
-  async getPositionLots(filter?: any): Promise<any[]> {
-    return await this.client.getPositionLots(filter);
+  async getPositionLots(filter?: any): Promise<any> {
+    const response = await this.client.getPositionLots(filter || {});
+    return this.extractData(response);
   }
 
   async getAllPositionLots(filter?: any): Promise<any[]> {
-    return await this.client.getAllPositionLots(filter);
+    const response = await this.client.getAllPositionLots(filter || {});
+    return this.extractData<any[]>(response);
   }
 
-  async getPositionLotFills(lotId: string, filter?: any): Promise<any[]> {
-    return await this.client.getPositionLotFills(lotId, 1, 100, filter);
-  }
-
-  async getBalances(options?: any): Promise<any> {
-    return await this.client.getBalances(options);
-  }
-
-  async getAllBalances(): Promise<any[]> {
-    return await this.client.getAllBalances();
-  }
-
-  async getBalancesPage(options?: any): Promise<any> {
-    return await this.client.getBalancesPage(options);
-  }
-
-  async getNextBalancesPage(): Promise<any> {
-    return await this.client.getNextBalancesPage();
-  }
-
-  setBroker(broker: string): void {
-    (this.client as any).setBroker(broker);
-  }
-
-  setAccount(account: string): void {
-    (this.client as any).setAccount(account);
-  }
-
-
-  async placeOrder(order: any): Promise<any> {
-    return await this.client.placeOrder(order);
-  }
-
-  async cancelOrder(orderId: string): Promise<any> {
-    return await this.client.cancelOrder(orderId);
-  }
-
-  async modifyOrder(orderId: string, modifications: any): Promise<any> {
-    return await this.client.modifyOrder(orderId, modifications);
-  }
-
-  async placeStockMarketOrder(symbol: string, quantity: number, side: string): Promise<any> {
-    return await this.client.placeStockMarketOrder(symbol, quantity, side);
-  }
-
-  async placeStockLimitOrder(symbol: string, quantity: number, side: string, price: number): Promise<any> {
-    return await this.client.placeStockLimitOrder(symbol, quantity, side, price);
-  }
-
-  async placeStockStopOrder(symbol: string, quantity: number, side: string, stopPrice: number): Promise<any> {
-    return await this.client.placeStockStopOrder(symbol, quantity, side, stopPrice);
-  }
-
-  async placeCryptoMarketOrder(symbol: string, quantity: number, side: string): Promise<any> {
-    return await this.client.placeCryptoMarketOrder(symbol, quantity, side);
-  }
-
-  async placeCryptoLimitOrder(symbol: string, quantity: number, side: string, price: number): Promise<any> {
-    return await this.client.placeCryptoLimitOrder(symbol, quantity, side, price);
-  }
-
-  async placeOptionsMarketOrder(symbol: string, quantity: number, side: string): Promise<any> {
-    return await this.client.placeOptionsMarketOrder(symbol, quantity, side);
-  }
-
-  async placeOptionsLimitOrder(symbol: string, quantity: number, side: string, price: number): Promise<any> {
-    return await this.client.placeOptionsLimitOrder(symbol, quantity, side, price);
-  }
-
-  async placeFuturesMarketOrder(symbol: string, quantity: number, side: string): Promise<any> {
-    return await this.client.placeFuturesMarketOrder(symbol, quantity, side);
-  }
-
-  async placeFuturesLimitOrder(symbol: string, quantity: number, side: string, price: number): Promise<any> {
-    return await this.client.placeFuturesLimitOrder(symbol, quantity, side, price);
+  async getPositionLotFills(lotId: string, filter?: any): Promise<any> {
+    const response = await this.client.getPositionLotFills({ lotId, ...(filter || {}) });
+    return this.extractData(response);
   }
 }
 
@@ -350,13 +272,17 @@ export class ApiSdkAdapter implements SdkAdapter {
     const result = await response.json();
     console.log('🔍 makeRequest result for', endpoint, ':', result);
     
-    // Handle response format consistently
-    if (result && typeof result === 'object' && 'data' in result) {
-      // Return the data field, even if it's falsy, to maintain consistency
-      console.log('🔍 makeRequest returning data:', result.data);
+    // Handle new FinaticResponse structure: { success: { data: {...}, meta: {...} }, error: null, warning: null }
+    if (result && typeof result === 'object' && 'success' in result && result.success && typeof result.success === 'object' && 'data' in result.success) {
+      // Return the data field from success.data
+      console.log('🔍 makeRequest returning success.data:', result.success.data);
+      return result.success.data;
+    } else if (result && typeof result === 'object' && 'data' in result) {
+      // Fallback for old format: { data: {...} }
+      console.log('🔍 makeRequest returning data (fallback):', result.data);
       return result.data;
     } else {
-      // Return the full result if it doesn't have a data field
+      // Return the full result if it doesn't match expected formats
       console.log('🔍 makeRequest returning full result:', result);
       return result;
     }
@@ -441,6 +367,7 @@ export class ApiSdkAdapter implements SdkAdapter {
 
   async confirmPortalAuth(): Promise<any> {
     // This is the server SDK specific method to confirm authentication
+    // makeRequest already extracts success.data, so response should be the data object directly
     const response = await this.makeRequest<any>('POST', '/api/session/confirm-auth');
     
     console.log('🔍 confirmPortalAuth response:', response);
@@ -450,18 +377,12 @@ export class ApiSdkAdapter implements SdkAdapter {
     let userInfo: any;
     
     if (typeof response === 'object' && response !== null) {
-      // If response is the full API response object like {success: true, data: {...}}
-      if ('data' in response && response.data && typeof response.data === 'object') {
-        // Extract from response.data
-        userInfo = {
-          user_id: response.data.user_id || null,
-          success: response.data.success || true
-        };
-      } else if ('user_id' in response) {
-        // If response is already the data object with user_id
+      // Response should already be the data object (makeRequest extracts success.data)
+      if ('user_id' in response) {
+        // If response is the data object with user_id
         userInfo = {
           user_id: response.user_id || null,
-          success: response.success || true
+          success: true
         };
       } else {
         // Fallback - return error info

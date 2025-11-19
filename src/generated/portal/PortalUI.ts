@@ -1,6 +1,6 @@
 /**
  * Portal UI manager for Client SDK.
- *
+ * 
  * Handles iframe creation, postMessage events, and portal lifecycle.
  * Generated - do not edit directly.
  */
@@ -128,7 +128,21 @@ export class PortalUI {
 
   private handleMessage(event: MessageEvent): void {
     // Verify origin matches the portal URL
-    if (!this.portalOrigin || event.origin !== this.portalOrigin) {
+    // Allow messages from the portal origin or if portalOrigin is not set (for development)
+    if (this.portalOrigin && event.origin !== this.portalOrigin) {
+      // Log ignored messages for debugging (only in development)
+      if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        console.debug('[Finatic SDK] Ignoring message from different origin:', {
+          expected: this.portalOrigin,
+          received: event.origin,
+          messageType: event.data?.type
+        });
+      }
+      return;
+    }
+
+    // Only process messages that look like portal messages
+    if (!event.data || typeof event.data !== 'object' || !event.data.type) {
       return;
     }
 
@@ -154,6 +168,16 @@ export class PortalUI {
       case 'portal-close':
         this.options?.onClose?.();
         this.hide();
+        break;
+
+      case 'portal-resize':
+        // Handle resize messages (optional - can be used to adjust iframe height)
+        // Portal sends: { type: 'portal-resize', height: number }
+        const resizeHeight = (event.data as any).height;
+        if (typeof resizeHeight === 'number' && this.iframe) {
+          // Optionally adjust iframe height based on portal content
+          this.iframe.style.height = `${resizeHeight}px`;
+        }
         break;
 
       default:

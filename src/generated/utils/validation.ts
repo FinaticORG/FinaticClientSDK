@@ -1,6 +1,6 @@
 /**
  * Input validation utility with zod package (Phase 2B).
- *
+ * 
  * Generated - do not edit directly.
  */
 
@@ -12,17 +12,21 @@ import { ValidationError as _ValidationError } from './error-handling';
 /**
  * Validate parameters using zod schema.
  */
-export function validateParams<T>(schema: z.ZodSchema<T>, params: unknown, config?: SdkConfig): T {
+export function validateParams<T>(
+  schema: z.ZodSchema<T>,
+  params: unknown,
+  config?: SdkConfig
+): T {
   if (!config?.validationEnabled) {
     return params as T;
   }
-
+  
   try {
     return schema.parse(params);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       const message = `Validation failed: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
-
+      
       if (config?.validationStrict) {
         throw new _ValidationError(message);
       } else {

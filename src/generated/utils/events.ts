@@ -1,6 +1,6 @@
 /**
  * EventEmitter utility for Client SDK.
- *
+ * 
  * Generated - do not edit directly.
  */
 
@@ -32,7 +32,7 @@ export class EventEmitter {
 
   public emit(event: string, ...args: any[]): void {
     if (this.events.has(event)) {
-      this.events.get(event)!.forEach((callback) => {
+      this.events.get(event)!.forEach(callback => {
         try {
           callback(...args);
         } catch (error) {
