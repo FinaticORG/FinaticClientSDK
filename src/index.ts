@@ -1,100 +1,30 @@
-// Types (explicit re-exports to avoid conflicts)
-export type {
-  // Core API types
-  ApiConfig,
-  ApiResponse,
-  Order,
-  OptionsOrder,
-  BrokerAccount,
-  PortfolioSnapshot,
-  PerformanceMetrics,
-  UserToken,
-  Holding,
-  Portfolio,
-  PortalResponse,
-  SessionInitResponse,
-  SessionResponse,
-  OtpRequestResponse,
-  OtpVerifyResponse,
-  PortalUrlResponse,
-  SessionValidationResponse,
-  SessionAuthenticateResponse,
-  RequestHeaders,
-  SessionStatus,
-  BrokerOrderParams,
-  BrokerExtras,
-  CryptoOrderOptions,
-  OptionsOrderOptions,
-  OrderResponse,
-  TradingContext,
-  DeviceInfo,
-  BrokerOrder,
-  BrokerPosition,
-  BrokerBalance,
-  BrokerDataOptions,
-  BrokerInfo,
-  TokenInfo,
-  RefreshTokenRequest,
-  RefreshTokenResponse,
-  AccountsFilter,
-  OrdersFilter,
-  PositionsFilter,
-  BalancesFilter,
-  BrokerDataOrder,
-  BrokerDataPosition,
-  BrokerDataAccount,
-  FilteredOrdersResponse,
-  FilteredPositionsResponse,
-  FilteredAccountsResponse,
-  FilteredBalancesResponse,
-  BrokerConnection,
-  OrderFill,
-  OrderEvent,
-  OrderLeg,
-  OrderGroup,
-  OrderGroupOrder,
-  PositionLot,
-  PositionLotFill,
-  OrderFillsFilter,
-  OrderEventsFilter,
-  OrderGroupsFilter,
-  PositionLotsFilter,
-  PositionLotFillsFilter,
-} from './types';
+/**
+ * Main SDK entry point.
+ *
+ * This file is protected - customize exports as needed.
+ *
+ * Note: The OpenAPI generator creates its own index.ts that exports from api/models.
+ * This file re-exports from our generated wrappers and custom code.
+ */
 
-export type { FinaticConnectOptions, FinaticUserToken, PortalMessage, PortalOptions } from './types/connect';
-export type {
-  PortalProps,
-  PortalTheme,
-  PortalThemeConfig,
-  PortalThemePreset,
-} from './types/portal';
+// Re-export all generated wrappers and utilities
+export * from './generated/wrappers';
+export * from './generated/utils';
+export * from './generated/config';
 
-// Error types
-export type {
-  TradeAccessDeniedError,
-  OrderNotFoundError,
-  ValidationError,
-} from './types/api/errors';
+// Re-export main client class explicitly (custom version that extends generated class)
+// MUST come before export * from './custom' to ensure custom version is used
+export { FinaticConnect } from './custom/FinaticConnect';
+export type { FinaticConnectOptions, PortalOptions } from './generated/FinaticConnect';
 
-// Main SDK classes
-export { ApiClient } from './core/client/ApiClient';
-export { FinaticConnect } from './core/client/FinaticConnect';
+// Re-export all other custom code (wrappers, utils, etc.)
+// Note: This might export FinaticConnect again, but the explicit export above takes precedence
+export * from './custom';
 
-// Supabase configuration
-// Supabase export removed - SDK no longer depends on Supabase
-
-// Core types and classes
-export { PaginatedResult } from './types/common/pagination';
-
-// Utilities
-export * from './utils/errors';
-export * from './utils/events';
-export * from './utils/themeUtils';
-export * from './lib/logger';
-
-// Theme presets
-export { portalThemePresets } from './themes/portalPresets';
-
-// Mocks (optional, for testing) - removed from main export to reduce bundle size
-// export { MockFactory } from './mocks/MockFactory';
+// Also export the raw API clients and models from OpenAPI generator
+export * from './generated/api';
+// Export models - ValidationError interface is available as ApiValidationError
+export type { ValidationError as ApiValidationError } from './generated/models/validation-error';
+// Re-export all models under a namespace to avoid name collisions (e.g., FinaticError)
+export * as Models from './generated/models';
+export * from './generated/configuration';

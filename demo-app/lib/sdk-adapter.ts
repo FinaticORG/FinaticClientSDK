@@ -91,92 +91,59 @@ export interface PortalOptions {
   mode?: string;
 }
 
-// Helper type to extract all function properties (methods) from a type
-// This excludes properties that are not functions
-type FunctionPropertyNames<T> = {
-  [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never;
-}[keyof T];
-
-// Extract all method names from FinaticConnect (excluding EventEmitter methods)
-// We filter out EventEmitter methods, static methods, and internal methods
-type FinaticConnectMethodNames = Exclude<
-  FunctionPropertyNames<FinaticConnect>,
-  // Exclude EventEmitter methods
-  | 'on'
-  | 'off'
-  | 'once'
-  | 'emit'
-  | 'removeAllListeners'
-  | 'listenerCount'
-  | 'listeners'
-  | 'rawListeners'
-  | 'eventNames'
-  | 'setMaxListeners'
-  | 'getMaxListeners'
-  // Exclude static methods
-  | 'init'
-  // Exclude internal/private methods that shouldn't be in the adapter
-  | 'linkUserToSession'
-  | 'storeUserId'
-  | 'initializeWithUser'
-  | 'handleCompanyAccessError'
-  | 'startSession'
-  | 'registerSessionCleanup'
-  | 'startSessionKeepAlive'
-  | 'stopSessionKeepAlive'
-  | 'validateSessionKeepAlive'
-  | 'shouldRefreshSession'
-  | 'refreshSessionAutomatically'
-  | 'handleSessionCleanup'
-  | 'handleVisibilityChange'
-  | 'completeSession'
-  // Exclude methods that might come from EventEmitter or other sources
-  | 'isAuthed'
-  | 'is_authenticated'
-  | 'getSessionUser'
-  | 'setTradingContextBroker'
-  | 'setTradingContextAccount'
-  | 'getTradingContext'
-  | 'clearTradingContext'
-  | 'testWebhook'
->;
-
-// Extract method signatures from FinaticConnect and simplify them
-// This automatically includes all public methods from FinaticConnect
-type SimplifiedFinaticMethods = {
-  [K in FinaticConnectMethodNames]: FinaticConnect[K] extends (...args: any[]) => Promise<any>
-    ? (...args: any[]) => Promise<any>
-    : FinaticConnect[K] extends (...args: any[]) => any
-      ? (...args: any[]) => any
-      : never;
-};
-
-// Methods that should be optional in the adapter (not all SDKs support them)
-// These are methods that exist on FinaticConnect but should be optional in the adapter
-type OptionalFinaticMethods =
-  | 'closePortal'
-  | 'getFilledOrders'
-  | 'getPendingOrders'
-  | 'getOrdersBySymbol'
-  | 'getOrdersByBroker'
-  | 'getOpenPositions'
-  | 'getPositionsBySymbol'
-  | 'getPositionsByBroker'
-  | 'placeStockMarketOrder'
-  | 'placeStockLimitOrder'
-  | 'placeStockStopOrder'
-  | 'placeCryptoMarketOrder'
-  | 'placeCryptoLimitOrder'
-  | 'placeOptionsMarketOrder'
-  | 'placeOptionsLimitOrder'
-  | 'placeFuturesMarketOrder'
-  | 'placeFuturesLimitOrder';
-
-// Additional methods that don't exist on FinaticConnect but are needed for the adapter
-type AdapterOnlyMethods = {
+// Main SDK adapter interface
+export interface SdkAdapter {
+  // Session methods
+  isAuthenticated(): Promise<boolean>;
+  getUserId(): Promise<string | null>;
+  getSessionId?(): Promise<string | undefined>;
+  getCompanyId?(): Promise<string | undefined>;
+  setUserId(userId: string): Promise<void>;
+  
+  // Portal methods - special handling for server SDKs
+  openPortal(options: PortalOptions): Promise<void>;
+  getPortalUrl?(options?: PortalOptions): Promise<string>;
+  closePortal?(): Promise<void>;
+  confirmPortalAuth?(): Promise<any>; // For server SDKs only
+  
+  // Broker methods
+  getBrokerList(): Promise<any[]>;
+  getBrokerConnections(): Promise<any[]>;
+  disconnectCompany(companyId: string): Promise<void>;
+  
+  // Account methods
+  getAccounts(options?: any): Promise<any>;
+  getActiveAccounts(): Promise<any[]>;
+  getAllAccounts(): Promise<any[]>;
   getAccountsPage?(options?: any): Promise<any>;
+  
+  // Trading methods
+  getOrders(options?: any): Promise<any>;
+  getAllOrders(): Promise<any[]>;
   getOrdersPage?(options?: any): Promise<any>;
+  getFilledOrders?(options?: any): Promise<any[]>;
+  getPendingOrders?(options?: any): Promise<any[]>;
+  getOrdersBySymbol?(symbol: string): Promise<any[]>;
+  getOrdersByBroker?(broker: string): Promise<any[]>;
+  getOrderFills(orderId: string, filter?: any): Promise<any[]>;
+  getOrderEvents(orderId: string, filter?: any): Promise<any[]>;
+  getOrderGroups(filter?: any): Promise<any[]>;
+  getAllOrderGroups(filter?: any): Promise<any[]>;
+  
+  // Position methods
+  getPositions(options?: any): Promise<any>;
+  getAllPositions(): Promise<any[]>;
   getPositionsPage?(options?: any): Promise<any>;
+  getOpenPositions?(options?: any): Promise<any[]>;
+  getPositionsBySymbol?(symbol: string): Promise<any[]>;
+  getPositionsByBroker?(broker: string): Promise<any[]>;
+  getPositionLots(filter?: any): Promise<any[]>;
+  getAllPositionLots(filter?: any): Promise<any[]>;
+  getPositionLotFills(lotId: string, filter?: any): Promise<any[]>;
+  
+  // Balance methods
+  getBalances(options?: any): Promise<any>;
+  getAllBalances(): Promise<any[]>;
   getBalancesPage?(options?: any): Promise<any>;
   getNextAccountsPage?(): Promise<any>;
   getNextOrdersPage?(): Promise<any>;
@@ -204,47 +171,32 @@ export type SdkAdapter = BaseSdkAdapter & AdapterOnlyMethods & ServerSdkMethods;
 export class ClientSdkAdapter implements SdkAdapter {
   constructor(private client: FinaticConnect) {}
 
+  // Helper to extract data from FinaticResponse
+  private extractData<T>(response: any): T {
+    if (response?.success?.data !== undefined) {
+      return response.success.data as T;
+    }
+    // Fallback for direct data (backward compatibility)
+    return response as T;
+  }
+
   async isAuthenticated(): Promise<boolean> {
-    // The compiled SDK uses snake_case method names
-    // Try snake_case first (is_authenticated), then camelCase (isAuthenticated)
-    if (typeof (this.client as any).is_authenticated === 'function') {
-      return await (this.client as any).is_authenticated();
-    }
-    if (typeof (this.client as any).isAuthenticated === 'function') {
-      return await (this.client as any).isAuthenticated();
-    }
-    // Try accessing via prototype
-    const proto = Object.getPrototypeOf(this.client);
-    if (proto) {
-      if (typeof (proto as any).is_authenticated === 'function') {
-        return await (proto as any).is_authenticated.call(this.client);
-      }
-      if (typeof (proto as any).isAuthenticated === 'function') {
-        return await (proto as any).isAuthenticated.call(this.client);
-      }
-    }
-    throw new Error('isAuthenticated method not accessible on FinaticConnect instance');
+    // SDK uses isAuthed() method, not isAuthenticated()
+    return this.client.isAuthed();
   }
 
   async getUserId(): Promise<string | null> {
-    // Try camelCase first (getUserId), then snake_case (get_user_id) as fallback
-    if (typeof (this.client as any).getUserId === 'function') {
-      return await (this.client as any).getUserId();
-    }
-    if (typeof (this.client as any).get_user_id === 'function') {
-      return await (this.client as any).get_user_id();
-    }
-    // Try accessing via prototype
-    const proto = Object.getPrototypeOf(this.client);
-    if (proto) {
-      if (typeof (proto as any).getUserId === 'function') {
-        return await (proto as any).getUserId.call(this.client);
-      }
-      if (typeof (proto as any).get_user_id === 'function') {
-        return await (proto as any).get_user_id.call(this.client);
-      }
-    }
-    throw new Error('getUserId method not accessible on FinaticConnect instance');
+    // SDK returns string | undefined, but adapter should return string | null
+    const userId = this.client.getUserId();
+    return userId ?? null;
+  }
+
+  async getSessionId(): Promise<string | undefined> {
+    return Promise.resolve(this.client.getSessionId());
+  }
+
+  async getCompanyId(): Promise<string | undefined> {
+    return Promise.resolve(this.client.getCompanyId());
   }
 
   async setUserId(userId: string): Promise<void> {
@@ -253,274 +205,119 @@ export class ClientSdkAdapter implements SdkAdapter {
 
   async openPortal(options: PortalOptions): Promise<void> {
     // Client SDK handles portal internally with callbacks
-    return await this.client.openPortal(options);
+    return await this.client.openPortal(
+      options.theme,
+      options.brokers,
+      options.email,
+      options.mode as 'light' | 'dark' | undefined,
+      options.onSuccess,
+      options.onError,
+      options.onClose
+    );
+  }
+
+  async getPortalUrl(options?: PortalOptions): Promise<string> {
+    return await this.client.getPortalUrl(options?.theme, options?.brokers, options?.email, options?.mode as 'light' | 'dark' | undefined);
   }
 
   async closePortal(): Promise<void> {
-    // closePortal is synchronous in FinaticConnect, but we make it async for adapter compatibility
-    this.client.closePortal();
+    // Client SDK doesn't have closePortal method - portal UI handles this
+    return Promise.resolve();
   }
 
   async getBrokerList(): Promise<any[]> {
-    return await this.client.getBrokerList();
+    const response = await this.client.getBrokers();
+    return this.extractData<any[]>(response);
   }
 
   async getBrokerConnections(): Promise<any[]> {
-    return await this.client.getBrokerConnections();
+    const response = await this.client.getBrokerConnections();
+    return this.extractData<any[]>(response);
   }
 
-  async disconnectCompany(companyId: string): Promise<void> {
-    // disconnectCompany returns DisconnectCompanyResponse, but adapter expects void
-    await this.client.disconnectCompany(companyId);
+  async disconnectCompany(connectionId: string): Promise<void> {
+    // SDK method is disconnectCompanyFromBroker and expects { connectionId: string }
+    await this.client.disconnectCompanyFromBroker({ connectionId });
   }
 
-  async getAccounts(options?: any): Promise<any> {
-    // FinaticConnect.getAccounts takes (page, perPage, options?, filters?)
-    // We'll extract page/perPage from options if provided, otherwise use defaults
-    const page = options?.page || 1;
-    const perPage = options?.per_page || 100;
-    const brokerOptions = options?.options;
-    const filters = options?.filter;
-    return await (this.client as any).getAccounts(page, perPage, brokerOptions, filters);
+  async getCompany(companyId: string): Promise<any> {
+    const response = await this.client.getCompany({ companyId });
+    return this.extractData(response);
   }
 
-  async getActiveAccounts(): Promise<any[]> {
-    return await this.client.getActiveAccounts();
+  async getAccounts(filter?: any): Promise<any> {
+    const response = await this.client.getAccounts(filter || {});
+    return this.extractData(response);
   }
 
-  async getAllAccounts(): Promise<any[]> {
-    return await this.client.getAllAccounts();
+  async getAllAccounts(filter?: any): Promise<any[]> {
+    const response = await this.client.getAllAccounts(filter || {});
+    return this.extractData<any[]>(response);
   }
 
-  async getAccountsPage(options?: any): Promise<any> {
-    // getAccountsPage doesn't exist on FinaticConnect, delegate to getAccounts
-    return await this.getAccounts(options);
+  async getBalances(filter?: any): Promise<any> {
+    const response = await this.client.getBalances(filter || {});
+    return this.extractData(response);
   }
 
-  async getNextAccountsPage(): Promise<any> {
-    // getNextAccountsPage doesn't exist on FinaticConnect
-    // Return empty result indicating no more pages
-    return { data: [], hasMore: false };
+  async getAllBalances(filter?: any): Promise<any[]> {
+    const response = await this.client.getAllBalances(filter || {});
+    return this.extractData<any[]>(response);
   }
 
-  async getOrders(options?: any): Promise<any> {
-    // FinaticConnect.getOrders takes (page, perPage, options?, filters?)
-    const page = options?.page || 1;
-    const perPage = options?.per_page || 100;
-    const brokerOptions = options?.options;
-    const filters = options?.filter;
-    return await (this.client as any).getOrders(page, perPage, brokerOptions, filters);
+  async getOrders(filter?: any): Promise<any> {
+    const response = await this.client.getOrders(filter || {});
+    return this.extractData(response);
   }
 
-  async getAllOrders(): Promise<any[]> {
-    return await this.client.getAllOrders();
+  async getAllOrders(filter?: any): Promise<any[]> {
+    const response = await this.client.getAllOrders(filter || {});
+    return this.extractData<any[]>(response);
   }
 
-  async getOrdersPage(options?: any): Promise<any> {
-    // getOrdersPage doesn't exist on FinaticConnect, delegate to getOrders
-    return await this.getOrders(options);
+  async getPositions(filter?: any): Promise<any> {
+    const response = await this.client.getPositions(filter || {});
+    return this.extractData(response);
   }
 
-  async getNextOrdersPage(): Promise<any> {
-    // getNextOrdersPage doesn't exist on FinaticConnect
-    return { data: [], hasMore: false };
+  async getAllPositions(filter?: any): Promise<any[]> {
+    const response = await this.client.getAllPositions(filter || {});
+    return this.extractData<any[]>(response);
   }
 
-  async getFilledOrders(options?: any): Promise<any[]> {
-    return await this.client.getFilledOrders();
+  async getOrderFills(orderId: string, filter?: any): Promise<any> {
+    const response = await this.client.getOrderFills({ orderId, ...(filter || {}) });
+    return this.extractData(response);
   }
 
-  async getPendingOrders(options?: any): Promise<any[]> {
-    return await this.client.getPendingOrders();
+  async getOrderEvents(orderId: string, filter?: any): Promise<any> {
+    const response = await this.client.getOrderEvents({ orderId, ...(filter || {}) });
+    return this.extractData(response);
   }
 
-  async getOrdersBySymbol(symbol: string): Promise<any[]> {
-    return await this.client.getOrdersBySymbol(symbol);
+  async getOrderGroups(filter?: any): Promise<any> {
+    const response = await this.client.getOrderGroups(filter || {});
+    return this.extractData(response);
   }
 
-  async getOrdersByBroker(broker: string): Promise<any[]> {
-    return await this.client.getOrdersByBroker(broker);
+  async getAllOrderGroups(filter?: any): Promise<any[]> {
+    const response = await this.client.getAllOrderGroups(filter || {});
+    return this.extractData<any[]>(response);
   }
 
-  async getOrderFills(orderId: string, filter?: any): Promise<any[]> {
-    return await (this.client as any).getOrderFills(orderId, filter);
+  async getPositionLots(filter?: any): Promise<any> {
+    const response = await this.client.getPositionLots(filter || {});
+    return this.extractData(response);
   }
 
-  async getOrderEvents(orderId: string, filter?: any): Promise<any[]> {
-    return await (this.client as any).getOrderEvents(orderId, filter);
+  async getAllPositionLots(filter?: any): Promise<any[]> {
+    const response = await this.client.getAllPositionLots(filter || {});
+    return this.extractData<any[]>(response);
   }
 
-  async getOrderGroups(filter?: any): Promise<any[]> {
-    return await (this.client as any).getOrderGroups(filter);
-  }
-
-  async getPositions(options?: any): Promise<any> {
-    // FinaticConnect.getPositions takes (page, perPage, options?, filters?)
-    const page = options?.page || 1;
-    const perPage = options?.per_page || 100;
-    const brokerOptions = options?.options;
-    const filters = options?.filter;
-    return await (this.client as any).getPositions(page, perPage, brokerOptions, filters);
-  }
-
-  async getAllPositions(): Promise<any[]> {
-    return await this.client.getAllPositions();
-  }
-
-  async getPositionsPage(options?: any): Promise<any> {
-    // getPositionsPage doesn't exist on FinaticConnect, delegate to getPositions
-    return await this.getPositions(options);
-  }
-
-  async getNextPositionsPage(): Promise<any> {
-    // getNextPositionsPage doesn't exist on FinaticConnect
-    return { data: [], hasMore: false };
-  }
-
-  async getOpenPositions(options?: any): Promise<any[]> {
-    return await this.client.getOpenPositions();
-  }
-
-  async getPositionsBySymbol(symbol: string): Promise<any[]> {
-    return await this.client.getPositionsBySymbol(symbol);
-  }
-
-  async getPositionsByBroker(broker: string): Promise<any[]> {
-    return await this.client.getPositionsByBroker(broker);
-  }
-
-  async getPositionLots(filter?: any): Promise<any[]> {
-    return await (this.client as any).getPositionLots(filter);
-  }
-
-  async getPositionLotFills(lotId: string, filter?: any): Promise<any[]> {
-    return await (this.client as any).getPositionLotFills(lotId, filter);
-  }
-
-  async getBalances(options?: any): Promise<any> {
-    // FinaticConnect.getBalances takes (page, perPage, options?, filters?)
-    const page = options?.page || 1;
-    const perPage = options?.per_page || 100;
-    const brokerOptions = options?.options;
-    const filters = options?.filter;
-    return await (this.client as any).getBalances(page, perPage, brokerOptions, filters);
-  }
-
-  async getAllBalances(): Promise<any[]> {
-    return await this.client.getAllBalances();
-  }
-
-  async getBalancesPage(options?: any): Promise<any> {
-    // getBalancesPage doesn't exist on FinaticConnect, delegate to getBalances
-    return await this.getBalances(options);
-  }
-
-  async getNextBalancesPage(): Promise<any> {
-    // getNextBalancesPage doesn't exist on FinaticConnect
-    return { data: [], hasMore: false };
-  }
-
-  setBroker(broker: string): void {
-    // setBroker doesn't exist on FinaticConnect - this is adapter-only
-    // No-op for client SDK
-  }
-
-  setAccount(account: string): void {
-    // setAccount doesn't exist on FinaticConnect - this is adapter-only
-    // No-op for client SDK
-  }
-
-  async placeOrder(order: any): Promise<any> {
-    return await this.client.placeOrder(order);
-  }
-
-  async cancelOrder(orderId: string | { orderId: string }): Promise<any> {
-    // Accept either string orderId or object with orderId property for backward compatibility
-    const orderIdString = typeof orderId === 'string' ? orderId : orderId.orderId;
-
-    // New endpoint only requires order_id - backend infers everything else
-    return await this.client.cancelOrder(orderIdString);
-  }
-
-  async modifyOrder(orderId: string, modifications: any): Promise<any> {
-    return await this.client.modifyOrder(orderId, modifications);
-  }
-
-  async placeStockMarketOrder(symbol: string, quantity: number, side: string): Promise<any> {
-    // FinaticConnect expects 'buy' | 'sell', but adapter accepts string
-    return await this.client.placeStockMarketOrder(symbol, quantity, side as 'buy' | 'sell');
-  }
-
-  async placeStockLimitOrder(
-    symbol: string,
-    quantity: number,
-    side: string,
-    price: number
-  ): Promise<any> {
-    return await this.client.placeStockLimitOrder(symbol, quantity, side as 'buy' | 'sell', price);
-  }
-
-  async placeStockStopOrder(
-    symbol: string,
-    quantity: number,
-    side: string,
-    stopPrice: number
-  ): Promise<any> {
-    return await this.client.placeStockStopOrder(
-      symbol,
-      quantity,
-      side as 'buy' | 'sell',
-      stopPrice
-    );
-  }
-
-  async placeCryptoMarketOrder(symbol: string, quantity: number, side: string): Promise<any> {
-    return await this.client.placeCryptoMarketOrder(symbol, quantity, side as 'buy' | 'sell');
-  }
-
-  async placeCryptoLimitOrder(
-    symbol: string,
-    quantity: number,
-    side: string,
-    price: number
-  ): Promise<any> {
-    return await this.client.placeCryptoLimitOrder(symbol, quantity, side as 'buy' | 'sell', price);
-  }
-
-  async placeOptionsMarketOrder(symbol: string, quantity: number, side: string): Promise<any> {
-    return await this.client.placeOptionsMarketOrder(symbol, quantity, side as 'buy' | 'sell');
-  }
-
-  async placeOptionsLimitOrder(
-    symbol: string,
-    quantity: number,
-    side: string,
-    price: number
-  ): Promise<any> {
-    return await this.client.placeOptionsLimitOrder(
-      symbol,
-      quantity,
-      side as 'buy' | 'sell',
-      price
-    );
-  }
-
-  async placeFuturesMarketOrder(symbol: string, quantity: number, side: string): Promise<any> {
-    return await this.client.placeFuturesMarketOrder(symbol, quantity, side as 'buy' | 'sell');
-  }
-
-  async placeFuturesLimitOrder(
-    symbol: string,
-    quantity: number,
-    side: string,
-    price: number
-  ): Promise<any> {
-    return await this.client.placeFuturesLimitOrder(
-      symbol,
-      quantity,
-      side as 'buy' | 'sell',
-      price
-    );
+  async getPositionLotFills(lotId: string, filter?: any): Promise<any> {
+    const response = await this.client.getPositionLotFills({ lotId, ...(filter || {}) });
+    return this.extractData(response);
   }
 }
 
@@ -557,14 +354,18 @@ export class ApiSdkAdapter implements SdkAdapter {
 
     const result = await response.json();
     console.log('🔍 makeRequest result for', endpoint, ':', result);
-
-    // Handle response format consistently
-    if (result && typeof result === 'object' && 'data' in result) {
-      // Return the data field, even if it's falsy, to maintain consistency
-      console.log('🔍 makeRequest returning data:', result.data);
+    
+    // Handle new FinaticResponse structure: { success: { data: {...}, meta: {...} }, error: null, warning: null }
+    if (result && typeof result === 'object' && 'success' in result && result.success && typeof result.success === 'object' && 'data' in result.success) {
+      // Return the data field from success.data
+      console.log('🔍 makeRequest returning success.data:', result.success.data);
+      return result.success.data;
+    } else if (result && typeof result === 'object' && 'data' in result) {
+      // Fallback for old format: { data: {...} }
+      console.log('🔍 makeRequest returning data (fallback):', result.data);
       return result.data;
     } else {
-      // Return the full result if it doesn't have a data field
+      // Return the full result if it doesn't match expected formats
       console.log('🔍 makeRequest returning full result:', result);
       return result;
     }
@@ -652,6 +453,7 @@ export class ApiSdkAdapter implements SdkAdapter {
 
   async confirmPortalAuth(): Promise<any> {
     // This is the server SDK specific method to confirm authentication
+    // makeRequest already extracts success.data, so response should be the data object directly
     const response = await this.makeRequest<any>('POST', '/api/session/confirm-auth');
 
     console.log('🔍 confirmPortalAuth response:', response);
@@ -661,18 +463,12 @@ export class ApiSdkAdapter implements SdkAdapter {
     let userInfo: any;
 
     if (typeof response === 'object' && response !== null) {
-      // If response is the full API response object like {success: true, data: {...}}
-      if ('data' in response && response.data && typeof response.data === 'object') {
-        // Extract from response.data
-        userInfo = {
-          user_id: response.data.user_id || null,
-          success: response.data.success || true,
-        };
-      } else if ('user_id' in response) {
-        // If response is already the data object with user_id
+      // Response should already be the data object (makeRequest extracts success.data)
+      if ('user_id' in response) {
+        // If response is the data object with user_id
         userInfo = {
           user_id: response.user_id || null,
-          success: response.success || true,
+          success: true
         };
       } else {
         // Fallback - return error info

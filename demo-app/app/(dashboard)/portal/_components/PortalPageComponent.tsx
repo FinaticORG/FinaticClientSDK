@@ -189,8 +189,11 @@ export default function PortalPageComponent(): JSX.Element {
             // Client SDK: userId is returned
             addLog('success', `Portal opened successfully for user: ${userIdOrUrl}`);
             setPortalMessage('Portal opened successfully');
+            // Set auth state immediately (SDK already stored userId internally)
+            setAuthState(true, userIdOrUrl);
             setStoredUserId(userIdOrUrl);
             addLog('info', `Stored userId in localStorage: ${userIdOrUrl}`);
+            // Verify auth state
             await checkAuth();
             appendEvent({
               type: 'portal-success',

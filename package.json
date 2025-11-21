@@ -1,64 +1,83 @@
 {
   "name": "@finatic/client",
-  "version": "0.0.142",
-  "description": "Finatic Client SDK for browser integration",
-  "type": "module",
-  "publishConfig": {
-    "access": "public"
-  },
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  },
-  "workspaces": [
-    "demo-app"
-  ],
+  "version": "0.1.0",
+  "description": "TypeScript SDK for Finatic Client API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
-    "src",
-    "dist"
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "rollup -c",
-    "watch": "rollup -c -w",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
     "clean": "rimraf dist",
-    "lint": "eslint src --ext .ts,.tsx",
-    "format": "prettier --write src/**/*.{ts,tsx}"
+    "prepublishOnly": "npm run clean && npm run build",
+    "format:fix": "prettier --write \"src/**/*.ts\"",
+    "type:check": "tsc --noEmit",
+    "syntax:check": "eslint src/**/*.ts --max-warnings 0",
+    "syntax:fix": "eslint src/**/*.ts --fix",
+    "import:check": "tsc --noEmit --skipLibCheck",
+    "quality:check": "npm run format:check && npm run lint && npm run type:check && npm run build",
+    "quality:fix": "npm run format:fix && (npm run lint:fix || true) && npm run build",
+    "dev": "yarn build:watch",
+    "demo:dev": "yarn workspace app dev",
+    "demo:build": "yarn workspace app build",
+    "demo:start": "yarn workspace app start"
+  },
+  "keywords": [
+    "finatic",
+    "trading",
+    "finance",
+    "api",
+    "sdk",
+    "typescript",
+    "typescript"
+  ],
+  "author": "Finatic",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FinaticORG/Client.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "dependencies": {
-    "crypto-js": "^4.2.0",
-    "uuid": "^9.0.1"
+    "axios": "^1.0.0",
+    "node-cache": "^1.0.0",
+    "p-retry": "^1.0.0",
+    "pino": "^1.0.0",
+    "zod": "^1.0.0"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "@types/crypto-js": "^4.2.1",
-    "@types/uuid": "^9.0.7",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "eslint": "^8.0.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-react": "^7.33.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
+    "@eslint/js": "^9.35.0",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^24.5.0",
+    "@types/node-cache": "^4.2.5",
+    "@types/pino": "^7.0.5",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
+    "@typescript-eslint/parser": "^8.44.0",
+    "eslint": "^9.35.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.0.0",
+    "jest": "^30.1.3",
     "prettier": "^3.0.0",
-    "rimraf": "^5.0.5",
-    "rollup": "^4.9.1",
-    "rollup-plugin-dts": "^6.1.0",
-    "tslib": "^2.8.1",
-    "typescript": "^5.3.3"
+    "rimraf": "^6.0.1",
+    "ts-jest": "^29.0.0",
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.44.0"
   },
-  "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0"
-  },
-  "packageManager": "yarn@4.11.0"
+  "private": true,
+  "workspaces": [
+    "demo-app"
+  ]
 }

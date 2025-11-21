@@ -417,43 +417,34 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const checkAuth = useCallback(async () => {
+    // Always use sdkAdapter when available (it wraps both client and server SDKs)
+    // For client SDK, sdkAdapter provides isAuthenticated() wrapper around finatic.isAuthed()
+    const authSource = sdkAdapter || finatic;
+
+    if (!authSource) {
+      setIsAuthed(false);
+      setCurrentUserId(null);
+      return;
+    }
+
     try {
-      let authSource: AuthSource | null = null;
-
-      // Handle server SDKs (python, node) - use sdkAdapter
-      if ((sdkType === 'python' || sdkType === 'node') && sdkAdapter) {
-        if (isAuthSource(sdkAdapter)) {
-          authSource = sdkAdapter;
-        }
+      // Check for isAuthenticated() method (sdkAdapter) or isAuthed() method (finatic directly)
+      let authed = false;
+      if (typeof authSource.isAuthenticated === 'function') {
+        authed = await authSource.isAuthenticated();
+      } else if (typeof (authSource as any).isAuthed === 'function') {
+        // Direct finatic instance uses isAuthed()
+        authed = (authSource as any).isAuthed();
       }
-      // Handle client SDK - prefer sdkAdapter, fallback to finatic
-      else if (sdkType === 'client') {
-        // For client SDK adapter, trust that it implements the interface
-        // Don't check isAuthSource as the underlying client methods may not be accessible via property access
-        if (sdkAdapter) {
-          authSource = sdkAdapter as unknown as AuthSource;
-        } else if (finatic) {
-          // Try to use finatic directly, but methods may not be accessible
-          try {
-            const testCall = (finatic as any).isAuthenticated;
-            if (typeof testCall === 'function') {
-              authSource = finatic as unknown as AuthSource;
-            }
-          } catch {
-            // Methods not accessible via property access, skip
-          }
-        }
-      }
+      
+      const uid = typeof authSource.getUserId === 'function' ? await authSource.getUserId() : null;
 
-      // No valid SDK instance
-      if (!authSource) {
-        setIsAuthed(false);
-        setCurrentUserId(null);
-        return;
-      }
-
-      const authed = await authSource.isAuthenticated();
-      const uid = await authSource.getUserId();
+      console.log('🔍 checkAuth() - authed:', authed, 'typeof:', typeof authed);
+      console.log('🔍 checkAuth() - uid:', uid, 'typeof:', typeof uid);
+      console.log(
+        '🔍 checkAuth() - authSource:',
+        authSource === sdkAdapter ? 'sdkAdapter' : 'finatic'
+      );
 
       setIsAuthed(authed);
       setCurrentUserId(uid);
@@ -786,9 +777,11 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Failed to get token');
       }
       const responseData = await response.json();
-      const token = responseData.data?.one_time_token;
+      // Handle new FinaticResponse structure: success.data.one_time_token
+      const token = responseData.success?.data?.one_time_token;
       if (!token) {
         addLog('error', 'No token found in API response');
+        console.error('Response data:', responseData);
         throw new Error('No token found in API response');
       }
 
@@ -888,8 +881,9 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       // Verify the instance was created with the new token by checking a property
       // This ensures we're using the new instance, not the old one
       try {
-        const testAuth = isAuthSource(wrapped) ? await wrapped.isAuthenticated() : false;
-        addLog('info', `🔍 Verified new instance (${instanceId}) isAuthenticated() = ${testAuth}`);
+        // SDK uses isAuthed() method, not isAuthenticated()
+        const testAuth = (wrapped as unknown as FinaticConnect).isAuthed();
+        addLog('info', `🔍 Verified new instance (${instanceId}) isAuthed() = ${testAuth}`);
 
         const sessionId = (wrapped as any).sessionId;
         addLog('info', `🔍 Instance sessionId: ${sessionId}`);
