@@ -1,3 +1,79 @@
+/**
+ * SDK Adapter - Unified Interface for Multiple SDK Types
+ *
+ * This module provides a unified adapter pattern that allows the demo app to work with
+ * different SDK implementations (client SDK, Python server SDK, Node server SDK) through
+ * a single interface.
+ *
+ * ## Architecture
+ *
+ * The `SdkAdapter` interface is **automatically generated** from the `FinaticConnect` class
+ * using TypeScript utility types. This ensures that:
+ * - When methods are added/removed from `FinaticConnect`, they're automatically reflected in `SdkAdapter`
+ * - Type safety is maintained across all SDK implementations
+ * - No manual interface maintenance is required
+ *
+ * ## How Auto-Generation Works
+ *
+ * 1. **Method Extraction**: `FunctionPropertyNames<T>` extracts all function properties from `FinaticConnect`
+ * 2. **Filtering**: `FinaticConnectMethodNames` filters out:
+ *    - EventEmitter methods (`on`, `off`, `emit`, etc.)
+ *    - Static methods (`init`)
+ *    - Private/internal methods (session management, cleanup, etc.)
+ * 3. **Signature Simplification**: `SimplifiedFinaticMethods` converts all method signatures to
+ *    `(...args: any[]) => Promise<any>` for adapter compatibility
+ * 4. **Optional Methods**: Some methods are marked optional (convenience methods, server SDK-specific)
+ * 5. **Extension**: Adapter-only methods (like `getAccountsPage`, `confirmPortalAuth`) are added
+ *
+ * ## SDK Types
+ *
+ * - **client**: Uses `FinaticConnect` directly (browser-based SDK)
+ * - **python**: Makes HTTP calls to Python server SDK API (port 8002)
+ * - **node**: Makes HTTP calls to Node server SDK API (port 8003)
+ *
+ * ## Usage
+ *
+ * ```typescript
+ * import { createSdkAdapter, SdkType } from '@/lib/sdk-adapter';
+ *
+ * // Create adapter based on SDK type
+ * const adapter = createSdkAdapter('client', finaticInstance);
+ * // or
+ * const adapter = createSdkAdapter('python', undefined, 'http://localhost:8002');
+ *
+ * // Use unified interface
+ * const isAuthed = await adapter.isAuthenticated();
+ * const orders = await adapter.getAllOrders();
+ * ```
+ *
+ * ## Maintenance
+ *
+ * ### Adding a New Method to FinaticConnect
+ *
+ * When you add a new public method to `FinaticConnect`:
+ * 1. The method is **automatically** included in `SdkAdapter`
+ * 2. Both `ClientSdkAdapter` and `ApiSdkAdapter` must implement it
+ * 3. TypeScript will error if implementations are missing
+ *
+ * ### Excluding a Method from the Adapter
+ *
+ * If a method exists on `FinaticConnect` but shouldn't be in the adapter, add it to the
+ * exclusion list in `FinaticConnectMethodNames` (around line 26).
+ *
+ * ### Making a Method Optional
+ *
+ * Add the method name to `OptionalFinaticMethods` (around line 71) to make it optional
+ * in the adapter interface. This is useful for convenience methods that not all SDKs support.
+ *
+ * ## Implementation Details
+ *
+ * - **ClientSdkAdapter**: Wraps `FinaticConnect` instance, delegates calls directly
+ * - **ApiSdkAdapter**: Makes HTTP requests to server SDK endpoints, handles response normalization
+ * - **Portal Flow**: Client SDK handles portal internally; server SDKs return URLs for UI to open
+ * - **Error Handling**: Server SDK adapters catch errors and return empty arrays/fallbacks
+ * - **Response Normalization**: `ApiSdkAdapter.makeRequest()` extracts `data` from `{success, data}` responses
+ */
+
 import { FinaticConnect } from '@finatic/client';
 
 export type SdkType = 'client' | 'python' | 'node';
@@ -69,24 +145,27 @@ export interface SdkAdapter {
   getBalances(options?: any): Promise<any>;
   getAllBalances(): Promise<any[]>;
   getBalancesPage?(options?: any): Promise<any>;
-  
-  
-  // Order operations
-  placeOrder(order: any): Promise<any>;
-  cancelOrder(orderId: string): Promise<any>;
-  modifyOrder(orderId: string, modifications: any): Promise<any>;
-  
-  // Convenience order methods
-  placeStockMarketOrder?(symbol: string, quantity: number, side: string): Promise<any>;
-  placeStockLimitOrder?(symbol: string, quantity: number, side: string, price: number): Promise<any>;
-  placeStockStopOrder?(symbol: string, quantity: number, side: string, stopPrice: number): Promise<any>;
-  placeCryptoMarketOrder?(symbol: string, quantity: number, side: string): Promise<any>;
-  placeCryptoLimitOrder?(symbol: string, quantity: number, side: string, price: number): Promise<any>;
-  placeOptionsMarketOrder?(symbol: string, quantity: number, side: string): Promise<any>;
-  placeOptionsLimitOrder?(symbol: string, quantity: number, side: string, price: number): Promise<any>;
-  placeFuturesMarketOrder?(symbol: string, quantity: number, side: string): Promise<any>;
-  placeFuturesLimitOrder?(symbol: string, quantity: number, side: string, price: number): Promise<any>;
-}
+  getNextAccountsPage?(): Promise<any>;
+  getNextOrdersPage?(): Promise<any>;
+  getNextPositionsPage?(): Promise<any>;
+  getNextBalancesPage?(): Promise<any>;
+  setBroker?(broker: string): void;
+  setAccount?(account: string): void;
+};
+
+// Server SDK-specific methods (not in FinaticConnect)
+type ServerSdkMethods = {
+  confirmPortalAuth?(): Promise<any>;
+};
+
+// Make certain methods optional
+type MakeOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+// Generate the base adapter interface from FinaticConnect
+type BaseSdkAdapter = MakeOptional<SimplifiedFinaticMethods, OptionalFinaticMethods>;
+
+// Final SdkAdapter interface - combines FinaticConnect methods with adapter-only and server SDK extensions
+export type SdkAdapter = BaseSdkAdapter & AdapterOnlyMethods & ServerSdkMethods;
 
 // Client SDK adapter - wraps the existing FinaticConnect instance
 export class ClientSdkAdapter implements SdkAdapter {
@@ -249,7 +328,11 @@ export class ApiSdkAdapter implements SdkAdapter {
 
   constructor(private baseUrl: string) {}
 
-  private async makeRequest<T>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', endpoint: string, body?: any): Promise<T> {
+  private async makeRequest<T>(
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+    endpoint: string,
+    body?: any
+  ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const options: RequestInit = {
       method,
@@ -263,7 +346,7 @@ export class ApiSdkAdapter implements SdkAdapter {
     }
 
     const response = await fetch(url, options);
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
@@ -293,7 +376,7 @@ export class ApiSdkAdapter implements SdkAdapter {
       // makeRequest now returns result.data directly, so for {success:true, data:true} it returns true
       const result = await this.makeRequest<boolean>('GET', '/api/session/is-authed');
       console.log('🔍 ApiSdkAdapter.isAuthenticated() result:', result, 'typeof:', typeof result);
-      
+
       // result should be a boolean directly from the data field
       return Boolean(result);
     } catch (error) {
@@ -318,11 +401,10 @@ export class ApiSdkAdapter implements SdkAdapter {
     await this.makeRequest('POST', '/api/session/authenticate', { user_id: userId });
   }
 
-
   async openPortal(options: PortalOptions): Promise<void> {
     // Store callbacks for later use
     this.portalCallbacks = options;
-    
+
     // Get portal URL from server SDK with optional parameters
     try {
       // Build URL with query parameters
@@ -340,23 +422,27 @@ export class ApiSdkAdapter implements SdkAdapter {
       if (options.mode && options.mode !== 'system') {
         urlParams.append('mode', options.mode);
       }
-      
+
       const endpoint = `/api/session/portal-url${urlParams.toString() ? '?' + urlParams.toString() : ''}`;
       const portalResponse = await this.makeRequest<any>('GET', endpoint);
-      
+
       // The makeRequest method returns result.data || result, so portalResponse should be {portal_url: "..."}
-      const portalUrl = portalResponse.portal_url || (typeof portalResponse === 'string' ? portalResponse : '');
-      
+      const portalUrl =
+        portalResponse.portal_url || (typeof portalResponse === 'string' ? portalResponse : '');
+
       if (!portalUrl) {
         console.error('Portal response:', portalResponse);
         throw new Error('No portal URL received from server');
       }
-      
+
       this.portalUrl = portalUrl;
-      
-      // Trigger the onSuccess callback with the URL (for UI to handle)
-      options.onSuccess?.(this.portalUrl);
-      
+
+      // Trigger the onSuccess callback with the URL as userId (for UI to handle)
+      // Note: For server SDKs, the portal URL is passed as userId since we don't have userId yet
+      if (this.portalUrl) {
+        options.onSuccess?.(this.portalUrl);
+      }
+
       // Note: Server SDK flow requires UI to open iframe and show confirm button
       // The actual authentication confirmation happens in confirmPortalAuth()
     } catch (error) {
@@ -369,13 +455,13 @@ export class ApiSdkAdapter implements SdkAdapter {
     // This is the server SDK specific method to confirm authentication
     // makeRequest already extracts success.data, so response should be the data object directly
     const response = await this.makeRequest<any>('POST', '/api/session/confirm-auth');
-    
+
     console.log('🔍 confirmPortalAuth response:', response);
     console.log('🔍 confirmPortalAuth response type:', typeof response);
-    
+
     // Handle different response formats
     let userInfo: any;
-    
+
     if (typeof response === 'object' && response !== null) {
       // Response should already be the data object (makeRequest extracts success.data)
       if ('user_id' in response) {
@@ -393,9 +479,9 @@ export class ApiSdkAdapter implements SdkAdapter {
       console.error('🔍 Response is not an object:', response);
       throw new Error('Invalid response from confirm-auth endpoint');
     }
-    
+
     console.log('🔍 confirmPortalAuth userInfo:', userInfo);
-    
+
     return userInfo;
   }
 
@@ -426,7 +512,11 @@ export class ApiSdkAdapter implements SdkAdapter {
       console.error('🔍 disconnectCompany error:', error);
       // In demo environment, don't fail if connection doesn't exist or other validation errors
       const errorMsg = error instanceof Error ? error.message : String(error);
-      if (errorMsg.includes('connection_id') || errorMsg.includes('not found') || errorMsg.includes('400')) {
+      if (
+        errorMsg.includes('connection_id') ||
+        errorMsg.includes('not found') ||
+        errorMsg.includes('400')
+      ) {
         console.log('🔍 disconnectCompany failed but continuing (expected in demo)');
         return;
       }
@@ -439,14 +529,16 @@ export class ApiSdkAdapter implements SdkAdapter {
     if (options?.page) params.append('page', options.page.toString());
     if (options?.per_page) params.append('per_page', options.per_page.toString());
     if (options?.filter) params.append('filter', options.filter);
-    
+
     return await this.makeRequest('GET', `/api/broker/accounts?${params}`);
   }
 
   async getActiveAccounts(): Promise<any[]> {
     // Get all accounts and filter active ones based on server SDK response format
     const accounts = await this.getAllAccounts();
-    return Array.isArray(accounts) ? accounts.filter((account: any) => account.status === 'active' || account.active) : [];
+    return Array.isArray(accounts)
+      ? accounts.filter((account: any) => account.status === 'active' || account.active)
+      : [];
   }
 
   async getAllAccounts(): Promise<any[]> {
@@ -463,7 +555,7 @@ export class ApiSdkAdapter implements SdkAdapter {
     if (options?.page) params.append('page', options.page.toString());
     if (options?.per_page) params.append('per_page', options.per_page.toString());
     if (options?.filter) params.append('filter', options.filter);
-    
+
     return await this.makeRequest('GET', `/api/trading/orders?${params}`);
   }
 
@@ -554,7 +646,8 @@ export class ApiSdkAdapter implements SdkAdapter {
       }
       const filtered = allOrders.filter((order: any) => {
         const orderBroker = order?.broker || order?.broker_id || order?.account?.broker;
-        const matches = orderBroker === broker || orderBroker?.toLowerCase() === broker.toLowerCase();
+        const matches =
+          orderBroker === broker || orderBroker?.toLowerCase() === broker.toLowerCase();
         console.log('🔍 broker check:', { orderBroker, broker, matches });
         return matches;
       });
@@ -576,7 +669,10 @@ export class ApiSdkAdapter implements SdkAdapter {
           }
         });
       }
-      const result = await this.makeRequest<any[]>('GET', `/api/trading/orders/${orderId}/fills?${params}`);
+      const result = await this.makeRequest<any[]>(
+        'GET',
+        `/api/trading/orders/${orderId}/fills?${params}`
+      );
       return Array.isArray(result) ? result : [];
     } catch (error) {
       console.error('🔍 getOrderFills error:', error);
@@ -594,7 +690,10 @@ export class ApiSdkAdapter implements SdkAdapter {
           }
         });
       }
-      const result = await this.makeRequest<any[]>('GET', `/api/trading/orders/${orderId}/events?${params}`);
+      const result = await this.makeRequest<any[]>(
+        'GET',
+        `/api/trading/orders/${orderId}/events?${params}`
+      );
       return Array.isArray(result) ? result : [];
     } catch (error) {
       console.error('🔍 getOrderEvents error:', error);
@@ -625,7 +724,7 @@ export class ApiSdkAdapter implements SdkAdapter {
     if (options?.page) params.append('page', options.page.toString());
     if (options?.per_page) params.append('per_page', options.per_page.toString());
     if (options?.filter) params.append('filter', options.filter);
-    
+
     return await this.makeRequest('GET', `/api/trading/positions?${params}`);
   }
 
@@ -735,7 +834,10 @@ export class ApiSdkAdapter implements SdkAdapter {
           }
         });
       }
-      const result = await this.makeRequest<any[]>('GET', `/api/trading/positions/lots/${lotId}/fills?${params}`);
+      const result = await this.makeRequest<any[]>(
+        'GET',
+        `/api/trading/positions/lots/${lotId}/fills?${params}`
+      );
       return Array.isArray(result) ? result : [];
     } catch (error) {
       console.error('🔍 getPositionLotFills error:', error);
@@ -748,7 +850,7 @@ export class ApiSdkAdapter implements SdkAdapter {
     if (options?.page) params.append('page', options.page.toString());
     if (options?.per_page) params.append('per_page', options.per_page.toString());
     if (options?.filter) params.append('filter', options.filter);
-    
+
     return await this.makeRequest('GET', `/api/trading/balances?${params}`);
   }
 
@@ -786,7 +888,6 @@ export class ApiSdkAdapter implements SdkAdapter {
     });
   }
 
-
   async placeOrder(order: any): Promise<any> {
     return await this.makeRequest('POST', '/api/trading/order', order);
   }
@@ -796,7 +897,10 @@ export class ApiSdkAdapter implements SdkAdapter {
   }
 
   async modifyOrder(orderId: string, modifications: any): Promise<any> {
-    return await this.makeRequest('POST', '/api/trading/order/modify', { order_id: orderId, modifications });
+    return await this.makeRequest('POST', '/api/trading/order/modify', {
+      order_id: orderId,
+      modifications,
+    });
   }
 
   // Convenience order methods - these would be implemented on client, so we delegate to placeOrder with proper parameters
@@ -805,27 +909,37 @@ export class ApiSdkAdapter implements SdkAdapter {
       symbol,
       quantity,
       side,
-      order_type: 'market'
+      order_type: 'market',
     });
   }
 
-  async placeStockLimitOrder(symbol: string, quantity: number, side: string, price: number): Promise<any> {
+  async placeStockLimitOrder(
+    symbol: string,
+    quantity: number,
+    side: string,
+    price: number
+  ): Promise<any> {
     return await this.placeOrder({
       symbol,
       quantity,
       side,
       order_type: 'limit',
-      price
+      price,
     });
   }
 
-  async placeStockStopOrder(symbol: string, quantity: number, side: string, stopPrice: number): Promise<any> {
+  async placeStockStopOrder(
+    symbol: string,
+    quantity: number,
+    side: string,
+    stopPrice: number
+  ): Promise<any> {
     return await this.placeOrder({
       symbol,
       quantity,
       side,
       order_type: 'stop',
-      stop_price: stopPrice
+      stop_price: stopPrice,
     });
   }
 
@@ -834,17 +948,22 @@ export class ApiSdkAdapter implements SdkAdapter {
       symbol,
       quantity,
       side,
-      order_type: 'market'
+      order_type: 'market',
     });
   }
 
-  async placeCryptoLimitOrder(symbol: string, quantity: number, side: string, price: number): Promise<any> {
+  async placeCryptoLimitOrder(
+    symbol: string,
+    quantity: number,
+    side: string,
+    price: number
+  ): Promise<any> {
     return await this.placeOrder({
       symbol,
       quantity,
       side,
       order_type: 'limit',
-      price
+      price,
     });
   }
 
@@ -853,17 +972,22 @@ export class ApiSdkAdapter implements SdkAdapter {
       symbol,
       quantity,
       side,
-      order_type: 'market'
+      order_type: 'market',
     });
   }
 
-  async placeOptionsLimitOrder(symbol: string, quantity: number, side: string, price: number): Promise<any> {
+  async placeOptionsLimitOrder(
+    symbol: string,
+    quantity: number,
+    side: string,
+    price: number
+  ): Promise<any> {
     return await this.placeOrder({
       symbol,
       quantity,
       side,
       order_type: 'limit',
-      price
+      price,
     });
   }
 
@@ -872,17 +996,22 @@ export class ApiSdkAdapter implements SdkAdapter {
       symbol,
       quantity,
       side,
-      order_type: 'market'
+      order_type: 'market',
     });
   }
 
-  async placeFuturesLimitOrder(symbol: string, quantity: number, side: string, price: number): Promise<any> {
+  async placeFuturesLimitOrder(
+    symbol: string,
+    quantity: number,
+    side: string,
+    price: number
+  ): Promise<any> {
     return await this.placeOrder({
       symbol,
       quantity,
       side,
       order_type: 'limit',
-      price
+      price,
     });
   }
 
@@ -909,7 +1038,11 @@ export class ApiSdkAdapter implements SdkAdapter {
 }
 
 // Factory function to create the appropriate adapter
-export function createSdkAdapter(sdkType: SdkType, client?: FinaticConnect, baseUrl?: string): SdkAdapter {
+export function createSdkAdapter(
+  sdkType: SdkType,
+  client?: FinaticConnect,
+  baseUrl?: string
+): SdkAdapter {
   switch (sdkType) {
     case 'client':
       if (!client) {
