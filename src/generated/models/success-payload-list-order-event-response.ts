@@ -19,10 +19,7 @@ import type { OrderEventResponse } from './order-event-response';
 
 export interface SuccessPayloadListOrderEventResponse {
     '_id'?: string;
-    /**
-     * The response data
-     */
-    'data': Array<OrderEventResponse>;
+    'data'?: Array<OrderEventResponse> | null;
     'meta'?: { [key: string]: any; } | null;
 }
 

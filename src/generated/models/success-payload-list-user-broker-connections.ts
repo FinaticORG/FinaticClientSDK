@@ -19,10 +19,7 @@ import type { UserBrokerConnections } from './user-broker-connections';
 
 export interface SuccessPayloadListUserBrokerConnections {
     '_id'?: string;
-    /**
-     * The response data
-     */
-    'data': Array<UserBrokerConnections>;
+    'data'?: Array<UserBrokerConnections> | null;
     'meta'?: { [key: string]: any; } | null;
 }
 

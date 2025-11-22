@@ -24,6 +24,16 @@ import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError
 // @ts-ignore
 import type { AccountStatus } from '../models';
 // @ts-ignore
+import type { BrokerDataAccountTypeEnum } from '../models';
+// @ts-ignore
+import type { BrokerDataAssetTypeEnum } from '../models';
+// @ts-ignore
+import type { BrokerDataOrderSideEnum } from '../models';
+// @ts-ignore
+import type { BrokerDataOrderStatusEnum } from '../models';
+// @ts-ignore
+import type { BrokerDataPositionStatusEnum } from '../models';
+// @ts-ignore
 import type { FinaticError } from '../models';
 // @ts-ignore
 import type { FinaticResponseDisconnectActionResult } from '../models';
@@ -49,16 +59,6 @@ import type { FinaticResponseListPositionLotResponse } from '../models';
 import type { FinaticResponseListPositionResponse } from '../models';
 // @ts-ignore
 import type { FinaticResponseListUserBrokerConnections } from '../models';
-// @ts-ignore
-import type { PublicAccountTypeEnum } from '../models';
-// @ts-ignore
-import type { PublicAssetTypeEnum } from '../models';
-// @ts-ignore
-import type { PublicOrderSideEnum } from '../models';
-// @ts-ignore
-import type { PublicOrderStatusEnum } from '../models';
-// @ts-ignore
-import type { PublicPositionStatusEnum } from '../models';
 /**
  * BrokersApi - axios parameter creator
  */
@@ -103,7 +103,7 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @summary Get Accounts
          * @param {string | null} [brokerId] Filter by broker ID
          * @param {string | null} [connectionId] Filter by connection ID
-         * @param {PublicAccountTypeEnum | null} [accountType] Filter by account type (e.g., \&#39;margin\&#39;, \&#39;cash\&#39;, \&#39;crypto_wallet\&#39;, \&#39;live\&#39;, \&#39;sim\&#39;)
+         * @param {BrokerDataAccountTypeEnum | null} [accountType] Filter by account type (e.g., \&#39;margin\&#39;, \&#39;cash\&#39;, \&#39;crypto_wallet\&#39;, \&#39;live\&#39;, \&#39;sim\&#39;)
          * @param {AccountStatus | null} [status] Filter by account status (e.g., \&#39;active\&#39;, \&#39;inactive\&#39;)
          * @param {string | null} [currency] Filter by currency (e.g., \&#39;USD\&#39;, \&#39;EUR\&#39;)
          * @param {number} [limit] Maximum number of accounts to return
@@ -112,7 +112,7 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAccountsApiV1BrokersDataAccountsGet: async (brokerId?: string | null, connectionId?: string | null, accountType?: PublicAccountTypeEnum | null, status?: AccountStatus | null, currency?: string | null, limit?: number, offset?: number, withMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAccountsApiV1BrokersDataAccountsGet: async (brokerId?: string | null, connectionId?: string | null, accountType?: BrokerDataAccountTypeEnum | null, status?: AccountStatus | null, currency?: string | null, limit?: number, offset?: number, withMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/brokers/data/accounts`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -446,9 +446,9 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string | null} [connectionId] Filter by connection ID
          * @param {string | null} [accountId] Filter by broker provided account ID
          * @param {string | null} [symbol] Filter by symbol
-         * @param {PublicOrderStatusEnum | null} [orderStatus] Filter by order status (e.g., \&#39;filled\&#39;, \&#39;pending_new\&#39;, \&#39;cancelled\&#39;)
-         * @param {PublicOrderSideEnum | null} [side] Filter by order side (e.g., \&#39;buy\&#39;, \&#39;sell\&#39;)
-         * @param {PublicAssetTypeEnum | null} [assetType] Filter by asset type (e.g., \&#39;stock\&#39;, \&#39;option\&#39;, \&#39;crypto\&#39;, \&#39;future\&#39;)
+         * @param {BrokerDataOrderStatusEnum | null} [orderStatus] Filter by order status (e.g., \&#39;filled\&#39;, \&#39;pending_new\&#39;, \&#39;cancelled\&#39;)
+         * @param {BrokerDataOrderSideEnum | null} [side] Filter by order side (e.g., \&#39;buy\&#39;, \&#39;sell\&#39;)
+         * @param {BrokerDataAssetTypeEnum | null} [assetType] Filter by asset type (e.g., \&#39;stock\&#39;, \&#39;option\&#39;, \&#39;crypto\&#39;, \&#39;future\&#39;)
          * @param {number} [limit] Maximum number of orders to return
          * @param {number} [offset] Number of orders to skip for pagination
          * @param {string | null} [createdAfter] Filter orders created after this timestamp
@@ -457,7 +457,7 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrdersApiV1BrokersDataOrdersGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, orderStatus?: PublicOrderStatusEnum | null, side?: PublicOrderSideEnum | null, assetType?: PublicAssetTypeEnum | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, withMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getOrdersApiV1BrokersDataOrdersGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, orderStatus?: BrokerDataOrderStatusEnum | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, withMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/brokers/data/orders`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -654,9 +654,9 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string | null} [connectionId] Filter by connection ID
          * @param {string | null} [accountId] Filter by broker provided account ID
          * @param {string | null} [symbol] Filter by symbol
-         * @param {PublicOrderSideEnum | null} [side] Filter by position side (e.g., \&#39;long\&#39;, \&#39;short\&#39;)
-         * @param {PublicAssetTypeEnum | null} [assetType] Filter by asset type (e.g., \&#39;stock\&#39;, \&#39;option\&#39;, \&#39;crypto\&#39;, \&#39;future\&#39;)
-         * @param {PublicPositionStatusEnum | null} [positionStatus] Filter by position status: \&#39;open\&#39; (quantity &gt; 0) or \&#39;closed\&#39; (quantity &#x3D; 0)
+         * @param {BrokerDataOrderSideEnum | null} [side] Filter by position side (e.g., \&#39;long\&#39;, \&#39;short\&#39;)
+         * @param {BrokerDataAssetTypeEnum | null} [assetType] Filter by asset type (e.g., \&#39;stock\&#39;, \&#39;option\&#39;, \&#39;crypto\&#39;, \&#39;future\&#39;)
+         * @param {BrokerDataPositionStatusEnum | null} [positionStatus] Filter by position status: \&#39;open\&#39; (quantity &gt; 0) or \&#39;closed\&#39; (quantity &#x3D; 0)
          * @param {number} [limit] Maximum number of positions to return
          * @param {number} [offset] Number of positions to skip for pagination
          * @param {string | null} [updatedAfter] Filter positions updated after this timestamp
@@ -665,7 +665,7 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPositionsApiV1BrokersDataPositionsGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, side?: PublicOrderSideEnum | null, assetType?: PublicAssetTypeEnum | null, positionStatus?: PublicPositionStatusEnum | null, limit?: number, offset?: number, updatedAfter?: string | null, updatedBefore?: string | null, withMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getPositionsApiV1BrokersDataPositionsGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, positionStatus?: BrokerDataPositionStatusEnum | null, limit?: number, offset?: number, updatedAfter?: string | null, updatedBefore?: string | null, withMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/brokers/data/positions`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -798,7 +798,7 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @summary Get Accounts
          * @param {string | null} [brokerId] Filter by broker ID
          * @param {string | null} [connectionId] Filter by connection ID
-         * @param {PublicAccountTypeEnum | null} [accountType] Filter by account type (e.g., \&#39;margin\&#39;, \&#39;cash\&#39;, \&#39;crypto_wallet\&#39;, \&#39;live\&#39;, \&#39;sim\&#39;)
+         * @param {BrokerDataAccountTypeEnum | null} [accountType] Filter by account type (e.g., \&#39;margin\&#39;, \&#39;cash\&#39;, \&#39;crypto_wallet\&#39;, \&#39;live\&#39;, \&#39;sim\&#39;)
          * @param {AccountStatus | null} [status] Filter by account status (e.g., \&#39;active\&#39;, \&#39;inactive\&#39;)
          * @param {string | null} [currency] Filter by currency (e.g., \&#39;USD\&#39;, \&#39;EUR\&#39;)
          * @param {number} [limit] Maximum number of accounts to return
@@ -807,7 +807,7 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAccountsApiV1BrokersDataAccountsGet(brokerId?: string | null, connectionId?: string | null, accountType?: PublicAccountTypeEnum | null, status?: AccountStatus | null, currency?: string | null, limit?: number, offset?: number, withMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListAccounts>> {
+        async getAccountsApiV1BrokersDataAccountsGet(brokerId?: string | null, connectionId?: string | null, accountType?: BrokerDataAccountTypeEnum | null, status?: AccountStatus | null, currency?: string | null, limit?: number, offset?: number, withMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListAccounts>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getAccountsApiV1BrokersDataAccountsGet(brokerId, connectionId, accountType, status, currency, limit, offset, withMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.getAccountsApiV1BrokersDataAccountsGet']?.[localVarOperationServerIndex]?.url;
@@ -903,9 +903,9 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {string | null} [connectionId] Filter by connection ID
          * @param {string | null} [accountId] Filter by broker provided account ID
          * @param {string | null} [symbol] Filter by symbol
-         * @param {PublicOrderStatusEnum | null} [orderStatus] Filter by order status (e.g., \&#39;filled\&#39;, \&#39;pending_new\&#39;, \&#39;cancelled\&#39;)
-         * @param {PublicOrderSideEnum | null} [side] Filter by order side (e.g., \&#39;buy\&#39;, \&#39;sell\&#39;)
-         * @param {PublicAssetTypeEnum | null} [assetType] Filter by asset type (e.g., \&#39;stock\&#39;, \&#39;option\&#39;, \&#39;crypto\&#39;, \&#39;future\&#39;)
+         * @param {BrokerDataOrderStatusEnum | null} [orderStatus] Filter by order status (e.g., \&#39;filled\&#39;, \&#39;pending_new\&#39;, \&#39;cancelled\&#39;)
+         * @param {BrokerDataOrderSideEnum | null} [side] Filter by order side (e.g., \&#39;buy\&#39;, \&#39;sell\&#39;)
+         * @param {BrokerDataAssetTypeEnum | null} [assetType] Filter by asset type (e.g., \&#39;stock\&#39;, \&#39;option\&#39;, \&#39;crypto\&#39;, \&#39;future\&#39;)
          * @param {number} [limit] Maximum number of orders to return
          * @param {number} [offset] Number of orders to skip for pagination
          * @param {string | null} [createdAfter] Filter orders created after this timestamp
@@ -914,7 +914,7 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getOrdersApiV1BrokersDataOrdersGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, orderStatus?: PublicOrderStatusEnum | null, side?: PublicOrderSideEnum | null, assetType?: PublicAssetTypeEnum | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, withMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListOrderResponse>> {
+        async getOrdersApiV1BrokersDataOrdersGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, orderStatus?: BrokerDataOrderStatusEnum | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, withMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListOrderResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getOrdersApiV1BrokersDataOrdersGet(brokerId, connectionId, accountId, symbol, orderStatus, side, assetType, limit, offset, createdAfter, createdBefore, withMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.getOrdersApiV1BrokersDataOrdersGet']?.[localVarOperationServerIndex]?.url;
@@ -962,9 +962,9 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {string | null} [connectionId] Filter by connection ID
          * @param {string | null} [accountId] Filter by broker provided account ID
          * @param {string | null} [symbol] Filter by symbol
-         * @param {PublicOrderSideEnum | null} [side] Filter by position side (e.g., \&#39;long\&#39;, \&#39;short\&#39;)
-         * @param {PublicAssetTypeEnum | null} [assetType] Filter by asset type (e.g., \&#39;stock\&#39;, \&#39;option\&#39;, \&#39;crypto\&#39;, \&#39;future\&#39;)
-         * @param {PublicPositionStatusEnum | null} [positionStatus] Filter by position status: \&#39;open\&#39; (quantity &gt; 0) or \&#39;closed\&#39; (quantity &#x3D; 0)
+         * @param {BrokerDataOrderSideEnum | null} [side] Filter by position side (e.g., \&#39;long\&#39;, \&#39;short\&#39;)
+         * @param {BrokerDataAssetTypeEnum | null} [assetType] Filter by asset type (e.g., \&#39;stock\&#39;, \&#39;option\&#39;, \&#39;crypto\&#39;, \&#39;future\&#39;)
+         * @param {BrokerDataPositionStatusEnum | null} [positionStatus] Filter by position status: \&#39;open\&#39; (quantity &gt; 0) or \&#39;closed\&#39; (quantity &#x3D; 0)
          * @param {number} [limit] Maximum number of positions to return
          * @param {number} [offset] Number of positions to skip for pagination
          * @param {string | null} [updatedAfter] Filter positions updated after this timestamp
@@ -973,7 +973,7 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPositionsApiV1BrokersDataPositionsGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, side?: PublicOrderSideEnum | null, assetType?: PublicAssetTypeEnum | null, positionStatus?: PublicPositionStatusEnum | null, limit?: number, offset?: number, updatedAfter?: string | null, updatedBefore?: string | null, withMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListPositionResponse>> {
+        async getPositionsApiV1BrokersDataPositionsGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, positionStatus?: BrokerDataPositionStatusEnum | null, limit?: number, offset?: number, updatedAfter?: string | null, updatedBefore?: string | null, withMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListPositionResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getPositionsApiV1BrokersDataPositionsGet(brokerId, connectionId, accountId, symbol, side, assetType, positionStatus, limit, offset, updatedAfter, updatedBefore, withMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.getPositionsApiV1BrokersDataPositionsGet']?.[localVarOperationServerIndex]?.url;
@@ -1260,7 +1260,7 @@ export interface BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest {
     /**
      * Filter by account type (e.g., \&#39;margin\&#39;, \&#39;cash\&#39;, \&#39;crypto_wallet\&#39;, \&#39;live\&#39;, \&#39;sim\&#39;)
      */
-    readonly accountType?: PublicAccountTypeEnum | null
+    readonly accountType?: BrokerDataAccountTypeEnum | null
 
     /**
      * Filter by account status (e.g., \&#39;active\&#39;, \&#39;inactive\&#39;)
@@ -1450,17 +1450,17 @@ export interface BrokersApiGetOrdersApiV1BrokersDataOrdersGetRequest {
     /**
      * Filter by order status (e.g., \&#39;filled\&#39;, \&#39;pending_new\&#39;, \&#39;cancelled\&#39;)
      */
-    readonly orderStatus?: PublicOrderStatusEnum | null
+    readonly orderStatus?: BrokerDataOrderStatusEnum | null
 
     /**
      * Filter by order side (e.g., \&#39;buy\&#39;, \&#39;sell\&#39;)
      */
-    readonly side?: PublicOrderSideEnum | null
+    readonly side?: BrokerDataOrderSideEnum | null
 
     /**
      * Filter by asset type (e.g., \&#39;stock\&#39;, \&#39;option\&#39;, \&#39;crypto\&#39;, \&#39;future\&#39;)
      */
-    readonly assetType?: PublicAssetTypeEnum | null
+    readonly assetType?: BrokerDataAssetTypeEnum | null
 
     /**
      * Maximum number of orders to return
@@ -1580,17 +1580,17 @@ export interface BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest {
     /**
      * Filter by position side (e.g., \&#39;long\&#39;, \&#39;short\&#39;)
      */
-    readonly side?: PublicOrderSideEnum | null
+    readonly side?: BrokerDataOrderSideEnum | null
 
     /**
      * Filter by asset type (e.g., \&#39;stock\&#39;, \&#39;option\&#39;, \&#39;crypto\&#39;, \&#39;future\&#39;)
      */
-    readonly assetType?: PublicAssetTypeEnum | null
+    readonly assetType?: BrokerDataAssetTypeEnum | null
 
     /**
      * Filter by position status: \&#39;open\&#39; (quantity &gt; 0) or \&#39;closed\&#39; (quantity &#x3D; 0)
      */
-    readonly positionStatus?: PublicPositionStatusEnum | null
+    readonly positionStatus?: BrokerDataPositionStatusEnum | null
 
     /**
      * Maximum number of positions to return

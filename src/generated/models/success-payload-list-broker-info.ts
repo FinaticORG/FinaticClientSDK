@@ -19,10 +19,7 @@ import type { BrokerInfo } from './broker-info';
 
 export interface SuccessPayloadListBrokerInfo {
     '_id'?: string;
-    /**
-     * The response data
-     */
-    'data': Array<BrokerInfo>;
+    'data'?: Array<BrokerInfo> | null;
     'meta'?: { [key: string]: any; } | null;
 }
 

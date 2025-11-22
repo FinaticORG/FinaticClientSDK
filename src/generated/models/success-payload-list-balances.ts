@@ -19,10 +19,7 @@ import type { Balances } from './balances';
 
 export interface SuccessPayloadListBalances {
     '_id'?: string;
-    /**
-     * The response data
-     */
-    'data': Array<Balances>;
+    'data'?: Array<Balances> | null;
     'meta'?: { [key: string]: any; } | null;
 }
 

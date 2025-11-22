@@ -15,7 +15,7 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { CompanyCompanySubscriptionStatusEnum } from './company-company-subscription-status-enum';
+import type { PublicSubscriptionStatusEnum } from './public-subscription-status-enum';
 
 /**
  * Schema for company response data.
@@ -23,16 +23,16 @@ import type { CompanyCompanySubscriptionStatusEnum } from './company-company-sub
 export interface CompanyResponse {
     'name': string;
     'email'?: string | null;
-    'use_case_features'?: Array<string>;
+    'use_case_features'?: Array<string> | null;
     'referral_source'?: string | null;
-    'is_active'?: boolean;
+    'is_active'?: boolean | null;
     'id': string;
-    'subscription_status'?: CompanyCompanySubscriptionStatusEnum | null;
+    'subscription_status'?: PublicSubscriptionStatusEnum | null;
     'total_connections'?: number | null;
     'total_users'?: number | null;
     'billing_status'?: string | null;
-    'created_at': string;
-    'updated_at': string;
+    'created_at'?: string | null;
+    'updated_at'?: string | null;
     'trading_enabled'?: boolean | null;
     'onboarding_step'?: number | null;
     'onboarding_completed'?: boolean | null;

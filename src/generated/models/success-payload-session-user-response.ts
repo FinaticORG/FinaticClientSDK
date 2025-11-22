@@ -19,10 +19,7 @@ import type { SessionUserResponse } from './session-user-response';
 
 export interface SuccessPayloadSessionUserResponse {
     '_id'?: string;
-    /**
-     * The response data
-     */
-    'data': SessionUserResponse;
+    'data'?: SessionUserResponse | null;
     'meta'?: { [key: string]: any; } | null;
 }
 

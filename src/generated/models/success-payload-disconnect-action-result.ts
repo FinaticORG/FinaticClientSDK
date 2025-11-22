@@ -19,10 +19,7 @@ import type { DisconnectActionResult } from './disconnect-action-result';
 
 export interface SuccessPayloadDisconnectActionResult {
     '_id'?: string;
-    /**
-     * The response data
-     */
-    'data': DisconnectActionResult;
+    'data'?: DisconnectActionResult | null;
     'meta'?: { [key: string]: any; } | null;
 }
 

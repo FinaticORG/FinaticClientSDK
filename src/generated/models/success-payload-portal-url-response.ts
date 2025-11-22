@@ -19,10 +19,7 @@ import type { PortalUrlResponse } from './portal-url-response';
 
 export interface SuccessPayloadPortalUrlResponse {
     '_id'?: string;
-    /**
-     * The response data
-     */
-    'data': PortalUrlResponse;
+    'data'?: PortalUrlResponse | null;
     'meta'?: { [key: string]: any; } | null;
 }
 

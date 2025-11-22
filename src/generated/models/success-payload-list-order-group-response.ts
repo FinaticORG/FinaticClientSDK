@@ -19,10 +19,7 @@ import type { OrderGroupResponse } from './order-group-response';
 
 export interface SuccessPayloadListOrderGroupResponse {
     '_id'?: string;
-    /**
-     * The response data
-     */
-    'data': Array<OrderGroupResponse>;
+    'data'?: Array<OrderGroupResponse> | null;
     'meta'?: { [key: string]: any; } | null;
 }
 

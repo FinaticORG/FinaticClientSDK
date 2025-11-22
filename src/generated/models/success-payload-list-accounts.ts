@@ -19,10 +19,7 @@ import type { Accounts } from './accounts';
 
 export interface SuccessPayloadListAccounts {
     '_id'?: string;
-    /**
-     * The response data
-     */
-    'data': Array<Accounts>;
+    'data'?: Array<Accounts> | null;
     'meta'?: { [key: string]: any; } | null;
 }
 

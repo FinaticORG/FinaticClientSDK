@@ -19,10 +19,7 @@ import type { PositionLotFillResponse } from './position-lot-fill-response';
 
 export interface SuccessPayloadListPositionLotFillResponse {
     '_id'?: string;
-    /**
-     * The response data
-     */
-    'data': Array<PositionLotFillResponse>;
+    'data'?: Array<PositionLotFillResponse> | null;
     'meta'?: { [key: string]: any; } | null;
 }
 

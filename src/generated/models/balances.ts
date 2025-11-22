@@ -25,7 +25,7 @@ export interface Balances {
     'is_end_of_day_snapshot'?: boolean | null;
     'maintenance_margin'?: number | null;
     'net_liquidation_value'?: number | null;
-    'raw_payload'?:  | null;
+    'raw_payload'?: { [key: string]: any; } | null;
     'total_cash_value'?: number | null;
     'total_realized_pnl'?: number | null;
     'updated_at': string | null;

@@ -19,10 +19,7 @@ import type { OrderFillResponse } from './order-fill-response';
 
 export interface SuccessPayloadListOrderFillResponse {
     '_id'?: string;
-    /**
-     * The response data
-     */
-    'data': Array<OrderFillResponse>;
+    'data'?: Array<OrderFillResponse> | null;
     'meta'?: { [key: string]: any; } | null;
 }
 

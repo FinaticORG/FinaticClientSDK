@@ -19,10 +19,7 @@ import type { PositionResponse } from './position-response';
 
 export interface SuccessPayloadListPositionResponse {
     '_id'?: string;
-    /**
-     * The response data
-     */
-    'data': Array<PositionResponse>;
+    'data'?: Array<PositionResponse> | null;
     'meta'?: { [key: string]: any; } | null;
 }
 

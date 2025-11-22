@@ -13,13 +13,16 @@
  */
 
 
-// May contain unused imports in some cases
-// @ts-ignore
-import type { PositionLotResponse } from './position-lot-response';
 
-export interface SuccessPayloadListPositionLotResponse {
-    '_id'?: string;
-    'data'?: Array<PositionLotResponse> | null;
-    'meta'?: { [key: string]: any; } | null;
+
+export enum BrokerDataConnectionStatusEnum {
+    Active = 'active',
+    NeedsReauth = 'needs_reauth',
+    Revoked = 'revoked',
+    PendingInitialAuth = 'pending_initial_auth',
+    Failed = 'failed',
+    RateLimited = 'rate_limited'
 }
+
+
 

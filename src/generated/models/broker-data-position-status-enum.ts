@@ -13,13 +13,13 @@
  */
 
 
-// May contain unused imports in some cases
-// @ts-ignore
-import type { PositionLotResponse } from './position-lot-response';
 
-export interface SuccessPayloadListPositionLotResponse {
-    '_id'?: string;
-    'data'?: Array<PositionLotResponse> | null;
-    'meta'?: { [key: string]: any; } | null;
+
+export enum BrokerDataPositionStatusEnum {
+    Active = 'active',
+    Inactive = 'inactive',
+    Closed = 'closed'
 }
+
+
 

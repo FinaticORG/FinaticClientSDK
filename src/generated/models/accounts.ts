@@ -15,7 +15,7 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { PublicAccountTypeEnum } from './public-account-type-enum';
+import type { BrokerDataAccountTypeEnum } from './broker-data-account-type-enum';
 
 export interface Accounts {
     'id'?: string;
@@ -23,11 +23,11 @@ export interface Accounts {
     'account_first_trade_at'?: string | null;
     'account_name'?: string | null;
     'account_number'?: string | null;
-    'account_type'?: PublicAccountTypeEnum | null;
+    'account_type'?: BrokerDataAccountTypeEnum | null;
     'account_updated_at'?: string | null;
     'balances_synced_at'?: string | null;
     'broker_provided_account_id': string;
-    'connection_metadata'?:  | null;
+    'connection_metadata'?: { [key: string]: any; } | null;
     'created_at': string | null;
     'currency'?: string | null;
     'is_simulation_account'?: boolean | null;

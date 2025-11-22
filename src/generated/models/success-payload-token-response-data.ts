@@ -19,10 +19,7 @@ import type { TokenResponseData } from './token-response-data';
 
 export interface SuccessPayloadTokenResponseData {
     '_id'?: string;
-    /**
-     * The response data
-     */
-    'data': TokenResponseData;
+    'data'?: TokenResponseData | null;
     'meta'?: { [key: string]: any; } | null;
 }
 

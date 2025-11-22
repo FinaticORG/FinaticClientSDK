@@ -16,11 +16,11 @@ import { getCache, generateCacheKey } from '../utils/cache';
 import { applyRequestInterceptors, applyResponseInterceptors, applyErrorInterceptors } from '../utils/interceptors';
 import { unwrapAxiosResponse } from '../utils/response-utils';
 import { coerceEnumValue } from '../utils/enum-coercion';
-import { PublicAccountTypeEnum } from '../models';
-import { PublicAssetTypeEnum } from '../models';
-import { PublicOrderSideEnum } from '../models';
-import { PublicOrderStatusEnum } from '../models';
-import { PublicPositionStatusEnum } from '../models';
+import { BrokerDataAccountTypeEnum } from '../models';
+import { BrokerDataAssetTypeEnum } from '../models';
+import { BrokerDataOrderSideEnum } from '../models';
+import { BrokerDataOrderStatusEnum } from '../models';
+import { BrokerDataPositionStatusEnum } from '../models';
 
 import type { AccountStatus } from '../models';
 import type { Accounts } from '../models';
@@ -73,9 +73,9 @@ export interface GetOrdersParams {
   connectionId?: string;
   accountId?: string;
   symbol?: string;
-  orderStatus?: PublicOrderStatusEnum;
-  side?: PublicOrderSideEnum;
-  assetType?: PublicAssetTypeEnum;
+  orderStatus?: BrokerDataOrderStatusEnum;
+  side?: BrokerDataOrderSideEnum;
+  assetType?: BrokerDataAssetTypeEnum;
   limit?: number;
   offset?: number;
   createdAfter?: string;
@@ -88,9 +88,9 @@ export interface GetPositionsParams {
   connectionId?: string;
   accountId?: string;
   symbol?: string;
-  side?: PublicOrderSideEnum;
-  assetType?: PublicAssetTypeEnum;
-  positionStatus?: PublicPositionStatusEnum;
+  side?: BrokerDataOrderSideEnum;
+  assetType?: BrokerDataAssetTypeEnum;
+  positionStatus?: BrokerDataPositionStatusEnum;
   limit?: number;
   offset?: number;
   updatedAfter?: string;
@@ -113,7 +113,7 @@ export interface GetBalancesParams {
 export interface GetAccountsParams {
   brokerId?: string;
   connectionId?: string;
-  accountType?: PublicAccountTypeEnum;
+  accountType?: BrokerDataAccountTypeEnum;
   status?: AccountStatus;
   currency?: string;
   limit?: number;
@@ -713,9 +713,9 @@ export class BrokersWrapper {
    * @param connectionId {string} (optional) 
    * @param accountId {string} (optional) 
    * @param symbol {string} (optional) 
-   * @param orderStatus {PublicOrderStatusEnum} (optional) 
-   * @param side {PublicOrderSideEnum} (optional) 
-   * @param assetType {PublicAssetTypeEnum} (optional) 
+   * @param orderStatus {BrokerDataOrderStatusEnum} (optional) 
+   * @param side {BrokerDataOrderSideEnum} (optional) 
+   * @param assetType {BrokerDataAssetTypeEnum} (optional) 
    * @param limit {number} (optional) 
    * @param offset {number} (optional) 
    * @param createdAfter {string} (optional) 
@@ -752,16 +752,16 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getOrders(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, orderStatus?: PublicOrderStatusEnum, side?: PublicOrderSideEnum, assetType?: PublicAssetTypeEnum, limit?: number, offset?: number, createdAfter?: string, createdBefore?: string, withMetadata?: boolean): Promise<FinaticResponse<OrderResponse[]>> {
+  async getOrders(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, orderStatus?: BrokerDataOrderStatusEnum, side?: BrokerDataOrderSideEnum, assetType?: BrokerDataAssetTypeEnum, limit?: number, offset?: number, createdAfter?: string, createdBefore?: string, withMetadata?: boolean): Promise<FinaticResponse<OrderResponse[]>> {
     // Construct params object from individual parameters
     const params: GetOrdersParams = {
     brokerId: brokerId,
     connectionId: connectionId,
     accountId: accountId,
     symbol: symbol,
-    orderStatus: orderStatus !== undefined ? coerceEnumValue(orderStatus, PublicOrderStatusEnum, 'orderStatus') : undefined,
-    side: side !== undefined ? coerceEnumValue(side, PublicOrderSideEnum, 'side') : undefined,
-    assetType: assetType !== undefined ? coerceEnumValue(assetType, PublicAssetTypeEnum, 'assetType') : undefined,
+    orderStatus: orderStatus !== undefined ? coerceEnumValue(orderStatus, BrokerDataOrderStatusEnum, 'orderStatus') : undefined,
+    side: side !== undefined ? coerceEnumValue(side, BrokerDataOrderSideEnum, 'side') : undefined,
+    assetType: assetType !== undefined ? coerceEnumValue(assetType, BrokerDataAssetTypeEnum, 'assetType') : undefined,
     limit: limit,
     offset: offset,
     createdAfter: createdAfter,
@@ -916,9 +916,9 @@ export class BrokersWrapper {
    * @param connectionId {string} (optional) 
    * @param accountId {string} (optional) 
    * @param symbol {string} (optional) 
-   * @param side {PublicOrderSideEnum} (optional) 
-   * @param assetType {PublicAssetTypeEnum} (optional) 
-   * @param positionStatus {PublicPositionStatusEnum} (optional) 
+   * @param side {BrokerDataOrderSideEnum} (optional) 
+   * @param assetType {BrokerDataAssetTypeEnum} (optional) 
+   * @param positionStatus {BrokerDataPositionStatusEnum} (optional) 
    * @param limit {number} (optional) 
    * @param offset {number} (optional) 
    * @param updatedAfter {string} (optional) 
@@ -955,16 +955,16 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getPositions(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, side?: PublicOrderSideEnum, assetType?: PublicAssetTypeEnum, positionStatus?: PublicPositionStatusEnum, limit?: number, offset?: number, updatedAfter?: string, updatedBefore?: string, withMetadata?: boolean): Promise<FinaticResponse<PositionResponse[]>> {
+  async getPositions(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, side?: BrokerDataOrderSideEnum, assetType?: BrokerDataAssetTypeEnum, positionStatus?: BrokerDataPositionStatusEnum, limit?: number, offset?: number, updatedAfter?: string, updatedBefore?: string, withMetadata?: boolean): Promise<FinaticResponse<PositionResponse[]>> {
     // Construct params object from individual parameters
     const params: GetPositionsParams = {
     brokerId: brokerId,
     connectionId: connectionId,
     accountId: accountId,
     symbol: symbol,
-    side: side !== undefined ? coerceEnumValue(side, PublicOrderSideEnum, 'side') : undefined,
-    assetType: assetType !== undefined ? coerceEnumValue(assetType, PublicAssetTypeEnum, 'assetType') : undefined,
-    positionStatus: positionStatus !== undefined ? coerceEnumValue(positionStatus, PublicPositionStatusEnum, 'positionStatus') : undefined,
+    side: side !== undefined ? coerceEnumValue(side, BrokerDataOrderSideEnum, 'side') : undefined,
+    assetType: assetType !== undefined ? coerceEnumValue(assetType, BrokerDataAssetTypeEnum, 'assetType') : undefined,
+    positionStatus: positionStatus !== undefined ? coerceEnumValue(positionStatus, BrokerDataPositionStatusEnum, 'positionStatus') : undefined,
     limit: limit,
     offset: offset,
     updatedAfter: updatedAfter,
@@ -1314,7 +1314,7 @@ export class BrokersWrapper {
    * Returns accounts from connections the company has read access to.
    * @param brokerId {string} (optional) 
    * @param connectionId {string} (optional) 
-   * @param accountType {PublicAccountTypeEnum} (optional) 
+   * @param accountType {BrokerDataAccountTypeEnum} (optional) 
    * @param status {AccountStatus} (optional) 
    * @param currency {string} (optional) 
    * @param limit {number} (optional) 
@@ -1351,12 +1351,12 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getAccounts(brokerId?: string, connectionId?: string, accountType?: PublicAccountTypeEnum, status?: AccountStatus, currency?: string, limit?: number, offset?: number, withMetadata?: boolean): Promise<FinaticResponse<Accounts[]>> {
+  async getAccounts(brokerId?: string, connectionId?: string, accountType?: BrokerDataAccountTypeEnum, status?: AccountStatus, currency?: string, limit?: number, offset?: number, withMetadata?: boolean): Promise<FinaticResponse<Accounts[]>> {
     // Construct params object from individual parameters
     const params: GetAccountsParams = {
     brokerId: brokerId,
     connectionId: connectionId,
-    accountType: accountType !== undefined ? coerceEnumValue(accountType, PublicAccountTypeEnum, 'accountType') : undefined,
+    accountType: accountType !== undefined ? coerceEnumValue(accountType, BrokerDataAccountTypeEnum, 'accountType') : undefined,
     status: status,
     currency: currency,
     limit: limit,

@@ -15,20 +15,19 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { PublicConnectionStatusEnum } from './public-connection-status-enum';
+import type { BrokerDataConnectionStatusEnum } from './broker-data-connection-status-enum';
 
 export interface UserBrokerConnections {
     'id'?: string;
     'broker_id': string;
     'circuit_open'?: boolean | null;
     'circuit_open_until'?: string | null;
-    'company_access'?:  | null;
-    'connection_metadata'?:  | null;
+    'connection_metadata'?: { [key: string]: any; } | null;
     'consecutive_failures'?: number | null;
     'created_at': string | null;
     'error_message'?: string | null;
     'last_synced_at'?: string | null;
-    'status'?: PublicConnectionStatusEnum | null;
+    'status'?: BrokerDataConnectionStatusEnum | null;
     'updated_at': string | null;
     'user_id': string;
 }

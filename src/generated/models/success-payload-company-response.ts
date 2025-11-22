@@ -19,10 +19,7 @@ import type { CompanyResponse } from './company-response';
 
 export interface SuccessPayloadCompanyResponse {
     '_id'?: string;
-    /**
-     * The response data
-     */
-    'data': CompanyResponse;
+    'data'?: CompanyResponse | null;
     'meta'?: { [key: string]: any; } | null;
 }
 
