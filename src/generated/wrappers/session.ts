@@ -16,6 +16,7 @@ import { getCache, generateCacheKey } from '../utils/cache';
 import { applyRequestInterceptors, applyResponseInterceptors, applyErrorInterceptors } from '../utils/interceptors';
 import { unwrapAxiosResponse } from '../utils/response-utils';
 import { coerceEnumValue } from '../utils/enum-coercion';
+import { convertToPlainObject } from '../utils/plain-object';
 
 import type { PortalUrlResponse } from '../models';
 import type { SessionResponseData } from '../models';
@@ -177,8 +178,8 @@ export class SessionWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<TokenResponseData> = responseData as FinaticResponse<TokenResponseData>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<TokenResponseData> = convertToPlainObject(responseData) as FinaticResponse<TokenResponseData>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('POST', '/api/v1/session/init', params, this.sdkConfig);
@@ -190,7 +191,7 @@ export class SessionWrapper {
         action: 'initSession'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
@@ -337,8 +338,8 @@ export class SessionWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<SessionResponseData> = responseData as FinaticResponse<SessionResponseData>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<SessionResponseData> = convertToPlainObject(responseData) as FinaticResponse<SessionResponseData>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('POST', '/api/v1/session/start', params, this.sdkConfig);
@@ -350,7 +351,7 @@ export class SessionWrapper {
         action: 'startSession'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
@@ -501,8 +502,8 @@ export class SessionWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<PortalUrlResponse> = responseData as FinaticResponse<PortalUrlResponse>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<PortalUrlResponse> = convertToPlainObject(responseData) as FinaticResponse<PortalUrlResponse>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/session/portal', params, this.sdkConfig);
@@ -514,7 +515,7 @@ export class SessionWrapper {
         action: 'getPortalUrl'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
@@ -677,8 +678,8 @@ export class SessionWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<SessionUserResponse> = responseData as FinaticResponse<SessionUserResponse>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<SessionUserResponse> = convertToPlainObject(responseData) as FinaticResponse<SessionUserResponse>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/session/{session_id}/user', params, this.sdkConfig);
@@ -690,7 +691,7 @@ export class SessionWrapper {
         action: 'getSessionUser'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {

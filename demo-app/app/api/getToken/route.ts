@@ -10,15 +10,13 @@ async function handleRequest(request: Request) {
 
       // Return mock session init response (matching new FinaticResponse format)
       const mockResponse = {
-        _id: 'mock_' + Date.now(),
+        trace_id: 'mock-trace-' + Date.now(),
         success: {
           data: {
             one_time_token: 'mock_token_' + Date.now(),
             expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes from now
           },
-          meta: {
-            trace_id: 'mock_trace_' + Date.now(),
-          },
+          meta: null,
         },
         error: null,
         warning: null,

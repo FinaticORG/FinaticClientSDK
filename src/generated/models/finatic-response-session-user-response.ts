@@ -18,7 +18,10 @@
 import type { SuccessPayloadSessionUserResponse } from './success-payload-session-user-response';
 
 export interface FinaticResponseSessionUserResponse {
-    '_id'?: string;
+    /**
+     * Request trace identifier for tracking and debugging. Auto-generated if not provided.
+     */
+    'trace_id'?: string;
     /**
      * Success payload containing data and optional meta
      */

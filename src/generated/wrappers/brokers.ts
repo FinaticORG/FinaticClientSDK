@@ -16,6 +16,7 @@ import { getCache, generateCacheKey } from '../utils/cache';
 import { applyRequestInterceptors, applyResponseInterceptors, applyErrorInterceptors } from '../utils/interceptors';
 import { unwrapAxiosResponse } from '../utils/response-utils';
 import { coerceEnumValue } from '../utils/enum-coercion';
+import { convertToPlainObject } from '../utils/plain-object';
 import { BrokerDataAccountTypeEnum } from '../models';
 import { BrokerDataAssetTypeEnum } from '../models';
 import { BrokerDataOrderSideEnum } from '../models';
@@ -23,18 +24,18 @@ import { BrokerDataOrderStatusEnum } from '../models';
 import { BrokerDataPositionStatusEnum } from '../models';
 
 import type { AccountStatus } from '../models';
-import type { Accounts } from '../models';
-import type { Balances } from '../models';
 import type { BrokerInfo } from '../models';
 import type { DisconnectActionResult } from '../models';
-import type { OrderEventResponse } from '../models';
-import type { OrderFillResponse } from '../models';
-import type { OrderGroupResponse } from '../models';
-import type { OrderResponse } from '../models';
-import type { PositionLotFillResponse } from '../models';
-import type { PositionLotResponse } from '../models';
-import type { PositionResponse } from '../models';
-import type { UserBrokerConnections } from '../models';
+import type { FDXBrokerAccount } from '../models';
+import type { FDXBrokerBalance } from '../models';
+import type { FDXBrokerOrder } from '../models';
+import type { FDXBrokerOrderEvent } from '../models';
+import type { FDXBrokerOrderFill } from '../models';
+import type { FDXBrokerOrderGroup } from '../models';
+import type { FDXBrokerPosition } from '../models';
+import type { FDXBrokerPositionLot } from '../models';
+import type { FDXBrokerPositionLotFill } from '../models';
+import type { UserBrokerConnectionWithPermissions } from '../models';
 
 
 /**
@@ -80,7 +81,7 @@ export interface GetOrdersParams {
   offset?: number;
   createdAfter?: string;
   createdBefore?: string;
-  withMetadata?: boolean;
+  includeMetadata?: boolean;
 }
 
 export interface GetPositionsParams {
@@ -95,7 +96,7 @@ export interface GetPositionsParams {
   offset?: number;
   updatedAfter?: string;
   updatedBefore?: string;
-  withMetadata?: boolean;
+  includeMetadata?: boolean;
 }
 
 export interface GetBalancesParams {
@@ -107,7 +108,7 @@ export interface GetBalancesParams {
   offset?: number;
   balanceCreatedAfter?: string;
   balanceCreatedBefore?: string;
-  withMetadata?: boolean;
+  includeMetadata?: boolean;
 }
 
 export interface GetAccountsParams {
@@ -118,7 +119,7 @@ export interface GetAccountsParams {
   currency?: string;
   limit?: number;
   offset?: number;
-  withMetadata?: boolean;
+  includeMetadata?: boolean;
 }
 
 export interface GetOrderFillsParams {
@@ -126,6 +127,7 @@ export interface GetOrderFillsParams {
   connectionId?: string;
   limit?: number;
   offset?: number;
+  includeMetadata?: boolean;
 }
 
 export interface GetOrderEventsParams {
@@ -133,6 +135,7 @@ export interface GetOrderEventsParams {
   connectionId?: string;
   limit?: number;
   offset?: number;
+  includeMetadata?: boolean;
 }
 
 export interface GetOrderGroupsParams {
@@ -142,6 +145,7 @@ export interface GetOrderGroupsParams {
   offset?: number;
   createdAfter?: string;
   createdBefore?: string;
+  includeMetadata?: boolean;
 }
 
 export interface GetPositionLotsParams {
@@ -284,8 +288,8 @@ export class BrokersWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<BrokerInfo[]> = responseData as FinaticResponse<BrokerInfo[]>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<BrokerInfo[]> = convertToPlainObject(responseData) as FinaticResponse<BrokerInfo[]>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/', params, this.sdkConfig);
@@ -297,7 +301,7 @@ export class BrokersWrapper {
         action: 'getBrokers'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
@@ -373,12 +377,13 @@ export class BrokersWrapper {
   /**
    * List Broker Connections
    * 
-   * List all broker connections for the current user.
+   * List all broker connections for the current user with permissions.
    *
    * This endpoint is accessible from the portal and uses session-only authentication.
-   * Returns connections that the user has any permissions for.
+   * Returns connections that the user has any permissions for, including the current
+   * company's permissions (read/write) for each connection.
    * @param No parameters required for this method
-   * @returns {Promise<FinaticResponse<UserBrokerConnections[]>>} Standard response with success/Error/Warning structure
+   * @returns {Promise<FinaticResponse<UserBrokerConnectionWithPermissions[]>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/connections
    * @methodId list_broker_connections_api_v1_brokers_connections_get
@@ -394,7 +399,7 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getBrokerConnections(): Promise<FinaticResponse<UserBrokerConnections[]>> {
+  async getBrokerConnections(): Promise<FinaticResponse<UserBrokerConnectionWithPermissions[]>> {
     // No parameters - use empty params object
     const params: GetBrokerConnectionsParams = {};    // Authentication check
     if (!this.sessionId) {
@@ -419,7 +424,7 @@ export class BrokersWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<UserBrokerConnections[]>;
+        return cached as FinaticResponse<UserBrokerConnectionWithPermissions[]>;
       }
     }
 
@@ -448,8 +453,8 @@ export class BrokersWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<UserBrokerConnections[]> = responseData as FinaticResponse<UserBrokerConnections[]>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<UserBrokerConnectionWithPermissions[]> = convertToPlainObject(responseData) as FinaticResponse<UserBrokerConnectionWithPermissions[]>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/connections', params, this.sdkConfig);
@@ -461,7 +466,7 @@ export class BrokersWrapper {
         action: 'getBrokerConnections'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
@@ -514,7 +519,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<UserBrokerConnections[]> = {
+      const errorResponse: FinaticResponse<UserBrokerConnectionWithPermissions[]> = {
         success: {
           data: null as any,
         },
@@ -616,8 +621,8 @@ export class BrokersWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<DisconnectActionResult> = responseData as FinaticResponse<DisconnectActionResult>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<DisconnectActionResult> = convertToPlainObject(responseData) as FinaticResponse<DisconnectActionResult>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/disconnect-company/{connection_id}', params, this.sdkConfig);
@@ -629,7 +634,7 @@ export class BrokersWrapper {
         action: 'disconnectCompanyFromBroker'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
@@ -720,8 +725,8 @@ export class BrokersWrapper {
    * @param offset {number} (optional) 
    * @param createdAfter {string} (optional) 
    * @param createdBefore {string} (optional) 
-   * @param withMetadata {boolean} (optional) 
-   * @returns {Promise<FinaticResponse<OrderResponse[]>>} Standard response with success/Error/Warning structure
+   * @param includeMetadata {boolean} (optional) 
+   * @returns {Promise<FinaticResponse<FDXBrokerOrder[]>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/orders
    * @methodId get_orders_api_v1_brokers_data_orders_get
@@ -752,7 +757,7 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getOrders(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, orderStatus?: BrokerDataOrderStatusEnum, side?: BrokerDataOrderSideEnum, assetType?: BrokerDataAssetTypeEnum, limit?: number, offset?: number, createdAfter?: string, createdBefore?: string, withMetadata?: boolean): Promise<FinaticResponse<OrderResponse[]>> {
+  async getOrders(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, orderStatus?: BrokerDataOrderStatusEnum, side?: BrokerDataOrderSideEnum, assetType?: BrokerDataAssetTypeEnum, limit?: number, offset?: number, createdAfter?: string, createdBefore?: string, includeMetadata?: boolean): Promise<FinaticResponse<FDXBrokerOrder[]>> {
     // Construct params object from individual parameters
     const params: GetOrdersParams = {
     brokerId: brokerId,
@@ -766,7 +771,7 @@ export class BrokersWrapper {
     offset: offset,
     createdAfter: createdAfter,
     createdBefore: createdBefore,
-    withMetadata: withMetadata
+    includeMetadata: includeMetadata
   };    // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
@@ -790,7 +795,7 @@ export class BrokersWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<OrderResponse[]>;
+        return cached as FinaticResponse<FDXBrokerOrder[]>;
       }
     }
 
@@ -806,7 +811,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrdersApiV1BrokersDataOrdersGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(orderStatus !== undefined ? { orderStatus: orderStatus } : {}), ...(side !== undefined ? { side: side } : {}), ...(assetType !== undefined ? { assetType: assetType } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(createdAfter !== undefined ? { createdAfter: createdAfter } : {}), ...(createdBefore !== undefined ? { createdBefore: createdBefore } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getOrdersApiV1BrokersDataOrdersGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(orderStatus !== undefined ? { orderStatus: orderStatus } : {}), ...(side !== undefined ? { side: side } : {}), ...(assetType !== undefined ? { assetType: assetType } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(createdAfter !== undefined ? { createdAfter: createdAfter } : {}), ...(createdBefore !== undefined ? { createdBefore: createdBefore } : {}), ...(includeMetadata !== undefined ? { includeMetadata: includeMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -819,8 +824,8 @@ export class BrokersWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<OrderResponse[]> = responseData as FinaticResponse<OrderResponse[]>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<FDXBrokerOrder[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerOrder[]>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders', params, this.sdkConfig);
@@ -832,7 +837,7 @@ export class BrokersWrapper {
         action: 'getOrders'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
@@ -885,7 +890,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<OrderResponse[]> = {
+      const errorResponse: FinaticResponse<FDXBrokerOrder[]> = {
         success: {
           data: null as any,
         },
@@ -923,8 +928,8 @@ export class BrokersWrapper {
    * @param offset {number} (optional) 
    * @param updatedAfter {string} (optional) 
    * @param updatedBefore {string} (optional) 
-   * @param withMetadata {boolean} (optional) 
-   * @returns {Promise<FinaticResponse<PositionResponse[]>>} Standard response with success/Error/Warning structure
+   * @param includeMetadata {boolean} (optional) 
+   * @returns {Promise<FinaticResponse<FDXBrokerPosition[]>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/positions
    * @methodId get_positions_api_v1_brokers_data_positions_get
@@ -955,7 +960,7 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getPositions(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, side?: BrokerDataOrderSideEnum, assetType?: BrokerDataAssetTypeEnum, positionStatus?: BrokerDataPositionStatusEnum, limit?: number, offset?: number, updatedAfter?: string, updatedBefore?: string, withMetadata?: boolean): Promise<FinaticResponse<PositionResponse[]>> {
+  async getPositions(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, side?: BrokerDataOrderSideEnum, assetType?: BrokerDataAssetTypeEnum, positionStatus?: BrokerDataPositionStatusEnum, limit?: number, offset?: number, updatedAfter?: string, updatedBefore?: string, includeMetadata?: boolean): Promise<FinaticResponse<FDXBrokerPosition[]>> {
     // Construct params object from individual parameters
     const params: GetPositionsParams = {
     brokerId: brokerId,
@@ -969,7 +974,7 @@ export class BrokersWrapper {
     offset: offset,
     updatedAfter: updatedAfter,
     updatedBefore: updatedBefore,
-    withMetadata: withMetadata
+    includeMetadata: includeMetadata
   };    // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
@@ -993,7 +998,7 @@ export class BrokersWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<PositionResponse[]>;
+        return cached as FinaticResponse<FDXBrokerPosition[]>;
       }
     }
 
@@ -1009,7 +1014,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getPositionsApiV1BrokersDataPositionsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(side !== undefined ? { side: side } : {}), ...(assetType !== undefined ? { assetType: assetType } : {}), ...(positionStatus !== undefined ? { positionStatus: positionStatus } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(updatedAfter !== undefined ? { updatedAfter: updatedAfter } : {}), ...(updatedBefore !== undefined ? { updatedBefore: updatedBefore } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getPositionsApiV1BrokersDataPositionsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(side !== undefined ? { side: side } : {}), ...(assetType !== undefined ? { assetType: assetType } : {}), ...(positionStatus !== undefined ? { positionStatus: positionStatus } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(updatedAfter !== undefined ? { updatedAfter: updatedAfter } : {}), ...(updatedBefore !== undefined ? { updatedBefore: updatedBefore } : {}), ...(includeMetadata !== undefined ? { includeMetadata: includeMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1022,8 +1027,8 @@ export class BrokersWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<PositionResponse[]> = responseData as FinaticResponse<PositionResponse[]>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<FDXBrokerPosition[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerPosition[]>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions', params, this.sdkConfig);
@@ -1035,7 +1040,7 @@ export class BrokersWrapper {
         action: 'getPositions'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
@@ -1088,7 +1093,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<PositionResponse[]> = {
+      const errorResponse: FinaticResponse<FDXBrokerPosition[]> = {
         success: {
           data: null as any,
         },
@@ -1123,8 +1128,8 @@ export class BrokersWrapper {
    * @param offset {number} (optional) 
    * @param balanceCreatedAfter {string} (optional) 
    * @param balanceCreatedBefore {string} (optional) 
-   * @param withMetadata {boolean} (optional) 
-   * @returns {Promise<FinaticResponse<Balances[]>>} Standard response with success/Error/Warning structure
+   * @param includeMetadata {boolean} (optional) 
+   * @returns {Promise<FinaticResponse<FDXBrokerBalance[]>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/balances
    * @methodId get_balances_api_v1_brokers_data_balances_get
@@ -1155,7 +1160,7 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getBalances(brokerId?: string, connectionId?: string, accountId?: string, isEndOfDaySnapshot?: boolean, limit?: number, offset?: number, balanceCreatedAfter?: string, balanceCreatedBefore?: string, withMetadata?: boolean): Promise<FinaticResponse<Balances[]>> {
+  async getBalances(brokerId?: string, connectionId?: string, accountId?: string, isEndOfDaySnapshot?: boolean, limit?: number, offset?: number, balanceCreatedAfter?: string, balanceCreatedBefore?: string, includeMetadata?: boolean): Promise<FinaticResponse<FDXBrokerBalance[]>> {
     // Construct params object from individual parameters
     const params: GetBalancesParams = {
     brokerId: brokerId,
@@ -1166,7 +1171,7 @@ export class BrokersWrapper {
     offset: offset,
     balanceCreatedAfter: balanceCreatedAfter,
     balanceCreatedBefore: balanceCreatedBefore,
-    withMetadata: withMetadata
+    includeMetadata: includeMetadata
   };    // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
@@ -1190,7 +1195,7 @@ export class BrokersWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<Balances[]>;
+        return cached as FinaticResponse<FDXBrokerBalance[]>;
       }
     }
 
@@ -1206,7 +1211,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getBalancesApiV1BrokersDataBalancesGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(isEndOfDaySnapshot !== undefined ? { isEndOfDaySnapshot: isEndOfDaySnapshot } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(balanceCreatedAfter !== undefined ? { balanceCreatedAfter: balanceCreatedAfter } : {}), ...(balanceCreatedBefore !== undefined ? { balanceCreatedBefore: balanceCreatedBefore } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getBalancesApiV1BrokersDataBalancesGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(isEndOfDaySnapshot !== undefined ? { isEndOfDaySnapshot: isEndOfDaySnapshot } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(balanceCreatedAfter !== undefined ? { balanceCreatedAfter: balanceCreatedAfter } : {}), ...(balanceCreatedBefore !== undefined ? { balanceCreatedBefore: balanceCreatedBefore } : {}), ...(includeMetadata !== undefined ? { includeMetadata: includeMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1219,8 +1224,8 @@ export class BrokersWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<Balances[]> = responseData as FinaticResponse<Balances[]>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<FDXBrokerBalance[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerBalance[]>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/balances', params, this.sdkConfig);
@@ -1232,7 +1237,7 @@ export class BrokersWrapper {
         action: 'getBalances'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
@@ -1285,7 +1290,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<Balances[]> = {
+      const errorResponse: FinaticResponse<FDXBrokerBalance[]> = {
         success: {
           data: null as any,
         },
@@ -1319,8 +1324,8 @@ export class BrokersWrapper {
    * @param currency {string} (optional) 
    * @param limit {number} (optional) 
    * @param offset {number} (optional) 
-   * @param withMetadata {boolean} (optional) 
-   * @returns {Promise<FinaticResponse<Accounts[]>>} Standard response with success/Error/Warning structure
+   * @param includeMetadata {boolean} (optional) 
+   * @returns {Promise<FinaticResponse<FDXBrokerAccount[]>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/accounts
    * @methodId get_accounts_api_v1_brokers_data_accounts_get
@@ -1351,7 +1356,7 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getAccounts(brokerId?: string, connectionId?: string, accountType?: BrokerDataAccountTypeEnum, status?: AccountStatus, currency?: string, limit?: number, offset?: number, withMetadata?: boolean): Promise<FinaticResponse<Accounts[]>> {
+  async getAccounts(brokerId?: string, connectionId?: string, accountType?: BrokerDataAccountTypeEnum, status?: AccountStatus, currency?: string, limit?: number, offset?: number, includeMetadata?: boolean): Promise<FinaticResponse<FDXBrokerAccount[]>> {
     // Construct params object from individual parameters
     const params: GetAccountsParams = {
     brokerId: brokerId,
@@ -1361,7 +1366,7 @@ export class BrokersWrapper {
     currency: currency,
     limit: limit,
     offset: offset,
-    withMetadata: withMetadata
+    includeMetadata: includeMetadata
   };    // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
@@ -1385,7 +1390,7 @@ export class BrokersWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<Accounts[]>;
+        return cached as FinaticResponse<FDXBrokerAccount[]>;
       }
     }
 
@@ -1401,7 +1406,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getAccountsApiV1BrokersDataAccountsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountType !== undefined ? { accountType: accountType } : {}), ...(status !== undefined ? { status: status } : {}), ...(currency !== undefined ? { currency: currency } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(withMetadata !== undefined ? { withMetadata: withMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getAccountsApiV1BrokersDataAccountsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountType !== undefined ? { accountType: accountType } : {}), ...(status !== undefined ? { status: status } : {}), ...(currency !== undefined ? { currency: currency } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(includeMetadata !== undefined ? { includeMetadata: includeMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1414,8 +1419,8 @@ export class BrokersWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<Accounts[]> = responseData as FinaticResponse<Accounts[]>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<FDXBrokerAccount[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerAccount[]>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/accounts', params, this.sdkConfig);
@@ -1427,7 +1432,7 @@ export class BrokersWrapper {
         action: 'getAccounts'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
@@ -1480,7 +1485,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<Accounts[]> = {
+      const errorResponse: FinaticResponse<FDXBrokerAccount[]> = {
         success: {
           data: null as any,
         },
@@ -1510,7 +1515,8 @@ export class BrokersWrapper {
    * @param connectionId {string} (optional) 
    * @param limit {number} (optional) 
    * @param offset {number} (optional) 
-   * @returns {Promise<FinaticResponse<OrderFillResponse[]>>} Standard response with success/Error/Warning structure
+   * @param includeMetadata {boolean} (optional) 
+   * @returns {Promise<FinaticResponse<FDXBrokerOrderFill[]>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/orders/{order_id}/fills
    * @methodId get_order_fills_api_v1_brokers_data_orders__order_id__fills_get
@@ -1543,13 +1549,14 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getOrderFills(orderId: string, connectionId?: string, limit?: number, offset?: number): Promise<FinaticResponse<OrderFillResponse[]>> {
+  async getOrderFills(orderId: string, connectionId?: string, limit?: number, offset?: number, includeMetadata?: boolean): Promise<FinaticResponse<FDXBrokerOrderFill[]>> {
     // Construct params object from individual parameters
     const params: GetOrderFillsParams = {
     orderId: orderId,
     connectionId: connectionId,
     limit: limit,
-    offset: offset
+    offset: offset,
+    includeMetadata: includeMetadata
   };    // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
@@ -1573,7 +1580,7 @@ export class BrokersWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<OrderFillResponse[]>;
+        return cached as FinaticResponse<FDXBrokerOrderFill[]>;
       }
     }
 
@@ -1589,7 +1596,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet({ orderId: orderId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet({ orderId: orderId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(includeMetadata !== undefined ? { includeMetadata: includeMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1602,8 +1609,8 @@ export class BrokersWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<OrderFillResponse[]> = responseData as FinaticResponse<OrderFillResponse[]>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<FDXBrokerOrderFill[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerOrderFill[]>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/fills', params, this.sdkConfig);
@@ -1615,7 +1622,7 @@ export class BrokersWrapper {
         action: 'getOrderFills'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
@@ -1668,7 +1675,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<OrderFillResponse[]> = {
+      const errorResponse: FinaticResponse<FDXBrokerOrderFill[]> = {
         success: {
           data: null as any,
         },
@@ -1698,7 +1705,8 @@ export class BrokersWrapper {
    * @param connectionId {string} (optional) 
    * @param limit {number} (optional) 
    * @param offset {number} (optional) 
-   * @returns {Promise<FinaticResponse<OrderEventResponse[]>>} Standard response with success/Error/Warning structure
+   * @param includeMetadata {boolean} (optional) 
+   * @returns {Promise<FinaticResponse<FDXBrokerOrderEvent[]>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/orders/{order_id}/events
    * @methodId get_order_events_api_v1_brokers_data_orders__order_id__events_get
@@ -1731,13 +1739,14 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getOrderEvents(orderId: string, connectionId?: string, limit?: number, offset?: number): Promise<FinaticResponse<OrderEventResponse[]>> {
+  async getOrderEvents(orderId: string, connectionId?: string, limit?: number, offset?: number, includeMetadata?: boolean): Promise<FinaticResponse<FDXBrokerOrderEvent[]>> {
     // Construct params object from individual parameters
     const params: GetOrderEventsParams = {
     orderId: orderId,
     connectionId: connectionId,
     limit: limit,
-    offset: offset
+    offset: offset,
+    includeMetadata: includeMetadata
   };    // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
@@ -1761,7 +1770,7 @@ export class BrokersWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<OrderEventResponse[]>;
+        return cached as FinaticResponse<FDXBrokerOrderEvent[]>;
       }
     }
 
@@ -1777,7 +1786,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet({ orderId: orderId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet({ orderId: orderId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(includeMetadata !== undefined ? { includeMetadata: includeMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1790,8 +1799,8 @@ export class BrokersWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<OrderEventResponse[]> = responseData as FinaticResponse<OrderEventResponse[]>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<FDXBrokerOrderEvent[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerOrderEvent[]>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/events', params, this.sdkConfig);
@@ -1803,7 +1812,7 @@ export class BrokersWrapper {
         action: 'getOrderEvents'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
@@ -1856,7 +1865,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<OrderEventResponse[]> = {
+      const errorResponse: FinaticResponse<FDXBrokerOrderEvent[]> = {
         success: {
           data: null as any,
         },
@@ -1888,7 +1897,8 @@ export class BrokersWrapper {
    * @param offset {number} (optional) 
    * @param createdAfter {string} (optional) 
    * @param createdBefore {string} (optional) 
-   * @returns {Promise<FinaticResponse<OrderGroupResponse[]>>} Standard response with success/Error/Warning structure
+   * @param includeMetadata {boolean} (optional) 
+   * @returns {Promise<FinaticResponse<FDXBrokerOrderGroup[]>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/orders/groups
    * @methodId get_order_groups_api_v1_brokers_data_orders_groups_get
@@ -1919,7 +1929,7 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getOrderGroups(brokerId?: string, connectionId?: string, limit?: number, offset?: number, createdAfter?: string, createdBefore?: string): Promise<FinaticResponse<OrderGroupResponse[]>> {
+  async getOrderGroups(brokerId?: string, connectionId?: string, limit?: number, offset?: number, createdAfter?: string, createdBefore?: string, includeMetadata?: boolean): Promise<FinaticResponse<FDXBrokerOrderGroup[]>> {
     // Construct params object from individual parameters
     const params: GetOrderGroupsParams = {
     brokerId: brokerId,
@@ -1927,7 +1937,8 @@ export class BrokersWrapper {
     limit: limit,
     offset: offset,
     createdAfter: createdAfter,
-    createdBefore: createdBefore
+    createdBefore: createdBefore,
+    includeMetadata: includeMetadata
   };    // Authentication check
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
@@ -1951,7 +1962,7 @@ export class BrokersWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<OrderGroupResponse[]>;
+        return cached as FinaticResponse<FDXBrokerOrderGroup[]>;
       }
     }
 
@@ -1967,7 +1978,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrderGroupsApiV1BrokersDataOrdersGroupsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(createdAfter !== undefined ? { createdAfter: createdAfter } : {}), ...(createdBefore !== undefined ? { createdBefore: createdBefore } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getOrderGroupsApiV1BrokersDataOrdersGroupsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(createdAfter !== undefined ? { createdAfter: createdAfter } : {}), ...(createdBefore !== undefined ? { createdBefore: createdBefore } : {}), ...(includeMetadata !== undefined ? { includeMetadata: includeMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1980,8 +1991,8 @@ export class BrokersWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<OrderGroupResponse[]> = responseData as FinaticResponse<OrderGroupResponse[]>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<FDXBrokerOrderGroup[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerOrderGroup[]>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/groups', params, this.sdkConfig);
@@ -1993,7 +2004,7 @@ export class BrokersWrapper {
         action: 'getOrderGroups'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
@@ -2046,7 +2057,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<OrderGroupResponse[]> = {
+      const errorResponse: FinaticResponse<FDXBrokerOrderGroup[]> = {
         success: {
           data: null as any,
         },
@@ -2080,7 +2091,7 @@ export class BrokersWrapper {
    * @param positionId {string} (optional) 
    * @param limit {number} (optional) 
    * @param offset {number} (optional) 
-   * @returns {Promise<FinaticResponse<PositionLotResponse[]>>} Standard response with success/Error/Warning structure
+   * @returns {Promise<FinaticResponse<FDXBrokerPositionLot[]>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/positions/lots
    * @methodId get_position_lots_api_v1_brokers_data_positions_lots_get
@@ -2111,7 +2122,7 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getPositionLots(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, positionId?: string, limit?: number, offset?: number): Promise<FinaticResponse<PositionLotResponse[]>> {
+  async getPositionLots(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, positionId?: string, limit?: number, offset?: number): Promise<FinaticResponse<FDXBrokerPositionLot[]>> {
     // Construct params object from individual parameters
     const params: GetPositionLotsParams = {
     brokerId: brokerId,
@@ -2144,7 +2155,7 @@ export class BrokersWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<PositionLotResponse[]>;
+        return cached as FinaticResponse<FDXBrokerPositionLot[]>;
       }
     }
 
@@ -2173,8 +2184,8 @@ export class BrokersWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<PositionLotResponse[]> = responseData as FinaticResponse<PositionLotResponse[]>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<FDXBrokerPositionLot[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerPositionLot[]>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots', params, this.sdkConfig);
@@ -2186,7 +2197,7 @@ export class BrokersWrapper {
         action: 'getPositionLots'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
@@ -2239,7 +2250,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<PositionLotResponse[]> = {
+      const errorResponse: FinaticResponse<FDXBrokerPositionLot[]> = {
         success: {
           data: null as any,
         },
@@ -2269,7 +2280,7 @@ export class BrokersWrapper {
    * @param connectionId {string} (optional) 
    * @param limit {number} (optional) 
    * @param offset {number} (optional) 
-   * @returns {Promise<FinaticResponse<PositionLotFillResponse[]>>} Standard response with success/Error/Warning structure
+   * @returns {Promise<FinaticResponse<FDXBrokerPositionLotFill[]>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/positions/lots/{lot_id}/fills
    * @methodId get_position_lot_fills_api_v1_brokers_data_positions_lots__lot_id__fills_get
@@ -2302,7 +2313,7 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getPositionLotFills(lotId: string, connectionId?: string, limit?: number, offset?: number): Promise<FinaticResponse<PositionLotFillResponse[]>> {
+  async getPositionLotFills(lotId: string, connectionId?: string, limit?: number, offset?: number): Promise<FinaticResponse<FDXBrokerPositionLotFill[]>> {
     // Construct params object from individual parameters
     const params: GetPositionLotFillsParams = {
     lotId: lotId,
@@ -2332,7 +2343,7 @@ export class BrokersWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<PositionLotFillResponse[]>;
+        return cached as FinaticResponse<FDXBrokerPositionLotFill[]>;
       }
     }
 
@@ -2361,8 +2372,8 @@ export class BrokersWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<PositionLotFillResponse[]> = responseData as FinaticResponse<PositionLotFillResponse[]>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<FDXBrokerPositionLotFill[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerPositionLotFill[]>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots/{lot_id}/fills', params, this.sdkConfig);
@@ -2374,7 +2385,7 @@ export class BrokersWrapper {
         action: 'getPositionLotFills'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
@@ -2427,7 +2438,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<PositionLotFillResponse[]> = {
+      const errorResponse: FinaticResponse<FDXBrokerPositionLotFill[]> = {
         success: {
           data: null as any,
         },

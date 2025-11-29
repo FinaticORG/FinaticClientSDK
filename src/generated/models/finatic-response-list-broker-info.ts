@@ -18,7 +18,10 @@
 import type { SuccessPayloadListBrokerInfo } from './success-payload-list-broker-info';
 
 export interface FinaticResponseListBrokerInfo {
-    '_id'?: string;
+    /**
+     * Request trace identifier for tracking and debugging. Auto-generated if not provided.
+     */
+    'trace_id'?: string;
     /**
      * Success payload containing data and optional meta
      */

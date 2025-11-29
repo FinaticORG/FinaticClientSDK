@@ -18,7 +18,10 @@
 import type { SuccessPayloadPortalUrlResponse } from './success-payload-portal-url-response';
 
 export interface FinaticResponsePortalUrlResponse {
-    '_id'?: string;
+    /**
+     * Request trace identifier for tracking and debugging. Auto-generated if not provided.
+     */
+    'trace_id'?: string;
     /**
      * Success payload containing data and optional meta
      */

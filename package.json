@@ -1,7 +1,7 @@
 {
   "name": "@finatic/client",
-  "version": "0.1.0",
-  "description": "TypeScript SDK for Finatic Client API",
+  "version": "0.9.0",
+  "description": "Finatic Client SDK for browser integration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -10,28 +10,18 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "rollup -c",
     "build:watch": "tsc --watch",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src/**/*.ts --fix",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\"",
+    "format": "prettier --write src/**/*.{ts,tsx}",
+    "format:check": "prettier --check src/**/*.ts",
     "clean": "rimraf dist",
     "prepublishOnly": "npm run clean && npm run build",
-    "format:fix": "prettier --write \"src/**/*.ts\"",
-    "type:check": "tsc --noEmit",
-    "syntax:check": "eslint src/**/*.ts --max-warnings 0",
-    "syntax:fix": "eslint src/**/*.ts --fix",
-    "import:check": "tsc --noEmit --skipLibCheck",
-    "quality:check": "npm run format:check && npm run lint && npm run type:check && npm run build",
-    "quality:fix": "npm run format:fix && (npm run lint:fix || true) && npm run build",
-    "dev": "yarn build:watch",
-    "demo:dev": "yarn workspace app dev",
-    "demo:build": "yarn workspace app build",
-    "demo:start": "yarn workspace app start"
+    "watch": "rollup -c -w"
   },
   "keywords": [
     "finatic",
@@ -42,21 +32,26 @@
     "typescript",
     "typescript"
   ],
-  "author": "Finatic",
-  "license": "MIT",
+  "author": {
+    "name": "Finatic",
+    "email": "support@finatic.dev"
+  },
+  "license": "PROPRIETARY",
   "repository": {
     "type": "git",
-    "url": "https://github.com/FinaticORG/Client.git"
+    "url": "https://github.com/FinaticORG/FinaticClientSDK.git"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=16.0.0"
   },
   "dependencies": {
     "axios": "^1.0.0",
     "node-cache": "^1.0.0",
     "p-retry": "^1.0.0",
     "pino": "^1.0.0",
-    "zod": "^1.0.0"
+    "zod": "^1.0.0",
+    "crypto-js": "^4.2.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
@@ -74,10 +69,40 @@
     "rimraf": "^6.0.1",
     "ts-jest": "^29.0.0",
     "typescript": "^5.0.0",
-    "typescript-eslint": "^8.44.0"
+    "typescript-eslint": "^8.44.0",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/crypto-js": "^4.2.1",
+    "@types/uuid": "^9.0.7",
+    "eslint-plugin-react": "^7.33.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "rollup": "^4.9.1",
+    "rollup-plugin-dts": "^6.1.0",
+    "tslib": "^2.8.1"
   },
-  "private": true,
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "module": "./dist/index.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "workspaces": [
     "demo-app"
-  ]
+  ],
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
+  },
+  "bugs": {
+    "url": "https://github.com/FinaticORG/FinaticClientSDK/issues"
+  },
+  "homepage": "https://github.com/FinaticORG/FinaticClientSDK#readme",
+  "packageManager": "yarn@4.9.4+sha512.7b1cb0b62abba6a537b3a2ce00811a843bea02bcf53138581a6ae5b1bf563f734872bd47de49ce32a9ca9dcaff995aa789577ffb16811da7c603dcf69e73750b"
 }

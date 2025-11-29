@@ -1,6 +1,8 @@
 # Client
 
-TypeScript SDK for Finatic Client API
+A comprehensive browser SDK for integrating Finatic Client into your web applications. Connect your users to multiple brokerages through a unified, standardized interface.
+
+**Finatic is a brokerage first aggregator. We simplify, standardize and enhance broker data.**
 
 ## Installation
 
@@ -81,4 +83,12 @@ npm run build
 
 ## License
 
-MIT
+MIT License
+
+## Copyright
+
+© Copyright 2025 Finatic. All Rights Reserved.
+
+---
+
+**Finatic** - Fast. Secure. Standardized.

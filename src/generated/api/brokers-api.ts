@@ -38,27 +38,27 @@ import type { FinaticError } from '../models';
 // @ts-ignore
 import type { FinaticResponseDisconnectActionResult } from '../models';
 // @ts-ignore
-import type { FinaticResponseListAccounts } from '../models';
-// @ts-ignore
-import type { FinaticResponseListBalances } from '../models';
-// @ts-ignore
 import type { FinaticResponseListBrokerInfo } from '../models';
 // @ts-ignore
-import type { FinaticResponseListOrderEventResponse } from '../models';
+import type { FinaticResponseListFDXBrokerAccount } from '../models';
 // @ts-ignore
-import type { FinaticResponseListOrderFillResponse } from '../models';
+import type { FinaticResponseListFDXBrokerBalance } from '../models';
 // @ts-ignore
-import type { FinaticResponseListOrderGroupResponse } from '../models';
+import type { FinaticResponseListFDXBrokerOrder } from '../models';
 // @ts-ignore
-import type { FinaticResponseListOrderResponse } from '../models';
+import type { FinaticResponseListFDXBrokerOrderEvent } from '../models';
 // @ts-ignore
-import type { FinaticResponseListPositionLotFillResponse } from '../models';
+import type { FinaticResponseListFDXBrokerOrderFill } from '../models';
 // @ts-ignore
-import type { FinaticResponseListPositionLotResponse } from '../models';
+import type { FinaticResponseListFDXBrokerOrderGroup } from '../models';
 // @ts-ignore
-import type { FinaticResponseListPositionResponse } from '../models';
+import type { FinaticResponseListFDXBrokerPosition } from '../models';
 // @ts-ignore
-import type { FinaticResponseListUserBrokerConnections } from '../models';
+import type { FinaticResponseListFDXBrokerPositionLot } from '../models';
+// @ts-ignore
+import type { FinaticResponseListFDXBrokerPositionLotFill } from '../models';
+// @ts-ignore
+import type { FinaticResponseListUserBrokerConnectionWithPermissions } from '../models';
 /**
  * BrokersApi - axios parameter creator
  */
@@ -108,11 +108,11 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string | null} [currency] Filter by currency (e.g., \&#39;USD\&#39;, \&#39;EUR\&#39;)
          * @param {number} [limit] Maximum number of accounts to return
          * @param {number} [offset] Number of accounts to skip for pagination
-         * @param {boolean} [withMetadata] Include connection metadata in response
+         * @param {boolean} [includeMetadata] Include connection metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAccountsApiV1BrokersDataAccountsGet: async (brokerId?: string | null, connectionId?: string | null, accountType?: BrokerDataAccountTypeEnum | null, status?: AccountStatus | null, currency?: string | null, limit?: number, offset?: number, withMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAccountsApiV1BrokersDataAccountsGet: async (brokerId?: string | null, connectionId?: string | null, accountType?: BrokerDataAccountTypeEnum | null, status?: AccountStatus | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/brokers/data/accounts`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -153,8 +153,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['offset'] = offset;
             }
 
-            if (withMetadata !== undefined) {
-                localVarQueryParameter['with_metadata'] = withMetadata;
+            if (includeMetadata !== undefined) {
+                localVarQueryParameter['include_metadata'] = includeMetadata;
             }
 
 
@@ -179,11 +179,11 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {number} [offset] Number of balances to skip for pagination
          * @param {string | null} [balanceCreatedAfter] Filter balances created after this timestamp
          * @param {string | null} [balanceCreatedBefore] Filter balances created before this timestamp
-         * @param {boolean} [withMetadata] Include balance metadata in response
+         * @param {boolean} [includeMetadata] Include balance metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getBalancesApiV1BrokersDataBalancesGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, isEndOfDaySnapshot?: boolean | null, limit?: number, offset?: number, balanceCreatedAfter?: string | null, balanceCreatedBefore?: string | null, withMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getBalancesApiV1BrokersDataBalancesGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, isEndOfDaySnapshot?: boolean | null, limit?: number, offset?: number, balanceCreatedAfter?: string | null, balanceCreatedBefore?: string | null, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/brokers/data/balances`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -232,8 +232,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                     balanceCreatedBefore;
             }
 
-            if (withMetadata !== undefined) {
-                localVarQueryParameter['with_metadata'] = withMetadata;
+            if (includeMetadata !== undefined) {
+                localVarQueryParameter['include_metadata'] = includeMetadata;
             }
 
 
@@ -284,10 +284,11 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string | null} [connectionId] Filter by connection ID
          * @param {number} [limit] Maximum number of events to return
          * @param {number} [offset] Number of events to skip for pagination
+         * @param {boolean} [includeMetadata] Include event metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet: async (orderId: string, connectionId?: string | null, limit?: number, offset?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet: async (orderId: string, connectionId?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'orderId' is not null or undefined
             assertParamExists('getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet', 'orderId', orderId)
             const localVarPath = `/api/v1/brokers/data/orders/{order_id}/events`
@@ -315,6 +316,10 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['offset'] = offset;
             }
 
+            if (includeMetadata !== undefined) {
+                localVarQueryParameter['include_metadata'] = includeMetadata;
+            }
+
 
     
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -333,10 +338,11 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string | null} [connectionId] Filter by connection ID
          * @param {number} [limit] Maximum number of fills to return
          * @param {number} [offset] Number of fills to skip for pagination
+         * @param {boolean} [includeMetadata] Include fill metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet: async (orderId: string, connectionId?: string | null, limit?: number, offset?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet: async (orderId: string, connectionId?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'orderId' is not null or undefined
             assertParamExists('getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet', 'orderId', orderId)
             const localVarPath = `/api/v1/brokers/data/orders/{order_id}/fills`
@@ -364,6 +370,10 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['offset'] = offset;
             }
 
+            if (includeMetadata !== undefined) {
+                localVarQueryParameter['include_metadata'] = includeMetadata;
+            }
+
 
     
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -384,10 +394,11 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {number} [offset] Number of order groups to skip for pagination
          * @param {string | null} [createdAfter] Filter order groups created after this timestamp
          * @param {string | null} [createdBefore] Filter order groups created before this timestamp
+         * @param {boolean} [includeMetadata] Include group metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrderGroupsApiV1BrokersDataOrdersGroupsGet: async (brokerId?: string | null, connectionId?: string | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getOrderGroupsApiV1BrokersDataOrdersGroupsGet: async (brokerId?: string | null, connectionId?: string | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/brokers/data/orders/groups`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -428,6 +439,10 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                     createdBefore;
             }
 
+            if (includeMetadata !== undefined) {
+                localVarQueryParameter['include_metadata'] = includeMetadata;
+            }
+
 
     
             setSearchParams(localVarUrlObj, localVarQueryParameter);
@@ -453,11 +468,11 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {number} [offset] Number of orders to skip for pagination
          * @param {string | null} [createdAfter] Filter orders created after this timestamp
          * @param {string | null} [createdBefore] Filter orders created before this timestamp
-         * @param {boolean} [withMetadata] Include order metadata in response
+         * @param {boolean} [includeMetadata] Include order metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrdersApiV1BrokersDataOrdersGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, orderStatus?: BrokerDataOrderStatusEnum | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, withMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getOrdersApiV1BrokersDataOrdersGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, orderStatus?: BrokerDataOrderStatusEnum | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/brokers/data/orders`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -518,8 +533,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                     createdBefore;
             }
 
-            if (withMetadata !== undefined) {
-                localVarQueryParameter['with_metadata'] = withMetadata;
+            if (includeMetadata !== undefined) {
+                localVarQueryParameter['include_metadata'] = includeMetadata;
             }
 
 
@@ -661,11 +676,11 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {number} [offset] Number of positions to skip for pagination
          * @param {string | null} [updatedAfter] Filter positions updated after this timestamp
          * @param {string | null} [updatedBefore] Filter positions updated before this timestamp
-         * @param {boolean} [withMetadata] Include position metadata in response
+         * @param {boolean} [includeMetadata] Include position metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPositionsApiV1BrokersDataPositionsGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, positionStatus?: BrokerDataPositionStatusEnum | null, limit?: number, offset?: number, updatedAfter?: string | null, updatedBefore?: string | null, withMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getPositionsApiV1BrokersDataPositionsGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, positionStatus?: BrokerDataPositionStatusEnum | null, limit?: number, offset?: number, updatedAfter?: string | null, updatedBefore?: string | null, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/brokers/data/positions`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -726,8 +741,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                     updatedBefore;
             }
 
-            if (withMetadata !== undefined) {
-                localVarQueryParameter['with_metadata'] = withMetadata;
+            if (includeMetadata !== undefined) {
+                localVarQueryParameter['include_metadata'] = includeMetadata;
             }
 
 
@@ -742,7 +757,7 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * List all broker connections for the current user.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for.
+         * List all broker connections for the current user with permissions.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for, including the current company\'s permissions (read/write) for each connection.
          * @summary List Broker Connections
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
@@ -803,12 +818,12 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {string | null} [currency] Filter by currency (e.g., \&#39;USD\&#39;, \&#39;EUR\&#39;)
          * @param {number} [limit] Maximum number of accounts to return
          * @param {number} [offset] Number of accounts to skip for pagination
-         * @param {boolean} [withMetadata] Include connection metadata in response
+         * @param {boolean} [includeMetadata] Include connection metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAccountsApiV1BrokersDataAccountsGet(brokerId?: string | null, connectionId?: string | null, accountType?: BrokerDataAccountTypeEnum | null, status?: AccountStatus | null, currency?: string | null, limit?: number, offset?: number, withMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListAccounts>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAccountsApiV1BrokersDataAccountsGet(brokerId, connectionId, accountType, status, currency, limit, offset, withMetadata, options);
+        async getAccountsApiV1BrokersDataAccountsGet(brokerId?: string | null, connectionId?: string | null, accountType?: BrokerDataAccountTypeEnum | null, status?: AccountStatus | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerAccount>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAccountsApiV1BrokersDataAccountsGet(brokerId, connectionId, accountType, status, currency, limit, offset, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.getAccountsApiV1BrokersDataAccountsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -824,12 +839,12 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {number} [offset] Number of balances to skip for pagination
          * @param {string | null} [balanceCreatedAfter] Filter balances created after this timestamp
          * @param {string | null} [balanceCreatedBefore] Filter balances created before this timestamp
-         * @param {boolean} [withMetadata] Include balance metadata in response
+         * @param {boolean} [includeMetadata] Include balance metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getBalancesApiV1BrokersDataBalancesGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, isEndOfDaySnapshot?: boolean | null, limit?: number, offset?: number, balanceCreatedAfter?: string | null, balanceCreatedBefore?: string | null, withMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListBalances>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getBalancesApiV1BrokersDataBalancesGet(brokerId, connectionId, accountId, isEndOfDaySnapshot, limit, offset, balanceCreatedAfter, balanceCreatedBefore, withMetadata, options);
+        async getBalancesApiV1BrokersDataBalancesGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, isEndOfDaySnapshot?: boolean | null, limit?: number, offset?: number, balanceCreatedAfter?: string | null, balanceCreatedBefore?: string | null, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerBalance>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getBalancesApiV1BrokersDataBalancesGet(brokerId, connectionId, accountId, isEndOfDaySnapshot, limit, offset, balanceCreatedAfter, balanceCreatedBefore, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.getBalancesApiV1BrokersDataBalancesGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -853,11 +868,12 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {string | null} [connectionId] Filter by connection ID
          * @param {number} [limit] Maximum number of events to return
          * @param {number} [offset] Number of events to skip for pagination
+         * @param {boolean} [includeMetadata] Include event metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(orderId: string, connectionId?: string | null, limit?: number, offset?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListOrderEventResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(orderId, connectionId, limit, offset, options);
+        async getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(orderId: string, connectionId?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerOrderEvent>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(orderId, connectionId, limit, offset, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -869,11 +885,12 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {string | null} [connectionId] Filter by connection ID
          * @param {number} [limit] Maximum number of fills to return
          * @param {number} [offset] Number of fills to skip for pagination
+         * @param {boolean} [includeMetadata] Include fill metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(orderId: string, connectionId?: string | null, limit?: number, offset?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListOrderFillResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(orderId, connectionId, limit, offset, options);
+        async getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(orderId: string, connectionId?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerOrderFill>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(orderId, connectionId, limit, offset, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -887,11 +904,12 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {number} [offset] Number of order groups to skip for pagination
          * @param {string | null} [createdAfter] Filter order groups created after this timestamp
          * @param {string | null} [createdBefore] Filter order groups created before this timestamp
+         * @param {boolean} [includeMetadata] Include group metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getOrderGroupsApiV1BrokersDataOrdersGroupsGet(brokerId?: string | null, connectionId?: string | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListOrderGroupResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrderGroupsApiV1BrokersDataOrdersGroupsGet(brokerId, connectionId, limit, offset, createdAfter, createdBefore, options);
+        async getOrderGroupsApiV1BrokersDataOrdersGroupsGet(brokerId?: string | null, connectionId?: string | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerOrderGroup>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrderGroupsApiV1BrokersDataOrdersGroupsGet(brokerId, connectionId, limit, offset, createdAfter, createdBefore, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.getOrderGroupsApiV1BrokersDataOrdersGroupsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -910,12 +928,12 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {number} [offset] Number of orders to skip for pagination
          * @param {string | null} [createdAfter] Filter orders created after this timestamp
          * @param {string | null} [createdBefore] Filter orders created before this timestamp
-         * @param {boolean} [withMetadata] Include order metadata in response
+         * @param {boolean} [includeMetadata] Include order metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getOrdersApiV1BrokersDataOrdersGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, orderStatus?: BrokerDataOrderStatusEnum | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, withMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListOrderResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrdersApiV1BrokersDataOrdersGet(brokerId, connectionId, accountId, symbol, orderStatus, side, assetType, limit, offset, createdAfter, createdBefore, withMetadata, options);
+        async getOrdersApiV1BrokersDataOrdersGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, orderStatus?: BrokerDataOrderStatusEnum | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerOrder>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrdersApiV1BrokersDataOrdersGet(brokerId, connectionId, accountId, symbol, orderStatus, side, assetType, limit, offset, createdAfter, createdBefore, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.getOrdersApiV1BrokersDataOrdersGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -930,7 +948,7 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet(lotId: string, connectionId?: string | null, limit?: number, offset?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListPositionLotFillResponse>> {
+        async getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet(lotId: string, connectionId?: string | null, limit?: number, offset?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerPositionLotFill>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet(lotId, connectionId, limit, offset, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet']?.[localVarOperationServerIndex]?.url;
@@ -949,7 +967,7 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPositionLotsApiV1BrokersDataPositionsLotsGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, positionId?: string | null, limit?: number, offset?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListPositionLotResponse>> {
+        async getPositionLotsApiV1BrokersDataPositionsLotsGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, positionId?: string | null, limit?: number, offset?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerPositionLot>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getPositionLotsApiV1BrokersDataPositionsLotsGet(brokerId, connectionId, accountId, symbol, positionId, limit, offset, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.getPositionLotsApiV1BrokersDataPositionsLotsGet']?.[localVarOperationServerIndex]?.url;
@@ -969,23 +987,23 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {number} [offset] Number of positions to skip for pagination
          * @param {string | null} [updatedAfter] Filter positions updated after this timestamp
          * @param {string | null} [updatedBefore] Filter positions updated before this timestamp
-         * @param {boolean} [withMetadata] Include position metadata in response
+         * @param {boolean} [includeMetadata] Include position metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPositionsApiV1BrokersDataPositionsGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, positionStatus?: BrokerDataPositionStatusEnum | null, limit?: number, offset?: number, updatedAfter?: string | null, updatedBefore?: string | null, withMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListPositionResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getPositionsApiV1BrokersDataPositionsGet(brokerId, connectionId, accountId, symbol, side, assetType, positionStatus, limit, offset, updatedAfter, updatedBefore, withMetadata, options);
+        async getPositionsApiV1BrokersDataPositionsGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, positionStatus?: BrokerDataPositionStatusEnum | null, limit?: number, offset?: number, updatedAfter?: string | null, updatedBefore?: string | null, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerPosition>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPositionsApiV1BrokersDataPositionsGet(brokerId, connectionId, accountId, symbol, side, assetType, positionStatus, limit, offset, updatedAfter, updatedBefore, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.getPositionsApiV1BrokersDataPositionsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * List all broker connections for the current user.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for.
+         * List all broker connections for the current user with permissions.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for, including the current company\'s permissions (read/write) for each connection.
          * @summary List Broker Connections
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async listBrokerConnectionsApiV1BrokersConnectionsGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListUserBrokerConnections>> {
+        async listBrokerConnectionsApiV1BrokersConnectionsGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListUserBrokerConnectionWithPermissions>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.listBrokerConnectionsApiV1BrokersConnectionsGet(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.listBrokerConnectionsApiV1BrokersConnectionsGet']?.[localVarOperationServerIndex]?.url;
@@ -1017,8 +1035,8 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAccountsApiV1BrokersDataAccountsGet(requestParameters: BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListAccounts> {
-            return localVarFp.getAccountsApiV1BrokersDataAccountsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountType, requestParameters.status, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.withMetadata, options).then((request) => request(axios, basePath));
+        getAccountsApiV1BrokersDataAccountsGet(requestParameters: BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerAccount> {
+            return localVarFp.getAccountsApiV1BrokersDataAccountsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountType, requestParameters.status, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
          * Get balances for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
@@ -1027,8 +1045,8 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getBalancesApiV1BrokersDataBalancesGet(requestParameters: BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListBalances> {
-            return localVarFp.getBalancesApiV1BrokersDataBalancesGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.isEndOfDaySnapshot, requestParameters.limit, requestParameters.offset, requestParameters.balanceCreatedAfter, requestParameters.balanceCreatedBefore, requestParameters.withMetadata, options).then((request) => request(axios, basePath));
+        getBalancesApiV1BrokersDataBalancesGet(requestParameters: BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerBalance> {
+            return localVarFp.getBalancesApiV1BrokersDataBalancesGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.isEndOfDaySnapshot, requestParameters.limit, requestParameters.offset, requestParameters.balanceCreatedAfter, requestParameters.balanceCreatedBefore, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
          * Get all available brokers.  This is a fast operation that returns a cached list of available brokers. The list is loaded once at startup and never changes during runtime.  Returns ------- FinaticResponse[list[BrokerInfo]]     list of available brokers with their metadata.
@@ -1046,8 +1064,8 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(requestParameters: BrokersApiGetOrderEventsApiV1BrokersDataOrdersOrderIdEventsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListOrderEventResponse> {
-            return localVarFp.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, options).then((request) => request(axios, basePath));
+        getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(requestParameters: BrokersApiGetOrderEventsApiV1BrokersDataOrdersOrderIdEventsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderEvent> {
+            return localVarFp.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
          * Get order fills for a specific order.  This endpoint returns all execution fills for the specified order.
@@ -1056,8 +1074,8 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(requestParameters: BrokersApiGetOrderFillsApiV1BrokersDataOrdersOrderIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListOrderFillResponse> {
-            return localVarFp.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, options).then((request) => request(axios, basePath));
+        getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(requestParameters: BrokersApiGetOrderFillsApiV1BrokersDataOrdersOrderIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderFill> {
+            return localVarFp.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
          * Get order groups.  This endpoint returns order groups that contain multiple orders.
@@ -1066,8 +1084,8 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrderGroupsApiV1BrokersDataOrdersGroupsGet(requestParameters: BrokersApiGetOrderGroupsApiV1BrokersDataOrdersGroupsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListOrderGroupResponse> {
-            return localVarFp.getOrderGroupsApiV1BrokersDataOrdersGroupsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, options).then((request) => request(axios, basePath));
+        getOrderGroupsApiV1BrokersDataOrdersGroupsGet(requestParameters: BrokersApiGetOrderGroupsApiV1BrokersDataOrdersGroupsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderGroup> {
+            return localVarFp.getOrderGroupsApiV1BrokersDataOrdersGroupsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
          * Get orders for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns orders from connections the company has read access to.
@@ -1076,8 +1094,8 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrdersApiV1BrokersDataOrdersGet(requestParameters: BrokersApiGetOrdersApiV1BrokersDataOrdersGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListOrderResponse> {
-            return localVarFp.getOrdersApiV1BrokersDataOrdersGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.orderStatus, requestParameters.side, requestParameters.assetType, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.withMetadata, options).then((request) => request(axios, basePath));
+        getOrdersApiV1BrokersDataOrdersGet(requestParameters: BrokersApiGetOrdersApiV1BrokersDataOrdersGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrder> {
+            return localVarFp.getOrdersApiV1BrokersDataOrdersGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.orderStatus, requestParameters.side, requestParameters.assetType, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
          * Get position lot fills for a specific lot.  This endpoint returns all fills associated with a specific position lot.
@@ -1086,7 +1104,7 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet(requestParameters: BrokersApiGetPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListPositionLotFillResponse> {
+        getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet(requestParameters: BrokersApiGetPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPositionLotFill> {
             return localVarFp.getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet(requestParameters.lotId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, options).then((request) => request(axios, basePath));
         },
         /**
@@ -1096,7 +1114,7 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPositionLotsApiV1BrokersDataPositionsLotsGet(requestParameters: BrokersApiGetPositionLotsApiV1BrokersDataPositionsLotsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListPositionLotResponse> {
+        getPositionLotsApiV1BrokersDataPositionsLotsGet(requestParameters: BrokersApiGetPositionLotsApiV1BrokersDataPositionsLotsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPositionLot> {
             return localVarFp.getPositionLotsApiV1BrokersDataPositionsLotsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.positionId, requestParameters.limit, requestParameters.offset, options).then((request) => request(axios, basePath));
         },
         /**
@@ -1106,16 +1124,16 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPositionsApiV1BrokersDataPositionsGet(requestParameters: BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListPositionResponse> {
-            return localVarFp.getPositionsApiV1BrokersDataPositionsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.side, requestParameters.assetType, requestParameters.positionStatus, requestParameters.limit, requestParameters.offset, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.withMetadata, options).then((request) => request(axios, basePath));
+        getPositionsApiV1BrokersDataPositionsGet(requestParameters: BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPosition> {
+            return localVarFp.getPositionsApiV1BrokersDataPositionsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.side, requestParameters.assetType, requestParameters.positionStatus, requestParameters.limit, requestParameters.offset, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
-         * List all broker connections for the current user.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for.
+         * List all broker connections for the current user with permissions.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for, including the current company\'s permissions (read/write) for each connection.
          * @summary List Broker Connections
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listBrokerConnectionsApiV1BrokersConnectionsGet(options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListUserBrokerConnections> {
+        listBrokerConnectionsApiV1BrokersConnectionsGet(options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListUserBrokerConnectionWithPermissions> {
             return localVarFp.listBrokerConnectionsApiV1BrokersConnectionsGet(options).then((request) => request(axios, basePath));
         },
     };
@@ -1141,7 +1159,7 @@ export interface BrokersApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getAccountsApiV1BrokersDataAccountsGet(requestParameters?: BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListAccounts>;
+    getAccountsApiV1BrokersDataAccountsGet(requestParameters?: BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerAccount>;
 
     /**
      * Get balances for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
@@ -1150,7 +1168,7 @@ export interface BrokersApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getBalancesApiV1BrokersDataBalancesGet(requestParameters?: BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListBalances>;
+    getBalancesApiV1BrokersDataBalancesGet(requestParameters?: BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerBalance>;
 
     /**
      * Get all available brokers.  This is a fast operation that returns a cached list of available brokers. The list is loaded once at startup and never changes during runtime.  Returns ------- FinaticResponse[list[BrokerInfo]]     list of available brokers with their metadata.
@@ -1167,7 +1185,7 @@ export interface BrokersApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(requestParameters: BrokersApiGetOrderEventsApiV1BrokersDataOrdersOrderIdEventsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListOrderEventResponse>;
+    getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(requestParameters: BrokersApiGetOrderEventsApiV1BrokersDataOrdersOrderIdEventsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderEvent>;
 
     /**
      * Get order fills for a specific order.  This endpoint returns all execution fills for the specified order.
@@ -1176,7 +1194,7 @@ export interface BrokersApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(requestParameters: BrokersApiGetOrderFillsApiV1BrokersDataOrdersOrderIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListOrderFillResponse>;
+    getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(requestParameters: BrokersApiGetOrderFillsApiV1BrokersDataOrdersOrderIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderFill>;
 
     /**
      * Get order groups.  This endpoint returns order groups that contain multiple orders.
@@ -1185,7 +1203,7 @@ export interface BrokersApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getOrderGroupsApiV1BrokersDataOrdersGroupsGet(requestParameters?: BrokersApiGetOrderGroupsApiV1BrokersDataOrdersGroupsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListOrderGroupResponse>;
+    getOrderGroupsApiV1BrokersDataOrdersGroupsGet(requestParameters?: BrokersApiGetOrderGroupsApiV1BrokersDataOrdersGroupsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderGroup>;
 
     /**
      * Get orders for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns orders from connections the company has read access to.
@@ -1194,7 +1212,7 @@ export interface BrokersApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getOrdersApiV1BrokersDataOrdersGet(requestParameters?: BrokersApiGetOrdersApiV1BrokersDataOrdersGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListOrderResponse>;
+    getOrdersApiV1BrokersDataOrdersGet(requestParameters?: BrokersApiGetOrdersApiV1BrokersDataOrdersGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrder>;
 
     /**
      * Get position lot fills for a specific lot.  This endpoint returns all fills associated with a specific position lot.
@@ -1203,7 +1221,7 @@ export interface BrokersApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet(requestParameters: BrokersApiGetPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListPositionLotFillResponse>;
+    getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet(requestParameters: BrokersApiGetPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPositionLotFill>;
 
     /**
      * Get position lots (tax lots for positions).  This endpoint returns tax lots for positions, which are used for tax reporting. Each lot tracks when a position was opened/closed and at what prices.
@@ -1212,7 +1230,7 @@ export interface BrokersApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getPositionLotsApiV1BrokersDataPositionsLotsGet(requestParameters?: BrokersApiGetPositionLotsApiV1BrokersDataPositionsLotsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListPositionLotResponse>;
+    getPositionLotsApiV1BrokersDataPositionsLotsGet(requestParameters?: BrokersApiGetPositionLotsApiV1BrokersDataPositionsLotsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPositionLot>;
 
     /**
      * Get positions for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns positions from connections the company has read access to.
@@ -1221,15 +1239,15 @@ export interface BrokersApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getPositionsApiV1BrokersDataPositionsGet(requestParameters?: BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListPositionResponse>;
+    getPositionsApiV1BrokersDataPositionsGet(requestParameters?: BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPosition>;
 
     /**
-     * List all broker connections for the current user.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for.
+     * List all broker connections for the current user with permissions.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for, including the current company\'s permissions (read/write) for each connection.
      * @summary List Broker Connections
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    listBrokerConnectionsApiV1BrokersConnectionsGet(options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListUserBrokerConnections>;
+    listBrokerConnectionsApiV1BrokersConnectionsGet(options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListUserBrokerConnectionWithPermissions>;
 
 }
 
@@ -1283,9 +1301,9 @@ export interface BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest {
     readonly offset?: number
 
     /**
-     * Include connection metadata in response
+     * Include connection metadata in response (excluded by default for FDX compliance)
      */
-    readonly withMetadata?: boolean
+    readonly includeMetadata?: boolean
 }
 
 /**
@@ -1333,9 +1351,9 @@ export interface BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest {
     readonly balanceCreatedBefore?: string | null
 
     /**
-     * Include balance metadata in response
+     * Include balance metadata in response (excluded by default for FDX compliance)
      */
-    readonly withMetadata?: boolean
+    readonly includeMetadata?: boolean
 }
 
 /**
@@ -1361,6 +1379,11 @@ export interface BrokersApiGetOrderEventsApiV1BrokersDataOrdersOrderIdEventsGetR
      * Number of events to skip for pagination
      */
     readonly offset?: number
+
+    /**
+     * Include event metadata in response (excluded by default for FDX compliance)
+     */
+    readonly includeMetadata?: boolean
 }
 
 /**
@@ -1386,6 +1409,11 @@ export interface BrokersApiGetOrderFillsApiV1BrokersDataOrdersOrderIdFillsGetReq
      * Number of fills to skip for pagination
      */
     readonly offset?: number
+
+    /**
+     * Include fill metadata in response (excluded by default for FDX compliance)
+     */
+    readonly includeMetadata?: boolean
 }
 
 /**
@@ -1421,6 +1449,11 @@ export interface BrokersApiGetOrderGroupsApiV1BrokersDataOrdersGroupsGetRequest 
      * Filter order groups created before this timestamp
      */
     readonly createdBefore?: string | null
+
+    /**
+     * Include group metadata in response (excluded by default for FDX compliance)
+     */
+    readonly includeMetadata?: boolean
 }
 
 /**
@@ -1483,9 +1516,9 @@ export interface BrokersApiGetOrdersApiV1BrokersDataOrdersGetRequest {
     readonly createdBefore?: string | null
 
     /**
-     * Include order metadata in response
+     * Include order metadata in response (excluded by default for FDX compliance)
      */
-    readonly withMetadata?: boolean
+    readonly includeMetadata?: boolean
 }
 
 /**
@@ -1613,9 +1646,9 @@ export interface BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest {
     readonly updatedBefore?: string | null
 
     /**
-     * Include position metadata in response
+     * Include position metadata in response (excluded by default for FDX compliance)
      */
-    readonly withMetadata?: boolean
+    readonly includeMetadata?: boolean
 }
 
 /**
@@ -1641,7 +1674,7 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
      * @throws {RequiredError}
      */
     public getAccountsApiV1BrokersDataAccountsGet(requestParameters: BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getAccountsApiV1BrokersDataAccountsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountType, requestParameters.status, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.withMetadata, options).then((request) => request(this.axios, this.basePath));
+        return BrokersApiFp(this.configuration).getAccountsApiV1BrokersDataAccountsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountType, requestParameters.status, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1652,7 +1685,7 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
      * @throws {RequiredError}
      */
     public getBalancesApiV1BrokersDataBalancesGet(requestParameters: BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getBalancesApiV1BrokersDataBalancesGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.isEndOfDaySnapshot, requestParameters.limit, requestParameters.offset, requestParameters.balanceCreatedAfter, requestParameters.balanceCreatedBefore, requestParameters.withMetadata, options).then((request) => request(this.axios, this.basePath));
+        return BrokersApiFp(this.configuration).getBalancesApiV1BrokersDataBalancesGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.isEndOfDaySnapshot, requestParameters.limit, requestParameters.offset, requestParameters.balanceCreatedAfter, requestParameters.balanceCreatedBefore, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1673,7 +1706,7 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
      * @throws {RequiredError}
      */
     public getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(requestParameters: BrokersApiGetOrderEventsApiV1BrokersDataOrdersOrderIdEventsGetRequest, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, options).then((request) => request(this.axios, this.basePath));
+        return BrokersApiFp(this.configuration).getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1684,7 +1717,7 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
      * @throws {RequiredError}
      */
     public getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(requestParameters: BrokersApiGetOrderFillsApiV1BrokersDataOrdersOrderIdFillsGetRequest, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, options).then((request) => request(this.axios, this.basePath));
+        return BrokersApiFp(this.configuration).getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1695,7 +1728,7 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
      * @throws {RequiredError}
      */
     public getOrderGroupsApiV1BrokersDataOrdersGroupsGet(requestParameters: BrokersApiGetOrderGroupsApiV1BrokersDataOrdersGroupsGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getOrderGroupsApiV1BrokersDataOrdersGroupsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, options).then((request) => request(this.axios, this.basePath));
+        return BrokersApiFp(this.configuration).getOrderGroupsApiV1BrokersDataOrdersGroupsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1706,7 +1739,7 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
      * @throws {RequiredError}
      */
     public getOrdersApiV1BrokersDataOrdersGet(requestParameters: BrokersApiGetOrdersApiV1BrokersDataOrdersGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getOrdersApiV1BrokersDataOrdersGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.orderStatus, requestParameters.side, requestParameters.assetType, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.withMetadata, options).then((request) => request(this.axios, this.basePath));
+        return BrokersApiFp(this.configuration).getOrdersApiV1BrokersDataOrdersGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.orderStatus, requestParameters.side, requestParameters.assetType, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1739,11 +1772,11 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
      * @throws {RequiredError}
      */
     public getPositionsApiV1BrokersDataPositionsGet(requestParameters: BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getPositionsApiV1BrokersDataPositionsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.side, requestParameters.assetType, requestParameters.positionStatus, requestParameters.limit, requestParameters.offset, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.withMetadata, options).then((request) => request(this.axios, this.basePath));
+        return BrokersApiFp(this.configuration).getPositionsApiV1BrokersDataPositionsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.side, requestParameters.assetType, requestParameters.positionStatus, requestParameters.limit, requestParameters.offset, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * List all broker connections for the current user.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for.
+     * List all broker connections for the current user with permissions.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for, including the current company\'s permissions (read/write) for each connection.
      * @summary List Broker Connections
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}

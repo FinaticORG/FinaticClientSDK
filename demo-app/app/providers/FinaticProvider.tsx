@@ -251,7 +251,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   }, [sdkType, finatic]); // Only reinitialize when SDK type or finatic instance changes, not mode/environment
 
   const addLog = useCallback((type: LogEntry['type'], message: string) => {
-    setLogs(prev => [...prev, { type, message, timestamp: new Date().toLocaleTimeString() }]);
+    setLogs((prev) => [...prev, { type, message, timestamp: new Date().toLocaleTimeString() }]);
   }, []);
 
   const clearLogs = useCallback(() => {
@@ -320,7 +320,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
 
   const recordMethodCall = useCallback(
     (methodName: string, durationMs: number, bytes: number, isError = false) => {
-      setUsage(prev => {
+      setUsage((prev) => {
         const rolled = ensureDayRollover(prev);
         const existing =
           rolled.methods[methodName] ||
@@ -359,7 +359,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
 
   const recordApiRequest = useCallback(
     (path: string, method: string, status: number, durationMs: number, bytes: number) => {
-      setUsage(prev => {
+      setUsage((prev) => {
         const rolled = ensureDayRollover(prev);
         const key = `${method.toUpperCase()} ${path}`;
         const existing =
@@ -436,7 +436,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         // Direct finatic instance uses isAuthed()
         authed = (authSource as any).isAuthed();
       }
-      
+
       const uid = typeof authSource.getUserId === 'function' ? await authSource.getUserId() : null;
 
       console.log('🔍 checkAuth() - authed:', authed, 'typeof:', typeof authed);
@@ -489,7 +489,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         addLog('info', '🔍 Closing existing portal before clearing instance...');
         await (oldFinatic as any).closePortal();
         // Small delay to ensure portal is fully closed
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (err) {
         addLog(
           'info',
@@ -544,7 +544,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
 
       // Small delay to ensure state updates are processed before creating new instance
       // This guarantees the old instance is fully cleared
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise((resolve) => setTimeout(resolve, 0));
 
       setIsLoading(true);
       addLog('info', `🔄 Reinitializing SDK`);
@@ -655,7 +655,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
                   const result = (value as Function).apply(target, args);
                   if (result && typeof (result as Promise<unknown>).then === 'function') {
                     return (result as Promise<unknown>)
-                      .then(res => {
+                      .then((res) => {
                         const duration =
                           (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
                           start;
@@ -663,7 +663,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
                         recordMethodCall(String(prop), duration, bytes, false);
                         return res;
                       })
-                      .catch(err => {
+                      .catch((err) => {
                         const duration =
                           (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
                           start;
@@ -721,7 +721,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
                   const result = (value as Function).apply(target, args);
                   if (result && typeof (result as Promise<unknown>).then === 'function') {
                     return (result as Promise<unknown>)
-                      .then(res => {
+                      .then((res) => {
                         const duration =
                           (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
                           start;
@@ -729,7 +729,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
                         recordMethodCall(String(prop), duration, bytes, false);
                         return res;
                       })
-                      .catch(err => {
+                      .catch((err) => {
                         const duration =
                           (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
                           start;
@@ -777,11 +777,11 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         throw new Error('Failed to get token');
       }
       const responseData = await response.json();
-      // Handle new FinaticResponse structure: success.data.one_time_token
+      // Extract token from new response structure: { trace_id, success: { data: { one_time_token, expires_at }, meta }, error, warning }
       const token = responseData.success?.data?.one_time_token;
       if (!token) {
         addLog('error', 'No token found in API response');
-        console.error('Response data:', responseData);
+        addLog('error', `Response structure: ${JSON.stringify(responseData, null, 2)}`);
         throw new Error('No token found in API response');
       }
 
@@ -824,7 +824,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
                 const result = originalFunction.apply(target, args);
                 if (result && typeof (result as Promise<unknown>).then === 'function') {
                   return (result as Promise<unknown>)
-                    .then(res => {
+                    .then((res) => {
                       const duration =
                         (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
                         start;
@@ -832,7 +832,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
                       recordMethodCall(String(prop), duration, bytes, false);
                       return res;
                     })
-                    .catch(err => {
+                    .catch((err) => {
                       const duration =
                         (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
                         start;
@@ -876,7 +876,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
 
       // Force a state update by using a callback to ensure React processes it
       // We'll use a small delay to let React batch and process the state update
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Verify the instance was created with the new token by checking a property
       // This ensures we're using the new instance, not the old one

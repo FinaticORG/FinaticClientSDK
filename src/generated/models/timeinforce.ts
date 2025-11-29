@@ -15,23 +15,11 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { DayTIF } from './day-tif';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { FOKTIF } from './foktif';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { GTCTIF } from './gtctif';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { GTDTIF } from './gtdtif';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { IOCTIF } from './ioctif';
+import type { FDXTimeInForce } from './fdxtime-in-force';
 
 /**
- * @type Timeinforce
+ * Time in force (DAY, GTC, GTD, IOC, FOK)
  */
-export type Timeinforce = { timeInForce: 'day' } & DayTIF | { timeInForce: 'fok' } & FOKTIF | { timeInForce: 'gtc' } & GTCTIF | { timeInForce: 'gtd' } & GTDTIF | { timeInForce: 'ioc' } & IOCTIF;
-
+export interface Timeinforce {
+}
 

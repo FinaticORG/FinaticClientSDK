@@ -19,7 +19,7 @@ import { BrokersWrapper } from './wrappers/brokers';
 import { CompanyWrapper } from './wrappers/company';
 import { SessionWrapper } from './wrappers/session';
 import type { FinaticResponse, GetAccountsParams, GetBalancesParams, GetOrderEventsParams, GetOrderFillsParams, GetOrderGroupsParams, GetOrdersParams, GetPositionLotFillsParams, GetPositionLotsParams, GetPositionsParams } from './wrappers/brokers';
-import type { Accounts, Balances, OrderEventResponse, OrderFillResponse, OrderGroupResponse, OrderResponse, PositionLotFillResponse, PositionLotResponse, PositionResponse } from './models';
+import type { FDXBrokerAccount, FDXBrokerBalance, FDXBrokerOrder, FDXBrokerOrderEvent, FDXBrokerOrderFill, FDXBrokerOrderGroup, FDXBrokerPosition, FDXBrokerPositionLot, FDXBrokerPositionLotFill } from './models';
 
 
 export interface FinaticConnectOptions {
@@ -375,17 +375,11 @@ export class FinaticConnect extends EventEmitter {
       portalUrl = url.toString();
     }
 
-    // Add session ID and company ID to URL
-    const url = new URL(portalUrl);
-    if (this.sessionId) {
-      url.searchParams.set('session_id', this.sessionId);
-    }
-    if (this.companyId) {
-      url.searchParams.set('company_id', this.companyId);
-    }
+    // Note: session_id and company_id should NOT be added to the portal URL
+    // The backend includes the token in the URL, and session context is handled via headers
 
-    this.logger.debug?.('Portal URL generated', { portalUrl: url.toString() });
-    return url.toString();
+    this.logger.debug?.('Portal URL generated', { portalUrl });
+    return portalUrl;
   }
 
   /**
@@ -692,10 +686,11 @@ export class FinaticConnect extends EventEmitter {
   /**
    * List Broker Connections
    * 
-   * List all broker connections for the current user.
+   * List all broker connections for the current user with permissions.
    * 
    * This endpoint is accessible from the portal and uses session-only authentication.
-   * Returns connections that the user has any permissions for.
+   * Returns connections that the user has any permissions for, including the current
+   * company's permissions (read/write) for each connection.
    * 
    * Convenience method that delegates to brokers wrapper.
    * 
@@ -873,7 +868,7 @@ export class FinaticConnect extends EventEmitter {
    * ```
    */
   async getOrders(params?: Partial<GetOrdersParams>): Promise<Awaited<ReturnType<typeof this.brokers.getOrders>>> {
-    return await this.brokers.getOrders(params?.brokerId, params?.connectionId, params?.accountId, params?.symbol, params?.orderStatus, params?.side, params?.assetType, params?.limit, params?.offset, params?.createdAfter, params?.createdBefore, params?.withMetadata);
+    return await this.brokers.getOrders(params?.brokerId, params?.connectionId, params?.accountId, params?.symbol, params?.orderStatus, params?.side, params?.assetType, params?.limit, params?.offset, params?.createdAfter, params?.createdBefore, params?.includeMetadata);
   }
 
   /**
@@ -954,7 +949,7 @@ export class FinaticConnect extends EventEmitter {
    * ```
    */
   async getPositions(params?: Partial<GetPositionsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getPositions>>> {
-    return await this.brokers.getPositions(params?.brokerId, params?.connectionId, params?.accountId, params?.symbol, params?.side, params?.assetType, params?.positionStatus, params?.limit, params?.offset, params?.updatedAfter, params?.updatedBefore, params?.withMetadata);
+    return await this.brokers.getPositions(params?.brokerId, params?.connectionId, params?.accountId, params?.symbol, params?.side, params?.assetType, params?.positionStatus, params?.limit, params?.offset, params?.updatedAfter, params?.updatedBefore, params?.includeMetadata);
   }
 
   /**
@@ -1035,7 +1030,7 @@ export class FinaticConnect extends EventEmitter {
    * ```
    */
   async getBalances(params?: Partial<GetBalancesParams>): Promise<Awaited<ReturnType<typeof this.brokers.getBalances>>> {
-    return await this.brokers.getBalances(params?.brokerId, params?.connectionId, params?.accountId, params?.isEndOfDaySnapshot, params?.limit, params?.offset, params?.balanceCreatedAfter, params?.balanceCreatedBefore, params?.withMetadata);
+    return await this.brokers.getBalances(params?.brokerId, params?.connectionId, params?.accountId, params?.isEndOfDaySnapshot, params?.limit, params?.offset, params?.balanceCreatedAfter, params?.balanceCreatedBefore, params?.includeMetadata);
   }
 
   /**
@@ -1116,7 +1111,7 @@ export class FinaticConnect extends EventEmitter {
    * ```
    */
   async getAccounts(params?: Partial<GetAccountsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getAccounts>>> {
-    return await this.brokers.getAccounts(params?.brokerId, params?.connectionId, params?.accountType, params?.status, params?.currency, params?.limit, params?.offset, params?.withMetadata);
+    return await this.brokers.getAccounts(params?.brokerId, params?.connectionId, params?.accountType, params?.status, params?.currency, params?.limit, params?.offset, params?.includeMetadata);
   }
 
   /**
@@ -1205,7 +1200,7 @@ export class FinaticConnect extends EventEmitter {
    * ```
    */
   async getOrderFills(params?: Partial<GetOrderFillsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getOrderFills>>> {
-    return await this.brokers.getOrderFills((params?.orderId as any), params?.connectionId, params?.limit, params?.offset);
+    return await this.brokers.getOrderFills((params?.orderId as any), params?.connectionId, params?.limit, params?.offset, params?.includeMetadata);
   }
 
   /**
@@ -1294,7 +1289,7 @@ export class FinaticConnect extends EventEmitter {
    * ```
    */
   async getOrderEvents(params?: Partial<GetOrderEventsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getOrderEvents>>> {
-    return await this.brokers.getOrderEvents((params?.orderId as any), params?.connectionId, params?.limit, params?.offset);
+    return await this.brokers.getOrderEvents((params?.orderId as any), params?.connectionId, params?.limit, params?.offset, params?.includeMetadata);
   }
 
   /**
@@ -1374,7 +1369,7 @@ export class FinaticConnect extends EventEmitter {
    * ```
    */
   async getOrderGroups(params?: Partial<GetOrderGroupsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getOrderGroups>>> {
-    return await this.brokers.getOrderGroups(params?.brokerId, params?.connectionId, params?.limit, params?.offset, params?.createdAfter, params?.createdBefore);
+    return await this.brokers.getOrderGroups(params?.brokerId, params?.connectionId, params?.limit, params?.offset, params?.createdAfter, params?.createdBefore, params?.includeMetadata);
   }
 
   /**
@@ -1608,17 +1603,17 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'])
    * ```
    */
-  async getAllOrders(params?: Partial<GetOrdersParams>): Promise<FinaticResponse<OrderResponse[]>> {
+  async getAllOrders(params?: Partial<GetOrdersParams>): Promise<FinaticResponse<FDXBrokerOrder[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
     const filterParams: GetOrdersParams = (params || {}) as GetOrdersParams;
-    const allData: OrderResponse[] = [];
+    const allData: FDXBrokerOrder[] = [];
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any; } | null = null;
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getOrders(filterParams?.brokerId, filterParams?.connectionId, filterParams?.accountId, filterParams?.symbol, filterParams?.orderStatus, filterParams?.side, filterParams?.assetType, limit, offset, filterParams?.createdAfter, filterParams?.createdBefore, filterParams?.withMetadata);
+      const response = await this.brokers.getOrders(filterParams?.brokerId, filterParams?.connectionId, filterParams?.accountId, filterParams?.symbol, filterParams?.orderStatus, filterParams?.side, filterParams?.assetType, limit, offset, filterParams?.createdAfter, filterParams?.createdBefore, filterParams?.includeMetadata);
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -1642,7 +1637,7 @@ export class FinaticConnect extends EventEmitter {
     if (lastError) {
       return {
         success: {
-          data: [] as OrderResponse[],
+          data: [] as FDXBrokerOrder[],
         },
         error: lastError,
         warning: warnings.length > 0 ? warnings : null,
@@ -1718,17 +1713,17 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'])
    * ```
    */
-  async getAllPositions(params?: Partial<GetPositionsParams>): Promise<FinaticResponse<PositionResponse[]>> {
+  async getAllPositions(params?: Partial<GetPositionsParams>): Promise<FinaticResponse<FDXBrokerPosition[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
     const filterParams: GetPositionsParams = (params || {}) as GetPositionsParams;
-    const allData: PositionResponse[] = [];
+    const allData: FDXBrokerPosition[] = [];
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any; } | null = null;
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getPositions(filterParams?.brokerId, filterParams?.connectionId, filterParams?.accountId, filterParams?.symbol, filterParams?.side, filterParams?.assetType, filterParams?.positionStatus, limit, offset, filterParams?.updatedAfter, filterParams?.updatedBefore, filterParams?.withMetadata);
+      const response = await this.brokers.getPositions(filterParams?.brokerId, filterParams?.connectionId, filterParams?.accountId, filterParams?.symbol, filterParams?.side, filterParams?.assetType, filterParams?.positionStatus, limit, offset, filterParams?.updatedAfter, filterParams?.updatedBefore, filterParams?.includeMetadata);
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -1752,7 +1747,7 @@ export class FinaticConnect extends EventEmitter {
     if (lastError) {
       return {
         success: {
-          data: [] as PositionResponse[],
+          data: [] as FDXBrokerPosition[],
         },
         error: lastError,
         warning: warnings.length > 0 ? warnings : null,
@@ -1828,17 +1823,17 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'])
    * ```
    */
-  async getAllBalances(params?: Partial<GetBalancesParams>): Promise<FinaticResponse<Balances[]>> {
+  async getAllBalances(params?: Partial<GetBalancesParams>): Promise<FinaticResponse<FDXBrokerBalance[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
     const filterParams: GetBalancesParams = (params || {}) as GetBalancesParams;
-    const allData: Balances[] = [];
+    const allData: FDXBrokerBalance[] = [];
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any; } | null = null;
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getBalances(filterParams?.brokerId, filterParams?.connectionId, filterParams?.accountId, filterParams?.isEndOfDaySnapshot, limit, offset, filterParams?.balanceCreatedAfter, filterParams?.balanceCreatedBefore, filterParams?.withMetadata);
+      const response = await this.brokers.getBalances(filterParams?.brokerId, filterParams?.connectionId, filterParams?.accountId, filterParams?.isEndOfDaySnapshot, limit, offset, filterParams?.balanceCreatedAfter, filterParams?.balanceCreatedBefore, filterParams?.includeMetadata);
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -1862,7 +1857,7 @@ export class FinaticConnect extends EventEmitter {
     if (lastError) {
       return {
         success: {
-          data: [] as Balances[],
+          data: [] as FDXBrokerBalance[],
         },
         error: lastError,
         warning: warnings.length > 0 ? warnings : null,
@@ -1938,17 +1933,17 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'])
    * ```
    */
-  async getAllAccounts(params?: Partial<GetAccountsParams>): Promise<FinaticResponse<Accounts[]>> {
+  async getAllAccounts(params?: Partial<GetAccountsParams>): Promise<FinaticResponse<FDXBrokerAccount[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
     const filterParams: GetAccountsParams = (params || {}) as GetAccountsParams;
-    const allData: Accounts[] = [];
+    const allData: FDXBrokerAccount[] = [];
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any; } | null = null;
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getAccounts(filterParams?.brokerId, filterParams?.connectionId, filterParams?.accountType, filterParams?.status, filterParams?.currency, limit, offset, filterParams?.withMetadata);
+      const response = await this.brokers.getAccounts(filterParams?.brokerId, filterParams?.connectionId, filterParams?.accountType, filterParams?.status, filterParams?.currency, limit, offset, filterParams?.includeMetadata);
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -1972,7 +1967,7 @@ export class FinaticConnect extends EventEmitter {
     if (lastError) {
       return {
         success: {
-          data: [] as Accounts[],
+          data: [] as FDXBrokerAccount[],
         },
         error: lastError,
         warning: warnings.length > 0 ? warnings : null,
@@ -2003,7 +1998,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Get all items with optional filters
-   * const result = await finatic.getAllOrderFills({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.getAllOrderFills({ connectionId: '00000000-0000-0000-0000-000000000000', includeMetadata: false });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2018,7 +2013,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Get all items with optional filters
-   * const result = await finatic.getAllOrderFills({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.getAllOrderFills({ connectionId: '00000000-0000-0000-0000-000000000000', includeMetadata: false });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2034,7 +2029,8 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Get all items with optional filters
    * result = await finatic.get_all_order_fills(
-   *            connection_id='00000000-0000-0000-0000-000000000000'
+   *            connection_id='00000000-0000-0000-0000-000000000000',
+            include_metadata=false
    * )
    * 
    * # Access the response data
@@ -2046,17 +2042,17 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'])
    * ```
    */
-  async getAllOrderFills(params?: Partial<GetOrderFillsParams>): Promise<FinaticResponse<OrderFillResponse[]>> {
+  async getAllOrderFills(params?: Partial<GetOrderFillsParams>): Promise<FinaticResponse<FDXBrokerOrderFill[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
     const filterParams: GetOrderFillsParams = (params || {}) as GetOrderFillsParams;
-    const allData: OrderFillResponse[] = [];
+    const allData: FDXBrokerOrderFill[] = [];
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any; } | null = null;
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getOrderFills(filterParams?.orderId, filterParams?.connectionId, limit, offset);
+      const response = await this.brokers.getOrderFills(filterParams?.orderId, filterParams?.connectionId, limit, offset, filterParams?.includeMetadata);
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -2080,7 +2076,7 @@ export class FinaticConnect extends EventEmitter {
     if (lastError) {
       return {
         success: {
-          data: [] as OrderFillResponse[],
+          data: [] as FDXBrokerOrderFill[],
         },
         error: lastError,
         warning: warnings.length > 0 ? warnings : null,
@@ -2111,7 +2107,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Get all items with optional filters
-   * const result = await finatic.getAllOrderEvents({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.getAllOrderEvents({ connectionId: '00000000-0000-0000-0000-000000000000', includeMetadata: false });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2126,7 +2122,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Get all items with optional filters
-   * const result = await finatic.getAllOrderEvents({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.getAllOrderEvents({ connectionId: '00000000-0000-0000-0000-000000000000', includeMetadata: false });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2142,7 +2138,8 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Get all items with optional filters
    * result = await finatic.get_all_order_events(
-   *            connection_id='00000000-0000-0000-0000-000000000000'
+   *            connection_id='00000000-0000-0000-0000-000000000000',
+            include_metadata=false
    * )
    * 
    * # Access the response data
@@ -2154,17 +2151,17 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'])
    * ```
    */
-  async getAllOrderEvents(params?: Partial<GetOrderEventsParams>): Promise<FinaticResponse<OrderEventResponse[]>> {
+  async getAllOrderEvents(params?: Partial<GetOrderEventsParams>): Promise<FinaticResponse<FDXBrokerOrderEvent[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
     const filterParams: GetOrderEventsParams = (params || {}) as GetOrderEventsParams;
-    const allData: OrderEventResponse[] = [];
+    const allData: FDXBrokerOrderEvent[] = [];
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any; } | null = null;
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getOrderEvents(filterParams?.orderId, filterParams?.connectionId, limit, offset);
+      const response = await this.brokers.getOrderEvents(filterParams?.orderId, filterParams?.connectionId, limit, offset, filterParams?.includeMetadata);
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -2188,7 +2185,7 @@ export class FinaticConnect extends EventEmitter {
     if (lastError) {
       return {
         success: {
-          data: [] as OrderEventResponse[],
+          data: [] as FDXBrokerOrderEvent[],
         },
         error: lastError,
         warning: warnings.length > 0 ? warnings : null,
@@ -2264,17 +2261,17 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'])
    * ```
    */
-  async getAllOrderGroups(params?: Partial<GetOrderGroupsParams>): Promise<FinaticResponse<OrderGroupResponse[]>> {
+  async getAllOrderGroups(params?: Partial<GetOrderGroupsParams>): Promise<FinaticResponse<FDXBrokerOrderGroup[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
     const filterParams: GetOrderGroupsParams = (params || {}) as GetOrderGroupsParams;
-    const allData: OrderGroupResponse[] = [];
+    const allData: FDXBrokerOrderGroup[] = [];
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any; } | null = null;
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getOrderGroups(filterParams?.brokerId, filterParams?.connectionId, limit, offset, filterParams?.createdAfter, filterParams?.createdBefore);
+      const response = await this.brokers.getOrderGroups(filterParams?.brokerId, filterParams?.connectionId, limit, offset, filterParams?.createdAfter, filterParams?.createdBefore, filterParams?.includeMetadata);
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -2298,7 +2295,7 @@ export class FinaticConnect extends EventEmitter {
     if (lastError) {
       return {
         success: {
-          data: [] as OrderGroupResponse[],
+          data: [] as FDXBrokerOrderGroup[],
         },
         error: lastError,
         warning: warnings.length > 0 ? warnings : null,
@@ -2374,10 +2371,10 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'])
    * ```
    */
-  async getAllPositionLots(params?: Partial<GetPositionLotsParams>): Promise<FinaticResponse<PositionLotResponse[]>> {
+  async getAllPositionLots(params?: Partial<GetPositionLotsParams>): Promise<FinaticResponse<FDXBrokerPositionLot[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
     const filterParams: GetPositionLotsParams = (params || {}) as GetPositionLotsParams;
-    const allData: PositionLotResponse[] = [];
+    const allData: FDXBrokerPositionLot[] = [];
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any; } | null = null;
@@ -2408,7 +2405,7 @@ export class FinaticConnect extends EventEmitter {
     if (lastError) {
       return {
         success: {
-          data: [] as PositionLotResponse[],
+          data: [] as FDXBrokerPositionLot[],
         },
         error: lastError,
         warning: warnings.length > 0 ? warnings : null,
@@ -2482,10 +2479,10 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'])
    * ```
    */
-  async getAllPositionLotFills(params?: Partial<GetPositionLotFillsParams>): Promise<FinaticResponse<PositionLotFillResponse[]>> {
+  async getAllPositionLotFills(params?: Partial<GetPositionLotFillsParams>): Promise<FinaticResponse<FDXBrokerPositionLotFill[]>> {
     // Use provided params or empty object (excluding limit and offset which are handled internally)
     const filterParams: GetPositionLotFillsParams = (params || {}) as GetPositionLotFillsParams;
-    const allData: PositionLotFillResponse[] = [];
+    const allData: FDXBrokerPositionLotFill[] = [];
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any; } | null = null;
@@ -2516,7 +2513,7 @@ export class FinaticConnect extends EventEmitter {
     if (lastError) {
       return {
         success: {
-          data: [] as PositionLotFillResponse[],
+          data: [] as FDXBrokerPositionLotFill[],
         },
         error: lastError,
         warning: warnings.length > 0 ? warnings : null,

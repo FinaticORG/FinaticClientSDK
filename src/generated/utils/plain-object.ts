@@ -35,10 +35,18 @@ export function convertToPlainObject(data: any): any {
       return convertToPlainObject({ ...data });
     }
     
-    // Recursively convert nested objects
+    // Recursively convert nested objects, excluding _id fields and null metadata
     const result: any = {};
     for (const key in data) {
       if (data.hasOwnProperty(key)) {
+        // Skip _id fields (internal model identifiers that should not be exposed)
+        if (key === '_id') {
+          continue;
+        }
+        // Skip metadata field if it's null (FDX compliance - metadata should only be included when present)
+        if (key === 'metadata' && (data[key] === null || data[key] === undefined)) {
+          continue;
+        }
         result[key] = convertToPlainObject(data[key]);
       }
     }

@@ -16,6 +16,7 @@ import { getCache, generateCacheKey } from '../utils/cache';
 import { applyRequestInterceptors, applyResponseInterceptors, applyErrorInterceptors } from '../utils/interceptors';
 import { unwrapAxiosResponse } from '../utils/response-utils';
 import { coerceEnumValue } from '../utils/enum-coercion';
+import { convertToPlainObject } from '../utils/plain-object';
 
 import type { CompanyResponse } from '../models';
 
@@ -162,8 +163,8 @@ export class CompanyWrapper {
         throw new Error('Unexpected response shape: missing success field');
       }
       
-      // Axios already parses JSON to plain objects - return directly
-      const standardResponse: FinaticResponse<CompanyResponse> = responseData as FinaticResponse<CompanyResponse>;
+      // Convert response to plain object, removing _id fields recursively
+      const standardResponse: FinaticResponse<CompanyResponse> = convertToPlainObject(responseData) as FinaticResponse<CompanyResponse>;
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
         const cacheKey = generateCacheKey('GET', '/api/v1/company/{company_id}', params, this.sdkConfig);
@@ -175,7 +176,7 @@ export class CompanyWrapper {
         action: 'getCompany'
       });
       
-      // Phase 2C: Return standard response structure (already plain objects)
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       return standardResponse;
       
     } catch (error) {
