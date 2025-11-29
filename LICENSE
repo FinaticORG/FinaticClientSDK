@@ -1,0 +1,39 @@
+PROPRIETARY LICENSE
+
+Copyright (c) 2025 Finatic. All Rights Reserved.
+
+NOTICE: This software development kit (the "SDK") and associated documentation files (the "Software") are the proprietary and confidential property of Finatic. All rights, title, and interest in and to the Software are and shall remain the exclusive property of Finatic.
+
+GRANT OF LICENSE:
+
+Subject to the terms and conditions of this License, Finatic hereby grants you a limited, non-exclusive, non-transferable, revocable license to:
+
+1. Use the SDK solely to develop, test, and operate applications that integrate with Finatic's services;
+2. Modify the SDK solely for your internal use in connection with such applications;
+3. Distribute the SDK only as embedded within your applications, provided that such distribution is necessary for the operation of your applications that use Finatic's services.
+
+RESTRICTIONS ON USE:
+
+The following restrictions apply to your use of the Software:
+
+1. NO STANDALONE DISTRIBUTION: You may not distribute, publish, share, transfer, give, or provide the SDK as a standalone product, library, or package to any third party, including but not limited to individuals, companies, organizations, or any other entities, without express written authorization from Finatic.
+
+2. NO RESALE OR REPACKAGING: You may not sell, resell, lease, rent, license, sublicense, or otherwise monetize the SDK as a standalone product. You may not repackage, rebrand, or resell the SDK under your own name or brand.
+
+3. NO COMPETING PRODUCTS: You may not use the SDK to create a competing or substitute product, service, or SDK that provides similar functionality to Finatic's services.
+
+4. NO REVERSE ENGINEERING: You may not reverse engineer, decompile, disassemble, or otherwise analyze or examine the Software to extract source code, algorithms, or other proprietary information, except to the extent such activities are expressly permitted by applicable law notwithstanding this limitation.
+
+5. CONFIDENTIALITY: All information contained in the Software is confidential and proprietary. You must maintain strict confidentiality and shall not disclose any information about the Software's internal structure, design, or implementation to any unauthorized party.
+
+6. NO PUBLIC REPOSITORY PUBLICATION: You may not publish, post, upload, or make the SDK available on any public or private platform, repository, website, or any other medium, including but not limited to GitHub, GitLab, Bitbucket, NPM, PyPI, or any package registry, except as embedded within your applications as permitted above.
+
+TERMINATION:
+
+This license is effective until terminated. Finatic may terminate this license at any time without notice. Upon termination, you must immediately cease all use of the Software and destroy all copies in your possession.
+
+VIOLATION OF THESE TERMS:
+
+Any unauthorized use, modification, distribution, publication, or disclosure of the Software or any portion thereof may result in severe civil and criminal penalties, and Finatic will enforce its intellectual property rights to the fullest extent of the law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL FINATIC OR ITS OFFICERS, DIRECTORS, EMPLOYEES, OR AGENTS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

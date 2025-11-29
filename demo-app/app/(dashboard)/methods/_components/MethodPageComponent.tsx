@@ -40,32 +40,21 @@ export function MethodPageComponent() {
 
     const sessionMethods: MethodDefinition[] = [
       {
-        key: 'setUserId',
-        label: 'Set user id',
-        description: 'Persists the provided user id into the active SDK session.',
-        input: {
-          type: 'fields',
-          fields: [
-            {
-              name: 'userId',
-              label: 'User id',
-              placeholder: 'demo-user-123',
-              defaultValue: 'demo-user-001',
-            },
-          ],
-        },
-        prepareArgs: ({ fieldValues }) => {
-          const value = fieldValues?.userId?.trim();
-          if (!value) {
-            throw new Error('Please provide a user id before executing this method.');
-          }
-          return [value];
-        },
-      },
-      {
         key: 'getUserId',
         label: 'Get user id',
         description: 'Returns the current user id from the SDK session.',
+        input: { type: 'none' },
+      },
+      {
+        key: 'getSessionId',
+        label: 'Get session id',
+        description: 'Returns the current session ID from the SDK session.',
+        input: { type: 'none' },
+      },
+      {
+        key: 'getCompanyId',
+        label: 'Get company id',
+        description: 'Returns the current company ID from the SDK session.',
         input: { type: 'none' },
       },
       {
@@ -79,6 +68,27 @@ export function MethodPageComponent() {
         key: 'openPortal',
         label: 'Open broker portal',
         description: 'Opens the hosted onboarding portal in a modal or new tab.',
+        input: {
+          type: 'json',
+          defaultValue: JSON.stringify(
+            {
+              path: '/',
+              mode: 'modal',
+            },
+            null,
+            2
+          ),
+          placeholder: '{\n  "path": "/",\n  "mode": "modal"\n}',
+        },
+        prepareArgs: ({ inputValue }) => {
+          const payload = parseOptionalJson(inputValue, 'portal options');
+          return payload ? [payload] : [];
+        },
+      },
+      {
+        key: 'getPortalUrl',
+        label: 'Get portal URL',
+        description: 'Returns the portal URL for authentication (server SDKs use this, client SDKs typically use openPortal).',
         input: {
           type: 'json',
           defaultValue: JSON.stringify(
@@ -120,6 +130,28 @@ export function MethodPageComponent() {
           const value = fieldValues?.connectionId?.trim();
           if (!value) {
             throw new Error('Enter a connection id to disconnect.');
+          }
+          return [value];
+        },
+      },
+      {
+        key: 'getCompany',
+        label: 'Get company',
+        description: 'Get public company details by ID.',
+        input: {
+          type: 'fields',
+          fields: [
+            {
+              name: 'companyId',
+              label: 'Company id',
+              placeholder: 'company-uuid',
+            },
+          ],
+        },
+        prepareArgs: ({ fieldValues }) => {
+          const value = fieldValues?.companyId?.trim();
+          if (!value) {
+            throw new Error('Enter a company id.');
           }
           return [value];
         },
@@ -175,12 +207,6 @@ export function MethodPageComponent() {
           const filter = parseOptionalJson(fieldValues?.filter, 'filter');
           return filter ? [filter] : [];
         },
-      },
-      {
-        key: 'getActiveAccounts',
-        label: 'Get active accounts',
-        description: 'Returns only active accounts using the convenience helper.',
-        input: { type: 'none' },
       },
       {
         key: 'getAllAccounts',
@@ -280,57 +306,6 @@ export function MethodPageComponent() {
         },
       },
       {
-        key: 'getFilledOrders',
-        label: 'Get filled orders',
-        description: 'Convenience helper returning only filled orders.',
-        input: { type: 'none' },
-      },
-      {
-        key: 'getPendingOrders',
-        label: 'Get pending orders',
-        description: 'Convenience helper returning only pending orders.',
-        input: { type: 'none' },
-      },
-      {
-        key: 'getOrdersBySymbol',
-        label: 'Get orders by symbol',
-        description: 'Filters orders by symbol across all brokers.',
-        input: {
-          type: 'fields',
-          fields: [{ name: 'symbol', label: 'Symbol', placeholder: 'AAPL', defaultValue: 'AAPL' }],
-        },
-        prepareArgs: ({ fieldValues }) => {
-          const symbol = fieldValues?.symbol?.trim();
-          if (!symbol) {
-            throw new Error('Provide a symbol to query orders.');
-          }
-          return [symbol];
-        },
-      },
-      {
-        key: 'getOrdersByBroker',
-        label: 'Get orders by broker',
-        description: 'Returns orders for a specific broker id.',
-        input: {
-          type: 'fields',
-          fields: [
-            {
-              name: 'brokerId',
-              label: 'Broker id',
-              placeholder: 'tasty_trade',
-              defaultValue: 'tasty_trade',
-            },
-          ],
-        },
-        prepareArgs: ({ fieldValues }) => {
-          const brokerId = fieldValues?.brokerId?.trim();
-          if (!brokerId) {
-            throw new Error('Provide a broker id to query orders.');
-          }
-          return [brokerId];
-        },
-      },
-      {
         key: 'getAllOrders',
         label: 'Get all orders',
         description: 'Aggregates orders by iterating across every page.',
@@ -346,20 +321,20 @@ export function MethodPageComponent() {
       {
         key: 'getOrderFills',
         label: 'Get order fills',
-        description: 'Retrieves execution fills for a specific order.',
+        description: 'Retrieves fills for a specific order by order ID.',
         input: {
           type: 'fields',
           fields: [
             {
               name: 'orderId',
-              label: 'Order id',
+              label: 'Order ID',
               placeholder: 'order-uuid',
-              description: 'The order ID to get fills for.',
+              description: 'Required order ID.',
             },
             {
               name: 'filter',
               label: 'Filter JSON',
-              placeholder: '{"connection_id":"connection-uuid"}',
+              placeholder: '{}',
               description: 'Optional filter payload (JSON).',
             },
           ],
@@ -367,29 +342,29 @@ export function MethodPageComponent() {
         prepareArgs: ({ fieldValues }) => {
           const orderId = fieldValues?.orderId?.trim();
           if (!orderId) {
-            throw new Error('Please provide an order id.');
+            throw new Error('Enter an order ID.');
           }
           const filter = parseOptionalJson(fieldValues?.filter, 'filter');
-          return [orderId, filter].filter(Boolean);
+          return [orderId, filter];
         },
       },
       {
         key: 'getOrderEvents',
         label: 'Get order events',
-        description: 'Retrieves lifecycle events for a specific order.',
+        description: 'Retrieves events for a specific order by order ID.',
         input: {
           type: 'fields',
           fields: [
             {
               name: 'orderId',
-              label: 'Order id',
+              label: 'Order ID',
               placeholder: 'order-uuid',
-              description: 'The order ID to get events for.',
+              description: 'Required order ID.',
             },
             {
               name: 'filter',
               label: 'Filter JSON',
-              placeholder: '{"connection_id":"connection-uuid"}',
+              placeholder: '{}',
               description: 'Optional filter payload (JSON).',
             },
           ],
@@ -397,30 +372,49 @@ export function MethodPageComponent() {
         prepareArgs: ({ fieldValues }) => {
           const orderId = fieldValues?.orderId?.trim();
           if (!orderId) {
-            throw new Error('Please provide an order id.');
+            throw new Error('Enter an order ID.');
           }
           const filter = parseOptionalJson(fieldValues?.filter, 'filter');
-          return [orderId, filter].filter(Boolean);
+          return [orderId, filter];
         },
       },
       {
         key: 'getOrderGroups',
         label: 'Get order groups',
-        description: 'Retrieves order groups (related orders grouped together).',
+        description: 'Retrieves paginated order groups with built-in pagination controls.',
         input: {
           type: 'fields',
           fields: [
             {
               name: 'filter',
               label: 'Filter JSON',
-              placeholder: '{"broker_id":"robinhood","connection_id":"connection-uuid"}',
+              placeholder: '{}',
               description: 'Optional filter payload (JSON).',
             },
           ],
         },
         prepareArgs: ({ fieldValues }) => {
           const filter = parseOptionalJson(fieldValues?.filter, 'filter');
-          return filter ? [filter] : [];
+          return [filter];
+        },
+      },
+      {
+        key: 'getAllOrderGroups',
+        label: 'Get all order groups',
+        description: 'Aggregates order groups by iterating across every page.',
+        input: {
+          type: 'fields',
+          fields: [
+            {
+              name: 'filter',
+              label: 'Filter JSON',
+              placeholder: '{}',
+            },
+          ],
+        },
+        prepareArgs: ({ fieldValues }) => {
+          const filter = parseOptionalJson(fieldValues?.filter, 'filter');
+          return [filter];
         },
       },
     ];
@@ -454,51 +448,6 @@ export function MethodPageComponent() {
         },
       },
       {
-        key: 'getOpenPositions',
-        label: 'Get open positions',
-        description: 'Convenience helper returning only open positions.',
-        input: { type: 'none' },
-      },
-      {
-        key: 'getPositionsBySymbol',
-        label: 'Get positions by symbol',
-        description: 'Returns positions filtered by symbol.',
-        input: {
-          type: 'fields',
-          fields: [{ name: 'symbol', label: 'Symbol', placeholder: 'AAPL', defaultValue: 'AAPL' }],
-        },
-        prepareArgs: ({ fieldValues }) => {
-          const symbol = fieldValues?.symbol?.trim();
-          if (!symbol) {
-            throw new Error('Provide a symbol to query positions.');
-          }
-          return [symbol];
-        },
-      },
-      {
-        key: 'getPositionsByBroker',
-        label: 'Get positions by broker',
-        description: 'Returns positions scoped to a specific broker id.',
-        input: {
-          type: 'fields',
-          fields: [
-            {
-              name: 'brokerId',
-              label: 'Broker id',
-              placeholder: 'tasty_trade',
-              defaultValue: 'tasty_trade',
-            },
-          ],
-        },
-        prepareArgs: ({ fieldValues }) => {
-          const brokerId = fieldValues?.brokerId?.trim();
-          if (!brokerId) {
-            throw new Error('Provide a broker id to query positions.');
-          }
-          return [brokerId];
-        },
-      },
-      {
         key: 'getAllPositions',
         label: 'Get all positions',
         description: 'Aggregates positions across the full result set.',
@@ -520,40 +469,59 @@ export function MethodPageComponent() {
       {
         key: 'getPositionLots',
         label: 'Get position lots',
-        description: 'Retrieves position lots (tax lots) for positions. Essential for tax reporting.',
+        description: 'Retrieves paginated position lots with built-in pagination controls.',
         input: {
           type: 'fields',
           fields: [
             {
               name: 'filter',
               label: 'Filter JSON',
-              placeholder: '{"broker_id":"robinhood","symbol":"AAPL","position_id":"position-uuid"}',
+              placeholder: '{}',
               description: 'Optional filter payload (JSON).',
             },
           ],
         },
         prepareArgs: ({ fieldValues }) => {
           const filter = parseOptionalJson(fieldValues?.filter, 'filter');
-          return filter ? [filter] : [];
+          return [filter];
+        },
+      },
+      {
+        key: 'getAllPositionLots',
+        label: 'Get all position lots',
+        description: 'Aggregates position lots by iterating across every page.',
+        input: {
+          type: 'fields',
+          fields: [
+            {
+              name: 'filter',
+              label: 'Filter JSON',
+              placeholder: '{}',
+            },
+          ],
+        },
+        prepareArgs: ({ fieldValues }) => {
+          const filter = parseOptionalJson(fieldValues?.filter, 'filter');
+          return [filter];
         },
       },
       {
         key: 'getPositionLotFills',
         label: 'Get position lot fills',
-        description: 'Retrieves fills for a specific position lot.',
+        description: 'Retrieves fills for a specific position lot by lot ID.',
         input: {
           type: 'fields',
           fields: [
             {
               name: 'lotId',
-              label: 'Lot id',
+              label: 'Lot ID',
               placeholder: 'lot-uuid',
-              description: 'The position lot ID to get fills for.',
+              description: 'Required position lot ID.',
             },
             {
               name: 'filter',
               label: 'Filter JSON',
-              placeholder: '{"connection_id":"connection-uuid"}',
+              placeholder: '{}',
               description: 'Optional filter payload (JSON).',
             },
           ],
@@ -561,10 +529,10 @@ export function MethodPageComponent() {
         prepareArgs: ({ fieldValues }) => {
           const lotId = fieldValues?.lotId?.trim();
           if (!lotId) {
-            throw new Error('Please provide a lot id.');
+            throw new Error('Enter a lot ID.');
           }
           const filter = parseOptionalJson(fieldValues?.filter, 'filter');
-          return [lotId, filter].filter(Boolean);
+          return [lotId, filter];
         },
       },
     ];

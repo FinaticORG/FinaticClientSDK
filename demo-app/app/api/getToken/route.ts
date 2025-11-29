@@ -8,14 +8,18 @@ async function handleRequest(request: Request) {
     if (isMockMode) {
       console.log('🔧 Mock mode enabled - returning mock token');
 
-      // Return mock session init response (matching production format)
+      // Return mock session init response (matching new FinaticResponse format)
       const mockResponse = {
-        success: true,
-        message: 'Session initialized successfully',
-        data: {
-          one_time_token: 'mock_token_' + Date.now(),
-          expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes from now
+        trace_id: 'mock-trace-' + Date.now(),
+        success: {
+          data: {
+            one_time_token: 'mock_token_' + Date.now(),
+            expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes from now
+          },
+          meta: null,
         },
+        error: null,
+        warning: null,
       };
 
       return NextResponse.json(mockResponse);
@@ -70,7 +74,7 @@ async function handleRequest(request: Request) {
       return NextResponse.json({ error: 'Invalid response from Finatic API' }, { status: 500 });
     }
 
-    // Return the response from Finatic API as is
+    // Return the response from Finatic API as is (already in FinaticResponse format)
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error in getToken handler:', error);

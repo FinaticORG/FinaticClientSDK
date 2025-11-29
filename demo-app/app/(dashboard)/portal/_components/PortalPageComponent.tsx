@@ -26,7 +26,6 @@ import {
   Palette,
 } from 'lucide-react';
 import type { BrokerInfo } from '@/../src/types/api/broker';
-import { portalThemePresets } from '@/../src/themes/portalPresets';
 
 type PortalEvent = { type: string; data: unknown; timestamp: string };
 
@@ -52,6 +51,7 @@ export default function PortalPageComponent(): JSX.Element {
   const [selectedBrokers, setSelectedBrokers] = useState<string[]>([]);
   const [emailParam, setEmailParam] = useState<string>('');
   const [themePreset, setThemePreset] = useState<string>('');
+  const [themeMode, setThemeMode] = useState<'light' | 'dark' | 'system'>('system');
   const [availableBrokers, setAvailableBrokers] = useState<BrokerInfo[] | null>(null);
   const [brokersError, setBrokersError] = useState<string>('');
   const [brokersLoading, setBrokersLoading] = useState<boolean>(false);
@@ -150,7 +150,8 @@ export default function PortalPageComponent(): JSX.Element {
   }, [sdkAdapter]);
 
   const brokerFilter: string[] = useMemo(() => selectedBrokers, [selectedBrokers]);
-  const themeOptions = useMemo(() => Object.keys(portalThemePresets), []);
+  // Only show default and stockAlgos presets
+  const themeOptions = useMemo(() => ['default', 'stockAlgos'], []);
 
   const handleOpenPortal = useCallback(async () => {
     if (!sdkAdapter) return;
@@ -175,6 +176,11 @@ export default function PortalPageComponent(): JSX.Element {
         options.theme = { preset: themePreset.trim() };
         addLog('info', `Opening portal with theme preset: ${themePreset.trim()}`);
       }
+      // Add mode only if not system (system is default, so don't pass it)
+      if (themeMode !== 'system') {
+        options.mode = themeMode;
+        addLog('info', `Opening portal with mode: ${themeMode}`);
+      }
 
       await sdkAdapter.openPortal({
         ...options,
@@ -183,8 +189,11 @@ export default function PortalPageComponent(): JSX.Element {
             // Client SDK: userId is returned
             addLog('success', `Portal opened successfully for user: ${userIdOrUrl}`);
             setPortalMessage('Portal opened successfully');
+            // Set auth state immediately (SDK already stored userId internally)
+            setAuthState(true, userIdOrUrl);
             setStoredUserId(userIdOrUrl);
             addLog('info', `Stored userId in localStorage: ${userIdOrUrl}`);
+            // Verify auth state
             await checkAuth();
             appendEvent({
               type: 'portal-success',
@@ -238,6 +247,7 @@ export default function PortalPageComponent(): JSX.Element {
     brokerFilter,
     emailParam,
     themePreset,
+    themeMode,
     setStoredUserId,
     checkAuth,
     appendEvent,
@@ -423,7 +433,7 @@ export default function PortalPageComponent(): JSX.Element {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="default">Default</SelectItem>
-                      {themeOptions.map(opt => (
+                      {themeOptions.filter(opt => opt !== 'default').map(opt => (
                         <SelectItem key={opt} value={opt}>
                           {opt}
                         </SelectItem>
@@ -435,6 +445,35 @@ export default function PortalPageComponent(): JSX.Element {
                     size="icon"
                     onClick={() => setThemePreset('')}
                     aria-label="Clear theme preset"
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="mode" className="gap-2">
+                  <Palette className="size-4" /> Mode (optional)
+                </Label>
+                <div className="flex gap-2">
+                  <Select
+                    value={themeMode}
+                    onValueChange={v => setThemeMode(v as 'light' | 'dark' | 'system')}
+                  >
+                    <SelectTrigger className="flex-1" aria-label="Select theme mode">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="system">System</SelectItem>
+                      <SelectItem value="light">Light</SelectItem>
+                      <SelectItem value="dark">Dark</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setThemeMode('system')}
+                    aria-label="Reset to system mode"
                   >
                     <Trash2 className="size-4" />
                   </Button>
