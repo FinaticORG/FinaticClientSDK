@@ -7,7 +7,7 @@
 // Core - Export custom FinaticConnect that extends generated class
 export { FinaticConnect } from './FinaticConnect';
 // Re-export types from generated class
-export type { FinaticConnectOptions, PortalOptions } from '../generated/FinaticConnect';
+export type { FinaticConnectOptions } from '../generated/FinaticConnect';
 
 // Wrappers
 // export * from './wrappers/session';
