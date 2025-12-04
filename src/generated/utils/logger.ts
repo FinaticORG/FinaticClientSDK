@@ -1,14 +1,11 @@
 /**
- * Structured logger utility with browser-safe fallback (Phase 2C).
+ * Structured logger utility with browser-safe console logging (Phase 2C).
  * 
  * Generated - do not edit directly.
  * 
- * This logger automatically falls back to console-based logging when pino fails
- * in browser environments (Vite, Next.js, etc.).
+ * This logger uses browser console APIs for all logging in browser environments.
  */
 
-// @ts-ignore - pino types available via @types/pino
-import pino from 'pino';
 import type { SdkConfig } from '../config';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent';
@@ -101,39 +98,14 @@ export function getLogger(config?: SdkConfig): Logger {
     return _loggerInstance;
   }
   
-  // In browser environments, skip pino entirely and use browser-safe logger
-  if (isBrowser()) {
-    return getBrowserSafeLogger(config);
-  }
-  
-  // Try to use pino first (Node.js environments)
-  try {
-    const logLevel = (config?.logLevel || getEnvVar('FINATIC_LOG_LEVEL') || 'error') as LogLevel;
-    
-    const pinoConfig: pino.LoggerOptions = {
-      level: logLevel === 'silent' ? 'silent' : logLevel,
-      ...(config?.structuredLogging !== false && {
-        formatters: {
-          level: (label: string) => {
-            return { level: label };
-          },
-        },
-        timestamp: true,
-      }),
-    };
-    
-    _loggerInstance = pino(pinoConfig) as unknown as Logger;
-    return _loggerInstance;
-  } catch (error) {
-    // Fallback to browser-safe logger if pino fails
-    return getBrowserSafeLogger(config, error);
-  }
+  // Client SDK always uses browser-safe logger (no pino)
+  return getBrowserSafeLogger(config);
 }
 
 /**
- * Browser-safe logger fallback for environments where pino fails.
+ * Browser-safe logger for Client SDK.
  */
-function getBrowserSafeLogger(config?: SdkConfig, pinoError?: any): Logger {
+function getBrowserSafeLogger(config?: SdkConfig): Logger {
   // Log level hierarchy (matching pino's numeric levels)
   const LOG_LEVELS: Record<string, number> = {
     silent: 0,
@@ -321,11 +293,6 @@ function getBrowserSafeLogger(config?: SdkConfig, pinoError?: any): Logger {
     },
   };
 
-  // Only warn about fallback logger if pino failed (not if we're in browser)
-  if (pinoError && !isProd) {
-    console.warn('[Finatic SDK] Using fallback logger due to pino initialization error:', pinoError);
-  }
-  
   _loggerInstance = fallbackLogger;
   return _loggerInstance;
 }

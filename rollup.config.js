@@ -8,9 +8,7 @@ const external = [
   'react-dom',
   'axios',
   'crypto-js',
-  'node-cache',
   'p-retry',
-  'pino',
   'uuid',
   'zod',
 ];

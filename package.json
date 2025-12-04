@@ -1,6 +1,6 @@
 {
   "name": "@finatic/client",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "Finatic Client SDK for browser integration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -41,15 +41,10 @@
     "type": "git",
     "url": "https://github.com/FinaticORG/FinaticClientSDK.git"
   },
-  "engines": {
-    "node": ">=16.0.0"
-  },
   "dependencies": {
     "axios": "^1.0.0",
     "crypto-js": "^4.2.0",
-    "node-cache": "^1.0.0",
     "p-retry": "^1.0.0",
-    "pino": "^1.0.0",
     "uuid": "^9.0.1",
     "zod": "^1.0.0"
   },
@@ -60,9 +55,6 @@
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/crypto-js": "^4.2.1",
     "@types/jest": "^29.5.0",
-    "@types/node": "^24.5.0",
-    "@types/node-cache": "^4.2.5",
-    "@types/pino": "^7.0.5",
     "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^8.44.0",
     "@typescript-eslint/parser": "^8.44.0",
