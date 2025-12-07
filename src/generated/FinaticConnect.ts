@@ -236,12 +236,14 @@ export class FinaticConnect extends EventEmitter {
     
     const sessionId = data?.session_id || '';
     const companyId = data?.company_id || '';
+    const responseUserId = data?.user_id || '';
     // csrf_token is not in SessionResponseData, get from response headers if available
     const csrfToken = (data as any)?.csrf_token || '';
     
     this.logger.debug?.('_startSession extracted data', { 
       sessionId, 
       companyId, 
+      responseUserId,
       csrfToken, 
       fullData: data,
       dataKeys: data ? Object.keys(data) : []
@@ -264,6 +266,14 @@ export class FinaticConnect extends EventEmitter {
       });
     }
     
+    // Store userId if present in response (for getUserId() and isAuthed())
+    // Use userId from response if parameter wasn't provided, or if response has a different userId
+    const finalUserId = responseUserId || userId;
+    if (finalUserId) {
+      this.userId = finalUserId;
+      this.logger.debug?.('_startSession set userId', { userId: finalUserId, source: responseUserId ? 'response' : 'parameter' });
+    }
+    
     return { session_id: sessionId, company_id: companyId };
   }
 
@@ -276,33 +286,36 @@ export class FinaticConnect extends EventEmitter {
    * 
    * @methodId get_portal_url_api_v1_session_portal_get
    * @category session
-   * @param theme - Optional theme preset or custom theme object
-   * @param brokers - Optional array of broker IDs to filter
-   * @param email - Optional email address
-   * @param mode - Optional mode ('light' or 'dark')
+   * @param params - Optional parameters object
+   * @param params.theme - Optional theme preset or custom theme object
+   * @param params.brokers - Optional array of broker IDs to filter
+   * @param params.email - Optional email address
+   * @param params.mode - Optional mode ('light' or 'dark')
    * @returns Portal URL string
    * @example
    * ```typescript-client
-   * const url = await finatic.getPortalUrl('dark', ['broker-1'], 'user@example.com', 'dark');
+   * const url = await finatic.getPortalUrl({ theme: 'default', brokers: ['broker-1'], email: 'user@example.com', mode: 'dark' });
    * ```
    * @example
    * ```typescript-server
-   * const url = await finatic.getPortalUrl('dark', ['broker-1'], 'user@example.com', 'dark');
+   * const url = await finatic.getPortalUrl({ theme: 'default', brokers: ['broker-1'], email: 'user@example.com', mode: 'dark' });
    * ```
    * @example
    * ```python
-   * url = await finatic.get_portal_url('dark', ['broker-1'], 'user@example.com', 'dark')
+   * url = await finatic.get_portal_url(theme='default', brokers=['broker-1'], email='user@example.com', mode='dark')
    * ```
    */
-  async getPortalUrl(
-    theme?: string | { preset?: string; custom?: Record<string, unknown> },
-    brokers?: string[],
-    email?: string,
-    mode?: 'light' | 'dark'
-  ): Promise<string> {
+  async getPortalUrl(params?: { 
+    theme?: string | { preset?: string; custom?: Record<string, unknown> };
+    brokers?: string[];
+    email?: string;
+    mode?: 'light' | 'dark';
+  }): Promise<string> {
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
+
+    const { theme, brokers, email, mode } = params || {};
 
     // Get raw portal URL from SessionApi directly (not a wrapper)
     const axiosResponse = await this.sessionApi.getPortalUrlApiV1SessionPortalGet({
@@ -389,17 +402,23 @@ export class FinaticConnect extends EventEmitter {
    * 
    * @methodId open_portal_client_sdk
    * @category session
-   * @param theme - Optional theme preset or custom theme object
-   * @param brokers - Optional array of broker IDs to filter
-   * @param email - Optional email address
-   * @param mode - Optional mode ('light' or 'dark')
+   * @param params - Optional parameters object
+   * @param params.theme - Optional theme preset or custom theme object
+   * @param params.brokers - Optional array of broker IDs to filter
+   * @param params.email - Optional email address
+   * @param params.mode - Optional mode ('light' or 'dark')
    * @param onSuccess - Optional callback when portal authentication succeeds
    * @param onError - Optional callback when portal authentication fails
    * @param onClose - Optional callback when portal is closed
    * @returns Promise that resolves when portal is opened
    * @example
    * ```typescript-client
-   * await finatic.openPortal('dark', ['broker-1'], 'user@example.com', 'dark', 
+   * await finatic.openPortal({ 
+   *   theme: 'default', 
+   *   brokers: ['broker-1'], 
+   *   email: 'user@example.com', 
+   *   mode: 'dark' 
+   * }, 
    *   (userId) => console.log('User authenticated:', userId),
    *   (error) => console.error('Portal error:', error),
    *   () => console.log('Portal closed')
@@ -407,10 +426,12 @@ export class FinaticConnect extends EventEmitter {
    * ```
    */
   async openPortal(
-    theme?: string | { preset?: string; custom?: Record<string, unknown> },
-    brokers?: string[],
-    email?: string,
-    mode?: 'light' | 'dark',
+    params?: { 
+      theme?: string | { preset?: string; custom?: Record<string, unknown> };
+      brokers?: string[];
+      email?: string;
+      mode?: 'light' | 'dark';
+    },
     onSuccess?: (userId: string) => void,
     onError?: (error: Error) => void,
     onClose?: () => void
@@ -420,7 +441,7 @@ export class FinaticConnect extends EventEmitter {
     }
 
     // Get portal URL with all parameters
-    const portalUrl = await this.getPortalUrl(theme, brokers, email, mode);
+    const portalUrl = await this.getPortalUrl(params);
 
     // Create portal UI if not exists
     if (!this.portalUI) {
@@ -625,8 +646,8 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'])
    * ```
    */
-  async getCompany(params?: Partial<GetCompanyParams>): Promise<Awaited<ReturnType<typeof this.company.getCompany>>> {
-    return await this.company.getCompany((params?.companyId as any));
+  async getCompany(params: GetCompanyParams): Promise<Awaited<ReturnType<typeof this.company.getCompany>>> {
+    return await this.company.getCompany(params);
   }
 
   /**
@@ -786,8 +807,8 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'])
    * ```
    */
-  async disconnectCompanyFromBroker(params?: Partial<DisconnectCompanyFromBrokerParams>): Promise<Awaited<ReturnType<typeof this.brokers.disconnectCompanyFromBroker>>> {
-    return await this.brokers.disconnectCompanyFromBroker((params?.connectionId as any));
+  async disconnectCompanyFromBroker(params: DisconnectCompanyFromBrokerParams): Promise<Awaited<ReturnType<typeof this.brokers.disconnectCompanyFromBroker>>> {
+    return await this.brokers.disconnectCompanyFromBroker(params);
   }
 
   /**
@@ -867,8 +888,8 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'], result.error['code'])
    * ```
    */
-  async getOrders(params?: Partial<GetOrdersParams>): Promise<Awaited<ReturnType<typeof this.brokers.getOrders>>> {
-    return await this.brokers.getOrders(params?.brokerId, params?.connectionId, params?.accountId, params?.symbol, params?.orderStatus, params?.side, params?.assetType, params?.limit, params?.offset, params?.createdAfter, params?.createdBefore, params?.includeMetadata);
+  async getOrders(params?: GetOrdersParams): Promise<Awaited<ReturnType<typeof this.brokers.getOrders>>> {
+    return await this.brokers.getOrders(params);
   }
 
   /**
@@ -948,8 +969,8 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'], result.error['code'])
    * ```
    */
-  async getPositions(params?: Partial<GetPositionsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getPositions>>> {
-    return await this.brokers.getPositions(params?.brokerId, params?.connectionId, params?.accountId, params?.symbol, params?.side, params?.assetType, params?.positionStatus, params?.limit, params?.offset, params?.updatedAfter, params?.updatedBefore, params?.includeMetadata);
+  async getPositions(params?: GetPositionsParams): Promise<Awaited<ReturnType<typeof this.brokers.getPositions>>> {
+    return await this.brokers.getPositions(params);
   }
 
   /**
@@ -1029,8 +1050,8 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'], result.error['code'])
    * ```
    */
-  async getBalances(params?: Partial<GetBalancesParams>): Promise<Awaited<ReturnType<typeof this.brokers.getBalances>>> {
-    return await this.brokers.getBalances(params?.brokerId, params?.connectionId, params?.accountId, params?.isEndOfDaySnapshot, params?.limit, params?.offset, params?.balanceCreatedAfter, params?.balanceCreatedBefore, params?.includeMetadata);
+  async getBalances(params?: GetBalancesParams): Promise<Awaited<ReturnType<typeof this.brokers.getBalances>>> {
+    return await this.brokers.getBalances(params);
   }
 
   /**
@@ -1110,8 +1131,8 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'], result.error['code'])
    * ```
    */
-  async getAccounts(params?: Partial<GetAccountsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getAccounts>>> {
-    return await this.brokers.getAccounts(params?.brokerId, params?.connectionId, params?.accountType, params?.status, params?.currency, params?.limit, params?.offset, params?.includeMetadata);
+  async getAccounts(params?: GetAccountsParams): Promise<Awaited<ReturnType<typeof this.brokers.getAccounts>>> {
+    return await this.brokers.getAccounts(params);
   }
 
   /**
@@ -1199,8 +1220,8 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'], result.error['code'])
    * ```
    */
-  async getOrderFills(params?: Partial<GetOrderFillsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getOrderFills>>> {
-    return await this.brokers.getOrderFills((params?.orderId as any), params?.connectionId, params?.limit, params?.offset, params?.includeMetadata);
+  async getOrderFills(params: GetOrderFillsParams): Promise<Awaited<ReturnType<typeof this.brokers.getOrderFills>>> {
+    return await this.brokers.getOrderFills(params);
   }
 
   /**
@@ -1288,8 +1309,8 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'], result.error['code'])
    * ```
    */
-  async getOrderEvents(params?: Partial<GetOrderEventsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getOrderEvents>>> {
-    return await this.brokers.getOrderEvents((params?.orderId as any), params?.connectionId, params?.limit, params?.offset, params?.includeMetadata);
+  async getOrderEvents(params: GetOrderEventsParams): Promise<Awaited<ReturnType<typeof this.brokers.getOrderEvents>>> {
+    return await this.brokers.getOrderEvents(params);
   }
 
   /**
@@ -1368,8 +1389,8 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'], result.error['code'])
    * ```
    */
-  async getOrderGroups(params?: Partial<GetOrderGroupsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getOrderGroups>>> {
-    return await this.brokers.getOrderGroups(params?.brokerId, params?.connectionId, params?.limit, params?.offset, params?.createdAfter, params?.createdBefore, params?.includeMetadata);
+  async getOrderGroups(params?: GetOrderGroupsParams): Promise<Awaited<ReturnType<typeof this.brokers.getOrderGroups>>> {
+    return await this.brokers.getOrderGroups(params);
   }
 
   /**
@@ -1449,8 +1470,8 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'], result.error['code'])
    * ```
    */
-  async getPositionLots(params?: Partial<GetPositionLotsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getPositionLots>>> {
-    return await this.brokers.getPositionLots(params?.brokerId, params?.connectionId, params?.accountId, params?.symbol, params?.positionId, params?.limit, params?.offset);
+  async getPositionLots(params?: GetPositionLotsParams): Promise<Awaited<ReturnType<typeof this.brokers.getPositionLots>>> {
+    return await this.brokers.getPositionLots(params);
   }
 
   /**
@@ -1538,8 +1559,8 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'], result.error['code'])
    * ```
    */
-  async getPositionLotFills(params?: Partial<GetPositionLotFillsParams>): Promise<Awaited<ReturnType<typeof this.brokers.getPositionLotFills>>> {
-    return await this.brokers.getPositionLotFills((params?.lotId as any), params?.connectionId, params?.limit, params?.offset);
+  async getPositionLotFills(params: GetPositionLotFillsParams): Promise<Awaited<ReturnType<typeof this.brokers.getPositionLotFills>>> {
+    return await this.brokers.getPositionLotFills(params);
   }
 
 
@@ -1613,7 +1634,7 @@ export class FinaticConnect extends EventEmitter {
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getOrders(filterParams?.brokerId, filterParams?.connectionId, filterParams?.accountId, filterParams?.symbol, filterParams?.orderStatus, filterParams?.side, filterParams?.assetType, limit, offset, filterParams?.createdAfter, filterParams?.createdBefore, filterParams?.includeMetadata);
+      const response = await this.brokers.getOrders({ ...filterParams, limit, offset });
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -1626,9 +1647,16 @@ export class FinaticConnect extends EventEmitter {
       }
       
       const result = response.success?.data || [];
-      if (!result || result.length === 0) break;
-      allData.push(...(Array.isArray(result) ? result : [result]));
-      if (result.length < limit) break;
+      // Extract items from PaginatedData if it's a PaginatedData object, otherwise use as-is
+      // PaginatedData has array-like behavior but we extract items for getAll* methods
+      const items = result && typeof result === 'object' && 'items' in result && Array.isArray(result.items)
+        ? result.items
+        : (Array.isArray(result) ? result : [result]);
+      
+      if (!items || items.length === 0) break;
+      allData.push(...items);
+      // If we got fewer items than the limit, there are no more pages
+      if (items.length < limit) break;
       offset += limit;
     }
     
@@ -1723,7 +1751,7 @@ export class FinaticConnect extends EventEmitter {
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getPositions(filterParams?.brokerId, filterParams?.connectionId, filterParams?.accountId, filterParams?.symbol, filterParams?.side, filterParams?.assetType, filterParams?.positionStatus, limit, offset, filterParams?.updatedAfter, filterParams?.updatedBefore, filterParams?.includeMetadata);
+      const response = await this.brokers.getPositions({ ...filterParams, limit, offset });
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -1736,9 +1764,16 @@ export class FinaticConnect extends EventEmitter {
       }
       
       const result = response.success?.data || [];
-      if (!result || result.length === 0) break;
-      allData.push(...(Array.isArray(result) ? result : [result]));
-      if (result.length < limit) break;
+      // Extract items from PaginatedData if it's a PaginatedData object, otherwise use as-is
+      // PaginatedData has array-like behavior but we extract items for getAll* methods
+      const items = result && typeof result === 'object' && 'items' in result && Array.isArray(result.items)
+        ? result.items
+        : (Array.isArray(result) ? result : [result]);
+      
+      if (!items || items.length === 0) break;
+      allData.push(...items);
+      // If we got fewer items than the limit, there are no more pages
+      if (items.length < limit) break;
       offset += limit;
     }
     
@@ -1833,7 +1868,7 @@ export class FinaticConnect extends EventEmitter {
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getBalances(filterParams?.brokerId, filterParams?.connectionId, filterParams?.accountId, filterParams?.isEndOfDaySnapshot, limit, offset, filterParams?.balanceCreatedAfter, filterParams?.balanceCreatedBefore, filterParams?.includeMetadata);
+      const response = await this.brokers.getBalances({ ...filterParams, limit, offset });
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -1846,9 +1881,16 @@ export class FinaticConnect extends EventEmitter {
       }
       
       const result = response.success?.data || [];
-      if (!result || result.length === 0) break;
-      allData.push(...(Array.isArray(result) ? result : [result]));
-      if (result.length < limit) break;
+      // Extract items from PaginatedData if it's a PaginatedData object, otherwise use as-is
+      // PaginatedData has array-like behavior but we extract items for getAll* methods
+      const items = result && typeof result === 'object' && 'items' in result && Array.isArray(result.items)
+        ? result.items
+        : (Array.isArray(result) ? result : [result]);
+      
+      if (!items || items.length === 0) break;
+      allData.push(...items);
+      // If we got fewer items than the limit, there are no more pages
+      if (items.length < limit) break;
       offset += limit;
     }
     
@@ -1943,7 +1985,7 @@ export class FinaticConnect extends EventEmitter {
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getAccounts(filterParams?.brokerId, filterParams?.connectionId, filterParams?.accountType, filterParams?.status, filterParams?.currency, limit, offset, filterParams?.includeMetadata);
+      const response = await this.brokers.getAccounts({ ...filterParams, limit, offset });
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -1956,9 +1998,16 @@ export class FinaticConnect extends EventEmitter {
       }
       
       const result = response.success?.data || [];
-      if (!result || result.length === 0) break;
-      allData.push(...(Array.isArray(result) ? result : [result]));
-      if (result.length < limit) break;
+      // Extract items from PaginatedData if it's a PaginatedData object, otherwise use as-is
+      // PaginatedData has array-like behavior but we extract items for getAll* methods
+      const items = result && typeof result === 'object' && 'items' in result && Array.isArray(result.items)
+        ? result.items
+        : (Array.isArray(result) ? result : [result]);
+      
+      if (!items || items.length === 0) break;
+      allData.push(...items);
+      // If we got fewer items than the limit, there are no more pages
+      if (items.length < limit) break;
       offset += limit;
     }
     
@@ -2052,7 +2101,7 @@ export class FinaticConnect extends EventEmitter {
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getOrderFills(filterParams?.orderId, filterParams?.connectionId, limit, offset, filterParams?.includeMetadata);
+      const response = await this.brokers.getOrderFills({ ...filterParams, limit, offset });
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -2065,9 +2114,16 @@ export class FinaticConnect extends EventEmitter {
       }
       
       const result = response.success?.data || [];
-      if (!result || result.length === 0) break;
-      allData.push(...(Array.isArray(result) ? result : [result]));
-      if (result.length < limit) break;
+      // Extract items from PaginatedData if it's a PaginatedData object, otherwise use as-is
+      // PaginatedData has array-like behavior but we extract items for getAll* methods
+      const items = result && typeof result === 'object' && 'items' in result && Array.isArray(result.items)
+        ? result.items
+        : (Array.isArray(result) ? result : [result]);
+      
+      if (!items || items.length === 0) break;
+      allData.push(...items);
+      // If we got fewer items than the limit, there are no more pages
+      if (items.length < limit) break;
       offset += limit;
     }
     
@@ -2161,7 +2217,7 @@ export class FinaticConnect extends EventEmitter {
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getOrderEvents(filterParams?.orderId, filterParams?.connectionId, limit, offset, filterParams?.includeMetadata);
+      const response = await this.brokers.getOrderEvents({ ...filterParams, limit, offset });
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -2174,9 +2230,16 @@ export class FinaticConnect extends EventEmitter {
       }
       
       const result = response.success?.data || [];
-      if (!result || result.length === 0) break;
-      allData.push(...(Array.isArray(result) ? result : [result]));
-      if (result.length < limit) break;
+      // Extract items from PaginatedData if it's a PaginatedData object, otherwise use as-is
+      // PaginatedData has array-like behavior but we extract items for getAll* methods
+      const items = result && typeof result === 'object' && 'items' in result && Array.isArray(result.items)
+        ? result.items
+        : (Array.isArray(result) ? result : [result]);
+      
+      if (!items || items.length === 0) break;
+      allData.push(...items);
+      // If we got fewer items than the limit, there are no more pages
+      if (items.length < limit) break;
       offset += limit;
     }
     
@@ -2271,7 +2334,7 @@ export class FinaticConnect extends EventEmitter {
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getOrderGroups(filterParams?.brokerId, filterParams?.connectionId, limit, offset, filterParams?.createdAfter, filterParams?.createdBefore, filterParams?.includeMetadata);
+      const response = await this.brokers.getOrderGroups({ ...filterParams, limit, offset });
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -2284,9 +2347,16 @@ export class FinaticConnect extends EventEmitter {
       }
       
       const result = response.success?.data || [];
-      if (!result || result.length === 0) break;
-      allData.push(...(Array.isArray(result) ? result : [result]));
-      if (result.length < limit) break;
+      // Extract items from PaginatedData if it's a PaginatedData object, otherwise use as-is
+      // PaginatedData has array-like behavior but we extract items for getAll* methods
+      const items = result && typeof result === 'object' && 'items' in result && Array.isArray(result.items)
+        ? result.items
+        : (Array.isArray(result) ? result : [result]);
+      
+      if (!items || items.length === 0) break;
+      allData.push(...items);
+      // If we got fewer items than the limit, there are no more pages
+      if (items.length < limit) break;
       offset += limit;
     }
     
@@ -2381,7 +2451,7 @@ export class FinaticConnect extends EventEmitter {
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getPositionLots(filterParams?.brokerId, filterParams?.connectionId, filterParams?.accountId, filterParams?.symbol, filterParams?.positionId, limit, offset);
+      const response = await this.brokers.getPositionLots({ ...filterParams, limit, offset });
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -2394,9 +2464,16 @@ export class FinaticConnect extends EventEmitter {
       }
       
       const result = response.success?.data || [];
-      if (!result || result.length === 0) break;
-      allData.push(...(Array.isArray(result) ? result : [result]));
-      if (result.length < limit) break;
+      // Extract items from PaginatedData if it's a PaginatedData object, otherwise use as-is
+      // PaginatedData has array-like behavior but we extract items for getAll* methods
+      const items = result && typeof result === 'object' && 'items' in result && Array.isArray(result.items)
+        ? result.items
+        : (Array.isArray(result) ? result : [result]);
+      
+      if (!items || items.length === 0) break;
+      allData.push(...items);
+      // If we got fewer items than the limit, there are no more pages
+      if (items.length < limit) break;
       offset += limit;
     }
     
@@ -2489,7 +2566,7 @@ export class FinaticConnect extends EventEmitter {
     let warnings: Array<{ [key: string]: any; }> = [];
     
     while (true) {
-      const response = await this.brokers.getPositionLotFills(filterParams?.lotId, filterParams?.connectionId, limit, offset);
+      const response = await this.brokers.getPositionLotFills({ ...filterParams, limit, offset });
       
       // Collect warnings from each page
       if (response.warning && Array.isArray(response.warning)) {
@@ -2502,9 +2579,16 @@ export class FinaticConnect extends EventEmitter {
       }
       
       const result = response.success?.data || [];
-      if (!result || result.length === 0) break;
-      allData.push(...(Array.isArray(result) ? result : [result]));
-      if (result.length < limit) break;
+      // Extract items from PaginatedData if it's a PaginatedData object, otherwise use as-is
+      // PaginatedData has array-like behavior but we extract items for getAll* methods
+      const items = result && typeof result === 'object' && 'items' in result && Array.isArray(result.items)
+        ? result.items
+        : (Array.isArray(result) ? result : [result]);
+      
+      if (!items || items.length === 0) break;
+      allData.push(...items);
+      // If we got fewer items than the limit, there are no more pages
+      if (items.length < limit) break;
       offset += limit;
     }
     

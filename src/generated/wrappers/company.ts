@@ -20,6 +20,8 @@ import { convertToPlainObject } from '../utils/plain-object';
 
 import type { CompanyResponse } from '../models';
 
+// Always import PaginatedData since method bodies may reference it (even if unreachable)
+import { PaginatedData } from '../utils/pagination';
 
 /**
  * Standard FinaticResponse type for all API responses.
@@ -41,6 +43,7 @@ export interface FinaticResponse<T> {
 
 // Phase 2C: Input type definitions (output types use FinaticResponse<DataType> pattern - no interfaces needed)
 export interface GetCompanyParams {
+  /** Company ID */
   companyId: string;
 }
 
@@ -93,7 +96,7 @@ export class CompanyWrapper {
    * Get Company
    * 
    * Get public company details by ID (no user check, no sensitive data).
-   * @param companyId {string} 
+   * @param params.companyId {string} Company ID
    * @returns {Promise<FinaticResponse<CompanyResponse>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/company/{company_id}
@@ -102,7 +105,9 @@ export class CompanyWrapper {
    * @example
    * ```typescript-client
    * // Minimal example with required parameters only
-   * const result = await finatic.getCompany(companyId: '00000000-0000-0000-0000-000000000000');
+   * const result = await finatic.getCompany({
+    companyId: '00000000-0000-0000-0000-000000000000'
+   * });
    * 
    * // Access the response data
    * if (result.success) {
@@ -112,11 +117,9 @@ export class CompanyWrapper {
    * }
    * ```
    */
-  async getCompany(companyId: string): Promise<FinaticResponse<CompanyResponse>> {
-    // Construct params object from individual parameters
-    const params: GetCompanyParams = {
-    companyId: companyId
-  };    // Generate request ID
+  async getCompany(params: GetCompanyParams): Promise<FinaticResponse<CompanyResponse>> {
+    // Use params object (required parameters present)
+    const resolvedParams: GetCompanyParams = params;    // Generate request ID
     const requestId = this._generateRequestId();
 
     // Input validation (Phase 2B: zod)
@@ -130,7 +133,7 @@ export class CompanyWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/company/{company_id}', params, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/company/{company_id}', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -143,14 +146,14 @@ export class CompanyWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/company/{company_id}',
-      params: params,
+      params: resolvedParams,
       action: 'getCompany'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getCompanyApiV1CompanyCompanyIdGet({ companyId: companyId }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getCompanyApiV1CompanyCompanyIdGet({ companyId: resolvedParams.companyId }, { headers: { 'x-request-id': requestId } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -164,10 +167,35 @@ export class CompanyWrapper {
       }
       
       // Convert response to plain object, removing _id fields recursively
-      const standardResponse: FinaticResponse<CompanyResponse> = convertToPlainObject(responseData) as FinaticResponse<CompanyResponse>;
+      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
+      const standardResponse: any = convertToPlainObject(responseData);
+      
+        // Phase 2: Wrap paginated responses with PaginatedData
+      const hasLimit = false;
+      const hasOffset = false;
+      const hasPagination = hasLimit && hasOffset;
+      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+        // PaginatedData is already imported at top of file
+        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
+        if (paginationMeta) {
+        const paginatedData = new PaginatedData(
+          standardResponse.success.data,
+          {
+            has_more: paginationMeta.has_more,
+            next_offset: paginationMeta.next_offset,
+            current_offset: paginationMeta.current_offset,
+            limit: paginationMeta.limit,
+          },
+          this.getCompany.bind(this),
+          resolvedParams,
+          this
+        );
+        standardResponse.success.data = paginatedData;
+        }
+      }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/company/{company_id}', params, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/v1/company/{company_id}', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -177,7 +205,8 @@ export class CompanyWrapper {
       });
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
-      return standardResponse;
+      // Type assertion to final return type (handles both paginated and non-paginated responses)
+      return standardResponse as FinaticResponse<CompanyResponse>;
       
     } catch (error) {
       try {

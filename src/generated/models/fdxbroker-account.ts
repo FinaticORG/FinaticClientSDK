@@ -24,7 +24,7 @@ import type { Accounttype } from './accounttype';
  * FDX-style broker account schema following FDX Account patterns.  Extends FDX Account schema with broker-specific fields.
  */
 export interface FDXBrokerAccount {
-    '_id'?: string;
+    'id'?: string | null;
     /**
      * Broker-provided account identifier
      */
@@ -43,7 +43,8 @@ export interface FDXBrokerAccount {
     'institutionId'?: string | null;
     'currencyCode'?: string | null;
     'accountStatus'?: Accountstatus | null;
-    'accountSubType'?: string | null;
+    'subAccountType'?: string | null;
+    'accountClassification'?: string | null;
     /**
      * User-broker connection UUID
      */

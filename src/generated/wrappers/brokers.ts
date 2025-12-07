@@ -37,6 +37,8 @@ import type { FDXBrokerPositionLot } from '../models';
 import type { FDXBrokerPositionLotFill } from '../models';
 import type { UserBrokerConnectionWithPermissions } from '../models';
 
+// Always import PaginatedData since method bodies may reference it (even if unreachable)
+import { PaginatedData } from '../utils/pagination';
 
 /**
  * Standard FinaticResponse type for all API responses.
@@ -66,102 +68,172 @@ export interface GetBrokerConnectionsParams {
 }
 
 export interface DisconnectCompanyFromBrokerParams {
+  /** Connection ID */
   connectionId: string;
 }
 
 export interface GetOrdersParams {
+  /** Filter by broker ID */
   brokerId?: string;
+  /** Filter by connection ID */
   connectionId?: string;
+  /** Filter by broker provided account ID */
   accountId?: string;
+  /** Filter by symbol */
   symbol?: string;
+  /** Filter by order status (e.g., 'filled', 'pending_new', 'cancelled') */
   orderStatus?: BrokerDataOrderStatusEnum;
+  /** Filter by order side (e.g., 'buy', 'sell') */
   side?: BrokerDataOrderSideEnum;
+  /** Filter by asset type (e.g., 'stock', 'option', 'crypto', 'future') */
   assetType?: BrokerDataAssetTypeEnum;
+  /** Maximum number of orders to return */
   limit?: number;
+  /** Number of orders to skip for pagination */
   offset?: number;
+  /** Filter orders created after this timestamp */
   createdAfter?: string;
+  /** Filter orders created before this timestamp */
   createdBefore?: string;
+  /** Include order metadata in response (excluded by default for FDX compliance) */
   includeMetadata?: boolean;
 }
 
 export interface GetPositionsParams {
+  /** Filter by broker ID */
   brokerId?: string;
+  /** Filter by connection ID */
   connectionId?: string;
+  /** Filter by broker provided account ID */
   accountId?: string;
+  /** Filter by symbol */
   symbol?: string;
+  /** Filter by position side (e.g., 'long', 'short') */
   side?: BrokerDataOrderSideEnum;
+  /** Filter by asset type (e.g., 'stock', 'option', 'crypto', 'future') */
   assetType?: BrokerDataAssetTypeEnum;
+  /** Filter by position status: 'open' (quantity > 0) or 'closed' (quantity = 0) */
   positionStatus?: BrokerDataPositionStatusEnum;
+  /** Maximum number of positions to return */
   limit?: number;
+  /** Number of positions to skip for pagination */
   offset?: number;
+  /** Filter positions updated after this timestamp */
   updatedAfter?: string;
+  /** Filter positions updated before this timestamp */
   updatedBefore?: string;
+  /** Include position metadata in response (excluded by default for FDX compliance) */
   includeMetadata?: boolean;
 }
 
 export interface GetBalancesParams {
+  /** Filter by broker ID */
   brokerId?: string;
+  /** Filter by connection ID */
   connectionId?: string;
+  /** Filter by broker provided account ID */
   accountId?: string;
+  /** Filter by end-of-day snapshot status (true/false) */
   isEndOfDaySnapshot?: boolean;
+  /** Maximum number of balances to return */
   limit?: number;
+  /** Number of balances to skip for pagination */
   offset?: number;
+  /** Filter balances created after this timestamp */
   balanceCreatedAfter?: string;
+  /** Filter balances created before this timestamp */
   balanceCreatedBefore?: string;
+  /** Include balance metadata in response (excluded by default for FDX compliance) */
   includeMetadata?: boolean;
 }
 
 export interface GetAccountsParams {
+  /** Filter by broker ID */
   brokerId?: string;
+  /** Filter by connection ID */
   connectionId?: string;
+  /** Filter by account type (e.g., 'margin', 'cash', 'crypto_wallet', 'live', 'sim') */
   accountType?: BrokerDataAccountTypeEnum;
+  /** Filter by account status (e.g., 'active', 'inactive') */
   status?: AccountStatus;
+  /** Filter by currency (e.g., 'USD', 'EUR') */
   currency?: string;
+  /** Maximum number of accounts to return */
   limit?: number;
+  /** Number of accounts to skip for pagination */
   offset?: number;
+  /** Include connection metadata in response (excluded by default for FDX compliance) */
   includeMetadata?: boolean;
 }
 
 export interface GetOrderFillsParams {
+  /** Order ID */
   orderId: string;
+  /** Filter by connection ID */
   connectionId?: string;
+  /** Maximum number of fills to return */
   limit?: number;
+  /** Number of fills to skip for pagination */
   offset?: number;
+  /** Include fill metadata in response (excluded by default for FDX compliance) */
   includeMetadata?: boolean;
 }
 
 export interface GetOrderEventsParams {
+  /** Order ID */
   orderId: string;
+  /** Filter by connection ID */
   connectionId?: string;
+  /** Maximum number of events to return */
   limit?: number;
+  /** Number of events to skip for pagination */
   offset?: number;
+  /** Include event metadata in response (excluded by default for FDX compliance) */
   includeMetadata?: boolean;
 }
 
 export interface GetOrderGroupsParams {
+  /** Filter by broker ID */
   brokerId?: string;
+  /** Filter by connection ID */
   connectionId?: string;
+  /** Maximum number of order groups to return */
   limit?: number;
+  /** Number of order groups to skip for pagination */
   offset?: number;
+  /** Filter order groups created after this timestamp */
   createdAfter?: string;
+  /** Filter order groups created before this timestamp */
   createdBefore?: string;
+  /** Include group metadata in response (excluded by default for FDX compliance) */
   includeMetadata?: boolean;
 }
 
 export interface GetPositionLotsParams {
+  /** Filter by broker ID */
   brokerId?: string;
+  /** Filter by connection ID */
   connectionId?: string;
+  /** Filter by broker provided account ID */
   accountId?: string;
+  /** Filter by symbol */
   symbol?: string;
+  /** Filter by position ID */
   positionId?: string;
+  /** Maximum number of position lots to return */
   limit?: number;
+  /** Number of position lots to skip for pagination */
   offset?: number;
 }
 
 export interface GetPositionLotFillsParams {
+  /** Position lot ID */
   lotId: string;
+  /** Filter by connection ID */
   connectionId?: string;
+  /** Maximum number of fills to return */
   limit?: number;
+  /** Number of fills to skip for pagination */
   offset?: number;
 }
 
@@ -222,7 +294,7 @@ export class BrokersWrapper {
    * -------
    * FinaticResponse[list[BrokerInfo]]
    *     list of available brokers with their metadata.
-   * @param No parameters required for this method
+   * @param params No parameters required for this method
    * @returns {Promise<FinaticResponse<BrokerInfo[]>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/
@@ -231,7 +303,7 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Example with no parameters
-   * const result = await finatic.getBrokers();
+   * const result = await finatic.getBrokers({});
    * 
    * // Access the response data
    * if (result.success) {
@@ -239,9 +311,9 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getBrokers(): Promise<FinaticResponse<BrokerInfo[]>> {
+  async getBrokers(params?: {}): Promise<FinaticResponse<BrokerInfo[]>> {
     // No parameters - use empty params object
-    const params: GetBrokersParams = {};    // Generate request ID
+    const resolvedParams: GetBrokersParams = params || {};    // Generate request ID
     const requestId = this._generateRequestId();
 
     // Input validation (Phase 2B: zod)
@@ -255,7 +327,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/', params, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -268,7 +340,7 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/',
-      params: params,
+      params: resolvedParams,
       action: 'getBrokers'
     });
 
@@ -289,10 +361,35 @@ export class BrokersWrapper {
       }
       
       // Convert response to plain object, removing _id fields recursively
-      const standardResponse: FinaticResponse<BrokerInfo[]> = convertToPlainObject(responseData) as FinaticResponse<BrokerInfo[]>;
+      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
+      const standardResponse: any = convertToPlainObject(responseData);
+      
+        // Phase 2: Wrap paginated responses with PaginatedData
+      const hasLimit = false;
+      const hasOffset = false;
+      const hasPagination = hasLimit && hasOffset;
+      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+        // PaginatedData is already imported at top of file
+        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
+        if (paginationMeta) {
+        const paginatedData = new PaginatedData(
+          standardResponse.success.data,
+          {
+            has_more: paginationMeta.has_more,
+            next_offset: paginationMeta.next_offset,
+            current_offset: paginationMeta.current_offset,
+            limit: paginationMeta.limit,
+          },
+          this.getBrokers.bind(this),
+          resolvedParams,
+          this
+        );
+        standardResponse.success.data = paginatedData;
+        }
+      }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/', params, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -302,7 +399,8 @@ export class BrokersWrapper {
       });
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
-      return standardResponse;
+      // Type assertion to final return type (handles both paginated and non-paginated responses)
+      return standardResponse as FinaticResponse<BrokerInfo[]>;
       
     } catch (error) {
       try {
@@ -382,7 +480,7 @@ export class BrokersWrapper {
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns connections that the user has any permissions for, including the current
    * company's permissions (read/write) for each connection.
-   * @param No parameters required for this method
+   * @param params No parameters required for this method
    * @returns {Promise<FinaticResponse<UserBrokerConnectionWithPermissions[]>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/connections
@@ -391,7 +489,7 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Example with no parameters
-   * const result = await finatic.getBrokerConnections();
+   * const result = await finatic.getBrokerConnections({});
    * 
    * // Access the response data
    * if (result.success) {
@@ -399,10 +497,10 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getBrokerConnections(): Promise<FinaticResponse<UserBrokerConnectionWithPermissions[]>> {
+  async getBrokerConnections(params?: {}): Promise<FinaticResponse<UserBrokerConnectionWithPermissions[]>> {
     // No parameters - use empty params object
-    const params: GetBrokerConnectionsParams = {};    // Authentication check
-    if (!this.sessionId) {
+    const resolvedParams: GetBrokerConnectionsParams = params || {};    // Authentication check
+    if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
 
@@ -420,7 +518,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/connections', params, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/connections', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -433,14 +531,14 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/connections',
-      params: params,
+      params: resolvedParams,
       action: 'getBrokerConnections'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.listBrokerConnectionsApiV1BrokersConnectionsGet({ headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.listBrokerConnectionsApiV1BrokersConnectionsGet({ headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -454,10 +552,35 @@ export class BrokersWrapper {
       }
       
       // Convert response to plain object, removing _id fields recursively
-      const standardResponse: FinaticResponse<UserBrokerConnectionWithPermissions[]> = convertToPlainObject(responseData) as FinaticResponse<UserBrokerConnectionWithPermissions[]>;
+      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
+      const standardResponse: any = convertToPlainObject(responseData);
+      
+        // Phase 2: Wrap paginated responses with PaginatedData
+      const hasLimit = false;
+      const hasOffset = false;
+      const hasPagination = hasLimit && hasOffset;
+      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+        // PaginatedData is already imported at top of file
+        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
+        if (paginationMeta) {
+        const paginatedData = new PaginatedData(
+          standardResponse.success.data,
+          {
+            has_more: paginationMeta.has_more,
+            next_offset: paginationMeta.next_offset,
+            current_offset: paginationMeta.current_offset,
+            limit: paginationMeta.limit,
+          },
+          this.getBrokerConnections.bind(this),
+          resolvedParams,
+          this
+        );
+        standardResponse.success.data = paginatedData;
+        }
+      }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/connections', params, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/connections', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -467,7 +590,8 @@ export class BrokersWrapper {
       });
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
-      return standardResponse;
+      // Type assertion to final return type (handles both paginated and non-paginated responses)
+      return standardResponse as FinaticResponse<UserBrokerConnectionWithPermissions[]>;
       
     } catch (error) {
       try {
@@ -546,7 +670,7 @@ export class BrokersWrapper {
    *
    * If the company is the only one with access, the entire connection is deleted.
    * If other companies have access, only the company's access is removed.
-   * @param connectionId {string} 
+   * @param params.connectionId {string} Connection ID
    * @returns {Promise<FinaticResponse<DisconnectActionResult>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: DELETE /api/v1/brokers/disconnect-company/{connection_id}
@@ -555,7 +679,9 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Minimal example with required parameters only
-   * const result = await finatic.disconnectCompanyFromBroker(connectionId: '00000000-0000-0000-0000-000000000000');
+   * const result = await finatic.disconnectCompanyFromBroker({
+    connectionId: '00000000-0000-0000-0000-000000000000'
+   * });
    * 
    * // Access the response data
    * if (result.success) {
@@ -565,12 +691,10 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async disconnectCompanyFromBroker(connectionId: string): Promise<FinaticResponse<DisconnectActionResult>> {
-    // Construct params object from individual parameters
-    const params: DisconnectCompanyFromBrokerParams = {
-    connectionId: connectionId
-  };    // Authentication check
-    if (!this.sessionId) {
+  async disconnectCompanyFromBroker(params: DisconnectCompanyFromBrokerParams): Promise<FinaticResponse<DisconnectActionResult>> {
+    // Use params object (required parameters present)
+    const resolvedParams: DisconnectCompanyFromBrokerParams = params;    // Authentication check
+    if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
 
@@ -588,7 +712,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/disconnect-company/{connection_id}', params, this.sdkConfig);
+      const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/disconnect-company/{connection_id}', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -601,14 +725,14 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'DELETE',
       path: '/api/v1/brokers/disconnect-company/{connection_id}',
-      params: params,
+      params: resolvedParams,
       action: 'disconnectCompanyFromBroker'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete({ connectionId: connectionId }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete({ connectionId: resolvedParams.connectionId }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -622,10 +746,35 @@ export class BrokersWrapper {
       }
       
       // Convert response to plain object, removing _id fields recursively
-      const standardResponse: FinaticResponse<DisconnectActionResult> = convertToPlainObject(responseData) as FinaticResponse<DisconnectActionResult>;
+      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
+      const standardResponse: any = convertToPlainObject(responseData);
+      
+        // Phase 2: Wrap paginated responses with PaginatedData
+      const hasLimit = false;
+      const hasOffset = false;
+      const hasPagination = hasLimit && hasOffset;
+      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+        // PaginatedData is already imported at top of file
+        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
+        if (paginationMeta) {
+        const paginatedData = new PaginatedData(
+          standardResponse.success.data,
+          {
+            has_more: paginationMeta.has_more,
+            next_offset: paginationMeta.next_offset,
+            current_offset: paginationMeta.current_offset,
+            limit: paginationMeta.limit,
+          },
+          this.disconnectCompanyFromBroker.bind(this),
+          resolvedParams,
+          this
+        );
+        standardResponse.success.data = paginatedData;
+        }
+      }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/disconnect-company/{connection_id}', params, this.sdkConfig);
+        const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/disconnect-company/{connection_id}', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -635,7 +784,8 @@ export class BrokersWrapper {
       });
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
-      return standardResponse;
+      // Type assertion to final return type (handles both paginated and non-paginated responses)
+      return standardResponse as FinaticResponse<DisconnectActionResult>;
       
     } catch (error) {
       try {
@@ -714,19 +864,19 @@ export class BrokersWrapper {
    *
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns orders from connections the company has read access to.
-   * @param brokerId {string} (optional) 
-   * @param connectionId {string} (optional) 
-   * @param accountId {string} (optional) 
-   * @param symbol {string} (optional) 
-   * @param orderStatus {BrokerDataOrderStatusEnum} (optional) 
-   * @param side {BrokerDataOrderSideEnum} (optional) 
-   * @param assetType {BrokerDataAssetTypeEnum} (optional) 
-   * @param limit {number} (optional) 
-   * @param offset {number} (optional) 
-   * @param createdAfter {string} (optional) 
-   * @param createdBefore {string} (optional) 
-   * @param includeMetadata {boolean} (optional) 
-   * @returns {Promise<FinaticResponse<FDXBrokerOrder[]>>} Standard response with success/Error/Warning structure
+   * @param params.brokerId {string} (optional) Filter by broker ID
+   * @param params.connectionId {string} (optional) Filter by connection ID
+   * @param params.accountId {string} (optional) Filter by broker provided account ID
+   * @param params.symbol {string} (optional) Filter by symbol
+   * @param params.orderStatus {BrokerDataOrderStatusEnum} (optional) Filter by order status (e.g., 'filled', 'pending_new', 'cancelled')
+   * @param params.side {BrokerDataOrderSideEnum} (optional) Filter by order side (e.g., 'buy', 'sell')
+   * @param params.assetType {BrokerDataAssetTypeEnum} (optional) Filter by asset type (e.g., 'stock', 'option', 'crypto', 'future')
+   * @param params.limit {number} (optional) Maximum number of orders to return
+   * @param params.offset {number} (optional) Number of orders to skip for pagination
+   * @param params.createdAfter {string} (optional) Filter orders created after this timestamp
+   * @param params.createdBefore {string} (optional) Filter orders created before this timestamp
+   * @param params.includeMetadata {boolean} (optional) Include order metadata in response (excluded by default for FDX compliance)
+   * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerOrder>>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/orders
    * @methodId get_orders_api_v1_brokers_data_orders_get
@@ -734,7 +884,7 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Example with no parameters
-   * const result = await finatic.getOrders();
+   * const result = await finatic.getOrders({});
    * 
    * // Access the response data
    * if (result.success) {
@@ -744,7 +894,11 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getOrders(brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789');
+   * const result = await finatic.getOrders({
+    brokerId: 'alpaca',
+    connectionId: '00000000-0000-0000-0000-000000000000',
+    accountId: '123456789'
+   * });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -757,23 +911,19 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getOrders(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, orderStatus?: BrokerDataOrderStatusEnum, side?: BrokerDataOrderSideEnum, assetType?: BrokerDataAssetTypeEnum, limit?: number, offset?: number, createdAfter?: string, createdBefore?: string, includeMetadata?: boolean): Promise<FinaticResponse<FDXBrokerOrder[]>> {
-    // Construct params object from individual parameters
-    const params: GetOrdersParams = {
-    brokerId: brokerId,
-    connectionId: connectionId,
-    accountId: accountId,
-    symbol: symbol,
-    orderStatus: orderStatus !== undefined ? coerceEnumValue(orderStatus, BrokerDataOrderStatusEnum, 'orderStatus') : undefined,
-    side: side !== undefined ? coerceEnumValue(side, BrokerDataOrderSideEnum, 'side') : undefined,
-    assetType: assetType !== undefined ? coerceEnumValue(assetType, BrokerDataAssetTypeEnum, 'assetType') : undefined,
-    limit: limit,
-    offset: offset,
-    createdAfter: createdAfter,
-    createdBefore: createdBefore,
-    includeMetadata: includeMetadata
-  };    // Authentication check
-    if (!this.sessionId) {
+  async getOrders(params?: GetOrdersParams): Promise<FinaticResponse<PaginatedData<FDXBrokerOrder>>> {
+    // Use params object (with default empty object)
+    const resolvedParams: GetOrdersParams = params || {};
+    if (params?.orderStatus !== undefined) {
+      params.orderStatus = coerceEnumValue(params.orderStatus, BrokerDataOrderStatusEnum, 'orderStatus');
+    }
+    if (params?.side !== undefined) {
+      params.side = coerceEnumValue(params.side, BrokerDataOrderSideEnum, 'side');
+    }
+    if (params?.assetType !== undefined) {
+      params.assetType = coerceEnumValue(params.assetType, BrokerDataAssetTypeEnum, 'assetType');
+    }    // Authentication check
+    if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
 
@@ -791,11 +941,11 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders', params, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<FDXBrokerOrder[]>;
+        return cached as FinaticResponse<PaginatedData<FDXBrokerOrder>>;
       }
     }
 
@@ -804,14 +954,14 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/orders',
-      params: params,
+      params: resolvedParams,
       action: 'getOrders'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrdersApiV1BrokersDataOrdersGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(orderStatus !== undefined ? { orderStatus: orderStatus } : {}), ...(side !== undefined ? { side: side } : {}), ...(assetType !== undefined ? { assetType: assetType } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(createdAfter !== undefined ? { createdAfter: createdAfter } : {}), ...(createdBefore !== undefined ? { createdBefore: createdBefore } : {}), ...(includeMetadata !== undefined ? { includeMetadata: includeMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getOrdersApiV1BrokersDataOrdersGet({ brokerId: resolvedParams.brokerId, connectionId: resolvedParams.connectionId, accountId: resolvedParams.accountId, symbol: resolvedParams.symbol, orderStatus: resolvedParams.orderStatus, side: resolvedParams.side, assetType: resolvedParams.assetType, limit: resolvedParams.limit, offset: resolvedParams.offset, createdAfter: resolvedParams.createdAfter, createdBefore: resolvedParams.createdBefore, includeMetadata: resolvedParams.includeMetadata }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -825,10 +975,35 @@ export class BrokersWrapper {
       }
       
       // Convert response to plain object, removing _id fields recursively
-      const standardResponse: FinaticResponse<FDXBrokerOrder[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerOrder[]>;
+      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
+      const standardResponse: any = convertToPlainObject(responseData);
+      
+        // Phase 2: Wrap paginated responses with PaginatedData
+      const hasLimit = true;
+      const hasOffset = true;
+      const hasPagination = hasLimit && hasOffset;
+      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+        // PaginatedData is already imported at top of file
+        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
+        if (paginationMeta) {
+        const paginatedData = new PaginatedData(
+          standardResponse.success.data,
+          {
+            has_more: paginationMeta.has_more,
+            next_offset: paginationMeta.next_offset,
+            current_offset: paginationMeta.current_offset,
+            limit: paginationMeta.limit,
+          },
+          this.getOrders.bind(this),
+          resolvedParams,
+          this
+        );
+        standardResponse.success.data = paginatedData;
+        }
+      }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders', params, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -838,7 +1013,8 @@ export class BrokersWrapper {
       });
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
-      return standardResponse;
+      // Type assertion to final return type (handles both paginated and non-paginated responses)
+      return standardResponse as FinaticResponse<PaginatedData<FDXBrokerOrder>>;
       
     } catch (error) {
       try {
@@ -890,7 +1066,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FDXBrokerOrder[]> = {
+      const errorResponse: FinaticResponse<PaginatedData<FDXBrokerOrder>> = {
         success: {
           data: null as any,
         },
@@ -917,19 +1093,19 @@ export class BrokersWrapper {
    *
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns positions from connections the company has read access to.
-   * @param brokerId {string} (optional) 
-   * @param connectionId {string} (optional) 
-   * @param accountId {string} (optional) 
-   * @param symbol {string} (optional) 
-   * @param side {BrokerDataOrderSideEnum} (optional) 
-   * @param assetType {BrokerDataAssetTypeEnum} (optional) 
-   * @param positionStatus {BrokerDataPositionStatusEnum} (optional) 
-   * @param limit {number} (optional) 
-   * @param offset {number} (optional) 
-   * @param updatedAfter {string} (optional) 
-   * @param updatedBefore {string} (optional) 
-   * @param includeMetadata {boolean} (optional) 
-   * @returns {Promise<FinaticResponse<FDXBrokerPosition[]>>} Standard response with success/Error/Warning structure
+   * @param params.brokerId {string} (optional) Filter by broker ID
+   * @param params.connectionId {string} (optional) Filter by connection ID
+   * @param params.accountId {string} (optional) Filter by broker provided account ID
+   * @param params.symbol {string} (optional) Filter by symbol
+   * @param params.side {BrokerDataOrderSideEnum} (optional) Filter by position side (e.g., 'long', 'short')
+   * @param params.assetType {BrokerDataAssetTypeEnum} (optional) Filter by asset type (e.g., 'stock', 'option', 'crypto', 'future')
+   * @param params.positionStatus {BrokerDataPositionStatusEnum} (optional) Filter by position status: 'open' (quantity > 0) or 'closed' (quantity = 0)
+   * @param params.limit {number} (optional) Maximum number of positions to return
+   * @param params.offset {number} (optional) Number of positions to skip for pagination
+   * @param params.updatedAfter {string} (optional) Filter positions updated after this timestamp
+   * @param params.updatedBefore {string} (optional) Filter positions updated before this timestamp
+   * @param params.includeMetadata {boolean} (optional) Include position metadata in response (excluded by default for FDX compliance)
+   * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerPosition>>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/positions
    * @methodId get_positions_api_v1_brokers_data_positions_get
@@ -937,7 +1113,7 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Example with no parameters
-   * const result = await finatic.getPositions();
+   * const result = await finatic.getPositions({});
    * 
    * // Access the response data
    * if (result.success) {
@@ -947,7 +1123,11 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getPositions(brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789');
+   * const result = await finatic.getPositions({
+    brokerId: 'alpaca',
+    connectionId: '00000000-0000-0000-0000-000000000000',
+    accountId: '123456789'
+   * });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -960,23 +1140,19 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getPositions(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, side?: BrokerDataOrderSideEnum, assetType?: BrokerDataAssetTypeEnum, positionStatus?: BrokerDataPositionStatusEnum, limit?: number, offset?: number, updatedAfter?: string, updatedBefore?: string, includeMetadata?: boolean): Promise<FinaticResponse<FDXBrokerPosition[]>> {
-    // Construct params object from individual parameters
-    const params: GetPositionsParams = {
-    brokerId: brokerId,
-    connectionId: connectionId,
-    accountId: accountId,
-    symbol: symbol,
-    side: side !== undefined ? coerceEnumValue(side, BrokerDataOrderSideEnum, 'side') : undefined,
-    assetType: assetType !== undefined ? coerceEnumValue(assetType, BrokerDataAssetTypeEnum, 'assetType') : undefined,
-    positionStatus: positionStatus !== undefined ? coerceEnumValue(positionStatus, BrokerDataPositionStatusEnum, 'positionStatus') : undefined,
-    limit: limit,
-    offset: offset,
-    updatedAfter: updatedAfter,
-    updatedBefore: updatedBefore,
-    includeMetadata: includeMetadata
-  };    // Authentication check
-    if (!this.sessionId) {
+  async getPositions(params?: GetPositionsParams): Promise<FinaticResponse<PaginatedData<FDXBrokerPosition>>> {
+    // Use params object (with default empty object)
+    const resolvedParams: GetPositionsParams = params || {};
+    if (params?.side !== undefined) {
+      params.side = coerceEnumValue(params.side, BrokerDataOrderSideEnum, 'side');
+    }
+    if (params?.assetType !== undefined) {
+      params.assetType = coerceEnumValue(params.assetType, BrokerDataAssetTypeEnum, 'assetType');
+    }
+    if (params?.positionStatus !== undefined) {
+      params.positionStatus = coerceEnumValue(params.positionStatus, BrokerDataPositionStatusEnum, 'positionStatus');
+    }    // Authentication check
+    if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
 
@@ -994,11 +1170,11 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions', params, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<FDXBrokerPosition[]>;
+        return cached as FinaticResponse<PaginatedData<FDXBrokerPosition>>;
       }
     }
 
@@ -1007,14 +1183,14 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/positions',
-      params: params,
+      params: resolvedParams,
       action: 'getPositions'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getPositionsApiV1BrokersDataPositionsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(side !== undefined ? { side: side } : {}), ...(assetType !== undefined ? { assetType: assetType } : {}), ...(positionStatus !== undefined ? { positionStatus: positionStatus } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(updatedAfter !== undefined ? { updatedAfter: updatedAfter } : {}), ...(updatedBefore !== undefined ? { updatedBefore: updatedBefore } : {}), ...(includeMetadata !== undefined ? { includeMetadata: includeMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getPositionsApiV1BrokersDataPositionsGet({ brokerId: resolvedParams.brokerId, connectionId: resolvedParams.connectionId, accountId: resolvedParams.accountId, symbol: resolvedParams.symbol, side: resolvedParams.side, assetType: resolvedParams.assetType, positionStatus: resolvedParams.positionStatus, limit: resolvedParams.limit, offset: resolvedParams.offset, updatedAfter: resolvedParams.updatedAfter, updatedBefore: resolvedParams.updatedBefore, includeMetadata: resolvedParams.includeMetadata }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1028,10 +1204,35 @@ export class BrokersWrapper {
       }
       
       // Convert response to plain object, removing _id fields recursively
-      const standardResponse: FinaticResponse<FDXBrokerPosition[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerPosition[]>;
+      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
+      const standardResponse: any = convertToPlainObject(responseData);
+      
+        // Phase 2: Wrap paginated responses with PaginatedData
+      const hasLimit = true;
+      const hasOffset = true;
+      const hasPagination = hasLimit && hasOffset;
+      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+        // PaginatedData is already imported at top of file
+        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
+        if (paginationMeta) {
+        const paginatedData = new PaginatedData(
+          standardResponse.success.data,
+          {
+            has_more: paginationMeta.has_more,
+            next_offset: paginationMeta.next_offset,
+            current_offset: paginationMeta.current_offset,
+            limit: paginationMeta.limit,
+          },
+          this.getPositions.bind(this),
+          resolvedParams,
+          this
+        );
+        standardResponse.success.data = paginatedData;
+        }
+      }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions', params, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -1041,7 +1242,8 @@ export class BrokersWrapper {
       });
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
-      return standardResponse;
+      // Type assertion to final return type (handles both paginated and non-paginated responses)
+      return standardResponse as FinaticResponse<PaginatedData<FDXBrokerPosition>>;
       
     } catch (error) {
       try {
@@ -1093,7 +1295,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FDXBrokerPosition[]> = {
+      const errorResponse: FinaticResponse<PaginatedData<FDXBrokerPosition>> = {
         success: {
           data: null as any,
         },
@@ -1120,16 +1322,16 @@ export class BrokersWrapper {
    *
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns balances from connections the company has read access to.
-   * @param brokerId {string} (optional) 
-   * @param connectionId {string} (optional) 
-   * @param accountId {string} (optional) 
-   * @param isEndOfDaySnapshot {boolean} (optional) 
-   * @param limit {number} (optional) 
-   * @param offset {number} (optional) 
-   * @param balanceCreatedAfter {string} (optional) 
-   * @param balanceCreatedBefore {string} (optional) 
-   * @param includeMetadata {boolean} (optional) 
-   * @returns {Promise<FinaticResponse<FDXBrokerBalance[]>>} Standard response with success/Error/Warning structure
+   * @param params.brokerId {string} (optional) Filter by broker ID
+   * @param params.connectionId {string} (optional) Filter by connection ID
+   * @param params.accountId {string} (optional) Filter by broker provided account ID
+   * @param params.isEndOfDaySnapshot {boolean} (optional) Filter by end-of-day snapshot status (true/false)
+   * @param params.limit {number} (optional) Maximum number of balances to return
+   * @param params.offset {number} (optional) Number of balances to skip for pagination
+   * @param params.balanceCreatedAfter {string} (optional) Filter balances created after this timestamp
+   * @param params.balanceCreatedBefore {string} (optional) Filter balances created before this timestamp
+   * @param params.includeMetadata {boolean} (optional) Include balance metadata in response (excluded by default for FDX compliance)
+   * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerBalance>>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/balances
    * @methodId get_balances_api_v1_brokers_data_balances_get
@@ -1137,7 +1339,7 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Example with no parameters
-   * const result = await finatic.getBalances();
+   * const result = await finatic.getBalances({});
    * 
    * // Access the response data
    * if (result.success) {
@@ -1147,7 +1349,11 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getBalances(brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789');
+   * const result = await finatic.getBalances({
+    brokerId: 'alpaca',
+    connectionId: '00000000-0000-0000-0000-000000000000',
+    accountId: '123456789'
+   * });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -1160,20 +1366,10 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getBalances(brokerId?: string, connectionId?: string, accountId?: string, isEndOfDaySnapshot?: boolean, limit?: number, offset?: number, balanceCreatedAfter?: string, balanceCreatedBefore?: string, includeMetadata?: boolean): Promise<FinaticResponse<FDXBrokerBalance[]>> {
-    // Construct params object from individual parameters
-    const params: GetBalancesParams = {
-    brokerId: brokerId,
-    connectionId: connectionId,
-    accountId: accountId,
-    isEndOfDaySnapshot: isEndOfDaySnapshot,
-    limit: limit,
-    offset: offset,
-    balanceCreatedAfter: balanceCreatedAfter,
-    balanceCreatedBefore: balanceCreatedBefore,
-    includeMetadata: includeMetadata
-  };    // Authentication check
-    if (!this.sessionId) {
+  async getBalances(params?: GetBalancesParams): Promise<FinaticResponse<PaginatedData<FDXBrokerBalance>>> {
+    // Use params object (with default empty object)
+    const resolvedParams: GetBalancesParams = params || {};    // Authentication check
+    if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
 
@@ -1191,11 +1387,11 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/balances', params, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/balances', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<FDXBrokerBalance[]>;
+        return cached as FinaticResponse<PaginatedData<FDXBrokerBalance>>;
       }
     }
 
@@ -1204,14 +1400,14 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/balances',
-      params: params,
+      params: resolvedParams,
       action: 'getBalances'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getBalancesApiV1BrokersDataBalancesGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(isEndOfDaySnapshot !== undefined ? { isEndOfDaySnapshot: isEndOfDaySnapshot } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(balanceCreatedAfter !== undefined ? { balanceCreatedAfter: balanceCreatedAfter } : {}), ...(balanceCreatedBefore !== undefined ? { balanceCreatedBefore: balanceCreatedBefore } : {}), ...(includeMetadata !== undefined ? { includeMetadata: includeMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getBalancesApiV1BrokersDataBalancesGet({ brokerId: resolvedParams.brokerId, connectionId: resolvedParams.connectionId, accountId: resolvedParams.accountId, isEndOfDaySnapshot: resolvedParams.isEndOfDaySnapshot, limit: resolvedParams.limit, offset: resolvedParams.offset, balanceCreatedAfter: resolvedParams.balanceCreatedAfter, balanceCreatedBefore: resolvedParams.balanceCreatedBefore, includeMetadata: resolvedParams.includeMetadata }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1225,10 +1421,35 @@ export class BrokersWrapper {
       }
       
       // Convert response to plain object, removing _id fields recursively
-      const standardResponse: FinaticResponse<FDXBrokerBalance[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerBalance[]>;
+      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
+      const standardResponse: any = convertToPlainObject(responseData);
+      
+        // Phase 2: Wrap paginated responses with PaginatedData
+      const hasLimit = true;
+      const hasOffset = true;
+      const hasPagination = hasLimit && hasOffset;
+      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+        // PaginatedData is already imported at top of file
+        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
+        if (paginationMeta) {
+        const paginatedData = new PaginatedData(
+          standardResponse.success.data,
+          {
+            has_more: paginationMeta.has_more,
+            next_offset: paginationMeta.next_offset,
+            current_offset: paginationMeta.current_offset,
+            limit: paginationMeta.limit,
+          },
+          this.getBalances.bind(this),
+          resolvedParams,
+          this
+        );
+        standardResponse.success.data = paginatedData;
+        }
+      }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/balances', params, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/balances', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -1238,7 +1459,8 @@ export class BrokersWrapper {
       });
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
-      return standardResponse;
+      // Type assertion to final return type (handles both paginated and non-paginated responses)
+      return standardResponse as FinaticResponse<PaginatedData<FDXBrokerBalance>>;
       
     } catch (error) {
       try {
@@ -1290,7 +1512,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FDXBrokerBalance[]> = {
+      const errorResponse: FinaticResponse<PaginatedData<FDXBrokerBalance>> = {
         success: {
           data: null as any,
         },
@@ -1317,15 +1539,15 @@ export class BrokersWrapper {
    *
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns accounts from connections the company has read access to.
-   * @param brokerId {string} (optional) 
-   * @param connectionId {string} (optional) 
-   * @param accountType {BrokerDataAccountTypeEnum} (optional) 
-   * @param status {AccountStatus} (optional) 
-   * @param currency {string} (optional) 
-   * @param limit {number} (optional) 
-   * @param offset {number} (optional) 
-   * @param includeMetadata {boolean} (optional) 
-   * @returns {Promise<FinaticResponse<FDXBrokerAccount[]>>} Standard response with success/Error/Warning structure
+   * @param params.brokerId {string} (optional) Filter by broker ID
+   * @param params.connectionId {string} (optional) Filter by connection ID
+   * @param params.accountType {BrokerDataAccountTypeEnum} (optional) Filter by account type (e.g., 'margin', 'cash', 'crypto_wallet', 'live', 'sim')
+   * @param params.status {AccountStatus} (optional) Filter by account status (e.g., 'active', 'inactive')
+   * @param params.currency {string} (optional) Filter by currency (e.g., 'USD', 'EUR')
+   * @param params.limit {number} (optional) Maximum number of accounts to return
+   * @param params.offset {number} (optional) Number of accounts to skip for pagination
+   * @param params.includeMetadata {boolean} (optional) Include connection metadata in response (excluded by default for FDX compliance)
+   * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerAccount>>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/accounts
    * @methodId get_accounts_api_v1_brokers_data_accounts_get
@@ -1333,7 +1555,7 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Example with no parameters
-   * const result = await finatic.getAccounts();
+   * const result = await finatic.getAccounts({});
    * 
    * // Access the response data
    * if (result.success) {
@@ -1343,7 +1565,11 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getAccounts(brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountType: 'margin');
+   * const result = await finatic.getAccounts({
+    brokerId: 'alpaca',
+    connectionId: '00000000-0000-0000-0000-000000000000',
+    accountType: 'margin'
+   * });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -1356,19 +1582,13 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getAccounts(brokerId?: string, connectionId?: string, accountType?: BrokerDataAccountTypeEnum, status?: AccountStatus, currency?: string, limit?: number, offset?: number, includeMetadata?: boolean): Promise<FinaticResponse<FDXBrokerAccount[]>> {
-    // Construct params object from individual parameters
-    const params: GetAccountsParams = {
-    brokerId: brokerId,
-    connectionId: connectionId,
-    accountType: accountType !== undefined ? coerceEnumValue(accountType, BrokerDataAccountTypeEnum, 'accountType') : undefined,
-    status: status,
-    currency: currency,
-    limit: limit,
-    offset: offset,
-    includeMetadata: includeMetadata
-  };    // Authentication check
-    if (!this.sessionId) {
+  async getAccounts(params?: GetAccountsParams): Promise<FinaticResponse<PaginatedData<FDXBrokerAccount>>> {
+    // Use params object (with default empty object)
+    const resolvedParams: GetAccountsParams = params || {};
+    if (params?.accountType !== undefined) {
+      params.accountType = coerceEnumValue(params.accountType, BrokerDataAccountTypeEnum, 'accountType');
+    }    // Authentication check
+    if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
 
@@ -1386,11 +1606,11 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/accounts', params, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/accounts', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<FDXBrokerAccount[]>;
+        return cached as FinaticResponse<PaginatedData<FDXBrokerAccount>>;
       }
     }
 
@@ -1399,14 +1619,14 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/accounts',
-      params: params,
+      params: resolvedParams,
       action: 'getAccounts'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getAccountsApiV1BrokersDataAccountsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountType !== undefined ? { accountType: accountType } : {}), ...(status !== undefined ? { status: status } : {}), ...(currency !== undefined ? { currency: currency } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(includeMetadata !== undefined ? { includeMetadata: includeMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getAccountsApiV1BrokersDataAccountsGet({ brokerId: resolvedParams.brokerId, connectionId: resolvedParams.connectionId, accountType: resolvedParams.accountType, status: resolvedParams.status, currency: resolvedParams.currency, limit: resolvedParams.limit, offset: resolvedParams.offset, includeMetadata: resolvedParams.includeMetadata }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1420,10 +1640,35 @@ export class BrokersWrapper {
       }
       
       // Convert response to plain object, removing _id fields recursively
-      const standardResponse: FinaticResponse<FDXBrokerAccount[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerAccount[]>;
+      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
+      const standardResponse: any = convertToPlainObject(responseData);
+      
+        // Phase 2: Wrap paginated responses with PaginatedData
+      const hasLimit = true;
+      const hasOffset = true;
+      const hasPagination = hasLimit && hasOffset;
+      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+        // PaginatedData is already imported at top of file
+        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
+        if (paginationMeta) {
+        const paginatedData = new PaginatedData(
+          standardResponse.success.data,
+          {
+            has_more: paginationMeta.has_more,
+            next_offset: paginationMeta.next_offset,
+            current_offset: paginationMeta.current_offset,
+            limit: paginationMeta.limit,
+          },
+          this.getAccounts.bind(this),
+          resolvedParams,
+          this
+        );
+        standardResponse.success.data = paginatedData;
+        }
+      }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/accounts', params, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/accounts', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -1433,7 +1678,8 @@ export class BrokersWrapper {
       });
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
-      return standardResponse;
+      // Type assertion to final return type (handles both paginated and non-paginated responses)
+      return standardResponse as FinaticResponse<PaginatedData<FDXBrokerAccount>>;
       
     } catch (error) {
       try {
@@ -1485,7 +1731,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FDXBrokerAccount[]> = {
+      const errorResponse: FinaticResponse<PaginatedData<FDXBrokerAccount>> = {
         success: {
           data: null as any,
         },
@@ -1511,12 +1757,12 @@ export class BrokersWrapper {
    * Get order fills for a specific order.
    *
    * This endpoint returns all execution fills for the specified order.
-   * @param orderId {string} 
-   * @param connectionId {string} (optional) 
-   * @param limit {number} (optional) 
-   * @param offset {number} (optional) 
-   * @param includeMetadata {boolean} (optional) 
-   * @returns {Promise<FinaticResponse<FDXBrokerOrderFill[]>>} Standard response with success/Error/Warning structure
+   * @param params.orderId {string} Order ID
+   * @param params.connectionId {string} (optional) Filter by connection ID
+   * @param params.limit {number} (optional) Maximum number of fills to return
+   * @param params.offset {number} (optional) Number of fills to skip for pagination
+   * @param params.includeMetadata {boolean} (optional) Include fill metadata in response (excluded by default for FDX compliance)
+   * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerOrderFill>>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/orders/{order_id}/fills
    * @methodId get_order_fills_api_v1_brokers_data_orders__order_id__fills_get
@@ -1524,7 +1770,9 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Minimal example with required parameters only
-   * const result = await finatic.getOrderFills(orderId: '00000000-0000-0000-0000-000000000000');
+   * const result = await finatic.getOrderFills({
+    orderId: '00000000-0000-0000-0000-000000000000'
+   * });
    * 
    * // Access the response data
    * if (result.success) {
@@ -1536,7 +1784,12 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getOrderFills(orderId: '00000000-0000-0000-0000-000000000000', connectionId: '00000000-0000-0000-0000-000000000000', limit: 100, offset: 0);
+   * const result = await finatic.getOrderFills({
+    orderId: '00000000-0000-0000-0000-000000000000',
+    connectionId: '00000000-0000-0000-0000-000000000000',
+    limit: 100,
+    offset: 0
+   * });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -1549,16 +1802,10 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getOrderFills(orderId: string, connectionId?: string, limit?: number, offset?: number, includeMetadata?: boolean): Promise<FinaticResponse<FDXBrokerOrderFill[]>> {
-    // Construct params object from individual parameters
-    const params: GetOrderFillsParams = {
-    orderId: orderId,
-    connectionId: connectionId,
-    limit: limit,
-    offset: offset,
-    includeMetadata: includeMetadata
-  };    // Authentication check
-    if (!this.sessionId) {
+  async getOrderFills(params: GetOrderFillsParams): Promise<FinaticResponse<PaginatedData<FDXBrokerOrderFill>>> {
+    // Use params object (required parameters present)
+    const resolvedParams: GetOrderFillsParams = params;    // Authentication check
+    if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
 
@@ -1576,11 +1823,11 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/fills', params, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/fills', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<FDXBrokerOrderFill[]>;
+        return cached as FinaticResponse<PaginatedData<FDXBrokerOrderFill>>;
       }
     }
 
@@ -1589,14 +1836,14 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/orders/{order_id}/fills',
-      params: params,
+      params: resolvedParams,
       action: 'getOrderFills'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet({ orderId: orderId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(includeMetadata !== undefined ? { includeMetadata: includeMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet({ orderId: resolvedParams.orderId, connectionId: resolvedParams.connectionId, limit: resolvedParams.limit, offset: resolvedParams.offset, includeMetadata: resolvedParams.includeMetadata }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1610,10 +1857,35 @@ export class BrokersWrapper {
       }
       
       // Convert response to plain object, removing _id fields recursively
-      const standardResponse: FinaticResponse<FDXBrokerOrderFill[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerOrderFill[]>;
+      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
+      const standardResponse: any = convertToPlainObject(responseData);
+      
+        // Phase 2: Wrap paginated responses with PaginatedData
+      const hasLimit = true;
+      const hasOffset = true;
+      const hasPagination = hasLimit && hasOffset;
+      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+        // PaginatedData is already imported at top of file
+        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
+        if (paginationMeta) {
+        const paginatedData = new PaginatedData(
+          standardResponse.success.data,
+          {
+            has_more: paginationMeta.has_more,
+            next_offset: paginationMeta.next_offset,
+            current_offset: paginationMeta.current_offset,
+            limit: paginationMeta.limit,
+          },
+          this.getOrderFills.bind(this),
+          resolvedParams,
+          this
+        );
+        standardResponse.success.data = paginatedData;
+        }
+      }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/fills', params, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/fills', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -1623,7 +1895,8 @@ export class BrokersWrapper {
       });
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
-      return standardResponse;
+      // Type assertion to final return type (handles both paginated and non-paginated responses)
+      return standardResponse as FinaticResponse<PaginatedData<FDXBrokerOrderFill>>;
       
     } catch (error) {
       try {
@@ -1675,7 +1948,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FDXBrokerOrderFill[]> = {
+      const errorResponse: FinaticResponse<PaginatedData<FDXBrokerOrderFill>> = {
         success: {
           data: null as any,
         },
@@ -1701,12 +1974,12 @@ export class BrokersWrapper {
    * Get order events for a specific order.
    *
    * This endpoint returns all lifecycle events for the specified order.
-   * @param orderId {string} 
-   * @param connectionId {string} (optional) 
-   * @param limit {number} (optional) 
-   * @param offset {number} (optional) 
-   * @param includeMetadata {boolean} (optional) 
-   * @returns {Promise<FinaticResponse<FDXBrokerOrderEvent[]>>} Standard response with success/Error/Warning structure
+   * @param params.orderId {string} Order ID
+   * @param params.connectionId {string} (optional) Filter by connection ID
+   * @param params.limit {number} (optional) Maximum number of events to return
+   * @param params.offset {number} (optional) Number of events to skip for pagination
+   * @param params.includeMetadata {boolean} (optional) Include event metadata in response (excluded by default for FDX compliance)
+   * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerOrderEvent>>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/orders/{order_id}/events
    * @methodId get_order_events_api_v1_brokers_data_orders__order_id__events_get
@@ -1714,7 +1987,9 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Minimal example with required parameters only
-   * const result = await finatic.getOrderEvents(orderId: '00000000-0000-0000-0000-000000000000');
+   * const result = await finatic.getOrderEvents({
+    orderId: '00000000-0000-0000-0000-000000000000'
+   * });
    * 
    * // Access the response data
    * if (result.success) {
@@ -1726,7 +2001,12 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getOrderEvents(orderId: '00000000-0000-0000-0000-000000000000', connectionId: '00000000-0000-0000-0000-000000000000', limit: 100, offset: 0);
+   * const result = await finatic.getOrderEvents({
+    orderId: '00000000-0000-0000-0000-000000000000',
+    connectionId: '00000000-0000-0000-0000-000000000000',
+    limit: 100,
+    offset: 0
+   * });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -1739,16 +2019,10 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getOrderEvents(orderId: string, connectionId?: string, limit?: number, offset?: number, includeMetadata?: boolean): Promise<FinaticResponse<FDXBrokerOrderEvent[]>> {
-    // Construct params object from individual parameters
-    const params: GetOrderEventsParams = {
-    orderId: orderId,
-    connectionId: connectionId,
-    limit: limit,
-    offset: offset,
-    includeMetadata: includeMetadata
-  };    // Authentication check
-    if (!this.sessionId) {
+  async getOrderEvents(params: GetOrderEventsParams): Promise<FinaticResponse<PaginatedData<FDXBrokerOrderEvent>>> {
+    // Use params object (required parameters present)
+    const resolvedParams: GetOrderEventsParams = params;    // Authentication check
+    if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
 
@@ -1766,11 +2040,11 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/events', params, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/events', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<FDXBrokerOrderEvent[]>;
+        return cached as FinaticResponse<PaginatedData<FDXBrokerOrderEvent>>;
       }
     }
 
@@ -1779,14 +2053,14 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/orders/{order_id}/events',
-      params: params,
+      params: resolvedParams,
       action: 'getOrderEvents'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet({ orderId: orderId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(includeMetadata !== undefined ? { includeMetadata: includeMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet({ orderId: resolvedParams.orderId, connectionId: resolvedParams.connectionId, limit: resolvedParams.limit, offset: resolvedParams.offset, includeMetadata: resolvedParams.includeMetadata }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1800,10 +2074,35 @@ export class BrokersWrapper {
       }
       
       // Convert response to plain object, removing _id fields recursively
-      const standardResponse: FinaticResponse<FDXBrokerOrderEvent[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerOrderEvent[]>;
+      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
+      const standardResponse: any = convertToPlainObject(responseData);
+      
+        // Phase 2: Wrap paginated responses with PaginatedData
+      const hasLimit = true;
+      const hasOffset = true;
+      const hasPagination = hasLimit && hasOffset;
+      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+        // PaginatedData is already imported at top of file
+        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
+        if (paginationMeta) {
+        const paginatedData = new PaginatedData(
+          standardResponse.success.data,
+          {
+            has_more: paginationMeta.has_more,
+            next_offset: paginationMeta.next_offset,
+            current_offset: paginationMeta.current_offset,
+            limit: paginationMeta.limit,
+          },
+          this.getOrderEvents.bind(this),
+          resolvedParams,
+          this
+        );
+        standardResponse.success.data = paginatedData;
+        }
+      }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/events', params, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/events', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -1813,7 +2112,8 @@ export class BrokersWrapper {
       });
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
-      return standardResponse;
+      // Type assertion to final return type (handles both paginated and non-paginated responses)
+      return standardResponse as FinaticResponse<PaginatedData<FDXBrokerOrderEvent>>;
       
     } catch (error) {
       try {
@@ -1865,7 +2165,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FDXBrokerOrderEvent[]> = {
+      const errorResponse: FinaticResponse<PaginatedData<FDXBrokerOrderEvent>> = {
         success: {
           data: null as any,
         },
@@ -1891,14 +2191,14 @@ export class BrokersWrapper {
    * Get order groups.
    *
    * This endpoint returns order groups that contain multiple orders.
-   * @param brokerId {string} (optional) 
-   * @param connectionId {string} (optional) 
-   * @param limit {number} (optional) 
-   * @param offset {number} (optional) 
-   * @param createdAfter {string} (optional) 
-   * @param createdBefore {string} (optional) 
-   * @param includeMetadata {boolean} (optional) 
-   * @returns {Promise<FinaticResponse<FDXBrokerOrderGroup[]>>} Standard response with success/Error/Warning structure
+   * @param params.brokerId {string} (optional) Filter by broker ID
+   * @param params.connectionId {string} (optional) Filter by connection ID
+   * @param params.limit {number} (optional) Maximum number of order groups to return
+   * @param params.offset {number} (optional) Number of order groups to skip for pagination
+   * @param params.createdAfter {string} (optional) Filter order groups created after this timestamp
+   * @param params.createdBefore {string} (optional) Filter order groups created before this timestamp
+   * @param params.includeMetadata {boolean} (optional) Include group metadata in response (excluded by default for FDX compliance)
+   * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerOrderGroup>>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/orders/groups
    * @methodId get_order_groups_api_v1_brokers_data_orders_groups_get
@@ -1906,7 +2206,7 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Example with no parameters
-   * const result = await finatic.getOrderGroups();
+   * const result = await finatic.getOrderGroups({});
    * 
    * // Access the response data
    * if (result.success) {
@@ -1916,7 +2216,11 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getOrderGroups(brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', limit: 100);
+   * const result = await finatic.getOrderGroups({
+    brokerId: 'alpaca',
+    connectionId: '00000000-0000-0000-0000-000000000000',
+    limit: 100
+   * });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -1929,18 +2233,10 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getOrderGroups(brokerId?: string, connectionId?: string, limit?: number, offset?: number, createdAfter?: string, createdBefore?: string, includeMetadata?: boolean): Promise<FinaticResponse<FDXBrokerOrderGroup[]>> {
-    // Construct params object from individual parameters
-    const params: GetOrderGroupsParams = {
-    brokerId: brokerId,
-    connectionId: connectionId,
-    limit: limit,
-    offset: offset,
-    createdAfter: createdAfter,
-    createdBefore: createdBefore,
-    includeMetadata: includeMetadata
-  };    // Authentication check
-    if (!this.sessionId) {
+  async getOrderGroups(params?: GetOrderGroupsParams): Promise<FinaticResponse<PaginatedData<FDXBrokerOrderGroup>>> {
+    // Use params object (with default empty object)
+    const resolvedParams: GetOrderGroupsParams = params || {};    // Authentication check
+    if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
 
@@ -1958,11 +2254,11 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/groups', params, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/groups', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<FDXBrokerOrderGroup[]>;
+        return cached as FinaticResponse<PaginatedData<FDXBrokerOrderGroup>>;
       }
     }
 
@@ -1971,14 +2267,14 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/orders/groups',
-      params: params,
+      params: resolvedParams,
       action: 'getOrderGroups'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrderGroupsApiV1BrokersDataOrdersGroupsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}), ...(createdAfter !== undefined ? { createdAfter: createdAfter } : {}), ...(createdBefore !== undefined ? { createdBefore: createdBefore } : {}), ...(includeMetadata !== undefined ? { includeMetadata: includeMetadata } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getOrderGroupsApiV1BrokersDataOrdersGroupsGet({ brokerId: resolvedParams.brokerId, connectionId: resolvedParams.connectionId, limit: resolvedParams.limit, offset: resolvedParams.offset, createdAfter: resolvedParams.createdAfter, createdBefore: resolvedParams.createdBefore, includeMetadata: resolvedParams.includeMetadata }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1992,10 +2288,35 @@ export class BrokersWrapper {
       }
       
       // Convert response to plain object, removing _id fields recursively
-      const standardResponse: FinaticResponse<FDXBrokerOrderGroup[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerOrderGroup[]>;
+      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
+      const standardResponse: any = convertToPlainObject(responseData);
+      
+        // Phase 2: Wrap paginated responses with PaginatedData
+      const hasLimit = true;
+      const hasOffset = true;
+      const hasPagination = hasLimit && hasOffset;
+      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+        // PaginatedData is already imported at top of file
+        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
+        if (paginationMeta) {
+        const paginatedData = new PaginatedData(
+          standardResponse.success.data,
+          {
+            has_more: paginationMeta.has_more,
+            next_offset: paginationMeta.next_offset,
+            current_offset: paginationMeta.current_offset,
+            limit: paginationMeta.limit,
+          },
+          this.getOrderGroups.bind(this),
+          resolvedParams,
+          this
+        );
+        standardResponse.success.data = paginatedData;
+        }
+      }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/groups', params, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/groups', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -2005,7 +2326,8 @@ export class BrokersWrapper {
       });
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
-      return standardResponse;
+      // Type assertion to final return type (handles both paginated and non-paginated responses)
+      return standardResponse as FinaticResponse<PaginatedData<FDXBrokerOrderGroup>>;
       
     } catch (error) {
       try {
@@ -2057,7 +2379,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FDXBrokerOrderGroup[]> = {
+      const errorResponse: FinaticResponse<PaginatedData<FDXBrokerOrderGroup>> = {
         success: {
           data: null as any,
         },
@@ -2084,14 +2406,14 @@ export class BrokersWrapper {
    *
    * This endpoint returns tax lots for positions, which are used for tax reporting.
    * Each lot tracks when a position was opened/closed and at what prices.
-   * @param brokerId {string} (optional) 
-   * @param connectionId {string} (optional) 
-   * @param accountId {string} (optional) 
-   * @param symbol {string} (optional) 
-   * @param positionId {string} (optional) 
-   * @param limit {number} (optional) 
-   * @param offset {number} (optional) 
-   * @returns {Promise<FinaticResponse<FDXBrokerPositionLot[]>>} Standard response with success/Error/Warning structure
+   * @param params.brokerId {string} (optional) Filter by broker ID
+   * @param params.connectionId {string} (optional) Filter by connection ID
+   * @param params.accountId {string} (optional) Filter by broker provided account ID
+   * @param params.symbol {string} (optional) Filter by symbol
+   * @param params.positionId {string} (optional) Filter by position ID
+   * @param params.limit {number} (optional) Maximum number of position lots to return
+   * @param params.offset {number} (optional) Number of position lots to skip for pagination
+   * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerPositionLot>>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/positions/lots
    * @methodId get_position_lots_api_v1_brokers_data_positions_lots_get
@@ -2099,7 +2421,7 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Example with no parameters
-   * const result = await finatic.getPositionLots();
+   * const result = await finatic.getPositionLots({});
    * 
    * // Access the response data
    * if (result.success) {
@@ -2109,7 +2431,11 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getPositionLots(brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789');
+   * const result = await finatic.getPositionLots({
+    brokerId: 'alpaca',
+    connectionId: '00000000-0000-0000-0000-000000000000',
+    accountId: '123456789'
+   * });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -2122,18 +2448,10 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getPositionLots(brokerId?: string, connectionId?: string, accountId?: string, symbol?: string, positionId?: string, limit?: number, offset?: number): Promise<FinaticResponse<FDXBrokerPositionLot[]>> {
-    // Construct params object from individual parameters
-    const params: GetPositionLotsParams = {
-    brokerId: brokerId,
-    connectionId: connectionId,
-    accountId: accountId,
-    symbol: symbol,
-    positionId: positionId,
-    limit: limit,
-    offset: offset
-  };    // Authentication check
-    if (!this.sessionId) {
+  async getPositionLots(params?: GetPositionLotsParams): Promise<FinaticResponse<PaginatedData<FDXBrokerPositionLot>>> {
+    // Use params object (with default empty object)
+    const resolvedParams: GetPositionLotsParams = params || {};    // Authentication check
+    if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
 
@@ -2151,11 +2469,11 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots', params, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<FDXBrokerPositionLot[]>;
+        return cached as FinaticResponse<PaginatedData<FDXBrokerPositionLot>>;
       }
     }
 
@@ -2164,14 +2482,14 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/positions/lots',
-      params: params,
+      params: resolvedParams,
       action: 'getPositionLots'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getPositionLotsApiV1BrokersDataPositionsLotsGet({ ...(brokerId !== undefined ? { brokerId: brokerId } : {}), ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(accountId !== undefined ? { accountId: accountId } : {}), ...(symbol !== undefined ? { symbol: symbol } : {}), ...(positionId !== undefined ? { positionId: positionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getPositionLotsApiV1BrokersDataPositionsLotsGet({ brokerId: resolvedParams.brokerId, connectionId: resolvedParams.connectionId, accountId: resolvedParams.accountId, symbol: resolvedParams.symbol, positionId: resolvedParams.positionId, limit: resolvedParams.limit, offset: resolvedParams.offset }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -2185,10 +2503,35 @@ export class BrokersWrapper {
       }
       
       // Convert response to plain object, removing _id fields recursively
-      const standardResponse: FinaticResponse<FDXBrokerPositionLot[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerPositionLot[]>;
+      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
+      const standardResponse: any = convertToPlainObject(responseData);
+      
+        // Phase 2: Wrap paginated responses with PaginatedData
+      const hasLimit = true;
+      const hasOffset = true;
+      const hasPagination = hasLimit && hasOffset;
+      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+        // PaginatedData is already imported at top of file
+        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
+        if (paginationMeta) {
+        const paginatedData = new PaginatedData(
+          standardResponse.success.data,
+          {
+            has_more: paginationMeta.has_more,
+            next_offset: paginationMeta.next_offset,
+            current_offset: paginationMeta.current_offset,
+            limit: paginationMeta.limit,
+          },
+          this.getPositionLots.bind(this),
+          resolvedParams,
+          this
+        );
+        standardResponse.success.data = paginatedData;
+        }
+      }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots', params, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -2198,7 +2541,8 @@ export class BrokersWrapper {
       });
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
-      return standardResponse;
+      // Type assertion to final return type (handles both paginated and non-paginated responses)
+      return standardResponse as FinaticResponse<PaginatedData<FDXBrokerPositionLot>>;
       
     } catch (error) {
       try {
@@ -2250,7 +2594,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FDXBrokerPositionLot[]> = {
+      const errorResponse: FinaticResponse<PaginatedData<FDXBrokerPositionLot>> = {
         success: {
           data: null as any,
         },
@@ -2276,11 +2620,11 @@ export class BrokersWrapper {
    * Get position lot fills for a specific lot.
    *
    * This endpoint returns all fills associated with a specific position lot.
-   * @param lotId {string} 
-   * @param connectionId {string} (optional) 
-   * @param limit {number} (optional) 
-   * @param offset {number} (optional) 
-   * @returns {Promise<FinaticResponse<FDXBrokerPositionLotFill[]>>} Standard response with success/Error/Warning structure
+   * @param params.lotId {string} Position lot ID
+   * @param params.connectionId {string} (optional) Filter by connection ID
+   * @param params.limit {number} (optional) Maximum number of fills to return
+   * @param params.offset {number} (optional) Number of fills to skip for pagination
+   * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerPositionLotFill>>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/brokers/data/positions/lots/{lot_id}/fills
    * @methodId get_position_lot_fills_api_v1_brokers_data_positions_lots__lot_id__fills_get
@@ -2288,7 +2632,9 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Minimal example with required parameters only
-   * const result = await finatic.getPositionLotFills(lotId: '00000000-0000-0000-0000-000000000000');
+   * const result = await finatic.getPositionLotFills({
+    lotId: '00000000-0000-0000-0000-000000000000'
+   * });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2300,7 +2646,12 @@ export class BrokersWrapper {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getPositionLotFills(lotId: '00000000-0000-0000-0000-000000000000', connectionId: '00000000-0000-0000-0000-000000000000', limit: 100, offset: 0);
+   * const result = await finatic.getPositionLotFills({
+    lotId: '00000000-0000-0000-0000-000000000000',
+    connectionId: '00000000-0000-0000-0000-000000000000',
+    limit: 100,
+    offset: 0
+   * });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -2313,15 +2664,10 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getPositionLotFills(lotId: string, connectionId?: string, limit?: number, offset?: number): Promise<FinaticResponse<FDXBrokerPositionLotFill[]>> {
-    // Construct params object from individual parameters
-    const params: GetPositionLotFillsParams = {
-    lotId: lotId,
-    connectionId: connectionId,
-    limit: limit,
-    offset: offset
-  };    // Authentication check
-    if (!this.sessionId) {
+  async getPositionLotFills(params: GetPositionLotFillsParams): Promise<FinaticResponse<PaginatedData<FDXBrokerPositionLotFill>>> {
+    // Use params object (required parameters present)
+    const resolvedParams: GetPositionLotFillsParams = params;    // Authentication check
+    if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
 
@@ -2339,11 +2685,11 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots/{lot_id}/fills', params, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots/{lot_id}/fills', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<FDXBrokerPositionLotFill[]>;
+        return cached as FinaticResponse<PaginatedData<FDXBrokerPositionLotFill>>;
       }
     }
 
@@ -2352,14 +2698,14 @@ export class BrokersWrapper {
       request_id: requestId,
       method: 'GET',
       path: '/api/v1/brokers/data/positions/lots/{lot_id}/fills',
-      params: params,
+      params: resolvedParams,
       action: 'getPositionLotFills'
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet({ lotId: lotId, ...(connectionId !== undefined ? { connectionId: connectionId } : {}), ...(limit !== undefined ? { limit: limit } : {}), ...(offset !== undefined ? { offset: offset } : {}) }, { headers: { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, 'x-csrf-token': this.csrfToken, 'x-request-id': requestId } });
+          const apiResponse = await this.api.getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet({ lotId: resolvedParams.lotId, connectionId: resolvedParams.connectionId, limit: resolvedParams.limit, offset: resolvedParams.offset }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -2373,10 +2719,35 @@ export class BrokersWrapper {
       }
       
       // Convert response to plain object, removing _id fields recursively
-      const standardResponse: FinaticResponse<FDXBrokerPositionLotFill[]> = convertToPlainObject(responseData) as FinaticResponse<FDXBrokerPositionLotFill[]>;
+      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
+      const standardResponse: any = convertToPlainObject(responseData);
+      
+        // Phase 2: Wrap paginated responses with PaginatedData
+      const hasLimit = true;
+      const hasOffset = true;
+      const hasPagination = hasLimit && hasOffset;
+      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+        // PaginatedData is already imported at top of file
+        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
+        if (paginationMeta) {
+        const paginatedData = new PaginatedData(
+          standardResponse.success.data,
+          {
+            has_more: paginationMeta.has_more,
+            next_offset: paginationMeta.next_offset,
+            current_offset: paginationMeta.current_offset,
+            limit: paginationMeta.limit,
+          },
+          this.getPositionLotFills.bind(this),
+          resolvedParams,
+          this
+        );
+        standardResponse.success.data = paginatedData;
+        }
+      }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots/{lot_id}/fills', params, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots/{lot_id}/fills', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -2386,7 +2757,8 @@ export class BrokersWrapper {
       });
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
-      return standardResponse;
+      // Type assertion to final return type (handles both paginated and non-paginated responses)
+      return standardResponse as FinaticResponse<PaginatedData<FDXBrokerPositionLotFill>>;
       
     } catch (error) {
       try {
@@ -2438,7 +2810,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FDXBrokerPositionLotFill[]> = {
+      const errorResponse: FinaticResponse<PaginatedData<FDXBrokerPositionLotFill>> = {
         success: {
           data: null as any,
         },

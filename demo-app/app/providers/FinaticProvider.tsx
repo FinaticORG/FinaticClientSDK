@@ -397,9 +397,24 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const checkAuth = useCallback(async () => {
-    // For server SDKs, use sdkAdapter instead of finatic client
-    const authSource =
-      sdkAdapter && (sdkType === 'python' || sdkType === 'node') ? sdkAdapter : finatic;
+    // For server SDKs, use sdkAdapter. For client SDK, prefer adapter but fallback to finatic
+    let authSource: any = null;
+    let authMethod: 'adapter' | 'direct' = 'direct';
+
+    if (sdkType === 'python' || sdkType === 'node') {
+      // Server SDKs must use adapter
+      authSource = sdkAdapter;
+      authMethod = 'adapter';
+    } else if (sdkType === 'client') {
+      // Client SDK: prefer adapter if available, otherwise use finatic directly
+      if (sdkAdapter) {
+        authSource = sdkAdapter;
+        authMethod = 'adapter';
+      } else if (finatic) {
+        authSource = finatic;
+        authMethod = 'direct';
+      }
+    }
 
     if (!authSource) {
       setIsAuthed(false);
@@ -408,19 +423,37 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      // Use sdkAdapter methods for server SDKs, finatic methods for client SDK
-      const authed =
-        typeof authSource.isAuthenticated === 'function'
-          ? await authSource.isAuthenticated()
-          : false;
-      const uid = typeof authSource.getUserId === 'function' ? await authSource.getUserId() : null;
+      let authed = false;
+      let uid: string | null = null;
+
+      if (authMethod === 'adapter') {
+        // Use adapter's isAuthenticated() method (which handles conversion internally)
+        authed =
+          typeof authSource.isAuthenticated === 'function'
+            ? await authSource.isAuthenticated()
+            : false;
+        uid =
+          typeof authSource.getUserId === 'function'
+            ? await authSource.getUserId()
+            : null;
+      } else {
+        // Direct finatic access: use isAuthed() method (not isAuthenticated)
+        if (typeof (authSource as any).isAuthed === 'function') {
+          authed = (authSource as any).isAuthed();
+        } else if (typeof authSource.isAuthenticated === 'function') {
+          authed = await authSource.isAuthenticated();
+        }
+        
+        if (typeof (authSource as any).getUserId === 'function') {
+          uid = (authSource as any).getUserId() ?? null;
+        } else if (typeof authSource.getUserId === 'function') {
+          uid = await authSource.getUserId();
+        }
+      }
 
       console.log('🔍 checkAuth() - authed:', authed, 'typeof:', typeof authed);
       console.log('🔍 checkAuth() - uid:', uid, 'typeof:', typeof uid);
-      console.log(
-        '🔍 checkAuth() - authSource:',
-        authSource === sdkAdapter ? 'sdkAdapter' : 'finatic'
-      );
+      console.log('🔍 checkAuth() - method:', authMethod);
 
       setIsAuthed(authed);
       setCurrentUserId(uid);
@@ -852,6 +885,34 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
           // Portal might not be open, that's fine
           addLog('info', '🔍 No existing portal to close (or already closed)');
         }
+
+        // Check authentication status right after init - if SDK is already authenticated, set auth state
+        try {
+          const isAuth = (wrapped as unknown as FinaticConnect).isAuthed();
+          addLog('info', `🔍 Checking auth status after init: isAuthed() = ${isAuth}`);
+          
+          if (isAuth) {
+            // SDK is already authenticated, get user ID and set auth state
+            const userId = (wrapped as unknown as FinaticConnect).getUserId();
+            addLog('info', `🔍 SDK is authenticated, userId: ${userId}`);
+            
+            if (userId) {
+              setAuthState(true, userId);
+              setStoredUserId(userId);
+              addLog('success', `✅ Authentication state set after init - User: ${userId}`);
+            } else {
+              // Authenticated but no user ID yet
+              setAuthState(true, null);
+              addLog('info', '✅ Authentication state set after init (no user ID yet)');
+            }
+          } else {
+            // Not authenticated, clear auth state
+            setAuthState(false, null);
+            addLog('info', '🔍 SDK is not authenticated after init');
+          }
+        } catch (authErr) {
+          addLog('error', `⚠️ Error checking auth status after init: ${authErr instanceof Error ? authErr.message : 'Unknown error'}`);
+        }
       } catch (err) {
         addLog(
           'error',
@@ -881,7 +942,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
       isInitializingRef.current = false;
     }
-  }, [addLog, getStoredUserId, estimateBytes, recordMethodCall, sdkType, clearSDKState]);
+  }, [addLog, getStoredUserId, estimateBytes, recordMethodCall, sdkType, clearSDKState, setAuthState, setStoredUserId]);
 
   // Load storedUserId from localStorage after mount to prevent hydration mismatch
   useEffect(() => {

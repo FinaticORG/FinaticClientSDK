@@ -69,11 +69,7 @@ import type { Unrealizedprofitlosspercent } from './unrealizedprofitlosspercent'
  * FDX-style broker position schema.  Based on FDX Holdings, significantly extended for trading: - Short positions - Realized/unrealized P&L - Position lifecycle - Commission tracking
  */
 export interface FDXBrokerPosition {
-    '_id'?: string;
-    /**
-     * Position identifier
-     */
-    'positionId': string;
+    'id'?: string | null;
     /**
      * Broker account identifier
      */

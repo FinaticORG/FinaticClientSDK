@@ -205,11 +205,15 @@ export class ClientSdkAdapter implements SdkAdapter {
 
   async openPortal(options: PortalOptions): Promise<void> {
     // Client SDK handles portal internally with callbacks
+    // Extract portal params and callbacks separately
+    const portalParams = {
+      theme: options.theme,
+      brokers: options.brokers,
+      email: options.email,
+      mode: options.mode as 'light' | 'dark' | undefined,
+    };
     return await this.client.openPortal(
-      options.theme,
-      options.brokers,
-      options.email,
-      options.mode as 'light' | 'dark' | undefined,
+      portalParams,
       options.onSuccess,
       options.onError,
       options.onClose
@@ -217,7 +221,15 @@ export class ClientSdkAdapter implements SdkAdapter {
   }
 
   async getPortalUrl(options?: PortalOptions): Promise<string> {
-    return await this.client.getPortalUrl(options?.theme, options?.brokers, options?.email, options?.mode as 'light' | 'dark' | undefined);
+    if (!options) {
+      return await this.client.getPortalUrl();
+    }
+    return await this.client.getPortalUrl({
+      theme: options.theme,
+      brokers: options.brokers,
+      email: options.email,
+      mode: options.mode as 'light' | 'dark' | undefined,
+    });
   }
 
   async closePortal(): Promise<void> {

@@ -153,8 +153,8 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
         /**
          * Start a session with a one-time token.
          * @summary Start Session
-         * @param {string} oneTimeToken 
-         * @param {SessionStartRequest} sessionStartRequest 
+         * @param {string} oneTimeToken One-time use token obtained from init_session endpoint to authenticate and start the session
+         * @param {SessionStartRequest} sessionStartRequest Session start request containing optional user ID to associate with the session
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -244,8 +244,8 @@ export const SessionApiFp = function(configuration?: Configuration) {
         /**
          * Start a session with a one-time token.
          * @summary Start Session
-         * @param {string} oneTimeToken 
-         * @param {SessionStartRequest} sessionStartRequest 
+         * @param {string} oneTimeToken One-time use token obtained from init_session endpoint to authenticate and start the session
+         * @param {SessionStartRequest} sessionStartRequest Session start request containing optional user ID to associate with the session
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -388,8 +388,14 @@ export interface SessionApiInitSessionApiV1SessionInitPostRequest {
  * Request parameters for startSessionApiV1SessionStartPost operation in SessionApi.
  */
 export interface SessionApiStartSessionApiV1SessionStartPostRequest {
+    /**
+     * One-time use token obtained from init_session endpoint to authenticate and start the session
+     */
     readonly oneTimeToken: string
 
+    /**
+     * Session start request containing optional user ID to associate with the session
+     */
     readonly sessionStartRequest: SessionStartRequest
 }
 
