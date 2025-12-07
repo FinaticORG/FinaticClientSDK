@@ -63,6 +63,8 @@ export interface FDXBrokerBalance {
      * Associated account identifier
      */
     'accountId': string;
+    'internalAccountId'?: string | null;
+    'connectionId'?: string | null;
     'balanceType': Balancetype;
     'balanceName'?: string | null;
     'availableBalance'?: Availablebalance | null;

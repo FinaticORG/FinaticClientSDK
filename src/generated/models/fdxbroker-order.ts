@@ -44,6 +44,7 @@ export interface FDXBrokerOrder {
      * Broker account identifier
      */
     'accountId': string;
+    'internalAccountId'?: string | null;
     'connectionId'?: string | null;
     'orderType'?: Ordertype | null;
     'orderClass'?: Orderclass | null;

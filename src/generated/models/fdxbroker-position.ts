@@ -74,6 +74,7 @@ export interface FDXBrokerPosition {
      * Broker account identifier
      */
     'accountId': string;
+    'internalAccountId'?: string | null;
     /**
      * User-broker connection identifier
      */

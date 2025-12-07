@@ -64,6 +64,8 @@ export interface FDXBrokerPositionLot {
      * Broker account identifier
      */
     'accountId': string;
+    'internalAccountId'?: string | null;
+    'connectionId'?: string | null;
     /**
      * Security identifier
      */

@@ -20,7 +20,6 @@ import { convertToPlainObject } from '../utils/plain-object';
 import { BrokerDataAccountTypeEnum } from '../models';
 import { BrokerDataAssetTypeEnum } from '../models';
 import { BrokerDataOrderSideEnum } from '../models';
-import { BrokerDataOrderStatusEnum } from '../models';
 import { BrokerDataPositionStatusEnum } from '../models';
 
 import type { AccountStatus } from '../models';
@@ -77,12 +76,12 @@ export interface GetOrdersParams {
   brokerId?: string;
   /** Filter by connection ID */
   connectionId?: string;
-  /** Filter by broker provided account ID */
+  /** Filter by broker provided account ID or internal account UUID */
   accountId?: string;
   /** Filter by symbol */
   symbol?: string;
   /** Filter by order status (e.g., 'filled', 'pending_new', 'cancelled') */
-  orderStatus?: BrokerDataOrderStatusEnum;
+  orderStatus?: string;
   /** Filter by order side (e.g., 'buy', 'sell') */
   side?: BrokerDataOrderSideEnum;
   /** Filter by asset type (e.g., 'stock', 'option', 'crypto', 'future') */
@@ -104,7 +103,7 @@ export interface GetPositionsParams {
   brokerId?: string;
   /** Filter by connection ID */
   connectionId?: string;
-  /** Filter by broker provided account ID */
+  /** Filter by broker provided account ID or internal account UUID */
   accountId?: string;
   /** Filter by symbol */
   symbol?: string;
@@ -131,7 +130,7 @@ export interface GetBalancesParams {
   brokerId?: string;
   /** Filter by connection ID */
   connectionId?: string;
-  /** Filter by broker provided account ID */
+  /** Filter by broker provided account ID or internal account UUID */
   accountId?: string;
   /** Filter by end-of-day snapshot status (true/false) */
   isEndOfDaySnapshot?: boolean;
@@ -866,9 +865,9 @@ export class BrokersWrapper {
    * Returns orders from connections the company has read access to.
    * @param params.brokerId {string} (optional) Filter by broker ID
    * @param params.connectionId {string} (optional) Filter by connection ID
-   * @param params.accountId {string} (optional) Filter by broker provided account ID
+   * @param params.accountId {string} (optional) Filter by broker provided account ID or internal account UUID
    * @param params.symbol {string} (optional) Filter by symbol
-   * @param params.orderStatus {BrokerDataOrderStatusEnum} (optional) Filter by order status (e.g., 'filled', 'pending_new', 'cancelled')
+   * @param params.orderStatus {string} (optional) Filter by order status (e.g., 'filled', 'pending_new', 'cancelled')
    * @param params.side {BrokerDataOrderSideEnum} (optional) Filter by order side (e.g., 'buy', 'sell')
    * @param params.assetType {BrokerDataAssetTypeEnum} (optional) Filter by asset type (e.g., 'stock', 'option', 'crypto', 'future')
    * @param params.limit {number} (optional) Maximum number of orders to return
@@ -914,12 +913,6 @@ export class BrokersWrapper {
   async getOrders(params?: GetOrdersParams): Promise<FinaticResponse<PaginatedData<FDXBrokerOrder>>> {
     // Use params object (with default empty object)
     const resolvedParams: GetOrdersParams = params || {};
-    if (params?.orderStatus !== undefined) {
-      const coerced = coerceEnumValue(params.orderStatus, BrokerDataOrderStatusEnum, 'orderStatus');
-      if (coerced !== undefined) {
-        params.orderStatus = coerced;
-      }
-    }
     if (params?.side !== undefined) {
       const coerced = coerceEnumValue(params.side, BrokerDataOrderSideEnum, 'side');
       if (coerced !== undefined) {
@@ -1104,7 +1097,7 @@ export class BrokersWrapper {
    * Returns positions from connections the company has read access to.
    * @param params.brokerId {string} (optional) Filter by broker ID
    * @param params.connectionId {string} (optional) Filter by connection ID
-   * @param params.accountId {string} (optional) Filter by broker provided account ID
+   * @param params.accountId {string} (optional) Filter by broker provided account ID or internal account UUID
    * @param params.symbol {string} (optional) Filter by symbol
    * @param params.side {BrokerDataOrderSideEnum} (optional) Filter by position side (e.g., 'long', 'short')
    * @param params.assetType {BrokerDataAssetTypeEnum} (optional) Filter by asset type (e.g., 'stock', 'option', 'crypto', 'future')
@@ -1342,7 +1335,7 @@ export class BrokersWrapper {
    * Returns balances from connections the company has read access to.
    * @param params.brokerId {string} (optional) Filter by broker ID
    * @param params.connectionId {string} (optional) Filter by connection ID
-   * @param params.accountId {string} (optional) Filter by broker provided account ID
+   * @param params.accountId {string} (optional) Filter by broker provided account ID or internal account UUID
    * @param params.isEndOfDaySnapshot {boolean} (optional) Filter by end-of-day snapshot status (true/false)
    * @param params.limit {number} (optional) Maximum number of balances to return
    * @param params.offset {number} (optional) Number of balances to skip for pagination

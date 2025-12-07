@@ -11,7 +11,6 @@ export * from './balancetype';
 export * from './broker-data-account-type-enum';
 export * from './broker-data-asset-type-enum';
 export * from './broker-data-order-side-enum';
-export * from './broker-data-order-status-enum';
 export * from './broker-data-position-status-enum';
 export * from './broker-info';
 export * from './buyingpower';
