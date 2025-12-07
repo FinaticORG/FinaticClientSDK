@@ -202,6 +202,24 @@ export class PaginatedData<T> {
   }
 
   /**
+   * Convert to JSON - returns just the items array for serialization.
+   * This allows clean serialization without exposing internal methods.
+   * 
+   * @returns The items array
+   * 
+   * @example
+   * ```typescript
+   * const orders = await sdk.getOrders();
+   * console.log(orders);  // Shows full PaginatedData with methods
+   * console.log(orders.toJSON());  // Shows just the items array
+   * JSON.stringify(orders);  // Automatically uses toJSON()
+   * ```
+   */
+  toJSON(): T[] {
+    return this.items;
+  }
+
+  /**
    * Get the next page of data.
    * @returns Promise<PaginatedData<T>> - The next page (not wrapped in FinaticResponse)
    * @throws Error if no more pages are available

@@ -153,7 +153,7 @@ export class CompanyWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getCompanyApiV1CompanyCompanyIdGet({ companyId: resolvedParams.companyId }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getCompanyApiV1CompanyCompanyIdGet({ companyId: resolvedParams.companyId ?? null }, { headers: { 'x-request-id': requestId } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},

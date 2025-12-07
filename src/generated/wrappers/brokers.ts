@@ -732,7 +732,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete({ connectionId: resolvedParams.connectionId }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete({ connectionId: resolvedParams.connectionId ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -915,13 +915,22 @@ export class BrokersWrapper {
     // Use params object (with default empty object)
     const resolvedParams: GetOrdersParams = params || {};
     if (params?.orderStatus !== undefined) {
-      params.orderStatus = coerceEnumValue(params.orderStatus, BrokerDataOrderStatusEnum, 'orderStatus');
+      const coerced = coerceEnumValue(params.orderStatus, BrokerDataOrderStatusEnum, 'orderStatus');
+      if (coerced !== undefined) {
+        params.orderStatus = coerced;
+      }
     }
     if (params?.side !== undefined) {
-      params.side = coerceEnumValue(params.side, BrokerDataOrderSideEnum, 'side');
+      const coerced = coerceEnumValue(params.side, BrokerDataOrderSideEnum, 'side');
+      if (coerced !== undefined) {
+        params.side = coerced;
+      }
     }
     if (params?.assetType !== undefined) {
-      params.assetType = coerceEnumValue(params.assetType, BrokerDataAssetTypeEnum, 'assetType');
+      const coerced = coerceEnumValue(params.assetType, BrokerDataAssetTypeEnum, 'assetType');
+      if (coerced !== undefined) {
+        params.assetType = coerced;
+      }
     }    // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
@@ -961,7 +970,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrdersApiV1BrokersDataOrdersGet({ brokerId: resolvedParams.brokerId, connectionId: resolvedParams.connectionId, accountId: resolvedParams.accountId, symbol: resolvedParams.symbol, orderStatus: resolvedParams.orderStatus, side: resolvedParams.side, assetType: resolvedParams.assetType, limit: resolvedParams.limit, offset: resolvedParams.offset, createdAfter: resolvedParams.createdAfter, createdBefore: resolvedParams.createdBefore, includeMetadata: resolvedParams.includeMetadata }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getOrdersApiV1BrokersDataOrdersGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.symbol !== undefined ? { symbol: resolvedParams.symbol } : {}), ...(resolvedParams.orderStatus !== undefined ? { orderStatus: resolvedParams.orderStatus } : {}), ...(resolvedParams.side !== undefined ? { side: resolvedParams.side } : {}), ...(resolvedParams.assetType !== undefined ? { assetType: resolvedParams.assetType } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.createdAfter !== undefined ? { createdAfter: resolvedParams.createdAfter } : {}), ...(resolvedParams.createdBefore !== undefined ? { createdBefore: resolvedParams.createdBefore } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1144,13 +1153,22 @@ export class BrokersWrapper {
     // Use params object (with default empty object)
     const resolvedParams: GetPositionsParams = params || {};
     if (params?.side !== undefined) {
-      params.side = coerceEnumValue(params.side, BrokerDataOrderSideEnum, 'side');
+      const coerced = coerceEnumValue(params.side, BrokerDataOrderSideEnum, 'side');
+      if (coerced !== undefined) {
+        params.side = coerced;
+      }
     }
     if (params?.assetType !== undefined) {
-      params.assetType = coerceEnumValue(params.assetType, BrokerDataAssetTypeEnum, 'assetType');
+      const coerced = coerceEnumValue(params.assetType, BrokerDataAssetTypeEnum, 'assetType');
+      if (coerced !== undefined) {
+        params.assetType = coerced;
+      }
     }
     if (params?.positionStatus !== undefined) {
-      params.positionStatus = coerceEnumValue(params.positionStatus, BrokerDataPositionStatusEnum, 'positionStatus');
+      const coerced = coerceEnumValue(params.positionStatus, BrokerDataPositionStatusEnum, 'positionStatus');
+      if (coerced !== undefined) {
+        params.positionStatus = coerced;
+      }
     }    // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
@@ -1190,7 +1208,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getPositionsApiV1BrokersDataPositionsGet({ brokerId: resolvedParams.brokerId, connectionId: resolvedParams.connectionId, accountId: resolvedParams.accountId, symbol: resolvedParams.symbol, side: resolvedParams.side, assetType: resolvedParams.assetType, positionStatus: resolvedParams.positionStatus, limit: resolvedParams.limit, offset: resolvedParams.offset, updatedAfter: resolvedParams.updatedAfter, updatedBefore: resolvedParams.updatedBefore, includeMetadata: resolvedParams.includeMetadata }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getPositionsApiV1BrokersDataPositionsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.symbol !== undefined ? { symbol: resolvedParams.symbol } : {}), ...(resolvedParams.side !== undefined ? { side: resolvedParams.side } : {}), ...(resolvedParams.assetType !== undefined ? { assetType: resolvedParams.assetType } : {}), ...(resolvedParams.positionStatus !== undefined ? { positionStatus: resolvedParams.positionStatus } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.updatedAfter !== undefined ? { updatedAfter: resolvedParams.updatedAfter } : {}), ...(resolvedParams.updatedBefore !== undefined ? { updatedBefore: resolvedParams.updatedBefore } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1407,7 +1425,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getBalancesApiV1BrokersDataBalancesGet({ brokerId: resolvedParams.brokerId, connectionId: resolvedParams.connectionId, accountId: resolvedParams.accountId, isEndOfDaySnapshot: resolvedParams.isEndOfDaySnapshot, limit: resolvedParams.limit, offset: resolvedParams.offset, balanceCreatedAfter: resolvedParams.balanceCreatedAfter, balanceCreatedBefore: resolvedParams.balanceCreatedBefore, includeMetadata: resolvedParams.includeMetadata }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getBalancesApiV1BrokersDataBalancesGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.isEndOfDaySnapshot !== undefined ? { isEndOfDaySnapshot: resolvedParams.isEndOfDaySnapshot } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.balanceCreatedAfter !== undefined ? { balanceCreatedAfter: resolvedParams.balanceCreatedAfter } : {}), ...(resolvedParams.balanceCreatedBefore !== undefined ? { balanceCreatedBefore: resolvedParams.balanceCreatedBefore } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1586,7 +1604,10 @@ export class BrokersWrapper {
     // Use params object (with default empty object)
     const resolvedParams: GetAccountsParams = params || {};
     if (params?.accountType !== undefined) {
-      params.accountType = coerceEnumValue(params.accountType, BrokerDataAccountTypeEnum, 'accountType');
+      const coerced = coerceEnumValue(params.accountType, BrokerDataAccountTypeEnum, 'accountType');
+      if (coerced !== undefined) {
+        params.accountType = coerced;
+      }
     }    // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
@@ -1626,7 +1647,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getAccountsApiV1BrokersDataAccountsGet({ brokerId: resolvedParams.brokerId, connectionId: resolvedParams.connectionId, accountType: resolvedParams.accountType, status: resolvedParams.status, currency: resolvedParams.currency, limit: resolvedParams.limit, offset: resolvedParams.offset, includeMetadata: resolvedParams.includeMetadata }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getAccountsApiV1BrokersDataAccountsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountType !== undefined ? { accountType: resolvedParams.accountType } : {}), ...(resolvedParams.status !== undefined ? { status: resolvedParams.status } : {}), ...(resolvedParams.currency !== undefined ? { currency: resolvedParams.currency } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1843,7 +1864,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet({ orderId: resolvedParams.orderId, connectionId: resolvedParams.connectionId, limit: resolvedParams.limit, offset: resolvedParams.offset, includeMetadata: resolvedParams.includeMetadata }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet({ orderId: resolvedParams.orderId ?? null, ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -2060,7 +2081,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet({ orderId: resolvedParams.orderId, connectionId: resolvedParams.connectionId, limit: resolvedParams.limit, offset: resolvedParams.offset, includeMetadata: resolvedParams.includeMetadata }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet({ orderId: resolvedParams.orderId ?? null, ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -2274,7 +2295,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrderGroupsApiV1BrokersDataOrdersGroupsGet({ brokerId: resolvedParams.brokerId, connectionId: resolvedParams.connectionId, limit: resolvedParams.limit, offset: resolvedParams.offset, createdAfter: resolvedParams.createdAfter, createdBefore: resolvedParams.createdBefore, includeMetadata: resolvedParams.includeMetadata }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getOrderGroupsApiV1BrokersDataOrdersGroupsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.createdAfter !== undefined ? { createdAfter: resolvedParams.createdAfter } : {}), ...(resolvedParams.createdBefore !== undefined ? { createdBefore: resolvedParams.createdBefore } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -2489,7 +2510,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getPositionLotsApiV1BrokersDataPositionsLotsGet({ brokerId: resolvedParams.brokerId, connectionId: resolvedParams.connectionId, accountId: resolvedParams.accountId, symbol: resolvedParams.symbol, positionId: resolvedParams.positionId, limit: resolvedParams.limit, offset: resolvedParams.offset }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getPositionLotsApiV1BrokersDataPositionsLotsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.symbol !== undefined ? { symbol: resolvedParams.symbol } : {}), ...(resolvedParams.positionId !== undefined ? { positionId: resolvedParams.positionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -2705,7 +2726,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet({ lotId: resolvedParams.lotId, connectionId: resolvedParams.connectionId, limit: resolvedParams.limit, offset: resolvedParams.offset }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet({ lotId: resolvedParams.lotId ?? null, ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},

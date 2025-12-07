@@ -38,7 +38,13 @@ export function coerceEnumValue<T extends Record<string, string>>(
     // Direct match by value (case-insensitive)
     const valueMatch = values.find(v => v.toLowerCase() === normalized.toLowerCase());
     if (valueMatch) {
-      return valueMatch as T[keyof T];
+      // Find the enum key that has this value
+      const matchingKey = (Object.keys(EnumObj) as Array<keyof T>).find(
+        k => EnumObj[k] === valueMatch
+      );
+      if (matchingKey) {
+        return EnumObj[matchingKey];  // Returns enum member (e.g., BrokerDataOrderStatusEnum.Filled)
+      }
     }
     
     // Match by key name (case-insensitive)

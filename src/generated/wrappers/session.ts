@@ -169,7 +169,7 @@ export class SessionWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.initSessionApiV1SessionInitPost({ xApiKey: resolvedParams.xApiKey }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.initSessionApiV1SessionInitPost({ xApiKey: resolvedParams.xApiKey ?? null }, { headers: { 'x-request-id': requestId } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -352,7 +352,7 @@ export class SessionWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.startSessionApiV1SessionStartPost({ oneTimeToken: resolvedParams.OneTimeToken, sessionStartRequest: resolvedParams.body }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.startSessionApiV1SessionStartPost({ oneTimeToken: resolvedParams.OneTimeToken ?? null, sessionStartRequest: resolvedParams.body ?? null }, { headers: { 'x-request-id': requestId } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -744,7 +744,7 @@ export class SessionWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getSessionUserApiV1SessionSessionIdUserGet({ sessionId: resolvedParams.sessionId, xSessionId: resolvedParams.sessionId }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getSessionUserApiV1SessionSessionIdUserGet({ sessionId: resolvedParams.sessionId ?? null, xSessionId: resolvedParams.sessionId ?? null }, { headers: { 'x-request-id': requestId } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
