@@ -1,6 +1,6 @@
 {
   "name": "@finatic/client",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Finatic Client SDK for browser integration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
