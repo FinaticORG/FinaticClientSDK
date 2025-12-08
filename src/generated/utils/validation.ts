@@ -25,7 +25,7 @@ export function validateParams<T>(
     return schema.parse(params);
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      const message = `Validation failed: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+      const message = `Validation failed: ${error.issues.map((e: z.ZodIssue) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
       
       if (config?.validationStrict) {
         throw new _ValidationError(message);

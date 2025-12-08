@@ -5,7 +5,7 @@
  */
 
 // @ts-ignore - p-retry provides its own types but TypeScript may not resolve them
-import pRetry, { AbortError } from 'p-retry';
+import pRetry, { AbortError, type RetryContext } from 'p-retry';
 import type { SdkConfig } from '../config';
 
 export interface RetryOptions {
@@ -15,7 +15,7 @@ export interface RetryOptions {
   retryMultiplier?: number;
   retryOnStatus?: number[];
   retryOnNetworkError?: boolean;
-  onFailedAttempt?: (error: Error) => void;
+  onFailedAttempt?: (context: RetryContext) => void | Promise<void>;
 }
 
 /**
@@ -34,6 +34,14 @@ export async function retryApiCall<T>(
     retryOnStatus: config?.retryOnStatus ?? options.retryOnStatus ?? [429, 500, 502, 503, 504],
     retryOnNetworkError: config?.retryOnNetworkError ?? options.retryOnNetworkError ?? true,
     onFailedAttempt: options.onFailedAttempt,
+  };
+  
+  const pRetryOptions: Parameters<typeof pRetry>[1] = {
+    retries: opts.maxRetries,
+    minTimeout: opts.retryDelay,
+    maxTimeout: opts.retryMaxDelay,
+    factor: opts.retryMultiplier,
+    ...(opts.onFailedAttempt && { onFailedAttempt: opts.onFailedAttempt }),
   };
   
   return await pRetry(
@@ -58,12 +66,6 @@ export async function retryApiCall<T>(
         throw error;
       }
     },
-    {
-      retries: opts.maxRetries,
-      minTimeout: opts.retryDelay,
-      maxTimeout: opts.retryMaxDelay,
-      factor: opts.retryMultiplier,
-      onFailedAttempt: opts.onFailedAttempt,
-    }
+    pRetryOptions
   );
 }

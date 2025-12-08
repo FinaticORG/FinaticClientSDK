@@ -19,6 +19,8 @@ export * from './custom';
 export * from './generated/api';
 // Export models - ValidationError interface is available as ApiValidationError
 export type { ValidationError as ApiValidationError } from './generated/models/validation-error';
-// Re-export all models (ValidationError export is excluded from models/index.ts to avoid conflict)
+// Export FinaticError interface separately to avoid conflict with FinaticError class from utils
+export type { FinaticError as FinaticErrorInterface } from './generated/models/finatic-error';
+// Re-export all models (ValidationError and FinaticError exports are excluded from models/index.ts to avoid conflicts)
 export * from './generated/models';
 export * from './generated/configuration';

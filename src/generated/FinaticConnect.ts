@@ -18,7 +18,8 @@ import { CompanyApi } from './api/company-api';
 import { BrokersWrapper } from './wrappers/brokers';
 import { CompanyWrapper } from './wrappers/company';
 import { SessionWrapper } from './wrappers/session';
-import type { FinaticResponse, GetAccountsParams, GetBalancesParams, GetOrderEventsParams, GetOrderFillsParams, GetOrderGroupsParams, GetOrdersParams, GetPositionLotFillsParams, GetPositionLotsParams, GetPositionsParams } from './wrappers/brokers';
+import type { DisconnectCompanyFromBrokerParams, FinaticResponse, GetAccountsParams, GetBalancesParams, GetBrokerConnectionsParams, GetBrokersParams, GetOrderEventsParams, GetOrderFillsParams, GetOrderGroupsParams, GetOrdersParams, GetPositionLotFillsParams, GetPositionLotsParams, GetPositionsParams } from './wrappers/brokers';
+import type { GetCompanyParams } from './wrappers/company';
 import type { FDXBrokerAccount, FDXBrokerBalance, FDXBrokerOrder, FDXBrokerOrderEvent, FDXBrokerOrderFill, FDXBrokerOrderGroup, FDXBrokerPosition, FDXBrokerPositionLot, FDXBrokerPositionLotFill } from './models';
 
 
@@ -121,7 +122,7 @@ export class FinaticConnect extends EventEmitter {
         logger.debug?.('Creating new FinaticConnect instance');
         const connectOptions: FinaticConnectOptions = {
           token,
-          sdkConfig: sdkConfig,
+          ...(sdkConfig !== undefined && { sdkConfig }),
         };
 
         instance = new FinaticConnect(connectOptions);

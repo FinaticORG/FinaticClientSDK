@@ -56,7 +56,7 @@ export * from './fdxtime-in-force';
 export * from './filledquantity';
 export * from './fillprice';
 export * from './fillquantity';
-export * from './finatic-error';
+// export * from './finatic-error'; // Removed - conflicts with FinaticError class from utils/error-handling.ts
 export * from './finatic-response-company-response';
 export * from './finatic-response-disconnect-action-result';
 export * from './finatic-response-list-broker-info';
