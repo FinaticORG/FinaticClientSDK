@@ -16,11 +16,12 @@ export * from './generated/config';
 export * from './custom';
 
 // Also export the raw API clients and models from OpenAPI generator
-export * from './generated/api';
+// Client SDK uses FinaticConnect instead of raw API clients
 // Export models - ValidationError interface is available as ApiValidationError
 export type { ValidationError as ApiValidationError } from './generated/models/validation-error';
-// Export FinaticError interface separately to avoid conflict with FinaticError class from utils
-export type { FinaticError as FinaticErrorInterface } from './generated/models/finatic-error';
-// Re-export all models (ValidationError and FinaticError exports are excluded from models/index.ts to avoid conflicts)
+// Re-export all models (ValidationError export is excluded from models/index.ts to avoid conflict)
 export * from './generated/models';
 export * from './generated/configuration';
+
+// Main SDK classes
+export { FinaticConnect } from './custom/FinaticConnect';
