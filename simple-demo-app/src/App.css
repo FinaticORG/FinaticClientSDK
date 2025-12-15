@@ -116,7 +116,7 @@ header h1 {
 
 .data-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 20px;
 }
 
@@ -125,6 +125,8 @@ header h1 {
   padding: 15px;
   border-radius: 6px;
   border: 1px solid #dee2e6;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .data-card h3 {
@@ -150,16 +152,25 @@ header h1 {
   align-items: center;
   gap: 10px;
   font-size: 14px;
+  min-height: 40px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .data-item strong {
   color: #333;
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .data-item span {
   color: #666;
   font-size: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .badge {

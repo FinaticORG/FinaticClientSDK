@@ -223,9 +223,9 @@ function App() {
                   ) : (
                     orders.slice(0, 10).map((order: any, idx: number) => (
                       <div key={idx} className="data-item">
-                        <strong>{order.symbol || order.instrument?.symbol}</strong>
+                        <strong>{order.symbol || order.instrument?.symbol || 'N/A'}</strong>
                         <span>
-                          {order.side} {order.quantity}
+                          {order.side || ''} {order.quantity || order.qty || ''}
                         </span>
                         {order.status && <span className="badge">{order.status}</span>}
                       </div>
@@ -242,8 +242,8 @@ function App() {
                   ) : (
                     positions.slice(0, 10).map((position: any, idx: number) => (
                       <div key={idx} className="data-item">
-                        <strong>{position.symbol || position.instrument?.symbol}</strong>
-                        <span>Qty: {position.quantity || position.size}</span>
+                        <strong>{position.symbol || position.instrument?.symbol || 'N/A'}</strong>
+                        <span>Qty: {position.quantity || position.size || position.qty || 0}</span>
                       </div>
                     ))
                   )}
@@ -258,8 +258,12 @@ function App() {
                   ) : (
                     balances.map((balance: any, idx: number) => (
                       <div key={idx} className="data-item">
-                        <strong>{balance.account_id || balance.id}</strong>
-                        <span>${balance.total_value || balance.balance || 'N/A'}</span>
+                        <strong>{balance.account_id || balance.id || 'N/A'}</strong>
+                        <span>
+                          {balance.total_value || balance.balance
+                            ? `$${Number(balance.total_value || balance.balance).toLocaleString()}`
+                            : '$N/A'}
+                        </span>
                       </div>
                     ))
                   )}
