@@ -81,3 +81,5 @@ yarn.lock
 
 # TernJS port file
 .tern-port
+
+simple-demo-app/
