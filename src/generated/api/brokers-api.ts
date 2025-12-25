@@ -22,8 +22,6 @@ import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObj
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
 // @ts-ignore
-import type { AccountStatus } from '../models';
-// @ts-ignore
 import type { BrokerDataAccountTypeEnum } from '../models';
 // @ts-ignore
 import type { BrokerDataAssetTypeEnum } from '../models';
@@ -32,9 +30,9 @@ import type { BrokerDataOrderSideEnum } from '../models';
 // @ts-ignore
 import type { BrokerDataPositionStatusEnum } from '../models';
 // @ts-ignore
-import type { FinaticError } from '../models';
+import type { FinaticAPIErrorResponse } from '../models';
 // @ts-ignore
-import type { FinaticResponseDisconnectActionResult } from '../models';
+import type { FinaticResponseDisconnectCompanyFromBrokerConnectionResult } from '../models';
 // @ts-ignore
 import type { FinaticResponseListBrokerInfo } from '../models';
 // @ts-ignore
@@ -85,8 +83,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -102,7 +100,6 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string | null} [brokerId] Filter by broker ID
          * @param {string | null} [connectionId] Filter by connection ID
          * @param {BrokerDataAccountTypeEnum | null} [accountType] Filter by account type (e.g., \&#39;margin\&#39;, \&#39;cash\&#39;, \&#39;crypto_wallet\&#39;, \&#39;live\&#39;, \&#39;sim\&#39;)
-         * @param {AccountStatus | null} [status] Filter by account status (e.g., \&#39;active\&#39;, \&#39;inactive\&#39;)
          * @param {string | null} [currency] Filter by currency (e.g., \&#39;USD\&#39;, \&#39;EUR\&#39;)
          * @param {number} [limit] Maximum number of accounts to return
          * @param {number} [offset] Number of accounts to skip for pagination
@@ -110,7 +107,7 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAccountsApiV1BrokersDataAccountsGet: async (brokerId?: string | null, connectionId?: string | null, accountType?: BrokerDataAccountTypeEnum | null, status?: AccountStatus | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getAccountsApiV1BrokersDataAccountsGet: async (brokerId?: string | null, connectionId?: string | null, accountType?: BrokerDataAccountTypeEnum | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/brokers/data/accounts`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -135,10 +132,6 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['account_type'] = accountType;
             }
 
-            if (status !== undefined) {
-                localVarQueryParameter['status'] = status;
-            }
-
             if (currency !== undefined) {
                 localVarQueryParameter['currency'] = currency;
             }
@@ -155,8 +148,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['include_metadata'] = includeMetadata;
             }
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -234,8 +227,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['include_metadata'] = includeMetadata;
             }
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -264,8 +257,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -318,8 +311,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['include_metadata'] = includeMetadata;
             }
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -372,8 +365,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['include_metadata'] = includeMetadata;
             }
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -441,8 +434,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['include_metadata'] = includeMetadata;
             }
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -535,8 +528,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['include_metadata'] = includeMetadata;
             }
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -584,8 +577,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['offset'] = offset;
             }
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -649,8 +642,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['offset'] = offset;
             }
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -669,7 +662,7 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string | null} [symbol] Filter by symbol
          * @param {BrokerDataOrderSideEnum | null} [side] Filter by position side (e.g., \&#39;long\&#39;, \&#39;short\&#39;)
          * @param {BrokerDataAssetTypeEnum | null} [assetType] Filter by asset type (e.g., \&#39;stock\&#39;, \&#39;option\&#39;, \&#39;crypto\&#39;, \&#39;future\&#39;)
-         * @param {BrokerDataPositionStatusEnum | null} [positionStatus] Filter by position status: \&#39;open\&#39; (quantity &gt; 0) or \&#39;closed\&#39; (quantity &#x3D; 0)
+         * @param {BrokerDataPositionStatusEnum | null} [positionStatus] Filter by position status: \&#39;active\&#39; (open positions) or \&#39;closed\&#39; (closed positions). Use \&#39;all\&#39; or omit to get both.
          * @param {number} [limit] Maximum number of positions to return
          * @param {number} [offset] Number of positions to skip for pagination
          * @param {string | null} [updatedAfter] Filter positions updated after this timestamp
@@ -743,8 +736,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['include_metadata'] = includeMetadata;
             }
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -773,8 +766,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
-    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
@@ -800,7 +793,7 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete(connectionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseDisconnectActionResult>> {
+        async disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete(connectionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseDisconnectCompanyFromBrokerConnectionResult>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete(connectionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete']?.[localVarOperationServerIndex]?.url;
@@ -812,7 +805,6 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {string | null} [brokerId] Filter by broker ID
          * @param {string | null} [connectionId] Filter by connection ID
          * @param {BrokerDataAccountTypeEnum | null} [accountType] Filter by account type (e.g., \&#39;margin\&#39;, \&#39;cash\&#39;, \&#39;crypto_wallet\&#39;, \&#39;live\&#39;, \&#39;sim\&#39;)
-         * @param {AccountStatus | null} [status] Filter by account status (e.g., \&#39;active\&#39;, \&#39;inactive\&#39;)
          * @param {string | null} [currency] Filter by currency (e.g., \&#39;USD\&#39;, \&#39;EUR\&#39;)
          * @param {number} [limit] Maximum number of accounts to return
          * @param {number} [offset] Number of accounts to skip for pagination
@@ -820,8 +812,8 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAccountsApiV1BrokersDataAccountsGet(brokerId?: string | null, connectionId?: string | null, accountType?: BrokerDataAccountTypeEnum | null, status?: AccountStatus | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerAccount>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAccountsApiV1BrokersDataAccountsGet(brokerId, connectionId, accountType, status, currency, limit, offset, includeMetadata, options);
+        async getAccountsApiV1BrokersDataAccountsGet(brokerId?: string | null, connectionId?: string | null, accountType?: BrokerDataAccountTypeEnum | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerAccount>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAccountsApiV1BrokersDataAccountsGet(brokerId, connectionId, accountType, currency, limit, offset, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.getAccountsApiV1BrokersDataAccountsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -980,7 +972,7 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {string | null} [symbol] Filter by symbol
          * @param {BrokerDataOrderSideEnum | null} [side] Filter by position side (e.g., \&#39;long\&#39;, \&#39;short\&#39;)
          * @param {BrokerDataAssetTypeEnum | null} [assetType] Filter by asset type (e.g., \&#39;stock\&#39;, \&#39;option\&#39;, \&#39;crypto\&#39;, \&#39;future\&#39;)
-         * @param {BrokerDataPositionStatusEnum | null} [positionStatus] Filter by position status: \&#39;open\&#39; (quantity &gt; 0) or \&#39;closed\&#39; (quantity &#x3D; 0)
+         * @param {BrokerDataPositionStatusEnum | null} [positionStatus] Filter by position status: \&#39;active\&#39; (open positions) or \&#39;closed\&#39; (closed positions). Use \&#39;all\&#39; or omit to get both.
          * @param {number} [limit] Maximum number of positions to return
          * @param {number} [offset] Number of positions to skip for pagination
          * @param {string | null} [updatedAfter] Filter positions updated after this timestamp
@@ -1023,7 +1015,7 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete(requestParameters: BrokersApiDisconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseDisconnectActionResult> {
+        disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete(requestParameters: BrokersApiDisconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseDisconnectCompanyFromBrokerConnectionResult> {
             return localVarFp.disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete(requestParameters.connectionId, options).then((request) => request(axios, basePath));
         },
         /**
@@ -1034,7 +1026,7 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
          * @throws {RequiredError}
          */
         getAccountsApiV1BrokersDataAccountsGet(requestParameters: BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerAccount> {
-            return localVarFp.getAccountsApiV1BrokersDataAccountsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountType, requestParameters.status, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
+            return localVarFp.getAccountsApiV1BrokersDataAccountsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountType, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
          * Get balances for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
@@ -1148,7 +1140,7 @@ export interface BrokersApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete(requestParameters: BrokersApiDisconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseDisconnectActionResult>;
+    disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete(requestParameters: BrokersApiDisconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseDisconnectCompanyFromBrokerConnectionResult>;
 
     /**
      * Get accounts for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns accounts from connections the company has read access to.
@@ -1277,11 +1269,6 @@ export interface BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest {
      * Filter by account type (e.g., \&#39;margin\&#39;, \&#39;cash\&#39;, \&#39;crypto_wallet\&#39;, \&#39;live\&#39;, \&#39;sim\&#39;)
      */
     readonly accountType?: BrokerDataAccountTypeEnum | null
-
-    /**
-     * Filter by account status (e.g., \&#39;active\&#39;, \&#39;inactive\&#39;)
-     */
-    readonly status?: AccountStatus | null
 
     /**
      * Filter by currency (e.g., \&#39;USD\&#39;, \&#39;EUR\&#39;)
@@ -1619,7 +1606,7 @@ export interface BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest {
     readonly assetType?: BrokerDataAssetTypeEnum | null
 
     /**
-     * Filter by position status: \&#39;open\&#39; (quantity &gt; 0) or \&#39;closed\&#39; (quantity &#x3D; 0)
+     * Filter by position status: \&#39;active\&#39; (open positions) or \&#39;closed\&#39; (closed positions). Use \&#39;all\&#39; or omit to get both.
      */
     readonly positionStatus?: BrokerDataPositionStatusEnum | null
 
@@ -1672,7 +1659,7 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
      * @throws {RequiredError}
      */
     public getAccountsApiV1BrokersDataAccountsGet(requestParameters: BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getAccountsApiV1BrokersDataAccountsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountType, requestParameters.status, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
+        return BrokersApiFp(this.configuration).getAccountsApiV1BrokersDataAccountsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountType, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -22,7 +22,7 @@ import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObj
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
 // @ts-ignore
-import type { FinaticError } from '../models';
+import type { FinaticAPIErrorResponse } from '../models';
 // @ts-ignore
 import type { FinaticResponsePortalUrlResponse } from '../models';
 // @ts-ignore
@@ -60,8 +60,8 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
-    
             if (sessionId != null) {
                 localVarHeaderParameter['session-id'] = String(sessionId);
             }
@@ -75,7 +75,7 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Get user information and fresh tokens for a completed session.  This endpoint is designed for server SDKs to retrieve user information and authentication tokens after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Generates fresh tokens (not returning stored ones) - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
+         * Get user information for a completed session.  This endpoint is designed for server SDKs to retrieve user information after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
          * @summary Get Session User
          * @param {string} sessionId Session ID
          * @param {string} xSessionId Session ID from header (must match path parameter)
@@ -100,8 +100,8 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
-    
             if (xSessionId != null) {
                 localVarHeaderParameter['x-session-id'] = String(xSessionId);
             }
@@ -136,8 +136,8 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
+            localVarHeaderParameter['Accept'] = 'application/json';
 
-    
             if (xApiKey != null) {
                 localVarHeaderParameter['x-api-key'] = String(xApiKey);
             }
@@ -175,9 +175,8 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
             localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
 
             if (oneTimeToken != null) {
                 localVarHeaderParameter['One-Time-Token'] = String(oneTimeToken);
@@ -215,7 +214,7 @@ export const SessionApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Get user information and fresh tokens for a completed session.  This endpoint is designed for server SDKs to retrieve user information and authentication tokens after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Generates fresh tokens (not returning stored ones) - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
+         * Get user information for a completed session.  This endpoint is designed for server SDKs to retrieve user information after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
          * @summary Get Session User
          * @param {string} sessionId Session ID
          * @param {string} xSessionId Session ID from header (must match path parameter)
@@ -275,7 +274,7 @@ export const SessionApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getPortalUrlApiV1SessionPortalGet(requestParameters.sessionId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Get user information and fresh tokens for a completed session.  This endpoint is designed for server SDKs to retrieve user information and authentication tokens after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Generates fresh tokens (not returning stored ones) - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
+         * Get user information for a completed session.  This endpoint is designed for server SDKs to retrieve user information after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
          * @summary Get Session User
          * @param {SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
@@ -321,7 +320,7 @@ export interface SessionApiInterface {
     getPortalUrlApiV1SessionPortalGet(requestParameters: SessionApiGetPortalUrlApiV1SessionPortalGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponsePortalUrlResponse>;
 
     /**
-     * Get user information and fresh tokens for a completed session.  This endpoint is designed for server SDKs to retrieve user information and authentication tokens after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Generates fresh tokens (not returning stored ones) - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
+     * Get user information for a completed session.  This endpoint is designed for server SDKs to retrieve user information after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
      * @summary Get Session User
      * @param {SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -415,7 +414,7 @@ export class SessionApi extends BaseAPI implements SessionApiInterface {
     }
 
     /**
-     * Get user information and fresh tokens for a completed session.  This endpoint is designed for server SDKs to retrieve user information and authentication tokens after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Generates fresh tokens (not returning stored ones) - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
+     * Get user information for a completed session.  This endpoint is designed for server SDKs to retrieve user information after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
      * @summary Get Session User
      * @param {SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.

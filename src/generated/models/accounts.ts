@@ -13,31 +13,35 @@
  */
 
 
-// May contain unused imports in some cases
-// @ts-ignore
-import type { BrokerDataAccountTypeEnum } from './broker-data-account-type-enum';
 
 export interface Accounts {
     'id'?: string;
-    'account_created_at'?: string | null;
-    'account_first_trade_at'?: string | null;
-    'account_name'?: string | null;
-    'account_number'?: string | null;
-    'account_type'?: BrokerDataAccountTypeEnum | null;
-    'account_updated_at'?: string | null;
-    'balances_synced_at'?: string | null;
-    'broker_provided_account_id': string;
-    'connection_metadata'?: { [key: string]: any; } | null;
+    'api_key_created_at'?: string | null;
+    'api_key_expires_at'?: string | null;
+    'api_key_hash'?: string | null;
+    'api_key_last_used_at'?: string | null;
+    'compliance_agreement'?: boolean | null;
     'created_at': string | null;
-    'currency'?: string | null;
-    'is_simulation_account'?: boolean | null;
-    'last_synced_at'?: string | null;
-    'orders_synced_at'?: string | null;
-    'positions_synced_at'?: string | null;
-    'status'?: string | null;
+    'created_by'?: string | null;
+    'email'?: string | null;
+    'is_personal_account': boolean;
+    'name': string;
+    'onboarding_completed'?: boolean | null;
+    'onboarding_step'?: number | null;
+    'picture_url'?: string | null;
+    'primary_owner_user_id': string;
+    'public_data': any;
+    'referral_source'?: string | null;
+    'sandbox_api_key_hash'?: string | null;
+    'sandbox_key_created_at'?: string | null;
+    'sandbox_key_expires_at'?: string | null;
+    'sandbox_key_last_used_at'?: string | null;
+    'slug'?: string | null;
+    'terms_accepted_at'?: string | null;
+    'trading_enabled'?: boolean | null;
+    'trading_usage_description'?: string | null;
     'updated_at': string | null;
-    'user_broker_connection_id': string;
+    'updated_by'?: string | null;
+    'use_case_features'?: { [key: string]: any; } | null;
 }
-
-
 

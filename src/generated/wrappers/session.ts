@@ -670,16 +670,15 @@ export class SessionWrapper {
   /**
    * Get Session User
    * 
-   * Get user information and fresh tokens for a completed session.
+   * Get user information for a completed session.
    *
    * This endpoint is designed for server SDKs to retrieve user information
-   * and authentication tokens after successful OTP verification.
+   * after successful OTP verification.
    *
    *
    * Security:
    * - Requires valid session in ACTIVE state
    * - Validates device fingerprint binding
-   * - Generates fresh tokens (not returning stored ones)
    * - Only accessible to authenticated sessions with user_id
    * - Validates that header session_id matches path session_id
    * @param params.sessionId {string} Session ID

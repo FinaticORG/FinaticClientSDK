@@ -13,14 +13,13 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { Accounts } from './accounts';
 
-/**
- * Response model for session user information.
- */
-export interface SessionUserResponse {
-    /**
-     * User ID
-     */
-    'user_id': string;
+export interface SuccessPayloadAccounts {
+    '_id'?: string;
+    'data'?: Accounts | null;
+    'meta'?: { [key: string]: any; } | null;
 }
 

@@ -39,24 +39,24 @@ The portal allows users to connect their broker accounts. You can either:
 **Option A: Open portal in iframe (recommended)**
 
 ```typescript
-await finatic.openPortal(
-  'dark', // Theme: 'light' | 'dark' | theme object
-  ['alpaca', 'tradier'], // Optional: Filter specific brokers
-  'user@example.com', // Optional: Pre-fill email
-  'modal', // Mode: 'modal' | 'fullscreen'
-  (userId) => {
+await finatic.openPortal({
+  theme: { preset: 'stockAlgos' }, // Theme: 'light' | 'dark' | theme object
+  brokers: ['alpaca', 'tradier'], // Optional: Filter specific brokers
+  email: 'user@example.com', // Optional: Pre-fill email
+  mode: 'dark', // Optional: 'light' | 'dark'
+  onSuccess: (userId) => {
     // User successfully authenticated
     console.log('User authenticated:', userId);
   },
-  (error) => {
+  onError: (error) => {
     // Handle authentication error
     console.error('Portal error:', error);
   },
-  () => {
+  onClose: () => {
     // Portal was closed
     console.log('Portal closed');
   }
-);
+});
 ```
 
 **Option B: Get portal URL and redirect**
@@ -131,12 +131,10 @@ async function setupFinatic() {
   const finatic = await FinaticConnect.init(token);
 
   // 2. Open portal for authentication
-  await finatic.openPortal(
-    'dark',
-    undefined, // Show all brokers
-    undefined, // No pre-filled email
-    'modal',
-    async (userId) => {
+  await finatic.openPortal({
+    theme: { preset: 'stockAlgos' },
+    mode: 'dark',
+    onSuccess: async (userId) => {
       console.log('User authenticated:', userId);
 
       // 3. Fetch data after authentication
@@ -148,10 +146,10 @@ async function setupFinatic() {
       console.log('Positions:', positions);
       console.log('Accounts:', accounts);
     },
-    (error) => {
+    onError: (error) => {
       console.error('Authentication failed:', error);
     }
-  );
+  });
 }
 
 setupFinatic();

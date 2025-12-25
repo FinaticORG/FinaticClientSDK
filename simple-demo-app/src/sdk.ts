@@ -8,6 +8,9 @@
 
 import { FinaticConnect } from '@finatic/client';
 
+// API base URL from environment variable, defaulting to production
+const API_BASE_URL = (import.meta as any).env?.VITE_FINATIC_API_URL || 'https://api.finatic.dev';
+
 // Singleton instance
 let finaticInstance: FinaticConnect | null = null;
 
@@ -74,7 +77,7 @@ export async function initializeSDK(): Promise<FinaticConnect> {
   // This prevents exposing your API key in the frontend bundle.
   
   // Fetch token from Finatic API
-  const response = await fetch('https://api.finatic.dev/api/v1/session/init', {
+  const response = await fetch(`${API_BASE_URL}/api/v1/session/init`, {
     method: 'POST',
     headers: {
       'X-API-Key': apiKey,
@@ -99,7 +102,11 @@ export async function initializeSDK(): Promise<FinaticConnect> {
 
   // Initialize the SDK with token and user ID (if available)
   // Since userId is optional, we can pass it directly - undefined/null will be treated as not provided
-  finaticInstance = await FinaticConnect.init(token, storedUserId ?? undefined);
+  finaticInstance = await FinaticConnect.init(token, storedUserId ?? undefined,
+    {
+      baseUrl: API_BASE_URL,
+    }
+  );
 
   return finaticInstance;
 }
@@ -149,30 +156,47 @@ export function getUserId(): string | null {
 /**
  * Open the authentication portal
  * 
- * @param onSuccess - Callback when authentication succeeds
- * @param onError - Callback when authentication fails
- * @param onClose - Callback when portal is closed
+ * @param options - Portal options including callbacks
+ * @param options.onSuccess - Callback when authentication succeeds
+ * @param options.onError - Callback when authentication fails
+ * @param options.onClose - Callback when portal is closed
+ * @param options.theme - Optional theme configuration
+ * @param options.brokers - Optional array of broker IDs to filter
+ * @param options.email - Optional email address for pre-filling
+ * @param options.mode - Optional mode ('light' | 'dark')
  */
-export async function openPortal(
-  onSuccess?: (userId: string) => void,
-  onError?: (error: Error) => void,
-  onClose?: () => void
-): Promise<void> {
+export async function openPortal(options?: {
+  onSuccess?: (userId: string) => void;
+  onError?: (error: Error) => void;
+  onClose?: () => void;
+  theme?: string | { preset?: string; custom?: Record<string, unknown> };
+  brokers?: string[];
+  email?: string;
+  mode?: 'light' | 'dark';
+}): Promise<void> {
   if (!finaticInstance) {
     throw new Error('SDK not initialized. Call initializeSDK() first.');
   }
 
   // Wrap onSuccess to store user ID in localStorage
-  const wrappedOnSuccess = (userId: string) => {
-    // Store user ID in localStorage
-    // ⚠️ PRODUCTION NOTE: In production, store this in your database linked to your user account
-    storeUserId(userId);
-    
-    // Call original callback if provided
-    onSuccess?.(userId);
-  };
+  const wrappedOnSuccess = options?.onSuccess 
+    ? (userId: string) => {
+        // Store user ID in localStorage
+        // ⚠️ PRODUCTION NOTE: In production, store this in your database linked to your user account
+        storeUserId(userId);
+        
+        // Call original callback
+        options.onSuccess!(userId);
+      }
+    : (userId: string) => {
+        // Store user ID even if no callback provided
+        storeUserId(userId);
+      };
 
-  await finaticInstance.openPortal({}, wrappedOnSuccess, onError, onClose);
+  await finaticInstance.openPortal({
+    ...options,
+    onSuccess: wrappedOnSuccess,
+  });
 }
 
 /**

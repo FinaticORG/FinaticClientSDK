@@ -22,9 +22,8 @@ import { BrokerDataAssetTypeEnum } from '../models';
 import { BrokerDataOrderSideEnum } from '../models';
 import { BrokerDataPositionStatusEnum } from '../models';
 
-import type { AccountStatus } from '../models';
 import type { BrokerInfo } from '../models';
-import type { DisconnectActionResult } from '../models';
+import type { DisconnectCompanyFromBrokerConnectionResult } from '../models';
 import type { FDXBrokerAccount } from '../models';
 import type { FDXBrokerBalance } from '../models';
 import type { FDXBrokerOrder } from '../models';
@@ -111,7 +110,7 @@ export interface GetPositionsParams {
   side?: BrokerDataOrderSideEnum;
   /** Filter by asset type (e.g., 'stock', 'option', 'crypto', 'future') */
   assetType?: BrokerDataAssetTypeEnum;
-  /** Filter by position status: 'open' (quantity > 0) or 'closed' (quantity = 0) */
+  /** Filter by position status: 'active' (open positions) or 'closed' (closed positions). Use 'all' or omit to get both. */
   positionStatus?: BrokerDataPositionStatusEnum;
   /** Maximum number of positions to return */
   limit?: number;
@@ -153,8 +152,6 @@ export interface GetAccountsParams {
   connectionId?: string;
   /** Filter by account type (e.g., 'margin', 'cash', 'crypto_wallet', 'live', 'sim') */
   accountType?: BrokerDataAccountTypeEnum;
-  /** Filter by account status (e.g., 'active', 'inactive') */
-  status?: AccountStatus;
   /** Filter by currency (e.g., 'USD', 'EUR') */
   currency?: string;
   /** Maximum number of accounts to return */
@@ -670,7 +667,7 @@ export class BrokersWrapper {
    * If the company is the only one with access, the entire connection is deleted.
    * If other companies have access, only the company's access is removed.
    * @param params.connectionId {string} Connection ID
-   * @returns {Promise<FinaticResponse<DisconnectActionResult>>} Standard response with success/Error/Warning structure
+   * @returns {Promise<FinaticResponse<DisconnectCompanyFromBrokerConnectionResult>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: DELETE /api/v1/brokers/disconnect-company/{connection_id}
    * @methodId disconnect_company_from_broker_api_v1_brokers_disconnect_company__connection_id__delete
@@ -690,7 +687,7 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async disconnectCompanyFromBroker(params: DisconnectCompanyFromBrokerParams): Promise<FinaticResponse<DisconnectActionResult>> {
+  async disconnectCompanyFromBroker(params: DisconnectCompanyFromBrokerParams): Promise<FinaticResponse<DisconnectCompanyFromBrokerConnectionResult>> {
     // Use params object (required parameters present)
     const resolvedParams: DisconnectCompanyFromBrokerParams = params;    // Authentication check
     if (!this.sessionId || !this.companyId) {
@@ -715,7 +712,7 @@ export class BrokersWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<DisconnectActionResult>;
+        return cached as FinaticResponse<DisconnectCompanyFromBrokerConnectionResult>;
       }
     }
 
@@ -784,7 +781,7 @@ export class BrokersWrapper {
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
-      return standardResponse as FinaticResponse<DisconnectActionResult>;
+      return standardResponse as FinaticResponse<DisconnectCompanyFromBrokerConnectionResult>;
       
     } catch (error) {
       try {
@@ -836,7 +833,7 @@ export class BrokersWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<DisconnectActionResult> = {
+      const errorResponse: FinaticResponse<DisconnectCompanyFromBrokerConnectionResult> = {
         success: {
           data: null as any,
         },
@@ -1101,7 +1098,7 @@ export class BrokersWrapper {
    * @param params.symbol {string} (optional) Filter by symbol
    * @param params.side {BrokerDataOrderSideEnum} (optional) Filter by position side (e.g., 'long', 'short')
    * @param params.assetType {BrokerDataAssetTypeEnum} (optional) Filter by asset type (e.g., 'stock', 'option', 'crypto', 'future')
-   * @param params.positionStatus {BrokerDataPositionStatusEnum} (optional) Filter by position status: 'open' (quantity > 0) or 'closed' (quantity = 0)
+   * @param params.positionStatus {BrokerDataPositionStatusEnum} (optional) Filter by position status: 'active' (open positions) or 'closed' (closed positions). Use 'all' or omit to get both.
    * @param params.limit {number} (optional) Maximum number of positions to return
    * @param params.offset {number} (optional) Number of positions to skip for pagination
    * @param params.updatedAfter {string} (optional) Filter positions updated after this timestamp
@@ -1553,7 +1550,6 @@ export class BrokersWrapper {
    * @param params.brokerId {string} (optional) Filter by broker ID
    * @param params.connectionId {string} (optional) Filter by connection ID
    * @param params.accountType {BrokerDataAccountTypeEnum} (optional) Filter by account type (e.g., 'margin', 'cash', 'crypto_wallet', 'live', 'sim')
-   * @param params.status {AccountStatus} (optional) Filter by account status (e.g., 'active', 'inactive')
    * @param params.currency {string} (optional) Filter by currency (e.g., 'USD', 'EUR')
    * @param params.limit {number} (optional) Maximum number of accounts to return
    * @param params.offset {number} (optional) Number of accounts to skip for pagination
@@ -1640,7 +1636,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getAccountsApiV1BrokersDataAccountsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountType !== undefined ? { accountType: resolvedParams.accountType } : {}), ...(resolvedParams.status !== undefined ? { status: resolvedParams.status } : {}), ...(resolvedParams.currency !== undefined ? { currency: resolvedParams.currency } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getAccountsApiV1BrokersDataAccountsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountType !== undefined ? { accountType: resolvedParams.accountType } : {}), ...(resolvedParams.currency !== undefined ? { currency: resolvedParams.currency } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},

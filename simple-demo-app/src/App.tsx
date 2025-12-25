@@ -104,18 +104,18 @@ function App() {
   // Handle portal authentication
   const handleOpenPortal = async () => {
     try {
-      await openPortal(
-        () => {
+      await openPortal({
+        onSuccess: () => {
           updateAuthStatus();
           loadData();
         },
-        (err: Error) => {
+        onError: (err: Error) => {
           setError(err.message);
         },
-        () => {
+        onClose: () => {
           console.log('Portal closed');
-        }
-      );
+        },
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to open portal');
     }

@@ -403,31 +403,58 @@ export class FinaticConnect extends EventEmitter {
    * 
    * @methodId open_portal_client_sdk
    * @category session
-   * @param params - Optional parameters object
-   * @param params.theme - Optional theme preset or custom theme object
-   * @param params.brokers - Optional array of broker IDs to filter
-   * @param params.email - Optional email address
-   * @param params.mode - Optional mode ('light' or 'dark')
-   * @param onSuccess - Optional callback when portal authentication succeeds
-   * @param onError - Optional callback when portal authentication fails
-   * @param onClose - Optional callback when portal is closed
    * @returns Promise that resolves when portal is opened
    * @example
    * ```typescript-client
+   * // Recommended: Single options object with callbacks
    * await finatic.openPortal({ 
-   *   theme: 'default', 
+   *   theme: { preset: 'stockAlgos' },
    *   brokers: ['broker-1'], 
    *   email: 'user@example.com', 
-   *   mode: 'dark' 
-   * }, 
-   *   (userId) => console.log('User authenticated:', userId),
-   *   (error) => console.error('Portal error:', error),
-   *   () => console.log('Portal closed')
-   * );
+   *   mode: 'dark',
+   *   onSuccess: (userId) => console.log('User authenticated:', userId),
+   *   onError: (error) => console.error('Portal error:', error),
+   *   onClose: () => console.log('Portal closed')
+   * });
    * ```
    */
+  // New signature: single options object (recommended)
+  async openPortal(options?: {
+    theme?: string | { preset?: string; custom?: Record<string, unknown> };
+    brokers?: string[];
+    email?: string;
+    mode?: 'light' | 'dark';
+    onSuccess?: (userId: string) => void;
+    onError?: (error: Error) => void;
+    onClose?: () => void;
+  }): Promise<void>;
+  /**
+   * @deprecated Use the single options object pattern instead: openPortal({ theme, brokers, email, mode, onSuccess, onError, onClose })
+   * This overload will be removed in a future version.
+   */
+  // Legacy signature: separate params and callbacks (deprecated)
   async openPortal(
     params?: { 
+      theme?: string | { preset?: string; custom?: Record<string, unknown> };
+      brokers?: string[];
+      email?: string;
+      mode?: 'light' | 'dark';
+    },
+    onSuccess?: (userId: string) => void,
+    onError?: (error: Error) => void,
+    onClose?: () => void
+  ): Promise<void>;
+  // Implementation handles both patterns
+  async openPortal(
+    optionsOrParams?: {
+      theme?: string | { preset?: string; custom?: Record<string, unknown> };
+      brokers?: string[];
+      email?: string;
+      mode?: 'light' | 'dark';
+      onSuccess?: (userId: string) => void;
+      onError?: (error: Error) => void;
+      onClose?: () => void;
+    } | {
       theme?: string | { preset?: string; custom?: Record<string, unknown> };
       brokers?: string[];
       email?: string;
@@ -441,7 +468,42 @@ export class FinaticConnect extends EventEmitter {
       throw new Error('Session not initialized. Call startSession() first.');
     }
 
-    // Get portal URL with all parameters
+    // Detect which pattern is being used:
+    // - Old pattern: second parameter (onSuccess) is explicitly a function
+    // - New pattern: second parameter is not a function (undefined or not provided)
+    //   In new pattern, callbacks are inside the first parameter object
+    const isNewPattern = typeof onSuccess !== 'function';
+
+    let params: { theme?: string | { preset?: string; custom?: Record<string, unknown> }; brokers?: string[]; email?: string; mode?: 'light' | 'dark' } | undefined;
+    let successCallback: ((userId: string) => void) | undefined;
+    let errorCallback: ((error: Error) => void) | undefined;
+    let closeCallback: (() => void) | undefined;
+
+    if (isNewPattern) {
+      // New pattern: extract callbacks from options object
+      const options = optionsOrParams as {
+        theme?: string | { preset?: string; custom?: Record<string, unknown> };
+        brokers?: string[];
+        email?: string;
+        mode?: 'light' | 'dark';
+        onSuccess?: (userId: string) => void;
+        onError?: (error: Error) => void;
+        onClose?: () => void;
+      };
+      const { onSuccess: optOnSuccess, onError: optOnError, onClose: optOnClose, ...portalParams } = options;
+      params = portalParams;
+      successCallback = optOnSuccess;
+      errorCallback = optOnError;
+      closeCallback = optOnClose;
+    } else {
+      // Old pattern: params and callbacks are separate
+      params = optionsOrParams as { theme?: string | { preset?: string; custom?: Record<string, unknown> }; brokers?: string[]; email?: string; mode?: 'light' | 'dark' } | undefined;
+      successCallback = onSuccess;
+      errorCallback = onError;
+      closeCallback = onClose;
+    }
+
+    // Get portal URL with all parameters (excluding callbacks)
     const portalUrl = await this.getPortalUrl(params);
 
     // Create portal UI if not exists
@@ -459,21 +521,21 @@ export class FinaticConnect extends EventEmitter {
         this.emit('portal:success', userId);
         
         // Call optional callback
-        onSuccess?.(userId);
+        successCallback?.(userId);
       },
       onError: (error: Error) => {
         // Emit portal error event
         this.emit('portal:error', error);
         
         // Call optional callback
-        onError?.(error);
+        errorCallback?.(error);
       },
       onClose: () => {
         // Emit portal close event
         this.emit('portal:close');
         
         // Call optional callback
-        onClose?.();
+        closeCallback?.();
       },
     });
   }

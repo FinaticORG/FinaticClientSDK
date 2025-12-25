@@ -13,14 +13,13 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { FDXAccountStatus } from './fdxaccount-status';
 
 /**
- * Response model for session user information.
+ * Account status (ACTIVE, INACTIVE, CLOSED, etc.)
  */
-export interface SessionUserResponse {
-    /**
-     * User ID
-     */
-    'user_id': string;
+export interface Accountstatus {
 }
 

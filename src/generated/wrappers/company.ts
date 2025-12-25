@@ -18,7 +18,7 @@ import { unwrapAxiosResponse } from '../utils/response-utils';
 import { coerceEnumValue } from '../utils/enum-coercion';
 import { convertToPlainObject } from '../utils/plain-object';
 
-import type { CompanyResponse } from '../models';
+import type { Accounts } from '../models';
 
 // Always import PaginatedData since method bodies may reference it (even if unreachable)
 import { PaginatedData } from '../utils/pagination';
@@ -97,7 +97,7 @@ export class CompanyWrapper {
    * 
    * Get public company details by ID (no user check, no sensitive data).
    * @param params.companyId {string} Company ID
-   * @returns {Promise<FinaticResponse<CompanyResponse>>} Standard response with success/Error/Warning structure
+   * @returns {Promise<FinaticResponse<Accounts>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/v1/company/{company_id}
    * @methodId get_company_api_v1_company__company_id__get
@@ -117,7 +117,7 @@ export class CompanyWrapper {
    * }
    * ```
    */
-  async getCompany(params: GetCompanyParams): Promise<FinaticResponse<CompanyResponse>> {
+  async getCompany(params: GetCompanyParams): Promise<FinaticResponse<Accounts>> {
     // Use params object (required parameters present)
     const resolvedParams: GetCompanyParams = params;    // Generate request ID
     const requestId = this._generateRequestId();
@@ -137,7 +137,7 @@ export class CompanyWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<CompanyResponse>;
+        return cached as FinaticResponse<Accounts>;
       }
     }
 
@@ -206,7 +206,7 @@ export class CompanyWrapper {
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
-      return standardResponse as FinaticResponse<CompanyResponse>;
+      return standardResponse as FinaticResponse<Accounts>;
       
     } catch (error) {
       try {
@@ -258,7 +258,7 @@ export class CompanyWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<CompanyResponse> = {
+      const errorResponse: FinaticResponse<Accounts> = {
         success: {
           data: null as any,
         },
