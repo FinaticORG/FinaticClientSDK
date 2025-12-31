@@ -113,6 +113,31 @@ export default function PortalPageComponent(): JSX.Element {
     setPortalEvents(loadHistory());
   }, [loadHistory]);
 
+  // Load email prefill from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedEmail = localStorage.getItem('finatic-portal-email-prefill');
+      if (savedEmail) {
+        setEmailParam(savedEmail);
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, []);
+
+  // Save email prefill to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      if (emailParam.trim()) {
+        localStorage.setItem('finatic-portal-email-prefill', emailParam.trim());
+      } else {
+        localStorage.removeItem('finatic-portal-email-prefill');
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, [emailParam]);
+
   const clearEvents = useCallback(() => {
     try {
       localStorage.removeItem(getDayKey());
