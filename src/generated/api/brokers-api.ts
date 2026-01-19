@@ -54,12 +54,54 @@ import type { FinaticResponseListFDXBrokerPositionLot } from '../models';
 // @ts-ignore
 import type { FinaticResponseListFDXBrokerPositionLotFill } from '../models';
 // @ts-ignore
+import type { FinaticResponseListFDXBrokerTransaction } from '../models';
+// @ts-ignore
 import type { FinaticResponseListUserBrokerConnectionWithPermissions } from '../models';
+// @ts-ignore
+import type { FinaticResponseOrderActionResult } from '../models';
+// @ts-ignore
+import type { ModifyOrderApiV1BrokersOrdersOrderIdPatchRequest } from '../models';
+// @ts-ignore
+import type { PlaceOrderApiV1BrokersOrdersPostRequest } from '../models';
 /**
  * BrokersApi - axios parameter creator
  */
 export const BrokersApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
+        /**
+         * Cancel an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  The order_id is used to identify the order and automatically resolve the broker connection from the orders table.
+         * @summary Cancel Order
+         * @param {string} orderId Order ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        cancelOrderApiV1BrokersOrdersOrderIdDelete: async (orderId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'orderId' is not null or undefined
+            assertParamExists('cancelOrderApiV1BrokersOrdersOrderIdDelete', 'orderId', orderId)
+            const localVarPath = `/api/v1/brokers/orders/{order_id}`
+                .replace(`{${"order_id"}}`, encodeURIComponent(String(orderId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
         /**
          * Remove a company\'s access to a broker connection.  If the company is the only one with access, the entire connection is deleted. If other companies have access, only the company\'s access is removed.
          * @summary Disconnect Company From Broker
@@ -160,21 +202,20 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Get balances for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
+         * Get current unit-based balances for all authorized broker connections.  Returns array of current balances (one per unit_code per account). This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
          * @summary Get Balances
          * @param {string | null} [brokerId] Filter by broker ID
          * @param {string | null} [connectionId] Filter by connection ID
          * @param {string | null} [accountId] Filter by broker provided account ID or internal account UUID
-         * @param {boolean | null} [isEndOfDaySnapshot] Filter by end-of-day snapshot status (true/false)
+         * @param {string | null} [unitCode] Filter by unit code (preferred, e.g., \&#39;USD\&#39;, \&#39;BTC\&#39;, \&#39;ETH\&#39;)
+         * @param {string | null} [currency] Filter by currency (for FDX fiat filtering only, e.g., \&#39;USD\&#39;, \&#39;EUR\&#39;)
          * @param {number} [limit] Maximum number of balances to return
          * @param {number} [offset] Number of balances to skip for pagination
-         * @param {string | null} [balanceCreatedAfter] Filter balances created after this timestamp
-         * @param {string | null} [balanceCreatedBefore] Filter balances created before this timestamp
          * @param {boolean} [includeMetadata] Include balance metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getBalancesApiV1BrokersDataBalancesGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, isEndOfDaySnapshot?: boolean | null, limit?: number, offset?: number, balanceCreatedAfter?: string | null, balanceCreatedBefore?: string | null, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getBalancesApiV1BrokersDataBalancesGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, unitCode?: string | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/brokers/data/balances`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -199,8 +240,12 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                 localVarQueryParameter['account_id'] = accountId;
             }
 
-            if (isEndOfDaySnapshot !== undefined) {
-                localVarQueryParameter['is_end_of_day_snapshot'] = isEndOfDaySnapshot;
+            if (unitCode !== undefined) {
+                localVarQueryParameter['unit_code'] = unitCode;
+            }
+
+            if (currency !== undefined) {
+                localVarQueryParameter['currency'] = currency;
             }
 
             if (limit !== undefined) {
@@ -209,18 +254,6 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
 
             if (offset !== undefined) {
                 localVarQueryParameter['offset'] = offset;
-            }
-
-            if (balanceCreatedAfter !== undefined) {
-                localVarQueryParameter['balance_created_after'] = (balanceCreatedAfter as any instanceof Date) ?
-                    (balanceCreatedAfter as any).toISOString() :
-                    balanceCreatedAfter;
-            }
-
-            if (balanceCreatedBefore !== undefined) {
-                localVarQueryParameter['balance_created_before'] = (balanceCreatedBefore as any instanceof Date) ?
-                    (balanceCreatedBefore as any).toISOString() :
-                    balanceCreatedBefore;
             }
 
             if (includeMetadata !== undefined) {
@@ -748,6 +781,90 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
+         * Get transactions for all authorized broker connections.  Returns transactions from connections the company has read access to. This endpoint is accessible from the portal and uses session-only authentication.
+         * @summary Get Transactions
+         * @param {string | null} [brokerId] Filter by broker ID
+         * @param {string | null} [connectionId] Filter by connection ID
+         * @param {string | null} [accountId] Filter by broker provided account ID or internal account UUID
+         * @param {string | null} [unitCode] Filter by unit code (preferred, e.g., \&#39;USD\&#39;, \&#39;BTC\&#39;, \&#39;ETH\&#39;)
+         * @param {string | null} [currency] Filter by currency (for FDX fiat filtering only, e.g., \&#39;USD\&#39;, \&#39;EUR\&#39;)
+         * @param {string | null} [transactionType] Filter by transaction type (e.g., \&#39;DEPOSIT\&#39;, \&#39;WITHDRAWAL\&#39;, \&#39;DIVIDEND\&#39;)
+         * @param {string | null} [startDate] Filter transactions from this date (ISO 8601)
+         * @param {string | null} [endDate] Filter transactions until this date (ISO 8601)
+         * @param {number} [limit] Maximum number of transactions to return
+         * @param {number} [offset] Number of transactions to skip for pagination
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTransactionsApiV1BrokersDataTransactionsGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, unitCode?: string | null, currency?: string | null, transactionType?: string | null, startDate?: string | null, endDate?: string | null, limit?: number, offset?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/brokers/data/transactions`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (brokerId !== undefined) {
+                localVarQueryParameter['broker_id'] = brokerId;
+            }
+
+            if (connectionId !== undefined) {
+                localVarQueryParameter['connection_id'] = connectionId;
+            }
+
+            if (accountId !== undefined) {
+                localVarQueryParameter['account_id'] = accountId;
+            }
+
+            if (unitCode !== undefined) {
+                localVarQueryParameter['unit_code'] = unitCode;
+            }
+
+            if (currency !== undefined) {
+                localVarQueryParameter['currency'] = currency;
+            }
+
+            if (transactionType !== undefined) {
+                localVarQueryParameter['transaction_type'] = transactionType;
+            }
+
+            if (startDate !== undefined) {
+                localVarQueryParameter['start_date'] = (startDate as any instanceof Date) ?
+                    (startDate as any).toISOString() :
+                    startDate;
+            }
+
+            if (endDate !== undefined) {
+                localVarQueryParameter['end_date'] = (endDate as any instanceof Date) ?
+                    (endDate as any).toISOString() :
+                    endDate;
+            }
+
+            if (limit !== undefined) {
+                localVarQueryParameter['limit'] = limit;
+            }
+
+            if (offset !== undefined) {
+                localVarQueryParameter['offset'] = offset;
+            }
+
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * List all broker connections for the current user with permissions.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for, including the current company\'s permissions (read/write) for each connection.
          * @summary List Broker Connections
          * @param {*} [options] Override http request option.
@@ -777,6 +894,91 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * Modify an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.
+         * @summary Modify Order
+         * @param {string} orderId Order ID
+         * @param {string | null} [accountNumber] Account number owning the order
+         * @param {string | null} [connectionId] Temporary bypass for testing: specify connection ID directly
+         * @param {ModifyOrderApiV1BrokersOrdersOrderIdPatchRequest | null} [modifyOrderApiV1BrokersOrdersOrderIdPatchRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        modifyOrderApiV1BrokersOrdersOrderIdPatch: async (orderId: string, accountNumber?: string | null, connectionId?: string | null, modifyOrderApiV1BrokersOrdersOrderIdPatchRequest?: ModifyOrderApiV1BrokersOrdersOrderIdPatchRequest | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'orderId' is not null or undefined
+            assertParamExists('modifyOrderApiV1BrokersOrdersOrderIdPatch', 'orderId', orderId)
+            const localVarPath = `/api/v1/brokers/orders/{order_id}`
+                .replace(`{${"order_id"}}`, encodeURIComponent(String(orderId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (accountNumber !== undefined) {
+                localVarQueryParameter['account_number'] = accountNumber;
+            }
+
+            if (connectionId !== undefined) {
+                localVarQueryParameter['connection_id'] = connectionId;
+            }
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(modifyOrderApiV1BrokersOrdersOrderIdPatchRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Create a new order via the specified broker connection.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  Standard parameters ------------------- The following fields constitute the unified Finatic *common order schema* and therefore appear individually as query parameters in the autogenerated OpenAPI documentation:  - ``broker`` - ``account_number`` - ``order_type`` - ``asset_type`` - ``action`` - ``time_in_force`` - ``symbol`` - ``order_qty``  They are surfaced as *query* parameters **only to make the accepted fields obvious in the interactive docs**. In production usage you should send these fields inside the JSON body (see ``order_request``) so that the entire order specification travels in one payload. (Nothing will break if you send both, but there is no need to do so.)  Body payload & broker-specific extras -------------------------------------  Put the standard parameters plus any broker-specific extensions under the ``order`` key of the body. Refer to the bundled OpenAPI examples below to see complete payloads for common order types (market, limit, spreads, etc.) across supported brokers.  For a formal reference of broker-specific extensions inspect the ``BrokerOrderPlaceExtras`` schema.  The endpoint resolves the active ``user_broker_connection`` by calling the ``get_user_broker_connection_ids_for_broker`` RPC in Supabase. If no active connection exists it returns a list of *available* brokers so your client can guide the user accordingly.  Broker Notes ------------ - The responses that you get back from the broker are not always the same. The response models are validated for each broker, but we do not standardize the repsonses.  - Tasty Trade: If you want to trade options for a particular stock, first fetch the full option chain via the GET https://api.tastyworks.com/option-chains/{stock_symbol}/nested endpoint. This endpoint returns all available expirations that tastytrade offers for that equity symbol. Each expiration contains a list of strikes, where each strike has a call and put field representing the call symbol and put symbol respectively.  We are planning to add a new endpoint to fetch the option chain for a particular stock and handle this logic for you, but for now you need to fetch the option chain manually.
+         * @summary Place Order
+         * @param {string | null} [connectionId] Temporary bypass for testing: specify connection ID directly
+         * @param {PlaceOrderApiV1BrokersOrdersPostRequest | null} [placeOrderApiV1BrokersOrdersPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        placeOrderApiV1BrokersOrdersPost: async (connectionId?: string | null, placeOrderApiV1BrokersOrdersPostRequest?: PlaceOrderApiV1BrokersOrdersPostRequest | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/brokers/orders`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (connectionId !== undefined) {
+                localVarQueryParameter['connection_id'] = connectionId;
+            }
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(placeOrderApiV1BrokersOrdersPostRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
@@ -786,6 +988,19 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
 export const BrokersApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = BrokersApiAxiosParamCreator(configuration)
     return {
+        /**
+         * Cancel an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  The order_id is used to identify the order and automatically resolve the broker connection from the orders table.
+         * @summary Cancel Order
+         * @param {string} orderId Order ID
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async cancelOrderApiV1BrokersOrdersOrderIdDelete(orderId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseOrderActionResult>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.cancelOrderApiV1BrokersOrdersOrderIdDelete(orderId, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.cancelOrderApiV1BrokersOrdersOrderIdDelete']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
         /**
          * Remove a company\'s access to a broker connection.  If the company is the only one with access, the entire connection is deleted. If other companies have access, only the company\'s access is removed.
          * @summary Disconnect Company From Broker
@@ -819,22 +1034,21 @@ export const BrokersApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Get balances for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
+         * Get current unit-based balances for all authorized broker connections.  Returns array of current balances (one per unit_code per account). This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
          * @summary Get Balances
          * @param {string | null} [brokerId] Filter by broker ID
          * @param {string | null} [connectionId] Filter by connection ID
          * @param {string | null} [accountId] Filter by broker provided account ID or internal account UUID
-         * @param {boolean | null} [isEndOfDaySnapshot] Filter by end-of-day snapshot status (true/false)
+         * @param {string | null} [unitCode] Filter by unit code (preferred, e.g., \&#39;USD\&#39;, \&#39;BTC\&#39;, \&#39;ETH\&#39;)
+         * @param {string | null} [currency] Filter by currency (for FDX fiat filtering only, e.g., \&#39;USD\&#39;, \&#39;EUR\&#39;)
          * @param {number} [limit] Maximum number of balances to return
          * @param {number} [offset] Number of balances to skip for pagination
-         * @param {string | null} [balanceCreatedAfter] Filter balances created after this timestamp
-         * @param {string | null} [balanceCreatedBefore] Filter balances created before this timestamp
          * @param {boolean} [includeMetadata] Include balance metadata in response (excluded by default for FDX compliance)
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getBalancesApiV1BrokersDataBalancesGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, isEndOfDaySnapshot?: boolean | null, limit?: number, offset?: number, balanceCreatedAfter?: string | null, balanceCreatedBefore?: string | null, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerBalance>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getBalancesApiV1BrokersDataBalancesGet(brokerId, connectionId, accountId, isEndOfDaySnapshot, limit, offset, balanceCreatedAfter, balanceCreatedBefore, includeMetadata, options);
+        async getBalancesApiV1BrokersDataBalancesGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, unitCode?: string | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerBalance>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getBalancesApiV1BrokersDataBalancesGet(brokerId, connectionId, accountId, unitCode, currency, limit, offset, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.getBalancesApiV1BrokersDataBalancesGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -988,6 +1202,28 @@ export const BrokersApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Get transactions for all authorized broker connections.  Returns transactions from connections the company has read access to. This endpoint is accessible from the portal and uses session-only authentication.
+         * @summary Get Transactions
+         * @param {string | null} [brokerId] Filter by broker ID
+         * @param {string | null} [connectionId] Filter by connection ID
+         * @param {string | null} [accountId] Filter by broker provided account ID or internal account UUID
+         * @param {string | null} [unitCode] Filter by unit code (preferred, e.g., \&#39;USD\&#39;, \&#39;BTC\&#39;, \&#39;ETH\&#39;)
+         * @param {string | null} [currency] Filter by currency (for FDX fiat filtering only, e.g., \&#39;USD\&#39;, \&#39;EUR\&#39;)
+         * @param {string | null} [transactionType] Filter by transaction type (e.g., \&#39;DEPOSIT\&#39;, \&#39;WITHDRAWAL\&#39;, \&#39;DIVIDEND\&#39;)
+         * @param {string | null} [startDate] Filter transactions from this date (ISO 8601)
+         * @param {string | null} [endDate] Filter transactions until this date (ISO 8601)
+         * @param {number} [limit] Maximum number of transactions to return
+         * @param {number} [offset] Number of transactions to skip for pagination
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getTransactionsApiV1BrokersDataTransactionsGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, unitCode?: string | null, currency?: string | null, transactionType?: string | null, startDate?: string | null, endDate?: string | null, limit?: number, offset?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerTransaction>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTransactionsApiV1BrokersDataTransactionsGet(brokerId, connectionId, accountId, unitCode, currency, transactionType, startDate, endDate, limit, offset, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getTransactionsApiV1BrokersDataTransactionsGet']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * List all broker connections for the current user with permissions.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for, including the current company\'s permissions (read/write) for each connection.
          * @summary List Broker Connections
          * @param {*} [options] Override http request option.
@@ -999,6 +1235,36 @@ export const BrokersApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.listBrokerConnectionsApiV1BrokersConnectionsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        /**
+         * Modify an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.
+         * @summary Modify Order
+         * @param {string} orderId Order ID
+         * @param {string | null} [accountNumber] Account number owning the order
+         * @param {string | null} [connectionId] Temporary bypass for testing: specify connection ID directly
+         * @param {ModifyOrderApiV1BrokersOrdersOrderIdPatchRequest | null} [modifyOrderApiV1BrokersOrdersOrderIdPatchRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async modifyOrderApiV1BrokersOrdersOrderIdPatch(orderId: string, accountNumber?: string | null, connectionId?: string | null, modifyOrderApiV1BrokersOrdersOrderIdPatchRequest?: ModifyOrderApiV1BrokersOrdersOrderIdPatchRequest | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseOrderActionResult>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.modifyOrderApiV1BrokersOrdersOrderIdPatch(orderId, accountNumber, connectionId, modifyOrderApiV1BrokersOrdersOrderIdPatchRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.modifyOrderApiV1BrokersOrdersOrderIdPatch']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Create a new order via the specified broker connection.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  Standard parameters ------------------- The following fields constitute the unified Finatic *common order schema* and therefore appear individually as query parameters in the autogenerated OpenAPI documentation:  - ``broker`` - ``account_number`` - ``order_type`` - ``asset_type`` - ``action`` - ``time_in_force`` - ``symbol`` - ``order_qty``  They are surfaced as *query* parameters **only to make the accepted fields obvious in the interactive docs**. In production usage you should send these fields inside the JSON body (see ``order_request``) so that the entire order specification travels in one payload. (Nothing will break if you send both, but there is no need to do so.)  Body payload & broker-specific extras -------------------------------------  Put the standard parameters plus any broker-specific extensions under the ``order`` key of the body. Refer to the bundled OpenAPI examples below to see complete payloads for common order types (market, limit, spreads, etc.) across supported brokers.  For a formal reference of broker-specific extensions inspect the ``BrokerOrderPlaceExtras`` schema.  The endpoint resolves the active ``user_broker_connection`` by calling the ``get_user_broker_connection_ids_for_broker`` RPC in Supabase. If no active connection exists it returns a list of *available* brokers so your client can guide the user accordingly.  Broker Notes ------------ - The responses that you get back from the broker are not always the same. The response models are validated for each broker, but we do not standardize the repsonses.  - Tasty Trade: If you want to trade options for a particular stock, first fetch the full option chain via the GET https://api.tastyworks.com/option-chains/{stock_symbol}/nested endpoint. This endpoint returns all available expirations that tastytrade offers for that equity symbol. Each expiration contains a list of strikes, where each strike has a call and put field representing the call symbol and put symbol respectively.  We are planning to add a new endpoint to fetch the option chain for a particular stock and handle this logic for you, but for now you need to fetch the option chain manually.
+         * @summary Place Order
+         * @param {string | null} [connectionId] Temporary bypass for testing: specify connection ID directly
+         * @param {PlaceOrderApiV1BrokersOrdersPostRequest | null} [placeOrderApiV1BrokersOrdersPostRequest] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async placeOrderApiV1BrokersOrdersPost(connectionId?: string | null, placeOrderApiV1BrokersOrdersPostRequest?: PlaceOrderApiV1BrokersOrdersPostRequest | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseOrderActionResult>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.placeOrderApiV1BrokersOrdersPost(connectionId, placeOrderApiV1BrokersOrdersPostRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.placeOrderApiV1BrokersOrdersPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
     }
 };
 
@@ -1008,6 +1274,16 @@ export const BrokersApiFp = function(configuration?: Configuration) {
 export const BrokersApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
     const localVarFp = BrokersApiFp(configuration)
     return {
+        /**
+         * Cancel an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  The order_id is used to identify the order and automatically resolve the broker connection from the orders table.
+         * @summary Cancel Order
+         * @param {BrokersApiCancelOrderApiV1BrokersOrdersOrderIdDeleteRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        cancelOrderApiV1BrokersOrdersOrderIdDelete(requestParameters: BrokersApiCancelOrderApiV1BrokersOrdersOrderIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult> {
+            return localVarFp.cancelOrderApiV1BrokersOrdersOrderIdDelete(requestParameters.orderId, options).then((request) => request(axios, basePath));
+        },
         /**
          * Remove a company\'s access to a broker connection.  If the company is the only one with access, the entire connection is deleted. If other companies have access, only the company\'s access is removed.
          * @summary Disconnect Company From Broker
@@ -1029,14 +1305,14 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getAccountsApiV1BrokersDataAccountsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountType, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
-         * Get balances for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
+         * Get current unit-based balances for all authorized broker connections.  Returns array of current balances (one per unit_code per account). This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
          * @summary Get Balances
          * @param {BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
         getBalancesApiV1BrokersDataBalancesGet(requestParameters: BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerBalance> {
-            return localVarFp.getBalancesApiV1BrokersDataBalancesGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.isEndOfDaySnapshot, requestParameters.limit, requestParameters.offset, requestParameters.balanceCreatedAfter, requestParameters.balanceCreatedBefore, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
+            return localVarFp.getBalancesApiV1BrokersDataBalancesGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.unitCode, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
          * Get all available brokers.  This is a fast operation that returns a cached list of available brokers. The list is loaded once at startup and never changes during runtime.  Returns ------- FinaticResponse[list[BrokerInfo]]     list of available brokers with their metadata.
@@ -1118,6 +1394,16 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.getPositionsApiV1BrokersDataPositionsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.side, requestParameters.assetType, requestParameters.positionStatus, requestParameters.limit, requestParameters.offset, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
+         * Get transactions for all authorized broker connections.  Returns transactions from connections the company has read access to. This endpoint is accessible from the portal and uses session-only authentication.
+         * @summary Get Transactions
+         * @param {BrokersApiGetTransactionsApiV1BrokersDataTransactionsGetRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getTransactionsApiV1BrokersDataTransactionsGet(requestParameters: BrokersApiGetTransactionsApiV1BrokersDataTransactionsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerTransaction> {
+            return localVarFp.getTransactionsApiV1BrokersDataTransactionsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.unitCode, requestParameters.currency, requestParameters.transactionType, requestParameters.startDate, requestParameters.endDate, requestParameters.limit, requestParameters.offset, options).then((request) => request(axios, basePath));
+        },
+        /**
          * List all broker connections for the current user with permissions.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for, including the current company\'s permissions (read/write) for each connection.
          * @summary List Broker Connections
          * @param {*} [options] Override http request option.
@@ -1126,6 +1412,26 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
         listBrokerConnectionsApiV1BrokersConnectionsGet(options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListUserBrokerConnectionWithPermissions> {
             return localVarFp.listBrokerConnectionsApiV1BrokersConnectionsGet(options).then((request) => request(axios, basePath));
         },
+        /**
+         * Modify an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.
+         * @summary Modify Order
+         * @param {BrokersApiModifyOrderApiV1BrokersOrdersOrderIdPatchRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        modifyOrderApiV1BrokersOrdersOrderIdPatch(requestParameters: BrokersApiModifyOrderApiV1BrokersOrdersOrderIdPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult> {
+            return localVarFp.modifyOrderApiV1BrokersOrdersOrderIdPatch(requestParameters.orderId, requestParameters.accountNumber, requestParameters.connectionId, requestParameters.modifyOrderApiV1BrokersOrdersOrderIdPatchRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Create a new order via the specified broker connection.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  Standard parameters ------------------- The following fields constitute the unified Finatic *common order schema* and therefore appear individually as query parameters in the autogenerated OpenAPI documentation:  - ``broker`` - ``account_number`` - ``order_type`` - ``asset_type`` - ``action`` - ``time_in_force`` - ``symbol`` - ``order_qty``  They are surfaced as *query* parameters **only to make the accepted fields obvious in the interactive docs**. In production usage you should send these fields inside the JSON body (see ``order_request``) so that the entire order specification travels in one payload. (Nothing will break if you send both, but there is no need to do so.)  Body payload & broker-specific extras -------------------------------------  Put the standard parameters plus any broker-specific extensions under the ``order`` key of the body. Refer to the bundled OpenAPI examples below to see complete payloads for common order types (market, limit, spreads, etc.) across supported brokers.  For a formal reference of broker-specific extensions inspect the ``BrokerOrderPlaceExtras`` schema.  The endpoint resolves the active ``user_broker_connection`` by calling the ``get_user_broker_connection_ids_for_broker`` RPC in Supabase. If no active connection exists it returns a list of *available* brokers so your client can guide the user accordingly.  Broker Notes ------------ - The responses that you get back from the broker are not always the same. The response models are validated for each broker, but we do not standardize the repsonses.  - Tasty Trade: If you want to trade options for a particular stock, first fetch the full option chain via the GET https://api.tastyworks.com/option-chains/{stock_symbol}/nested endpoint. This endpoint returns all available expirations that tastytrade offers for that equity symbol. Each expiration contains a list of strikes, where each strike has a call and put field representing the call symbol and put symbol respectively.  We are planning to add a new endpoint to fetch the option chain for a particular stock and handle this logic for you, but for now you need to fetch the option chain manually.
+         * @summary Place Order
+         * @param {BrokersApiPlaceOrderApiV1BrokersOrdersPostRequest} requestParameters Request parameters.
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        placeOrderApiV1BrokersOrdersPost(requestParameters: BrokersApiPlaceOrderApiV1BrokersOrdersPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult> {
+            return localVarFp.placeOrderApiV1BrokersOrdersPost(requestParameters.connectionId, requestParameters.placeOrderApiV1BrokersOrdersPostRequest, options).then((request) => request(axios, basePath));
+        },
     };
 };
 
@@ -1133,6 +1439,15 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
  * BrokersApi - interface
  */
 export interface BrokersApiInterface {
+    /**
+     * Cancel an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  The order_id is used to identify the order and automatically resolve the broker connection from the orders table.
+     * @summary Cancel Order
+     * @param {BrokersApiCancelOrderApiV1BrokersOrdersOrderIdDeleteRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    cancelOrderApiV1BrokersOrdersOrderIdDelete(requestParameters: BrokersApiCancelOrderApiV1BrokersOrdersOrderIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult>;
+
     /**
      * Remove a company\'s access to a broker connection.  If the company is the only one with access, the entire connection is deleted. If other companies have access, only the company\'s access is removed.
      * @summary Disconnect Company From Broker
@@ -1152,7 +1467,7 @@ export interface BrokersApiInterface {
     getAccountsApiV1BrokersDataAccountsGet(requestParameters?: BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerAccount>;
 
     /**
-     * Get balances for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
+     * Get current unit-based balances for all authorized broker connections.  Returns array of current balances (one per unit_code per account). This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
      * @summary Get Balances
      * @param {BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -1232,6 +1547,15 @@ export interface BrokersApiInterface {
     getPositionsApiV1BrokersDataPositionsGet(requestParameters?: BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPosition>;
 
     /**
+     * Get transactions for all authorized broker connections.  Returns transactions from connections the company has read access to. This endpoint is accessible from the portal and uses session-only authentication.
+     * @summary Get Transactions
+     * @param {BrokersApiGetTransactionsApiV1BrokersDataTransactionsGetRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    getTransactionsApiV1BrokersDataTransactionsGet(requestParameters?: BrokersApiGetTransactionsApiV1BrokersDataTransactionsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerTransaction>;
+
+    /**
      * List all broker connections for the current user with permissions.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for, including the current company\'s permissions (read/write) for each connection.
      * @summary List Broker Connections
      * @param {*} [options] Override http request option.
@@ -1239,6 +1563,34 @@ export interface BrokersApiInterface {
      */
     listBrokerConnectionsApiV1BrokersConnectionsGet(options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListUserBrokerConnectionWithPermissions>;
 
+    /**
+     * Modify an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.
+     * @summary Modify Order
+     * @param {BrokersApiModifyOrderApiV1BrokersOrdersOrderIdPatchRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    modifyOrderApiV1BrokersOrdersOrderIdPatch(requestParameters: BrokersApiModifyOrderApiV1BrokersOrdersOrderIdPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult>;
+
+    /**
+     * Create a new order via the specified broker connection.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  Standard parameters ------------------- The following fields constitute the unified Finatic *common order schema* and therefore appear individually as query parameters in the autogenerated OpenAPI documentation:  - ``broker`` - ``account_number`` - ``order_type`` - ``asset_type`` - ``action`` - ``time_in_force`` - ``symbol`` - ``order_qty``  They are surfaced as *query* parameters **only to make the accepted fields obvious in the interactive docs**. In production usage you should send these fields inside the JSON body (see ``order_request``) so that the entire order specification travels in one payload. (Nothing will break if you send both, but there is no need to do so.)  Body payload & broker-specific extras -------------------------------------  Put the standard parameters plus any broker-specific extensions under the ``order`` key of the body. Refer to the bundled OpenAPI examples below to see complete payloads for common order types (market, limit, spreads, etc.) across supported brokers.  For a formal reference of broker-specific extensions inspect the ``BrokerOrderPlaceExtras`` schema.  The endpoint resolves the active ``user_broker_connection`` by calling the ``get_user_broker_connection_ids_for_broker`` RPC in Supabase. If no active connection exists it returns a list of *available* brokers so your client can guide the user accordingly.  Broker Notes ------------ - The responses that you get back from the broker are not always the same. The response models are validated for each broker, but we do not standardize the repsonses.  - Tasty Trade: If you want to trade options for a particular stock, first fetch the full option chain via the GET https://api.tastyworks.com/option-chains/{stock_symbol}/nested endpoint. This endpoint returns all available expirations that tastytrade offers for that equity symbol. Each expiration contains a list of strikes, where each strike has a call and put field representing the call symbol and put symbol respectively.  We are planning to add a new endpoint to fetch the option chain for a particular stock and handle this logic for you, but for now you need to fetch the option chain manually.
+     * @summary Place Order
+     * @param {BrokersApiPlaceOrderApiV1BrokersOrdersPostRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    placeOrderApiV1BrokersOrdersPost(requestParameters?: BrokersApiPlaceOrderApiV1BrokersOrdersPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult>;
+
+}
+
+/**
+ * Request parameters for cancelOrderApiV1BrokersOrdersOrderIdDelete operation in BrokersApi.
+ */
+export interface BrokersApiCancelOrderApiV1BrokersOrdersOrderIdDeleteRequest {
+    /**
+     * Order ID
+     */
+    readonly orderId: string
 }
 
 /**
@@ -1311,9 +1663,14 @@ export interface BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest {
     readonly accountId?: string | null
 
     /**
-     * Filter by end-of-day snapshot status (true/false)
+     * Filter by unit code (preferred, e.g., \&#39;USD\&#39;, \&#39;BTC\&#39;, \&#39;ETH\&#39;)
      */
-    readonly isEndOfDaySnapshot?: boolean | null
+    readonly unitCode?: string | null
+
+    /**
+     * Filter by currency (for FDX fiat filtering only, e.g., \&#39;USD\&#39;, \&#39;EUR\&#39;)
+     */
+    readonly currency?: string | null
 
     /**
      * Maximum number of balances to return
@@ -1324,16 +1681,6 @@ export interface BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest {
      * Number of balances to skip for pagination
      */
     readonly offset?: number
-
-    /**
-     * Filter balances created after this timestamp
-     */
-    readonly balanceCreatedAfter?: string | null
-
-    /**
-     * Filter balances created before this timestamp
-     */
-    readonly balanceCreatedBefore?: string | null
 
     /**
      * Include balance metadata in response (excluded by default for FDX compliance)
@@ -1637,9 +1984,109 @@ export interface BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest {
 }
 
 /**
+ * Request parameters for getTransactionsApiV1BrokersDataTransactionsGet operation in BrokersApi.
+ */
+export interface BrokersApiGetTransactionsApiV1BrokersDataTransactionsGetRequest {
+    /**
+     * Filter by broker ID
+     */
+    readonly brokerId?: string | null
+
+    /**
+     * Filter by connection ID
+     */
+    readonly connectionId?: string | null
+
+    /**
+     * Filter by broker provided account ID or internal account UUID
+     */
+    readonly accountId?: string | null
+
+    /**
+     * Filter by unit code (preferred, e.g., \&#39;USD\&#39;, \&#39;BTC\&#39;, \&#39;ETH\&#39;)
+     */
+    readonly unitCode?: string | null
+
+    /**
+     * Filter by currency (for FDX fiat filtering only, e.g., \&#39;USD\&#39;, \&#39;EUR\&#39;)
+     */
+    readonly currency?: string | null
+
+    /**
+     * Filter by transaction type (e.g., \&#39;DEPOSIT\&#39;, \&#39;WITHDRAWAL\&#39;, \&#39;DIVIDEND\&#39;)
+     */
+    readonly transactionType?: string | null
+
+    /**
+     * Filter transactions from this date (ISO 8601)
+     */
+    readonly startDate?: string | null
+
+    /**
+     * Filter transactions until this date (ISO 8601)
+     */
+    readonly endDate?: string | null
+
+    /**
+     * Maximum number of transactions to return
+     */
+    readonly limit?: number
+
+    /**
+     * Number of transactions to skip for pagination
+     */
+    readonly offset?: number
+}
+
+/**
+ * Request parameters for modifyOrderApiV1BrokersOrdersOrderIdPatch operation in BrokersApi.
+ */
+export interface BrokersApiModifyOrderApiV1BrokersOrdersOrderIdPatchRequest {
+    /**
+     * Order ID
+     */
+    readonly orderId: string
+
+    /**
+     * Account number owning the order
+     */
+    readonly accountNumber?: string | null
+
+    /**
+     * Temporary bypass for testing: specify connection ID directly
+     */
+    readonly connectionId?: string | null
+
+    readonly modifyOrderApiV1BrokersOrdersOrderIdPatchRequest?: ModifyOrderApiV1BrokersOrdersOrderIdPatchRequest | null
+}
+
+/**
+ * Request parameters for placeOrderApiV1BrokersOrdersPost operation in BrokersApi.
+ */
+export interface BrokersApiPlaceOrderApiV1BrokersOrdersPostRequest {
+    /**
+     * Temporary bypass for testing: specify connection ID directly
+     */
+    readonly connectionId?: string | null
+
+    readonly placeOrderApiV1BrokersOrdersPostRequest?: PlaceOrderApiV1BrokersOrdersPostRequest | null
+}
+
+/**
  * BrokersApi - object-oriented interface
  */
 export class BrokersApi extends BaseAPI implements BrokersApiInterface {
+    /**
+     * Cancel an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  The order_id is used to identify the order and automatically resolve the broker connection from the orders table.
+     * @summary Cancel Order
+     * @param {BrokersApiCancelOrderApiV1BrokersOrdersOrderIdDeleteRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public cancelOrderApiV1BrokersOrdersOrderIdDelete(requestParameters: BrokersApiCancelOrderApiV1BrokersOrdersOrderIdDeleteRequest, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).cancelOrderApiV1BrokersOrdersOrderIdDelete(requestParameters.orderId, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * Remove a company\'s access to a broker connection.  If the company is the only one with access, the entire connection is deleted. If other companies have access, only the company\'s access is removed.
      * @summary Disconnect Company From Broker
@@ -1663,14 +2110,14 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
     }
 
     /**
-     * Get balances for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
+     * Get current unit-based balances for all authorized broker connections.  Returns array of current balances (one per unit_code per account). This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
      * @summary Get Balances
      * @param {BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     public getBalancesApiV1BrokersDataBalancesGet(requestParameters: BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getBalancesApiV1BrokersDataBalancesGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.isEndOfDaySnapshot, requestParameters.limit, requestParameters.offset, requestParameters.balanceCreatedAfter, requestParameters.balanceCreatedBefore, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
+        return BrokersApiFp(this.configuration).getBalancesApiV1BrokersDataBalancesGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.unitCode, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1761,6 +2208,17 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
     }
 
     /**
+     * Get transactions for all authorized broker connections.  Returns transactions from connections the company has read access to. This endpoint is accessible from the portal and uses session-only authentication.
+     * @summary Get Transactions
+     * @param {BrokersApiGetTransactionsApiV1BrokersDataTransactionsGetRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public getTransactionsApiV1BrokersDataTransactionsGet(requestParameters: BrokersApiGetTransactionsApiV1BrokersDataTransactionsGetRequest = {}, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).getTransactionsApiV1BrokersDataTransactionsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.unitCode, requestParameters.currency, requestParameters.transactionType, requestParameters.startDate, requestParameters.endDate, requestParameters.limit, requestParameters.offset, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * List all broker connections for the current user with permissions.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for, including the current company\'s permissions (read/write) for each connection.
      * @summary List Broker Connections
      * @param {*} [options] Override http request option.
@@ -1768,6 +2226,28 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
      */
     public listBrokerConnectionsApiV1BrokersConnectionsGet(options?: RawAxiosRequestConfig) {
         return BrokersApiFp(this.configuration).listBrokerConnectionsApiV1BrokersConnectionsGet(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Modify an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.
+     * @summary Modify Order
+     * @param {BrokersApiModifyOrderApiV1BrokersOrdersOrderIdPatchRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public modifyOrderApiV1BrokersOrdersOrderIdPatch(requestParameters: BrokersApiModifyOrderApiV1BrokersOrdersOrderIdPatchRequest, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).modifyOrderApiV1BrokersOrdersOrderIdPatch(requestParameters.orderId, requestParameters.accountNumber, requestParameters.connectionId, requestParameters.modifyOrderApiV1BrokersOrdersOrderIdPatchRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Create a new order via the specified broker connection.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  Standard parameters ------------------- The following fields constitute the unified Finatic *common order schema* and therefore appear individually as query parameters in the autogenerated OpenAPI documentation:  - ``broker`` - ``account_number`` - ``order_type`` - ``asset_type`` - ``action`` - ``time_in_force`` - ``symbol`` - ``order_qty``  They are surfaced as *query* parameters **only to make the accepted fields obvious in the interactive docs**. In production usage you should send these fields inside the JSON body (see ``order_request``) so that the entire order specification travels in one payload. (Nothing will break if you send both, but there is no need to do so.)  Body payload & broker-specific extras -------------------------------------  Put the standard parameters plus any broker-specific extensions under the ``order`` key of the body. Refer to the bundled OpenAPI examples below to see complete payloads for common order types (market, limit, spreads, etc.) across supported brokers.  For a formal reference of broker-specific extensions inspect the ``BrokerOrderPlaceExtras`` schema.  The endpoint resolves the active ``user_broker_connection`` by calling the ``get_user_broker_connection_ids_for_broker`` RPC in Supabase. If no active connection exists it returns a list of *available* brokers so your client can guide the user accordingly.  Broker Notes ------------ - The responses that you get back from the broker are not always the same. The response models are validated for each broker, but we do not standardize the repsonses.  - Tasty Trade: If you want to trade options for a particular stock, first fetch the full option chain via the GET https://api.tastyworks.com/option-chains/{stock_symbol}/nested endpoint. This endpoint returns all available expirations that tastytrade offers for that equity symbol. Each expiration contains a list of strikes, where each strike has a call and put field representing the call symbol and put symbol respectively.  We are planning to add a new endpoint to fetch the option chain for a particular stock and handle this logic for you, but for now you need to fetch the option chain manually.
+     * @summary Place Order
+     * @param {BrokersApiPlaceOrderApiV1BrokersOrdersPostRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public placeOrderApiV1BrokersOrdersPost(requestParameters: BrokersApiPlaceOrderApiV1BrokersOrdersPostRequest = {}, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).placeOrderApiV1BrokersOrdersPost(requestParameters.connectionId, requestParameters.placeOrderApiV1BrokersOrdersPostRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

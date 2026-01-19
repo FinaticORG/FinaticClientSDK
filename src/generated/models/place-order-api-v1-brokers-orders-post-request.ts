@@ -15,29 +15,21 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Accountnumber } from './accountnumber';
+import type { NinjaTraderOrderPlaceRequest } from './ninja-trader-order-place-request';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { LimitOrderPlaceQueryParams } from './limit-order-place-query-params';
+import type { Order2 } from './order2';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { MarketOrderPlaceQueryParams } from './market-order-place-query-params';
+import type { RobinhoodOrderPlaceRequest } from './robinhood-order-place-request';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { PublicAssetTypeEnum } from './public-asset-type-enum';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { StopOrderPlaceQueryParams } from './stop-order-place-query-params';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { Timeinforce } from './timeinforce';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { TrailingStopOrderPlaceQueryParams } from './trailing-stop-order-place-query-params';
+import type { TastyTradeOrderPlaceRequest } from './tasty-trade-order-place-request';
 
 /**
  * @type PlaceOrderApiV1BrokersOrdersPostRequest
+ * Broker-specific parameters object (varies by broker)
  */
-export type PlaceOrderApiV1BrokersOrdersPostRequest = { orderType: 'Limit' } & LimitOrderPlaceQueryParams | { orderType: 'Market' } & MarketOrderPlaceQueryParams | { orderType: 'Stop' } & StopOrderPlaceQueryParams | { orderType: 'TrailingStop' } & TrailingStopOrderPlaceQueryParams;
+export type PlaceOrderApiV1BrokersOrdersPostRequest = { broker: 'ninja_trader' } & NinjaTraderOrderPlaceRequest | { broker: 'robinhood' } & RobinhoodOrderPlaceRequest | { broker: 'tasty_trade' } & TastyTradeOrderPlaceRequest;
 
 

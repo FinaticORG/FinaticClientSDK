@@ -17,6 +17,7 @@ import {
   getAllOrders,
   getAllPositions,
   getAllBalances,
+  getAllTransactions,
 } from './sdk';
 import './App.css';
 
@@ -34,6 +35,7 @@ function App() {
   const [orders, setOrders] = useState<any[]>([]);
   const [positions, setPositions] = useState<any[]>([]);
   const [balances, setBalances] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [brokers, setBrokers] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(false);
 
@@ -79,13 +81,14 @@ function App() {
 
     try {
       // Load all data in parallel using SDK functions
-      const [brokersData, accountsData, ordersData, positionsData, balancesData] =
+      const [brokersData, accountsData, ordersData, positionsData, balancesData, transactionsData] =
         await Promise.all([
           getBrokers(),
           getAllAccounts(),
           getAllOrders(),
           getAllPositions(),
           getAllBalances(),
+          getAllTransactions(),
         ]);
 
       setBrokers(brokersData);
@@ -93,6 +96,7 @@ function App() {
       setOrders(ordersData);
       setPositions(positionsData);
       setBalances(balancesData);
+      setTransactions(transactionsData);
     } catch (err) {
       console.error('Error loading data:', err);
       setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -264,6 +268,28 @@ function App() {
                             ? `$${Number(balance.total_value || balance.balance).toLocaleString()}`
                             : '$N/A'}
                         </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="data-card">
+                <h3>Transactions ({transactions.length})</h3>
+                <div className="data-list">
+                  {transactions.length === 0 ? (
+                    <p className="empty">No transactions found</p>
+                  ) : (
+                    transactions.slice(0, 10).map((transaction: any, idx: number) => (
+                      <div key={idx} className="data-item">
+                        <strong>{transaction.transaction_id || transaction.id || 'N/A'}</strong>
+                        <span>
+                          {transaction.transaction_type || transaction.type || 'N/A'} -{' '}
+                          {transaction.amount || transaction.value
+                            ? `$${Number(transaction.amount || transaction.value).toLocaleString()}`
+                            : '$N/A'}
+                        </span>
+                        {transaction.status && <span className="badge">{transaction.status}</span>}
                       </div>
                     ))
                   )}

@@ -15,26 +15,26 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { LimitOrderModifyQueryParams } from './limit-order-modify-query-params';
+import type { Accountnumber } from './accountnumber';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { MarketOrderModifyQueryParams } from './market-order-modify-query-params';
+import type { TastyTradeLimitOrderPlaceQueryParams } from './tasty-trade-limit-order-place-query-params';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { PublicAssetTypeEnum } from './public-asset-type-enum';
+import type { TastyTradeMarketOrderPlaceQueryParams } from './tasty-trade-market-order-place-query-params';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { StopOrderModifyQueryParams } from './stop-order-modify-query-params';
+import type { TastyTradeStopOrderPlaceQueryParams } from './tasty-trade-stop-order-place-query-params';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Timeinforce } from './timeinforce';
+import type { TastyTradeTrailingStopOrderPlaceQueryParams } from './tasty-trade-trailing-stop-order-place-query-params';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { TrailingStopOrderModifyQueryParams } from './trailing-stop-order-modify-query-params';
+import type { Timeinforce1 } from './timeinforce1';
 
 /**
  * @type Order2
  */
-export type Order2 = { orderType: 'Limit' } & LimitOrderModifyQueryParams | { orderType: 'Market' } & MarketOrderModifyQueryParams | { orderType: 'Stop' } & StopOrderModifyQueryParams | { orderType: 'TrailingStop' } & TrailingStopOrderModifyQueryParams;
+export type Order2 = { orderType: 'limit' } & TastyTradeLimitOrderPlaceQueryParams | { orderType: 'market' } & TastyTradeMarketOrderPlaceQueryParams | { orderType: 'stop' } & TastyTradeStopOrderPlaceQueryParams | { orderType: 'trailing_stop' } & TastyTradeTrailingStopOrderPlaceQueryParams;
 
 

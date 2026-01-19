@@ -15,17 +15,12 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { PublicAssetTypeEnum } from './public-asset-type-enum';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { Timeinforce } from './timeinforce';
+import type { Timeinforce1 } from './timeinforce1';
 
 /**
  * Trailing-stop modification payload.
  */
 export interface TastyTradeTrailingStopOrderModifyQueryParams {
-    [key: string]: any;
-
     'accountNumber': number;
     'automated-source'?: boolean;
     'external-identifier'?: string | null;
@@ -37,14 +32,20 @@ export interface TastyTradeTrailingStopOrderModifyQueryParams {
      */
     'orderId': string;
     'orderType': TastyTradeTrailingStopOrderModifyQueryParamsOrderTypeEnum;
-    'assetType': PublicAssetTypeEnum;
-    'timeInForce': Timeinforce;
+    'assetType': TastyTradeTrailingStopOrderModifyQueryParamsAssetTypeEnum;
+    'timeInForce': Timeinforce1;
     'isAutomated'?: boolean | null;
     'stopPrice': number;
 }
 
 export enum TastyTradeTrailingStopOrderModifyQueryParamsOrderTypeEnum {
-    TrailingStop = 'TrailingStop'
+    TrailingStop = 'trailing_stop'
+}
+export enum TastyTradeTrailingStopOrderModifyQueryParamsAssetTypeEnum {
+    Equity = 'equity',
+    EquityOption = 'equity_option',
+    Crypto = 'crypto',
+    Forex = 'forex'
 }
 
 

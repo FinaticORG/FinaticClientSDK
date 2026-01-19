@@ -270,6 +270,20 @@ export async function getAllBalances(): Promise<any[]> {
 }
 
 /**
+ * Get all transactions
+ * 
+ * @returns Promise<any[]> - Array of transactions
+ */
+export async function getAllTransactions(): Promise<any[]> {
+  if (!finaticInstance) {
+    throw new Error('SDK not initialized. Call initializeSDK() first.');
+  }
+
+  const response = await finaticInstance.getAllTransactions();
+  return extractData(response) || [];
+}
+
+/**
  * Extract data from FinaticResponse format
  * Handles both new format { success: { data: [...] } } and legacy formats
  * 

@@ -15,13 +15,11 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order1 } from './order1';
+import type { Order4 } from './order4';
 
 export interface TastyTradeOrderModifyRequest {
-    [key: string]: any;
-
     'broker': TastyTradeOrderModifyRequestBrokerEnum;
-    'order': Order1;
+    'order': Order4;
 }
 
 export enum TastyTradeOrderModifyRequestBrokerEnum {

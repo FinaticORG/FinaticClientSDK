@@ -21,7 +21,8 @@ export enum BrokerDataAssetTypeEnum {
     Crypto = 'crypto',
     Forex = 'forex',
     Future = 'future',
-    FutureOption = 'future_option'
+    FutureOption = 'future_option',
+    Bond = 'bond'
 }
 
 

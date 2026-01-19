@@ -18,9 +18,9 @@ import { CompanyApi } from './api/company-api';
 import { BrokersWrapper } from './wrappers/brokers';
 import { CompanyWrapper } from './wrappers/company';
 import { SessionWrapper } from './wrappers/session';
-import type { DisconnectCompanyFromBrokerParams, FinaticResponse, GetAccountsParams, GetBalancesParams, GetBrokerConnectionsParams, GetBrokersParams, GetOrderEventsParams, GetOrderFillsParams, GetOrderGroupsParams, GetOrdersParams, GetPositionLotFillsParams, GetPositionLotsParams, GetPositionsParams } from './wrappers/brokers';
+import type { CancelOrderParams, DisconnectCompanyFromBrokerParams, FinaticResponse, GetAccountsParams, GetBalancesParams, GetBrokerConnectionsParams, GetBrokersParams, GetOrderEventsParams, GetOrderFillsParams, GetOrderGroupsParams, GetOrdersParams, GetPositionLotFillsParams, GetPositionLotsParams, GetPositionsParams, GetTransactionsParams, ModifyOrderParams, PlaceOrderParams } from './wrappers/brokers';
 import type { GetCompanyParams } from './wrappers/company';
-import type { FDXBrokerAccount, FDXBrokerBalance, FDXBrokerOrder, FDXBrokerOrderEvent, FDXBrokerOrderFill, FDXBrokerOrderGroup, FDXBrokerPosition, FDXBrokerPositionLot, FDXBrokerPositionLotFill } from './models';
+import type { FDXBrokerAccount, FDXBrokerBalance, FDXBrokerOrder, FDXBrokerOrderEvent, FDXBrokerOrderFill, FDXBrokerOrderGroup, FDXBrokerPosition, FDXBrokerPositionLot, FDXBrokerPositionLotFill, FDXBrokerTransaction } from './models';
 
 
 export interface FinaticConnectOptions {
@@ -481,7 +481,7 @@ export class FinaticConnect extends EventEmitter {
 
     if (isNewPattern) {
       // New pattern: extract callbacks from options object
-      const options = optionsOrParams as {
+      const options = (optionsOrParams || {}) as {
         theme?: string | { preset?: string; custom?: Record<string, unknown> };
         brokers?: string[];
         email?: string;
@@ -1039,8 +1039,9 @@ export class FinaticConnect extends EventEmitter {
   /**
    * Get Balances
    * 
-   * Get balances for all authorized broker connections.
+   * Get current unit-based balances for all authorized broker connections.
    * 
+   * Returns array of current balances (one per unit_code per account).
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns balances from connections the company has read access to.
    * 
@@ -1115,6 +1116,87 @@ export class FinaticConnect extends EventEmitter {
    */
   async getBalances(params?: GetBalancesParams): Promise<Awaited<ReturnType<typeof this.brokers.getBalances>>> {
     return await this.brokers.getBalances(params);
+  }
+
+  /**
+   * Get Transactions
+   * 
+   * Get transactions for all authorized broker connections.
+   * 
+   * Returns transactions from connections the company has read access to.
+   * This endpoint is accessible from the portal and uses session-only authentication.
+   * 
+   * Convenience method that delegates to brokers wrapper.
+   * 
+   * @param params - Optional parameters object. Only include the fields you want to use.
+   *                 Example: getTransactions({ accountId: "123", limit: 10, offset: 0 })
+   * @returns FinaticResponse with success, error, and warning fields
+   * @methodId get_transactions_api_v1_brokers_data_transactions_get
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Example with no parameters
+   * const result = await finatic.getTransactions();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getTransactions({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Example with no parameters
+   * const result = await finatic.getTransactions();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Example with no parameters
+   * result = await finatic.get_transactions()
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * ```
+   * @example
+   * ```python
+   * # Full example with optional parameters
+   * result = await finatic.get_transactions(
+   *            broker_id='alpaca',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            account_id='123456789'
+   * )
+   * 
+   * # Handle response with warnings
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'], result.error['code'])
+   * ```
+   */
+  async getTransactions(params?: GetTransactionsParams): Promise<Awaited<ReturnType<typeof this.brokers.getTransactions>>> {
+    return await this.brokers.getTransactions(params);
   }
 
   /**
@@ -1626,6 +1708,284 @@ export class FinaticConnect extends EventEmitter {
     return await this.brokers.getPositionLotFills(params);
   }
 
+  /**
+   * Place Order
+   * 
+   * Create a new order via the specified broker connection.
+   * 
+   * This endpoint is accessible from the portal and uses session-only authentication.
+   * Requires trading permissions for the company.
+   * 
+   * Standard parameters
+   * -------------------
+   * The following fields constitute the unified Finatic *common order schema* and
+   * therefore appear individually as query parameters in the autogenerated
+   * OpenAPI documentation:
+   * 
+   * - ``broker``
+   * - ``account_number``
+   * - ``order_type``
+   * - ``asset_type``
+   * - ``action``
+   * - ``time_in_force``
+   * - ``symbol``
+   * - ``order_qty``
+   * 
+   * They are surfaced as *query* parameters **only to make the accepted fields
+   * obvious in the interactive docs**. In production usage you should send these
+   * fields inside the JSON body (see ``order_request``) so that the entire order
+   * specification travels in one payload. (Nothing will break if you send both, but there is no need to do so.)
+   * 
+   * Body payload & broker-specific extras
+   * -------------------------------------
+   * 
+   * Put the standard parameters plus any broker-specific extensions under the
+   * ``order`` key of the body. Refer to the bundled OpenAPI examples below to
+   * see complete payloads for common order types (market, limit, spreads, etc.)
+   * across supported brokers.
+   * 
+   * For a formal reference of broker-specific extensions inspect the
+   * ``BrokerOrderPlaceExtras`` schema.
+   * 
+   * The endpoint resolves the active ``user_broker_connection`` by calling the
+   * ``get_user_broker_connection_ids_for_broker`` RPC in Supabase. If no active
+   * connection exists it returns a list of *available* brokers so your client
+   * can guide the user accordingly.
+   * 
+   * Broker Notes
+   * ------------
+   * - The responses that you get back from the broker are not always the same.
+   * The response models are validated for each broker, but we do not standardize the repsonses.
+   * 
+   * - Tasty Trade: If you want to trade options for a particular stock, first fetch the full
+   * option chain via the GET https://api.tastyworks.com/option-chains/{stock_symbol}/nested endpoint.
+   * This endpoint returns all available expirations that tastytrade offers for that equity symbol.
+   * Each expiration contains a list of strikes, where each strike has a call and put field representing
+   * the call symbol and put symbol respectively.
+   * 
+   * We are planning to add a new endpoint to fetch the option chain for a particular stock and
+   * handle this logic for you, but for now you need to fetch the option chain manually.
+   * 
+   * Convenience method that delegates to brokers wrapper.
+   * 
+   * @param params - Optional parameters object. Only include the fields you want to use.
+   *                 Example: placeOrder({ accountId: "123", limit: 10, offset: 0 })
+   * @returns FinaticResponse with success, error, and warning fields
+   * @methodId place_order_api_v1_brokers_orders_post
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Example with no parameters
+   * const result = await finatic.placeOrder();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.placeOrder({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Example with no parameters
+   * const result = await finatic.placeOrder();
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Example with no parameters
+   * result = await finatic.place_order()
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * ```
+   * @example
+   * ```python
+   * # Full example with optional parameters
+   * result = await finatic.place_order(
+   *            connection_id='00000000-0000-0000-0000-000000000000'
+   * )
+   * 
+   * # Handle response with warnings
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'], result.error['code'])
+   * ```
+   */
+  async placeOrder(params?: PlaceOrderParams): Promise<Awaited<ReturnType<typeof this.brokers.placeOrder>>> {
+    return await this.brokers.placeOrder(params);
+  }
+
+  /**
+   * Cancel Order
+   * 
+   * Cancel an existing order.
+   * 
+   * This endpoint is accessible from the portal and uses session-only authentication.
+   * Requires trading permissions for the company.
+   * 
+   * The order_id is used to identify the order and automatically resolve the
+   * broker connection from the orders table.
+   * 
+   * Convenience method that delegates to brokers wrapper.
+   * 
+   * @param params - Optional parameters object. Only include the fields you want to use.
+   *                 Example: cancelOrder({ accountId: "123", limit: 10, offset: 0 })
+   * @returns FinaticResponse with success, error, and warning fields
+   * @methodId cancel_order_api_v1_brokers_orders__order_id__delete
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Minimal example with required parameters only
+   * const result = await finatic.cancelOrder({ orderId: 'order_1234567890abcdef' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Minimal example with required parameters only
+   * const result = await finatic.cancelOrder({ orderId: 'order_1234567890abcdef' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Minimal example with required parameters only
+   * result = await finatic.cancel_order(
+   *            order_id='order_1234567890abcdef'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
+   */
+  async cancelOrder(params: CancelOrderParams): Promise<Awaited<ReturnType<typeof this.brokers.cancelOrder>>> {
+    return await this.brokers.cancelOrder(params);
+  }
+
+  /**
+   * Modify Order
+   * 
+   * Modify an existing order.
+   * 
+   * This endpoint is accessible from the portal and uses session-only authentication.
+   * Requires trading permissions for the company.
+   * 
+   * Convenience method that delegates to brokers wrapper.
+   * 
+   * @param params - Optional parameters object. Only include the fields you want to use.
+   *                 Example: modifyOrder({ accountId: "123", limit: 10, offset: 0 })
+   * @returns FinaticResponse with success, error, and warning fields
+   * @methodId modify_order_api_v1_brokers_orders__order_id__patch
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Minimal example with required parameters only
+   * const result = await finatic.modifyOrder({ orderId: 'order_1234567890abcdef' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.modifyOrder({ orderId: 'order_1234567890abcdef', accountNumber: '123456789', connectionId: '00000000-0000-0000-0000-000000000000' });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
+   * }
+   * ```
+   * @example
+   * ```typescript-server
+   * // Minimal example with required parameters only
+   * const result = await finatic.modifyOrder({ orderId: 'order_1234567890abcdef' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Minimal example with required parameters only
+   * result = await finatic.modify_order(
+   *            order_id='order_1234567890abcdef'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
+   * @example
+   * ```python
+   * # Full example with optional parameters
+   * result = await finatic.modify_order(
+   *            order_id='order_1234567890abcdef',
+            account_number='123456789',
+            connection_id='00000000-0000-0000-0000-000000000000'
+   * )
+   * 
+   * # Handle response with warnings
+   * if result.success:
+   *     print('Data:', result.success['data'])
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'], result.error['code'])
+   * ```
+   */
+  async modifyOrder(params: ModifyOrderParams): Promise<Awaited<ReturnType<typeof this.brokers.modifyOrder>>> {
+    return await this.brokers.modifyOrder(params);
+  }
+
 
   /**
    * Get all Orders across all pages.
@@ -1963,6 +2323,123 @@ export class FinaticConnect extends EventEmitter {
       return {
         success: {
           data: [] as FDXBrokerBalance[],
+        },
+        error: lastError,
+        warning: warnings.length > 0 ? warnings : null,
+      };
+    }
+    
+    return {
+      success: {
+        data: allData,
+      },
+      error: null,
+      warning: warnings.length > 0 ? warnings : null,
+    };
+  }
+
+  /**
+   * Get all Transactions across all pages.
+   * Auto-generated from paginated endpoint.
+   * 
+   * This method automatically paginates through all pages and returns all items in a single response.
+   * It uses the underlying getTransactions method with internal pagination handling.
+   * 
+   * @param params - Optional parameters object. Only include the fields you want to filter by.
+   *                 Example: getAllTransactions({ accountId: "123", symbol: "AAPL" })
+   * @returns FinaticResponse with success, error, and warning fields containing array of all items
+   * @methodId get_all_transactions_api_v1_brokers_data_transactions_get
+   * @category brokers
+   * @example
+   * ```typescript-server
+   * // Get all items with optional filters
+   * const result = await finatic.getAllTransactions({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Get all items with optional filters
+   * const result = await finatic.getAllTransactions({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Total items:', result.success.data.length);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```python
+   * # Get all items with optional filters
+   * result = await finatic.get_all_transactions(
+   *            broker_id='alpaca',
+            connection_id='00000000-0000-0000-0000-000000000000',
+            account_id='123456789'
+   * )
+   * 
+   * # Access the response data
+   * if result.success:
+   *     print('Total items:', len(result.success['data']))
+   *     if result.warning:
+   *         print('Warnings:', result.warning)
+   * elif result.error:
+   *     print('Error:', result.error['message'])
+   * ```
+   */
+  async getAllTransactions(params?: Partial<GetTransactionsParams>): Promise<FinaticResponse<FDXBrokerTransaction[]>> {
+    // Use provided params or empty object (excluding limit and offset which are handled internally)
+    const filterParams: GetTransactionsParams = (params || {}) as GetTransactionsParams;
+    const allData: FDXBrokerTransaction[] = [];
+    let offset = 0;
+    const limit = 1000;
+    let lastError: { [key: string]: any; } | null = null;
+    let warnings: Array<{ [key: string]: any; }> = [];
+    
+    while (true) {
+      const response = await this.brokers.getTransactions({ ...filterParams, limit, offset });
+      
+      // Collect warnings from each page
+      if (response.warning && Array.isArray(response.warning)) {
+        warnings.push(...response.warning);
+      }
+      
+      if (response.error) {
+        lastError = response.error;
+        break;
+      }
+      
+      const result = response.success?.data || [];
+      // Extract items from PaginatedData if it's a PaginatedData object, otherwise use as-is
+      // PaginatedData has array-like behavior but we extract items for getAll* methods
+      const items = result && typeof result === 'object' && 'items' in result && Array.isArray(result.items)
+        ? result.items
+        : (Array.isArray(result) ? result : [result]);
+      
+      if (!items || items.length === 0) break;
+      allData.push(...items);
+      // If we got fewer items than the limit, there are no more pages
+      if (items.length < limit) break;
+      offset += limit;
+    }
+    
+    // Return FinaticResponse with accumulated data
+    // When error occurs, return error response (success may be omitted or null)
+    if (lastError) {
+      return {
+        success: {
+          data: [] as FDXBrokerTransaction[],
         },
         error: lastError,
         warning: warnings.length > 0 ? warnings : null,

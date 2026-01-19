@@ -15,17 +15,12 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { PublicAssetTypeEnum } from './public-asset-type-enum';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { Timeinforce } from './timeinforce';
+import type { Timeinforce1 } from './timeinforce1';
 
 /**
  * Market-order modification payload.
  */
 export interface TastyTradeMarketOrderModifyQueryParams {
-    [key: string]: any;
-
     'accountNumber': number;
     'automated-source'?: boolean;
     'external-identifier'?: string | null;
@@ -37,13 +32,19 @@ export interface TastyTradeMarketOrderModifyQueryParams {
      */
     'orderId': string;
     'orderType': TastyTradeMarketOrderModifyQueryParamsOrderTypeEnum;
-    'assetType': PublicAssetTypeEnum;
-    'timeInForce': Timeinforce;
+    'assetType': TastyTradeMarketOrderModifyQueryParamsAssetTypeEnum;
+    'timeInForce': Timeinforce1;
     'isAutomated'?: boolean | null;
 }
 
 export enum TastyTradeMarketOrderModifyQueryParamsOrderTypeEnum {
-    Market = 'Market'
+    Market = 'market'
+}
+export enum TastyTradeMarketOrderModifyQueryParamsAssetTypeEnum {
+    Equity = 'equity',
+    EquityOption = 'equity_option',
+    Crypto = 'crypto',
+    Forex = 'forex'
 }
 
 

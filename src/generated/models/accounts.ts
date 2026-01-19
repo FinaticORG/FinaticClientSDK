@@ -15,7 +15,7 @@
 
 
 export interface Accounts {
-    'id'?: string;
+    'id'?: string | null;
     'api_key_created_at'?: string | null;
     'api_key_expires_at'?: string | null;
     'api_key_hash'?: string | null;

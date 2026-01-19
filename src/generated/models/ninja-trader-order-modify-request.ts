@@ -15,13 +15,11 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order } from './order';
+import type { Order3 } from './order3';
 
 export interface NinjaTraderOrderModifyRequest {
-    [key: string]: any;
-
     'broker': NinjaTraderOrderModifyRequestBrokerEnum;
-    'order': Order;
+    'order': Order3;
 }
 
 export enum NinjaTraderOrderModifyRequestBrokerEnum {
