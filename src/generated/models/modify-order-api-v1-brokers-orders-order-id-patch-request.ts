@@ -18,7 +18,7 @@
 import type { NinjaTraderOrderModifyRequest } from './ninja-trader-order-modify-request';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order2 } from './order2';
+import type { Order5 } from './order5';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { RobinhoodOrderModifyRequest } from './robinhood-order-modify-request';

@@ -15,17 +15,12 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { PublicAssetTypeEnum } from './public-asset-type-enum';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { Timeinforce } from './timeinforce';
+import type { Timeinforce1 } from './timeinforce1';
 
 /**
  * Stop-Limit-order modification payload for NinjaTrader.
  */
 export interface NinjaTraderTrailingStopOrderModifyQueryParams {
-    [key: string]: any;
-
     'orderQty'?: number | null;
     'clOrdId'?: string | null;
     'maxShow'?: number | null;
@@ -37,14 +32,20 @@ export interface NinjaTraderTrailingStopOrderModifyQueryParams {
      */
     'orderId': string;
     'orderType': NinjaTraderTrailingStopOrderModifyQueryParamsOrderTypeEnum;
-    'assetType': PublicAssetTypeEnum;
-    'timeInForce': Timeinforce;
+    'assetType': NinjaTraderTrailingStopOrderModifyQueryParamsAssetTypeEnum;
+    'timeInForce': Timeinforce1;
     'isAutomated'?: boolean | null;
     'stopPrice': number;
 }
 
 export enum NinjaTraderTrailingStopOrderModifyQueryParamsOrderTypeEnum {
-    TrailingStop = 'TrailingStop'
+    TrailingStop = 'trailing_stop'
+}
+export enum NinjaTraderTrailingStopOrderModifyQueryParamsAssetTypeEnum {
+    Equity = 'equity',
+    EquityOption = 'equity_option',
+    Crypto = 'crypto',
+    Forex = 'forex'
 }
 
 

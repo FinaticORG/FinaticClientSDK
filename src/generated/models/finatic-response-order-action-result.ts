@@ -15,27 +15,18 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { FinaticAPIWarning } from './finatic-apiwarning';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { OrderActionResult } from './order-action-result';
+import type { SuccessPayloadOrderActionResult } from './success-payload-order-action-result';
 
 export interface FinaticResponseOrderActionResult {
-    '_id'?: string;
     /**
-     * Whether the request was successful
+     * Request trace identifier for tracking and debugging. Auto-generated if not provided.
      */
-    'success': boolean;
-    'data'?: OrderActionResult | null;
-    'response_data'?: OrderActionResult | null;
-    'message'?: string | null;
+    'trace_id'?: string;
     /**
-     * HTTP status code
+     * Success payload containing data and optional meta
      */
-    'status_code'?: number;
-    'warnings'?: Array<FinaticAPIWarning> | null;
-    'errors'?: Array<{ [key: string]: any; }> | null;
-    'pagination'?: { [key: string]: any; } | null;
-    'meta'?: { [key: string]: any; } | null;
+    'success': SuccessPayloadOrderActionResult;
+    'error'?: { [key: string]: any; } | null;
+    'warning'?: Array<{ [key: string]: any; }> | null;
 }
 

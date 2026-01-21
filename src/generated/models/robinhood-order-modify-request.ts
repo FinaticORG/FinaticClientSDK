@@ -15,13 +15,11 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order2 } from './order2';
+import type { Order5 } from './order5';
 
 export interface RobinhoodOrderModifyRequest {
-    [key: string]: any;
-
     'broker': RobinhoodOrderModifyRequestBrokerEnum;
-    'order': Order2;
+    'order': Order5;
 }
 
 export enum RobinhoodOrderModifyRequestBrokerEnum {

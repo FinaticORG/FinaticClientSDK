@@ -15,26 +15,26 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { NinjaTraderLimitOrderModifyQueryParams } from './ninja-trader-limit-order-modify-query-params';
+import type { Accountnumber } from './accountnumber';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { NinjaTraderMarketOrderModifyQueryParams } from './ninja-trader-market-order-modify-query-params';
+import type { NinjaTraderLimitOrderPlaceQueryParams } from './ninja-trader-limit-order-place-query-params';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { NinjaTraderStopOrderModifyQueryParams } from './ninja-trader-stop-order-modify-query-params';
+import type { NinjaTraderMarketOrderPlaceQueryParams } from './ninja-trader-market-order-place-query-params';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { NinjaTraderTrailingStopOrderModifyQueryParams } from './ninja-trader-trailing-stop-order-modify-query-params';
+import type { NinjaTraderStopOrderPlaceQueryParams } from './ninja-trader-stop-order-place-query-params';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { PublicAssetTypeEnum } from './public-asset-type-enum';
+import type { NinjaTraderTrailingStopOrderPlaceQueryParams } from './ninja-trader-trailing-stop-order-place-query-params';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Timeinforce } from './timeinforce';
+import type { Timeinforce1 } from './timeinforce1';
 
 /**
  * @type Order
  */
-export type Order = { orderType: 'Limit' } & NinjaTraderLimitOrderModifyQueryParams | { orderType: 'Market' } & NinjaTraderMarketOrderModifyQueryParams | { orderType: 'Stop' } & NinjaTraderStopOrderModifyQueryParams | { orderType: 'TrailingStop' } & NinjaTraderTrailingStopOrderModifyQueryParams;
+export type Order = { orderType: 'limit' } & NinjaTraderLimitOrderPlaceQueryParams | { orderType: 'market' } & NinjaTraderMarketOrderPlaceQueryParams | { orderType: 'stop' } & NinjaTraderStopOrderPlaceQueryParams | { orderType: 'trailing_stop' } & NinjaTraderTrailingStopOrderPlaceQueryParams;
 
 
