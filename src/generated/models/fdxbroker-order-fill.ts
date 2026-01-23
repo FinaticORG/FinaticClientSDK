@@ -18,7 +18,7 @@
 import type { Assettype } from './assettype';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Commission } from './commission';
+import type { Commission1 } from './commission1';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Price } from './price';
@@ -62,7 +62,7 @@ export interface FDXBrokerOrderFill {
      */
     'executedAt': string;
     'venue'?: string | null;
-    'commission'?: Commission | null;
+    'commission'?: Commission1 | null;
     'metadata'?: { [key: string]: any; } | null;
 }
 

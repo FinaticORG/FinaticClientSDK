@@ -15,8 +15,8 @@
 
 
 /**
- * Pending balance
+ * Commission fee (can be negative for rebates)
  */
-export interface Pendingbalance {
+export interface Commission1 {
 }
 

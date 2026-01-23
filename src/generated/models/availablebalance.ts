@@ -15,7 +15,7 @@
 
 
 /**
- * Available for trading
+ * Available balance
  */
 export interface Availablebalance {
 }

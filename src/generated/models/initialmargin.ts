@@ -15,7 +15,7 @@
 
 
 /**
- * Initial margin requirement
+ * Initial margin
  */
 export interface Initialmargin {
 }

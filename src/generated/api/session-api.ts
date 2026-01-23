@@ -18,19 +18,19 @@ import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
 import globalAxios from 'axios';
 // Some imports not used depending on template conditions
 // @ts-ignore
-import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction } from '../common';
+import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction, replaceWithSerializableTypeIfNeeded } from '../common';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
 // @ts-ignore
 import type { FinaticAPIErrorResponse } from '../models';
 // @ts-ignore
-import type { FinaticResponsePortalUrlResponse } from '../models';
+import type { FinaticapiCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2 } from '../models';
 // @ts-ignore
-import type { FinaticResponseSessionResponseData } from '../models';
+import type { FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2 } from '../models';
 // @ts-ignore
-import type { FinaticResponseSessionUserResponse } from '../models';
+import type { FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2 } from '../models';
 // @ts-ignore
-import type { FinaticResponseTokenResponseData } from '../models';
+import type { FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2 } from '../models';
 // @ts-ignore
 import type { SessionStartRequest } from '../models';
 /**
@@ -45,10 +45,10 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPortalUrlApiV1SessionPortalGet: async (sessionId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getPortalUrlApiBetaSessionPortalGet: async (sessionId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'sessionId' is not null or undefined
-            assertParamExists('getPortalUrlApiV1SessionPortalGet', 'sessionId', sessionId)
-            const localVarPath = `/api/v1/session/portal`;
+            assertParamExists('getPortalUrlApiBetaSessionPortalGet', 'sessionId', sessionId)
+            const localVarPath = `/api/beta/session/portal`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -82,12 +82,12 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getSessionUserApiV1SessionSessionIdUserGet: async (sessionId: string, xSessionId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getSessionUserApiBetaSessionSessionIdUserGet: async (sessionId: string, xSessionId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'sessionId' is not null or undefined
-            assertParamExists('getSessionUserApiV1SessionSessionIdUserGet', 'sessionId', sessionId)
+            assertParamExists('getSessionUserApiBetaSessionSessionIdUserGet', 'sessionId', sessionId)
             // verify required parameter 'xSessionId' is not null or undefined
-            assertParamExists('getSessionUserApiV1SessionSessionIdUserGet', 'xSessionId', xSessionId)
-            const localVarPath = `/api/v1/session/{session_id}/user`
+            assertParamExists('getSessionUserApiBetaSessionSessionIdUserGet', 'xSessionId', xSessionId)
+            const localVarPath = `/api/beta/session/{session_id}/user`
                 .replace(`{${"session_id"}}`, encodeURIComponent(String(sessionId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -121,10 +121,10 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        initSessionApiV1SessionInitPost: async (xApiKey: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        initSessionApiBetaSessionInitPost: async (xApiKey: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'xApiKey' is not null or undefined
-            assertParamExists('initSessionApiV1SessionInitPost', 'xApiKey', xApiKey)
-            const localVarPath = `/api/v1/session/init`;
+            assertParamExists('initSessionApiBetaSessionInitPost', 'xApiKey', xApiKey)
+            const localVarPath = `/api/beta/session/init`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -158,12 +158,12 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        startSessionApiV1SessionStartPost: async (oneTimeToken: string, sessionStartRequest: SessionStartRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        startSessionApiBetaSessionStartPost: async (oneTimeToken: string, sessionStartRequest: SessionStartRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'oneTimeToken' is not null or undefined
-            assertParamExists('startSessionApiV1SessionStartPost', 'oneTimeToken', oneTimeToken)
+            assertParamExists('startSessionApiBetaSessionStartPost', 'oneTimeToken', oneTimeToken)
             // verify required parameter 'sessionStartRequest' is not null or undefined
-            assertParamExists('startSessionApiV1SessionStartPost', 'sessionStartRequest', sessionStartRequest)
-            const localVarPath = `/api/v1/session/start`;
+            assertParamExists('startSessionApiBetaSessionStartPost', 'sessionStartRequest', sessionStartRequest)
+            const localVarPath = `/api/beta/session/start`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -207,10 +207,10 @@ export const SessionApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPortalUrlApiV1SessionPortalGet(sessionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponsePortalUrlResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getPortalUrlApiV1SessionPortalGet(sessionId, options);
+        async getPortalUrlApiBetaSessionPortalGet(sessionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticapiCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPortalUrlApiBetaSessionPortalGet(sessionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SessionApi.getPortalUrlApiV1SessionPortalGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SessionApi.getPortalUrlApiBetaSessionPortalGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -221,10 +221,10 @@ export const SessionApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getSessionUserApiV1SessionSessionIdUserGet(sessionId: string, xSessionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseSessionUserResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getSessionUserApiV1SessionSessionIdUserGet(sessionId, xSessionId, options);
+        async getSessionUserApiBetaSessionSessionIdUserGet(sessionId: string, xSessionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getSessionUserApiBetaSessionSessionIdUserGet(sessionId, xSessionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SessionApi.getSessionUserApiV1SessionSessionIdUserGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SessionApi.getSessionUserApiBetaSessionSessionIdUserGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -234,10 +234,10 @@ export const SessionApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async initSessionApiV1SessionInitPost(xApiKey: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseTokenResponseData>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.initSessionApiV1SessionInitPost(xApiKey, options);
+        async initSessionApiBetaSessionInitPost(xApiKey: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.initSessionApiBetaSessionInitPost(xApiKey, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SessionApi.initSessionApiV1SessionInitPost']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SessionApi.initSessionApiBetaSessionInitPost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -248,10 +248,10 @@ export const SessionApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async startSessionApiV1SessionStartPost(oneTimeToken: string, sessionStartRequest: SessionStartRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseSessionResponseData>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.startSessionApiV1SessionStartPost(oneTimeToken, sessionStartRequest, options);
+        async startSessionApiBetaSessionStartPost(oneTimeToken: string, sessionStartRequest: SessionStartRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.startSessionApiBetaSessionStartPost(oneTimeToken, sessionStartRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SessionApi.startSessionApiV1SessionStartPost']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SessionApi.startSessionApiBetaSessionStartPost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -266,42 +266,42 @@ export const SessionApiFactory = function (configuration?: Configuration, basePa
         /**
          * Get a portal URL with token for a session.  The session must be in ACTIVE or AUTHENTICATING state and the request must come from the same device that initiated the session. Device info is automatically validated from the request.
          * @summary Get Portal Url
-         * @param {SessionApiGetPortalUrlApiV1SessionPortalGetRequest} requestParameters Request parameters.
+         * @param {SessionApiGetPortalUrlApiBetaSessionPortalGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPortalUrlApiV1SessionPortalGet(requestParameters: SessionApiGetPortalUrlApiV1SessionPortalGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponsePortalUrlResponse> {
-            return localVarFp.getPortalUrlApiV1SessionPortalGet(requestParameters.sessionId, options).then((request) => request(axios, basePath));
+        getPortalUrlApiBetaSessionPortalGet(requestParameters: SessionApiGetPortalUrlApiBetaSessionPortalGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticapiCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2> {
+            return localVarFp.getPortalUrlApiBetaSessionPortalGet(requestParameters.sessionId, options).then((request) => request(axios, basePath));
         },
         /**
          * Get user information for a completed session.  This endpoint is designed for server SDKs to retrieve user information after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
          * @summary Get Session User
-         * @param {SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest} requestParameters Request parameters.
+         * @param {SessionApiGetSessionUserApiBetaSessionSessionIdUserGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getSessionUserApiV1SessionSessionIdUserGet(requestParameters: SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseSessionUserResponse> {
-            return localVarFp.getSessionUserApiV1SessionSessionIdUserGet(requestParameters.sessionId, requestParameters.xSessionId, options).then((request) => request(axios, basePath));
+        getSessionUserApiBetaSessionSessionIdUserGet(requestParameters: SessionApiGetSessionUserApiBetaSessionSessionIdUserGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2> {
+            return localVarFp.getSessionUserApiBetaSessionSessionIdUserGet(requestParameters.sessionId, requestParameters.xSessionId, options).then((request) => request(axios, basePath));
         },
         /**
          * Initialize a new session with company API key.
          * @summary Init Session
-         * @param {SessionApiInitSessionApiV1SessionInitPostRequest} requestParameters Request parameters.
+         * @param {SessionApiInitSessionApiBetaSessionInitPostRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        initSessionApiV1SessionInitPost(requestParameters: SessionApiInitSessionApiV1SessionInitPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseTokenResponseData> {
-            return localVarFp.initSessionApiV1SessionInitPost(requestParameters.xApiKey, options).then((request) => request(axios, basePath));
+        initSessionApiBetaSessionInitPost(requestParameters: SessionApiInitSessionApiBetaSessionInitPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2> {
+            return localVarFp.initSessionApiBetaSessionInitPost(requestParameters.xApiKey, options).then((request) => request(axios, basePath));
         },
         /**
          * Start a session with a one-time token.
          * @summary Start Session
-         * @param {SessionApiStartSessionApiV1SessionStartPostRequest} requestParameters Request parameters.
+         * @param {SessionApiStartSessionApiBetaSessionStartPostRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        startSessionApiV1SessionStartPost(requestParameters: SessionApiStartSessionApiV1SessionStartPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseSessionResponseData> {
-            return localVarFp.startSessionApiV1SessionStartPost(requestParameters.oneTimeToken, requestParameters.sessionStartRequest, options).then((request) => request(axios, basePath));
+        startSessionApiBetaSessionStartPost(requestParameters: SessionApiStartSessionApiBetaSessionStartPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2> {
+            return localVarFp.startSessionApiBetaSessionStartPost(requestParameters.oneTimeToken, requestParameters.sessionStartRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -313,45 +313,45 @@ export interface SessionApiInterface {
     /**
      * Get a portal URL with token for a session.  The session must be in ACTIVE or AUTHENTICATING state and the request must come from the same device that initiated the session. Device info is automatically validated from the request.
      * @summary Get Portal Url
-     * @param {SessionApiGetPortalUrlApiV1SessionPortalGetRequest} requestParameters Request parameters.
+     * @param {SessionApiGetPortalUrlApiBetaSessionPortalGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getPortalUrlApiV1SessionPortalGet(requestParameters: SessionApiGetPortalUrlApiV1SessionPortalGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponsePortalUrlResponse>;
+    getPortalUrlApiBetaSessionPortalGet(requestParameters: SessionApiGetPortalUrlApiBetaSessionPortalGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticapiCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2>;
 
     /**
      * Get user information for a completed session.  This endpoint is designed for server SDKs to retrieve user information after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
      * @summary Get Session User
-     * @param {SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest} requestParameters Request parameters.
+     * @param {SessionApiGetSessionUserApiBetaSessionSessionIdUserGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getSessionUserApiV1SessionSessionIdUserGet(requestParameters: SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseSessionUserResponse>;
+    getSessionUserApiBetaSessionSessionIdUserGet(requestParameters: SessionApiGetSessionUserApiBetaSessionSessionIdUserGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2>;
 
     /**
      * Initialize a new session with company API key.
      * @summary Init Session
-     * @param {SessionApiInitSessionApiV1SessionInitPostRequest} requestParameters Request parameters.
+     * @param {SessionApiInitSessionApiBetaSessionInitPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    initSessionApiV1SessionInitPost(requestParameters: SessionApiInitSessionApiV1SessionInitPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseTokenResponseData>;
+    initSessionApiBetaSessionInitPost(requestParameters: SessionApiInitSessionApiBetaSessionInitPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2>;
 
     /**
      * Start a session with a one-time token.
      * @summary Start Session
-     * @param {SessionApiStartSessionApiV1SessionStartPostRequest} requestParameters Request parameters.
+     * @param {SessionApiStartSessionApiBetaSessionStartPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    startSessionApiV1SessionStartPost(requestParameters: SessionApiStartSessionApiV1SessionStartPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseSessionResponseData>;
+    startSessionApiBetaSessionStartPost(requestParameters: SessionApiStartSessionApiBetaSessionStartPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2>;
 
 }
 
 /**
- * Request parameters for getPortalUrlApiV1SessionPortalGet operation in SessionApi.
+ * Request parameters for getPortalUrlApiBetaSessionPortalGet operation in SessionApi.
  */
-export interface SessionApiGetPortalUrlApiV1SessionPortalGetRequest {
+export interface SessionApiGetPortalUrlApiBetaSessionPortalGetRequest {
     /**
      * Session ID
      */
@@ -359,9 +359,9 @@ export interface SessionApiGetPortalUrlApiV1SessionPortalGetRequest {
 }
 
 /**
- * Request parameters for getSessionUserApiV1SessionSessionIdUserGet operation in SessionApi.
+ * Request parameters for getSessionUserApiBetaSessionSessionIdUserGet operation in SessionApi.
  */
-export interface SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest {
+export interface SessionApiGetSessionUserApiBetaSessionSessionIdUserGetRequest {
     /**
      * Session ID
      */
@@ -374,9 +374,9 @@ export interface SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest {
 }
 
 /**
- * Request parameters for initSessionApiV1SessionInitPost operation in SessionApi.
+ * Request parameters for initSessionApiBetaSessionInitPost operation in SessionApi.
  */
-export interface SessionApiInitSessionApiV1SessionInitPostRequest {
+export interface SessionApiInitSessionApiBetaSessionInitPostRequest {
     /**
      * Company API key
      */
@@ -384,9 +384,9 @@ export interface SessionApiInitSessionApiV1SessionInitPostRequest {
 }
 
 /**
- * Request parameters for startSessionApiV1SessionStartPost operation in SessionApi.
+ * Request parameters for startSessionApiBetaSessionStartPost operation in SessionApi.
  */
-export interface SessionApiStartSessionApiV1SessionStartPostRequest {
+export interface SessionApiStartSessionApiBetaSessionStartPostRequest {
     /**
      * One-time use token obtained from init_session endpoint to authenticate and start the session
      */
@@ -405,45 +405,45 @@ export class SessionApi extends BaseAPI implements SessionApiInterface {
     /**
      * Get a portal URL with token for a session.  The session must be in ACTIVE or AUTHENTICATING state and the request must come from the same device that initiated the session. Device info is automatically validated from the request.
      * @summary Get Portal Url
-     * @param {SessionApiGetPortalUrlApiV1SessionPortalGetRequest} requestParameters Request parameters.
+     * @param {SessionApiGetPortalUrlApiBetaSessionPortalGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getPortalUrlApiV1SessionPortalGet(requestParameters: SessionApiGetPortalUrlApiV1SessionPortalGetRequest, options?: RawAxiosRequestConfig) {
-        return SessionApiFp(this.configuration).getPortalUrlApiV1SessionPortalGet(requestParameters.sessionId, options).then((request) => request(this.axios, this.basePath));
+    public getPortalUrlApiBetaSessionPortalGet(requestParameters: SessionApiGetPortalUrlApiBetaSessionPortalGetRequest, options?: RawAxiosRequestConfig) {
+        return SessionApiFp(this.configuration).getPortalUrlApiBetaSessionPortalGet(requestParameters.sessionId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Get user information for a completed session.  This endpoint is designed for server SDKs to retrieve user information after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
      * @summary Get Session User
-     * @param {SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest} requestParameters Request parameters.
+     * @param {SessionApiGetSessionUserApiBetaSessionSessionIdUserGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getSessionUserApiV1SessionSessionIdUserGet(requestParameters: SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest, options?: RawAxiosRequestConfig) {
-        return SessionApiFp(this.configuration).getSessionUserApiV1SessionSessionIdUserGet(requestParameters.sessionId, requestParameters.xSessionId, options).then((request) => request(this.axios, this.basePath));
+    public getSessionUserApiBetaSessionSessionIdUserGet(requestParameters: SessionApiGetSessionUserApiBetaSessionSessionIdUserGetRequest, options?: RawAxiosRequestConfig) {
+        return SessionApiFp(this.configuration).getSessionUserApiBetaSessionSessionIdUserGet(requestParameters.sessionId, requestParameters.xSessionId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Initialize a new session with company API key.
      * @summary Init Session
-     * @param {SessionApiInitSessionApiV1SessionInitPostRequest} requestParameters Request parameters.
+     * @param {SessionApiInitSessionApiBetaSessionInitPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public initSessionApiV1SessionInitPost(requestParameters: SessionApiInitSessionApiV1SessionInitPostRequest, options?: RawAxiosRequestConfig) {
-        return SessionApiFp(this.configuration).initSessionApiV1SessionInitPost(requestParameters.xApiKey, options).then((request) => request(this.axios, this.basePath));
+    public initSessionApiBetaSessionInitPost(requestParameters: SessionApiInitSessionApiBetaSessionInitPostRequest, options?: RawAxiosRequestConfig) {
+        return SessionApiFp(this.configuration).initSessionApiBetaSessionInitPost(requestParameters.xApiKey, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Start a session with a one-time token.
      * @summary Start Session
-     * @param {SessionApiStartSessionApiV1SessionStartPostRequest} requestParameters Request parameters.
+     * @param {SessionApiStartSessionApiBetaSessionStartPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public startSessionApiV1SessionStartPost(requestParameters: SessionApiStartSessionApiV1SessionStartPostRequest, options?: RawAxiosRequestConfig) {
-        return SessionApiFp(this.configuration).startSessionApiV1SessionStartPost(requestParameters.oneTimeToken, requestParameters.sessionStartRequest, options).then((request) => request(this.axios, this.basePath));
+    public startSessionApiBetaSessionStartPost(requestParameters: SessionApiStartSessionApiBetaSessionStartPostRequest, options?: RawAxiosRequestConfig) {
+        return SessionApiFp(this.configuration).startSessionApiBetaSessionStartPost(requestParameters.oneTimeToken, requestParameters.sessionStartRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

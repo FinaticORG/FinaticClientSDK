@@ -15,8 +15,8 @@
 
 
 /**
- * Pending balance
+ * Notional value for this leg
  */
-export interface Pendingbalance {
+export interface Notional {
 }
 

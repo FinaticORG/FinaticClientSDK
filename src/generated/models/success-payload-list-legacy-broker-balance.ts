@@ -13,10 +13,13 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { LegacyBrokerBalance } from './legacy-broker-balance';
 
-/**
- * Pending balance
- */
-export interface Pendingbalance {
+export interface SuccessPayloadListLegacyBrokerBalance {
+    '_id'?: string;
+    'data'?: Array<LegacyBrokerBalance> | null;
+    'meta'?: { [key: string]: any; } | null;
 }
 

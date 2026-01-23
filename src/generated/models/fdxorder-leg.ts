@@ -30,6 +30,9 @@ import type { Futureunderlyingassettype } from './futureunderlyingassettype';
 import type { Limitprice } from './limitprice';
 // May contain unused imports in some cases
 // @ts-ignore
+import type { Notional } from './notional';
+// May contain unused imports in some cases
+// @ts-ignore
 import type { Quantity } from './quantity';
 // May contain unused imports in some cases
 // @ts-ignore
@@ -77,5 +80,6 @@ export interface FDXOrderLeg {
     'cryptoBaseSymbol'?: string | null;
     'cryptoQuoteSymbol'?: string | null;
     'brokerProvidedSymbol'?: string | null;
+    'notional'?: Notional | null;
 }
 

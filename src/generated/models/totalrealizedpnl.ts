@@ -15,7 +15,7 @@
 
 
 /**
- * Total realized profit/loss from closed positions
+ * Total realized PnL
  */
 export interface Totalrealizedpnl {
 }

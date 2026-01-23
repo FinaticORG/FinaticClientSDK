@@ -15,7 +15,7 @@
 
 
 /**
- * Maintenance margin requirement
+ * Maintenance margin
  */
 export interface Maintenancemargin {
 }

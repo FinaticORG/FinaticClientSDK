@@ -15,10 +15,10 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { ValidationErrorLocInner } from './validation-error-loc-inner';
+import type { LocationInner } from './location-inner';
 
 export interface ValidationError {
-    'loc': Array<ValidationErrorLocInner>;
+    'loc': Array<LocationInner>;
     'msg': string;
     'type': string;
 }

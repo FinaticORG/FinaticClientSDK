@@ -15,7 +15,7 @@
 
 
 /**
- * Current account balance
+ * Current balance
  */
 export interface Currentbalance {
 }

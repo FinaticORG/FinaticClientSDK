@@ -24,8 +24,6 @@ import { BrokerDataPositionStatusEnum } from '../models';
 
 import type { BrokerInfo } from '../models';
 import type { DisconnectCompanyFromBrokerConnectionResult } from '../models';
-import type { FDXBrokerAccount } from '../models';
-import type { FDXBrokerBalance } from '../models';
 import type { FDXBrokerOrder } from '../models';
 import type { FDXBrokerOrderEvent } from '../models';
 import type { FDXBrokerOrderFill } from '../models';
@@ -34,6 +32,8 @@ import type { FDXBrokerPosition } from '../models';
 import type { FDXBrokerPositionLot } from '../models';
 import type { FDXBrokerPositionLotFill } from '../models';
 import type { FDXBrokerTransaction } from '../models';
+import type { LegacyBrokerAccount } from '../models';
+import type { LegacyBrokerBalance } from '../models';
 import type { OrderActionResult } from '../models';
 import type { OrderRequest } from '../models';
 import type { UserBrokerConnectionWithPermissions } from '../models';
@@ -60,6 +60,42 @@ export interface FinaticResponse<T> {
 }
 
 // Phase 2C: Input type definitions (output types use FinaticResponse<DataType> pattern - no interfaces needed)
+export interface GetBalancesParams {
+  /** Filter by broker ID */
+  brokerId?: string;
+  /** Filter by connection ID */
+  connectionId?: string;
+  /** Filter by broker provided account ID or internal account UUID */
+  accountId?: string;
+  /** Filter by unit code (preferred, e.g., 'USD', 'BTC', 'ETH') */
+  unitCode?: string;
+  /** Filter by currency (for FDX fiat filtering only, e.g., 'USD', 'EUR') */
+  currency?: string;
+  /** Maximum number of balances to return */
+  limit?: number;
+  /** Number of balances to skip for pagination */
+  offset?: number;
+  /** Include balance metadata in response (excluded by default for FDX compliance) */
+  includeMetadata?: boolean;
+}
+
+export interface GetAccountsParams {
+  /** Filter by broker ID */
+  brokerId?: string;
+  /** Filter by connection ID */
+  connectionId?: string;
+  /** Filter by account type (e.g., 'margin', 'cash', 'crypto_wallet', 'live', 'sim') */
+  accountType?: BrokerDataAccountTypeEnum;
+  /** Filter by currency (e.g., 'USD', 'EUR') */
+  currency?: string;
+  /** Maximum number of accounts to return */
+  limit?: number;
+  /** Number of accounts to skip for pagination */
+  offset?: number;
+  /** Include connection metadata in response (excluded by default for FDX compliance) */
+  includeMetadata?: boolean;
+}
+
 export interface GetBrokersParams {
   // No parameters
 }
@@ -127,25 +163,6 @@ export interface GetPositionsParams {
   includeMetadata?: boolean;
 }
 
-export interface GetBalancesParams {
-  /** Filter by broker ID */
-  brokerId?: string;
-  /** Filter by connection ID */
-  connectionId?: string;
-  /** Filter by broker provided account ID or internal account UUID */
-  accountId?: string;
-  /** Filter by unit code (preferred, e.g., 'USD', 'BTC', 'ETH') */
-  unitCode?: string;
-  /** Filter by currency (for FDX fiat filtering only, e.g., 'USD', 'EUR') */
-  currency?: string;
-  /** Maximum number of balances to return */
-  limit?: number;
-  /** Number of balances to skip for pagination */
-  offset?: number;
-  /** Include balance metadata in response (excluded by default for FDX compliance) */
-  includeMetadata?: boolean;
-}
-
 export interface GetTransactionsParams {
   /** Filter by broker ID */
   brokerId?: string;
@@ -167,23 +184,6 @@ export interface GetTransactionsParams {
   limit?: number;
   /** Number of transactions to skip for pagination */
   offset?: number;
-}
-
-export interface GetAccountsParams {
-  /** Filter by broker ID */
-  brokerId?: string;
-  /** Filter by connection ID */
-  connectionId?: string;
-  /** Filter by account type (e.g., 'margin', 'cash', 'crypto_wallet', 'live', 'sim') */
-  accountType?: BrokerDataAccountTypeEnum;
-  /** Filter by currency (e.g., 'USD', 'EUR') */
-  currency?: string;
-  /** Maximum number of accounts to return */
-  limit?: number;
-  /** Number of accounts to skip for pagination */
-  offset?: number;
-  /** Include connection metadata in response (excluded by default for FDX compliance) */
-  includeMetadata?: boolean;
 }
 
 export interface GetOrderFillsParams {
@@ -326,6 +326,444 @@ export class BrokersWrapper {
   }
 
   /**
+   * Get Balances
+   * 
+   * Get current unit-based balances for all authorized broker connections.
+   *
+   * Returns array of current balances (one per unit_code per account).
+   * This endpoint is accessible from the portal and uses session-only authentication.
+   * Returns balances from connections the company has read access to.
+   * @param params.brokerId {string} (optional) Filter by broker ID
+   * @param params.connectionId {string} (optional) Filter by connection ID
+   * @param params.accountId {string} (optional) Filter by broker provided account ID or internal account UUID
+   * @param params.unitCode {string} (optional) Filter by unit code (preferred, e.g., 'USD', 'BTC', 'ETH')
+   * @param params.currency {string} (optional) Filter by currency (for FDX fiat filtering only, e.g., 'USD', 'EUR')
+   * @param params.limit {number} (optional) Maximum number of balances to return
+   * @param params.offset {number} (optional) Number of balances to skip for pagination
+   * @param params.includeMetadata {boolean} (optional) Include balance metadata in response (excluded by default for FDX compliance)
+   * @returns {Promise<FinaticResponse<PaginatedData<LegacyBrokerBalance>>>} Standard response with success/Error/Warning structure
+   * 
+   * Generated from: GET /api/beta/brokers/data/balances
+   * @methodId get_balances_api_beta_brokers_data_balances_get
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Example with no parameters
+   * const result = await finatic.getBalances({});
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getBalances({
+    brokerId: 'alpaca',
+    connectionId: '00000000-0000-0000-0000-000000000000',
+    accountId: '123456789'
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
+   * }
+   * ```
+   */
+  async getBalances(params?: GetBalancesParams): Promise<FinaticResponse<PaginatedData<LegacyBrokerBalance>>> {
+    // Use params object (with default empty object)
+    const resolvedParams: GetBalancesParams = params || {};    // Authentication check
+    if (!this.sessionId || !this.companyId) {
+      throw new Error('Session not initialized. Call startSession() first.');
+    }
+
+    // Generate request ID
+    const requestId = this._generateRequestId();
+
+    // Input validation (Phase 2B: zod)
+    if (this.sdkConfig?.validationEnabled) {
+      // TODO: Generate validation schema from endpoint parameters
+      // const validationSchema = z.object({ ... });
+      // validateParams(validationSchema, params, this.sdkConfig);
+    }
+
+    // Check cache (Phase 2B: optional caching)
+    const shouldCache = true;
+    const cache = getCache(this.sdkConfig);
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
+      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/balances', resolvedParams, this.sdkConfig);
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
+        return cached as FinaticResponse<PaginatedData<LegacyBrokerBalance>>;
+      }
+    }
+
+    // Structured logging (Phase 2B: pino)
+    this.logger.debug('Get Balances', {
+      request_id: requestId,
+      method: 'GET',
+      path: '/api/beta/brokers/data/balances',
+      params: resolvedParams,
+      action: 'getBalances'
+    });
+
+    try {
+      const response = await retryApiCall(
+        async () => {
+          const apiResponse = await this.api.getBalancesApiBetaBrokersDataBalancesGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.unitCode !== undefined ? { unitCode: resolvedParams.unitCode } : {}), ...(resolvedParams.currency !== undefined ? { currency: resolvedParams.currency } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
+        },
+        {},
+        this.sdkConfig
+      );
+      
+      // Unwrap axios response immediately - get FinaticResponse object
+      const responseData = unwrapAxiosResponse(response);
+      if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
+        throw new Error('Unexpected response shape: missing success field');
+      }
+      
+      // Convert response to plain object, removing _id fields recursively
+      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
+      const standardResponse: any = convertToPlainObject(responseData);
+      
+        // Phase 2: Wrap paginated responses with PaginatedData
+      const hasLimit = true;
+      const hasOffset = true;
+      const hasPagination = hasLimit && hasOffset;
+      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+        // PaginatedData is already imported at top of file
+        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
+        if (paginationMeta) {
+        const paginatedData = new PaginatedData(
+          standardResponse.success.data,
+          {
+            has_more: paginationMeta.has_more,
+            next_offset: paginationMeta.next_offset,
+            current_offset: paginationMeta.current_offset,
+            limit: paginationMeta.limit,
+          },
+          this.getBalances.bind(this),
+          resolvedParams,
+          this
+        );
+        standardResponse.success.data = paginatedData;
+        }
+      }
+      
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
+        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/balances', resolvedParams, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
+      }
+      
+      this.logger.debug('Get Balances completed', {
+        request_id: requestId,
+        action: 'getBalances'
+      });
+      
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
+      // Type assertion to final return type (handles both paginated and non-paginated responses)
+      return standardResponse as FinaticResponse<PaginatedData<LegacyBrokerBalance>>;
+      
+    } catch (error) {
+      try {
+        await applyErrorInterceptors(error, this.sdkConfig);
+      } catch {}
+      
+      this.logger.error('Get Balances failed', error, {
+        request_id: requestId,
+        action: 'getBalances'
+      });
+      
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        // Extract error message from FinaticResponse Error field or fallback to statusText/message
+        const errorResponseData = axiosError.response?.data;
+        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+          errorMessage = errorResponseData.error?.message || errorMessage;
+          errorCode = errorResponseData.error?.code || errorCode;
+          errorStatus = errorResponseData.error?.status || errorStatus;
+        } else {
+          errorMessage = axiosError.response?.statusText || 
+                         axiosError.message || 
+                         errorMessage;
+        }
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: FinaticResponse<PaginatedData<LegacyBrokerBalance>> = {
+        success: {
+          data: null as any,
+        },
+        error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
+    }
+
+    // TODO Phase 2D: Add complex validation schemas (unions, enums, nested)
+    // TODO Phase 2D: Add orphaned method detection
+    // TODO Phase 2D: Add advanced convenience methods
+  }
+
+  /**
+   * Get Accounts
+   * 
+   * Get accounts for all authorized broker connections.
+   *
+   * This endpoint is accessible from the portal and uses session-only authentication.
+   * Returns accounts from connections the company has read access to.
+   * @param params.brokerId {string} (optional) Filter by broker ID
+   * @param params.connectionId {string} (optional) Filter by connection ID
+   * @param params.accountType {BrokerDataAccountTypeEnum} (optional) Filter by account type (e.g., 'margin', 'cash', 'crypto_wallet', 'live', 'sim')
+   * @param params.currency {string} (optional) Filter by currency (e.g., 'USD', 'EUR')
+   * @param params.limit {number} (optional) Maximum number of accounts to return
+   * @param params.offset {number} (optional) Number of accounts to skip for pagination
+   * @param params.includeMetadata {boolean} (optional) Include connection metadata in response (excluded by default for FDX compliance)
+   * @returns {Promise<FinaticResponse<PaginatedData<LegacyBrokerAccount>>>} Standard response with success/Error/Warning structure
+   * 
+   * Generated from: GET /api/beta/brokers/data/accounts
+   * @methodId get_accounts_api_beta_brokers_data_accounts_get
+   * @category brokers
+   * @example
+   * ```typescript-client
+   * // Example with no parameters
+   * const result = await finatic.getAccounts({});
+   * 
+   * // Access the response data
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.getAccounts({
+    brokerId: 'alpaca',
+    connectionId: '00000000-0000-0000-0000-000000000000',
+    accountType: 'margin'
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
+   * }
+   * ```
+   */
+  async getAccounts(params?: GetAccountsParams): Promise<FinaticResponse<PaginatedData<LegacyBrokerAccount>>> {
+    // Use params object (with default empty object)
+    const resolvedParams: GetAccountsParams = params || {};
+    if (params?.accountType !== undefined) {
+      const coerced = coerceEnumValue(params.accountType, BrokerDataAccountTypeEnum, 'accountType');
+      if (coerced !== undefined) {
+        params.accountType = coerced;
+      }
+    }    // Authentication check
+    if (!this.sessionId || !this.companyId) {
+      throw new Error('Session not initialized. Call startSession() first.');
+    }
+
+    // Generate request ID
+    const requestId = this._generateRequestId();
+
+    // Input validation (Phase 2B: zod)
+    if (this.sdkConfig?.validationEnabled) {
+      // TODO: Generate validation schema from endpoint parameters
+      // const validationSchema = z.object({ ... });
+      // validateParams(validationSchema, params, this.sdkConfig);
+    }
+
+    // Check cache (Phase 2B: optional caching)
+    const shouldCache = true;
+    const cache = getCache(this.sdkConfig);
+    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
+      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/accounts', resolvedParams, this.sdkConfig);
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
+        return cached as FinaticResponse<PaginatedData<LegacyBrokerAccount>>;
+      }
+    }
+
+    // Structured logging (Phase 2B: pino)
+    this.logger.debug('Get Accounts', {
+      request_id: requestId,
+      method: 'GET',
+      path: '/api/beta/brokers/data/accounts',
+      params: resolvedParams,
+      action: 'getAccounts'
+    });
+
+    try {
+      const response = await retryApiCall(
+        async () => {
+          const apiResponse = await this.api.getAccountsApiBetaBrokersDataAccountsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountType !== undefined ? { accountType: resolvedParams.accountType } : {}), ...(resolvedParams.currency !== undefined ? { currency: resolvedParams.currency } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
+        },
+        {},
+        this.sdkConfig
+      );
+      
+      // Unwrap axios response immediately - get FinaticResponse object
+      const responseData = unwrapAxiosResponse(response);
+      if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
+        throw new Error('Unexpected response shape: missing success field');
+      }
+      
+      // Convert response to plain object, removing _id fields recursively
+      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
+      const standardResponse: any = convertToPlainObject(responseData);
+      
+        // Phase 2: Wrap paginated responses with PaginatedData
+      const hasLimit = true;
+      const hasOffset = true;
+      const hasPagination = hasLimit && hasOffset;
+      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+        // PaginatedData is already imported at top of file
+        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
+        if (paginationMeta) {
+        const paginatedData = new PaginatedData(
+          standardResponse.success.data,
+          {
+            has_more: paginationMeta.has_more,
+            next_offset: paginationMeta.next_offset,
+            current_offset: paginationMeta.current_offset,
+            limit: paginationMeta.limit,
+          },
+          this.getAccounts.bind(this),
+          resolvedParams,
+          this
+        );
+        standardResponse.success.data = paginatedData;
+        }
+      }
+      
+      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
+        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/accounts', resolvedParams, this.sdkConfig);
+        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
+      }
+      
+      this.logger.debug('Get Accounts completed', {
+        request_id: requestId,
+        action: 'getAccounts'
+      });
+      
+      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
+      // Type assertion to final return type (handles both paginated and non-paginated responses)
+      return standardResponse as FinaticResponse<PaginatedData<LegacyBrokerAccount>>;
+      
+    } catch (error) {
+      try {
+        await applyErrorInterceptors(error, this.sdkConfig);
+      } catch {}
+      
+      this.logger.error('Get Accounts failed', error, {
+        request_id: requestId,
+        action: 'getAccounts'
+      });
+      
+      // Phase 2C: Extract error details from Axios errors or generic errors
+      let errorMessage = error instanceof Error ? error.message : String(error);
+      let errorCode = 'UNKNOWN_ERROR';
+      let errorStatus: number | undefined;
+      let errorDetails: Record<string, any> = {};
+      
+      // Handle Axios errors (from OpenAPI generator)
+      if ((error as any)?.isAxiosError || (error as any)?.response) {
+        const axiosError = error as any;
+        errorStatus = axiosError.response?.status;
+        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
+        // Extract error message from FinaticResponse Error field or fallback to statusText/message
+        const errorResponseData = axiosError.response?.data;
+        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+          errorMessage = errorResponseData.error?.message || errorMessage;
+          errorCode = errorResponseData.error?.code || errorCode;
+          errorStatus = errorResponseData.error?.status || errorStatus;
+        } else {
+          errorMessage = axiosError.response?.statusText || 
+                         axiosError.message || 
+                         errorMessage;
+        }
+        errorDetails = {
+          status: errorStatus,
+          statusText: axiosError.response?.statusText,
+          responseData: axiosError.response?.data,
+          requestUrl: axiosError.config?.url,
+          requestMethod: axiosError.config?.method,
+        };
+      } else if (error instanceof Error) {
+        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
+        errorDetails = {
+          stack: error.stack,
+          name: error.name,
+        };
+      } else {
+        errorDetails = { error };
+      }
+      
+      // Phase 2C: Return standard error response structure
+      const errorResponse: FinaticResponse<PaginatedData<LegacyBrokerAccount>> = {
+        success: {
+          data: null as any,
+        },
+        error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
+      
+      return errorResponse;
+    }
+
+    // TODO Phase 2D: Add complex validation schemas (unions, enums, nested)
+    // TODO Phase 2D: Add orphaned method detection
+    // TODO Phase 2D: Add advanced convenience methods
+  }
+
+  /**
    * Get Brokers
    * 
    * Get all available brokers.
@@ -340,8 +778,8 @@ export class BrokersWrapper {
    * @param params No parameters required for this method
    * @returns {Promise<FinaticResponse<BrokerInfo[]>>} Standard response with success/Error/Warning structure
    * 
-   * Generated from: GET /api/v1/brokers/
-   * @methodId get_brokers_api_v1_brokers__get
+   * Generated from: GET /api/beta/brokers/
+   * @methodId get_brokers_api_beta_brokers__get
    * @category brokers
    * @example
    * ```typescript-client
@@ -370,7 +808,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -382,7 +820,7 @@ export class BrokersWrapper {
     this.logger.debug('Get Brokers', {
       request_id: requestId,
       method: 'GET',
-      path: '/api/v1/brokers/',
+      path: '/api/beta/brokers/',
       params: resolvedParams,
       action: 'getBrokers'
     });
@@ -390,7 +828,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getBrokersApiV1BrokersGet({ headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getBrokersApiBetaBrokersGet({ headers: { 'x-request-id': requestId } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -432,7 +870,7 @@ export class BrokersWrapper {
       }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -526,8 +964,8 @@ export class BrokersWrapper {
    * @param params No parameters required for this method
    * @returns {Promise<FinaticResponse<UserBrokerConnectionWithPermissions[]>>} Standard response with success/Error/Warning structure
    * 
-   * Generated from: GET /api/v1/brokers/connections
-   * @methodId list_broker_connections_api_v1_brokers_connections_get
+   * Generated from: GET /api/beta/brokers/connections
+   * @methodId list_broker_connections_api_beta_brokers_connections_get
    * @category brokers
    * @example
    * ```typescript-client
@@ -561,7 +999,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/connections', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/connections', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -573,7 +1011,7 @@ export class BrokersWrapper {
     this.logger.debug('List Broker Connections', {
       request_id: requestId,
       method: 'GET',
-      path: '/api/v1/brokers/connections',
+      path: '/api/beta/brokers/connections',
       params: resolvedParams,
       action: 'getBrokerConnections'
     });
@@ -581,7 +1019,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.listBrokerConnectionsApiV1BrokersConnectionsGet({ headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.listBrokerConnectionsApiBetaBrokersConnectionsGet({ headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -623,7 +1061,7 @@ export class BrokersWrapper {
       }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/connections', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/connections', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -716,8 +1154,8 @@ export class BrokersWrapper {
    * @param params.connectionId {string} Connection ID
    * @returns {Promise<FinaticResponse<DisconnectCompanyFromBrokerConnectionResult>>} Standard response with success/Error/Warning structure
    * 
-   * Generated from: DELETE /api/v1/brokers/disconnect-company/{connection_id}
-   * @methodId disconnect_company_from_broker_api_v1_brokers_disconnect_company__connection_id__delete
+   * Generated from: DELETE /api/beta/brokers/disconnect-company/{connection_id}
+   * @methodId disconnect_company_from_broker_api_beta_brokers_disconnect_company__connection_id__delete
    * @category brokers
    * @example
    * ```typescript-client
@@ -755,7 +1193,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/disconnect-company/{connection_id}', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey('DELETE', '/api/beta/brokers/disconnect-company/{connection_id}', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -767,7 +1205,7 @@ export class BrokersWrapper {
     this.logger.debug('Disconnect Company From Broker', {
       request_id: requestId,
       method: 'DELETE',
-      path: '/api/v1/brokers/disconnect-company/{connection_id}',
+      path: '/api/beta/brokers/disconnect-company/{connection_id}',
       params: resolvedParams,
       action: 'disconnectCompanyFromBroker'
     });
@@ -775,7 +1213,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete({ connectionId: resolvedParams.connectionId ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.disconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDelete({ connectionId: resolvedParams.connectionId ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -817,7 +1255,7 @@ export class BrokersWrapper {
       }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/disconnect-company/{connection_id}', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey('DELETE', '/api/beta/brokers/disconnect-company/{connection_id}', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -921,8 +1359,8 @@ export class BrokersWrapper {
    * @param params.includeMetadata {boolean} (optional) Include order metadata in response (excluded by default for FDX compliance)
    * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerOrder>>>} Standard response with success/Error/Warning structure
    * 
-   * Generated from: GET /api/v1/brokers/data/orders
-   * @methodId get_orders_api_v1_brokers_data_orders_get
+   * Generated from: GET /api/beta/brokers/data/orders
+   * @methodId get_orders_api_beta_brokers_data_orders_get
    * @category brokers
    * @example
    * ```typescript-client
@@ -987,7 +1425,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -999,7 +1437,7 @@ export class BrokersWrapper {
     this.logger.debug('Get Orders', {
       request_id: requestId,
       method: 'GET',
-      path: '/api/v1/brokers/data/orders',
+      path: '/api/beta/brokers/data/orders',
       params: resolvedParams,
       action: 'getOrders'
     });
@@ -1007,7 +1445,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrdersApiV1BrokersDataOrdersGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.symbol !== undefined ? { symbol: resolvedParams.symbol } : {}), ...(resolvedParams.orderStatus !== undefined ? { orderStatus: resolvedParams.orderStatus } : {}), ...(resolvedParams.side !== undefined ? { side: resolvedParams.side } : {}), ...(resolvedParams.assetType !== undefined ? { assetType: resolvedParams.assetType } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.createdAfter !== undefined ? { createdAfter: resolvedParams.createdAfter } : {}), ...(resolvedParams.createdBefore !== undefined ? { createdBefore: resolvedParams.createdBefore } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getOrdersApiBetaBrokersDataOrdersGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.symbol !== undefined ? { symbol: resolvedParams.symbol } : {}), ...(resolvedParams.orderStatus !== undefined ? { orderStatus: resolvedParams.orderStatus } : {}), ...(resolvedParams.side !== undefined ? { side: resolvedParams.side } : {}), ...(resolvedParams.assetType !== undefined ? { assetType: resolvedParams.assetType } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.createdAfter !== undefined ? { createdAfter: resolvedParams.createdAfter } : {}), ...(resolvedParams.createdBefore !== undefined ? { createdBefore: resolvedParams.createdBefore } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1049,7 +1487,7 @@ export class BrokersWrapper {
       }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -1153,8 +1591,8 @@ export class BrokersWrapper {
    * @param params.includeMetadata {boolean} (optional) Include position metadata in response (excluded by default for FDX compliance)
    * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerPosition>>>} Standard response with success/Error/Warning structure
    * 
-   * Generated from: GET /api/v1/brokers/data/positions
-   * @methodId get_positions_api_v1_brokers_data_positions_get
+   * Generated from: GET /api/beta/brokers/data/positions
+   * @methodId get_positions_api_beta_brokers_data_positions_get
    * @category brokers
    * @example
    * ```typescript-client
@@ -1225,7 +1663,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/positions', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -1237,7 +1675,7 @@ export class BrokersWrapper {
     this.logger.debug('Get Positions', {
       request_id: requestId,
       method: 'GET',
-      path: '/api/v1/brokers/data/positions',
+      path: '/api/beta/brokers/data/positions',
       params: resolvedParams,
       action: 'getPositions'
     });
@@ -1245,7 +1683,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getPositionsApiV1BrokersDataPositionsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.symbol !== undefined ? { symbol: resolvedParams.symbol } : {}), ...(resolvedParams.side !== undefined ? { side: resolvedParams.side } : {}), ...(resolvedParams.assetType !== undefined ? { assetType: resolvedParams.assetType } : {}), ...(resolvedParams.positionStatus !== undefined ? { positionStatus: resolvedParams.positionStatus } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.updatedAfter !== undefined ? { updatedAfter: resolvedParams.updatedAfter } : {}), ...(resolvedParams.updatedBefore !== undefined ? { updatedBefore: resolvedParams.updatedBefore } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getPositionsApiBetaBrokersDataPositionsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.symbol !== undefined ? { symbol: resolvedParams.symbol } : {}), ...(resolvedParams.side !== undefined ? { side: resolvedParams.side } : {}), ...(resolvedParams.assetType !== undefined ? { assetType: resolvedParams.assetType } : {}), ...(resolvedParams.positionStatus !== undefined ? { positionStatus: resolvedParams.positionStatus } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.updatedAfter !== undefined ? { updatedAfter: resolvedParams.updatedAfter } : {}), ...(resolvedParams.updatedBefore !== undefined ? { updatedBefore: resolvedParams.updatedBefore } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1287,7 +1725,7 @@ export class BrokersWrapper {
       }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/positions', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -1371,223 +1809,6 @@ export class BrokersWrapper {
   }
 
   /**
-   * Get Balances
-   * 
-   * Get current unit-based balances for all authorized broker connections.
-   *
-   * Returns array of current balances (one per unit_code per account).
-   * This endpoint is accessible from the portal and uses session-only authentication.
-   * Returns balances from connections the company has read access to.
-   * @param params.brokerId {string} (optional) Filter by broker ID
-   * @param params.connectionId {string} (optional) Filter by connection ID
-   * @param params.accountId {string} (optional) Filter by broker provided account ID or internal account UUID
-   * @param params.unitCode {string} (optional) Filter by unit code (preferred, e.g., 'USD', 'BTC', 'ETH')
-   * @param params.currency {string} (optional) Filter by currency (for FDX fiat filtering only, e.g., 'USD', 'EUR')
-   * @param params.limit {number} (optional) Maximum number of balances to return
-   * @param params.offset {number} (optional) Number of balances to skip for pagination
-   * @param params.includeMetadata {boolean} (optional) Include balance metadata in response (excluded by default for FDX compliance)
-   * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerBalance>>>} Standard response with success/Error/Warning structure
-   * 
-   * Generated from: GET /api/v1/brokers/data/balances
-   * @methodId get_balances_api_v1_brokers_data_balances_get
-   * @category brokers
-   * @example
-   * ```typescript-client
-   * // Example with no parameters
-   * const result = await finatic.getBalances({});
-   * 
-   * // Access the response data
-   * if (result.success) {
-   *   console.log('Data:', result.success.data);
-   * }
-   * ```
-   * @example
-   * ```typescript-client
-   * // Full example with optional parameters
-   * const result = await finatic.getBalances({
-    brokerId: 'alpaca',
-    connectionId: '00000000-0000-0000-0000-000000000000',
-    accountId: '123456789'
-   * });
-   * 
-   * // Handle response with warnings
-   * if (result.success) {
-   *   console.log('Data:', result.success.data);
-   *   if (result.warning && result.warning.length > 0) {
-   *     console.warn('Warnings:', result.warning);
-   *   }
-   * } else if (result.error) {
-   *   console.error('Error:', result.error.message, result.error.code);
-   * }
-   * ```
-   */
-  async getBalances(params?: GetBalancesParams): Promise<FinaticResponse<PaginatedData<FDXBrokerBalance>>> {
-    // Use params object (with default empty object)
-    const resolvedParams: GetBalancesParams = params || {};    // Authentication check
-    if (!this.sessionId || !this.companyId) {
-      throw new Error('Session not initialized. Call startSession() first.');
-    }
-
-    // Generate request ID
-    const requestId = this._generateRequestId();
-
-    // Input validation (Phase 2B: zod)
-    if (this.sdkConfig?.validationEnabled) {
-      // TODO: Generate validation schema from endpoint parameters
-      // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, params, this.sdkConfig);
-    }
-
-    // Check cache (Phase 2B: optional caching)
-    const shouldCache = true;
-    const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/balances', resolvedParams, this.sdkConfig);
-      const cached = cache.get(cacheKey);
-      if (cached) {
-        this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<PaginatedData<FDXBrokerBalance>>;
-      }
-    }
-
-    // Structured logging (Phase 2B: pino)
-    this.logger.debug('Get Balances', {
-      request_id: requestId,
-      method: 'GET',
-      path: '/api/v1/brokers/data/balances',
-      params: resolvedParams,
-      action: 'getBalances'
-    });
-
-    try {
-      const response = await retryApiCall(
-        async () => {
-          const apiResponse = await this.api.getBalancesApiV1BrokersDataBalancesGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.unitCode !== undefined ? { unitCode: resolvedParams.unitCode } : {}), ...(resolvedParams.currency !== undefined ? { currency: resolvedParams.currency } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
-          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
-        },
-        {},
-        this.sdkConfig
-      );
-      
-      // Unwrap axios response immediately - get FinaticResponse object
-      const responseData = unwrapAxiosResponse(response);
-      if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
-        throw new Error('Unexpected response shape: missing success field');
-      }
-      
-      // Convert response to plain object, removing _id fields recursively
-      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
-      const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
-      const hasLimit = true;
-      const hasOffset = true;
-      const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
-        // PaginatedData is already imported at top of file
-        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
-        if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getBalances.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
-        }
-      }
-      
-      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/balances', resolvedParams, this.sdkConfig);
-        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
-      }
-      
-      this.logger.debug('Get Balances completed', {
-        request_id: requestId,
-        action: 'getBalances'
-      });
-      
-      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
-      // Type assertion to final return type (handles both paginated and non-paginated responses)
-      return standardResponse as FinaticResponse<PaginatedData<FDXBrokerBalance>>;
-      
-    } catch (error) {
-      try {
-        await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
-      
-      this.logger.error('Get Balances failed', error, {
-        request_id: requestId,
-        action: 'getBalances'
-      });
-      
-      // Phase 2C: Extract error details from Axios errors or generic errors
-      let errorMessage = error instanceof Error ? error.message : String(error);
-      let errorCode = 'UNKNOWN_ERROR';
-      let errorStatus: number | undefined;
-      let errorDetails: Record<string, any> = {};
-      
-      // Handle Axios errors (from OpenAPI generator)
-      if ((error as any)?.isAxiosError || (error as any)?.response) {
-        const axiosError = error as any;
-        errorStatus = axiosError.response?.status;
-        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
-        // Extract error message from FinaticResponse Error field or fallback to statusText/message
-        const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
-          errorMessage = errorResponseData.error?.message || errorMessage;
-          errorCode = errorResponseData.error?.code || errorCode;
-          errorStatus = errorResponseData.error?.status || errorStatus;
-        } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
-        }
-        errorDetails = {
-          status: errorStatus,
-          statusText: axiosError.response?.statusText,
-          responseData: axiosError.response?.data,
-          requestUrl: axiosError.config?.url,
-          requestMethod: axiosError.config?.method,
-        };
-      } else if (error instanceof Error) {
-        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
-        errorDetails = {
-          stack: error.stack,
-          name: error.name,
-        };
-      } else {
-        errorDetails = { error };
-      }
-      
-      // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<PaginatedData<FDXBrokerBalance>> = {
-        success: {
-          data: null as any,
-        },
-        error: {
-          message: errorMessage,
-          code: errorCode,
-          status: errorStatus,
-          details: errorDetails,
-        },
-      };
-      
-      return errorResponse;
-    }
-
-    // TODO Phase 2D: Add complex validation schemas (unions, enums, nested)
-    // TODO Phase 2D: Add orphaned method detection
-    // TODO Phase 2D: Add advanced convenience methods
-  }
-
-  /**
    * Get Transactions
    * 
    * Get transactions for all authorized broker connections.
@@ -1606,8 +1827,8 @@ export class BrokersWrapper {
    * @param params.offset {number} (optional) Number of transactions to skip for pagination
    * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerTransaction>>>} Standard response with success/Error/Warning structure
    * 
-   * Generated from: GET /api/v1/brokers/data/transactions
-   * @methodId get_transactions_api_v1_brokers_data_transactions_get
+   * Generated from: GET /api/beta/brokers/data/transactions
+   * @methodId get_transactions_api_beta_brokers_data_transactions_get
    * @category brokers
    * @example
    * ```typescript-client
@@ -1660,7 +1881,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/transactions', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/transactions', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -1672,7 +1893,7 @@ export class BrokersWrapper {
     this.logger.debug('Get Transactions', {
       request_id: requestId,
       method: 'GET',
-      path: '/api/v1/brokers/data/transactions',
+      path: '/api/beta/brokers/data/transactions',
       params: resolvedParams,
       action: 'getTransactions'
     });
@@ -1680,7 +1901,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getTransactionsApiV1BrokersDataTransactionsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.unitCode !== undefined ? { unitCode: resolvedParams.unitCode } : {}), ...(resolvedParams.currency !== undefined ? { currency: resolvedParams.currency } : {}), ...(resolvedParams.transactionType !== undefined ? { transactionType: resolvedParams.transactionType } : {}), ...(resolvedParams.startDate !== undefined ? { startDate: resolvedParams.startDate } : {}), ...(resolvedParams.endDate !== undefined ? { endDate: resolvedParams.endDate } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getTransactionsApiBetaBrokersDataTransactionsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.unitCode !== undefined ? { unitCode: resolvedParams.unitCode } : {}), ...(resolvedParams.currency !== undefined ? { currency: resolvedParams.currency } : {}), ...(resolvedParams.transactionType !== undefined ? { transactionType: resolvedParams.transactionType } : {}), ...(resolvedParams.startDate !== undefined ? { startDate: resolvedParams.startDate } : {}), ...(resolvedParams.endDate !== undefined ? { endDate: resolvedParams.endDate } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -1722,7 +1943,7 @@ export class BrokersWrapper {
       }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/transactions', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/transactions', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -1806,227 +2027,6 @@ export class BrokersWrapper {
   }
 
   /**
-   * Get Accounts
-   * 
-   * Get accounts for all authorized broker connections.
-   *
-   * This endpoint is accessible from the portal and uses session-only authentication.
-   * Returns accounts from connections the company has read access to.
-   * @param params.brokerId {string} (optional) Filter by broker ID
-   * @param params.connectionId {string} (optional) Filter by connection ID
-   * @param params.accountType {BrokerDataAccountTypeEnum} (optional) Filter by account type (e.g., 'margin', 'cash', 'crypto_wallet', 'live', 'sim')
-   * @param params.currency {string} (optional) Filter by currency (e.g., 'USD', 'EUR')
-   * @param params.limit {number} (optional) Maximum number of accounts to return
-   * @param params.offset {number} (optional) Number of accounts to skip for pagination
-   * @param params.includeMetadata {boolean} (optional) Include connection metadata in response (excluded by default for FDX compliance)
-   * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerAccount>>>} Standard response with success/Error/Warning structure
-   * 
-   * Generated from: GET /api/v1/brokers/data/accounts
-   * @methodId get_accounts_api_v1_brokers_data_accounts_get
-   * @category brokers
-   * @example
-   * ```typescript-client
-   * // Example with no parameters
-   * const result = await finatic.getAccounts({});
-   * 
-   * // Access the response data
-   * if (result.success) {
-   *   console.log('Data:', result.success.data);
-   * }
-   * ```
-   * @example
-   * ```typescript-client
-   * // Full example with optional parameters
-   * const result = await finatic.getAccounts({
-    brokerId: 'alpaca',
-    connectionId: '00000000-0000-0000-0000-000000000000',
-    accountType: 'margin'
-   * });
-   * 
-   * // Handle response with warnings
-   * if (result.success) {
-   *   console.log('Data:', result.success.data);
-   *   if (result.warning && result.warning.length > 0) {
-   *     console.warn('Warnings:', result.warning);
-   *   }
-   * } else if (result.error) {
-   *   console.error('Error:', result.error.message, result.error.code);
-   * }
-   * ```
-   */
-  async getAccounts(params?: GetAccountsParams): Promise<FinaticResponse<PaginatedData<FDXBrokerAccount>>> {
-    // Use params object (with default empty object)
-    const resolvedParams: GetAccountsParams = params || {};
-    if (params?.accountType !== undefined) {
-      const coerced = coerceEnumValue(params.accountType, BrokerDataAccountTypeEnum, 'accountType');
-      if (coerced !== undefined) {
-        params.accountType = coerced;
-      }
-    }    // Authentication check
-    if (!this.sessionId || !this.companyId) {
-      throw new Error('Session not initialized. Call startSession() first.');
-    }
-
-    // Generate request ID
-    const requestId = this._generateRequestId();
-
-    // Input validation (Phase 2B: zod)
-    if (this.sdkConfig?.validationEnabled) {
-      // TODO: Generate validation schema from endpoint parameters
-      // const validationSchema = z.object({ ... });
-      // validateParams(validationSchema, params, this.sdkConfig);
-    }
-
-    // Check cache (Phase 2B: optional caching)
-    const shouldCache = true;
-    const cache = getCache(this.sdkConfig);
-    if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/accounts', resolvedParams, this.sdkConfig);
-      const cached = cache.get(cacheKey);
-      if (cached) {
-        this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<PaginatedData<FDXBrokerAccount>>;
-      }
-    }
-
-    // Structured logging (Phase 2B: pino)
-    this.logger.debug('Get Accounts', {
-      request_id: requestId,
-      method: 'GET',
-      path: '/api/v1/brokers/data/accounts',
-      params: resolvedParams,
-      action: 'getAccounts'
-    });
-
-    try {
-      const response = await retryApiCall(
-        async () => {
-          const apiResponse = await this.api.getAccountsApiV1BrokersDataAccountsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountType !== undefined ? { accountType: resolvedParams.accountType } : {}), ...(resolvedParams.currency !== undefined ? { currency: resolvedParams.currency } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
-          return await applyResponseInterceptors(apiResponse, this.sdkConfig);
-        },
-        {},
-        this.sdkConfig
-      );
-      
-      // Unwrap axios response immediately - get FinaticResponse object
-      const responseData = unwrapAxiosResponse(response);
-      if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
-        throw new Error('Unexpected response shape: missing success field');
-      }
-      
-      // Convert response to plain object, removing _id fields recursively
-      // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
-      const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
-      const hasLimit = true;
-      const hasOffset = true;
-      const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
-        // PaginatedData is already imported at top of file
-        const paginationMeta = (standardResponse.success.meta as any)?.pagination;
-        if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getAccounts.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
-        }
-      }
-      
-      if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/accounts', resolvedParams, this.sdkConfig);
-        cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
-      }
-      
-      this.logger.debug('Get Accounts completed', {
-        request_id: requestId,
-        action: 'getAccounts'
-      });
-      
-      // Phase 2C: Return standard response structure (plain objects with _id fields removed)
-      // Type assertion to final return type (handles both paginated and non-paginated responses)
-      return standardResponse as FinaticResponse<PaginatedData<FDXBrokerAccount>>;
-      
-    } catch (error) {
-      try {
-        await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
-      
-      this.logger.error('Get Accounts failed', error, {
-        request_id: requestId,
-        action: 'getAccounts'
-      });
-      
-      // Phase 2C: Extract error details from Axios errors or generic errors
-      let errorMessage = error instanceof Error ? error.message : String(error);
-      let errorCode = 'UNKNOWN_ERROR';
-      let errorStatus: number | undefined;
-      let errorDetails: Record<string, any> = {};
-      
-      // Handle Axios errors (from OpenAPI generator)
-      if ((error as any)?.isAxiosError || (error as any)?.response) {
-        const axiosError = error as any;
-        errorStatus = axiosError.response?.status;
-        errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
-        // Extract error message from FinaticResponse Error field or fallback to statusText/message
-        const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
-          errorMessage = errorResponseData.error?.message || errorMessage;
-          errorCode = errorResponseData.error?.code || errorCode;
-          errorStatus = errorResponseData.error?.status || errorStatus;
-        } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
-        }
-        errorDetails = {
-          status: errorStatus,
-          statusText: axiosError.response?.statusText,
-          responseData: axiosError.response?.data,
-          requestUrl: axiosError.config?.url,
-          requestMethod: axiosError.config?.method,
-        };
-      } else if (error instanceof Error) {
-        errorCode = (error as any)?.code || 'UNKNOWN_ERROR';
-        errorDetails = {
-          stack: error.stack,
-          name: error.name,
-        };
-      } else {
-        errorDetails = { error };
-      }
-      
-      // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<PaginatedData<FDXBrokerAccount>> = {
-        success: {
-          data: null as any,
-        },
-        error: {
-          message: errorMessage,
-          code: errorCode,
-          status: errorStatus,
-          details: errorDetails,
-        },
-      };
-      
-      return errorResponse;
-    }
-
-    // TODO Phase 2D: Add complex validation schemas (unions, enums, nested)
-    // TODO Phase 2D: Add orphaned method detection
-    // TODO Phase 2D: Add advanced convenience methods
-  }
-
-  /**
    * Get Order Fills
    * 
    * Get order fills for a specific order.
@@ -2039,8 +2039,8 @@ export class BrokersWrapper {
    * @param params.includeMetadata {boolean} (optional) Include fill metadata in response (excluded by default for FDX compliance)
    * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerOrderFill>>>} Standard response with success/Error/Warning structure
    * 
-   * Generated from: GET /api/v1/brokers/data/orders/{order_id}/fills
-   * @methodId get_order_fills_api_v1_brokers_data_orders__order_id__fills_get
+   * Generated from: GET /api/beta/brokers/data/orders/{order_id}/fills
+   * @methodId get_order_fills_api_beta_brokers_data_orders__order_id__fills_get
    * @category brokers
    * @example
    * ```typescript-client
@@ -2098,7 +2098,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/fills', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders/{order_id}/fills', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -2110,7 +2110,7 @@ export class BrokersWrapper {
     this.logger.debug('Get Order Fills', {
       request_id: requestId,
       method: 'GET',
-      path: '/api/v1/brokers/data/orders/{order_id}/fills',
+      path: '/api/beta/brokers/data/orders/{order_id}/fills',
       params: resolvedParams,
       action: 'getOrderFills'
     });
@@ -2118,7 +2118,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet({ orderId: resolvedParams.orderId ?? null, ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGet({ orderId: resolvedParams.orderId ?? null, ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -2160,7 +2160,7 @@ export class BrokersWrapper {
       }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/fills', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders/{order_id}/fills', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -2256,8 +2256,8 @@ export class BrokersWrapper {
    * @param params.includeMetadata {boolean} (optional) Include event metadata in response (excluded by default for FDX compliance)
    * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerOrderEvent>>>} Standard response with success/Error/Warning structure
    * 
-   * Generated from: GET /api/v1/brokers/data/orders/{order_id}/events
-   * @methodId get_order_events_api_v1_brokers_data_orders__order_id__events_get
+   * Generated from: GET /api/beta/brokers/data/orders/{order_id}/events
+   * @methodId get_order_events_api_beta_brokers_data_orders__order_id__events_get
    * @category brokers
    * @example
    * ```typescript-client
@@ -2315,7 +2315,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/events', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders/{order_id}/events', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -2327,7 +2327,7 @@ export class BrokersWrapper {
     this.logger.debug('Get Order Events', {
       request_id: requestId,
       method: 'GET',
-      path: '/api/v1/brokers/data/orders/{order_id}/events',
+      path: '/api/beta/brokers/data/orders/{order_id}/events',
       params: resolvedParams,
       action: 'getOrderEvents'
     });
@@ -2335,7 +2335,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet({ orderId: resolvedParams.orderId ?? null, ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGet({ orderId: resolvedParams.orderId ?? null, ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -2377,7 +2377,7 @@ export class BrokersWrapper {
       }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/{order_id}/events', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders/{order_id}/events', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -2475,8 +2475,8 @@ export class BrokersWrapper {
    * @param params.includeMetadata {boolean} (optional) Include group metadata in response (excluded by default for FDX compliance)
    * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerOrderGroup>>>} Standard response with success/Error/Warning structure
    * 
-   * Generated from: GET /api/v1/brokers/data/orders/groups
-   * @methodId get_order_groups_api_v1_brokers_data_orders_groups_get
+   * Generated from: GET /api/beta/brokers/data/orders/groups
+   * @methodId get_order_groups_api_beta_brokers_data_orders_groups_get
    * @category brokers
    * @example
    * ```typescript-client
@@ -2529,7 +2529,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/groups', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders/groups', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -2541,7 +2541,7 @@ export class BrokersWrapper {
     this.logger.debug('Get Order Groups', {
       request_id: requestId,
       method: 'GET',
-      path: '/api/v1/brokers/data/orders/groups',
+      path: '/api/beta/brokers/data/orders/groups',
       params: resolvedParams,
       action: 'getOrderGroups'
     });
@@ -2549,7 +2549,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrderGroupsApiV1BrokersDataOrdersGroupsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.createdAfter !== undefined ? { createdAfter: resolvedParams.createdAfter } : {}), ...(resolvedParams.createdBefore !== undefined ? { createdBefore: resolvedParams.createdBefore } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getOrderGroupsApiBetaBrokersDataOrdersGroupsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.createdAfter !== undefined ? { createdAfter: resolvedParams.createdAfter } : {}), ...(resolvedParams.createdBefore !== undefined ? { createdBefore: resolvedParams.createdBefore } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -2591,7 +2591,7 @@ export class BrokersWrapper {
       }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/orders/groups', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders/groups', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -2690,8 +2690,8 @@ export class BrokersWrapper {
    * @param params.offset {number} (optional) Number of position lots to skip for pagination
    * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerPositionLot>>>} Standard response with success/Error/Warning structure
    * 
-   * Generated from: GET /api/v1/brokers/data/positions/lots
-   * @methodId get_position_lots_api_v1_brokers_data_positions_lots_get
+   * Generated from: GET /api/beta/brokers/data/positions/lots
+   * @methodId get_position_lots_api_beta_brokers_data_positions_lots_get
    * @category brokers
    * @example
    * ```typescript-client
@@ -2744,7 +2744,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/positions/lots', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -2756,7 +2756,7 @@ export class BrokersWrapper {
     this.logger.debug('Get Position Lots', {
       request_id: requestId,
       method: 'GET',
-      path: '/api/v1/brokers/data/positions/lots',
+      path: '/api/beta/brokers/data/positions/lots',
       params: resolvedParams,
       action: 'getPositionLots'
     });
@@ -2764,7 +2764,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getPositionLotsApiV1BrokersDataPositionsLotsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.symbol !== undefined ? { symbol: resolvedParams.symbol } : {}), ...(resolvedParams.positionId !== undefined ? { positionId: resolvedParams.positionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getPositionLotsApiBetaBrokersDataPositionsLotsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.symbol !== undefined ? { symbol: resolvedParams.symbol } : {}), ...(resolvedParams.positionId !== undefined ? { positionId: resolvedParams.positionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -2806,7 +2806,7 @@ export class BrokersWrapper {
       }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/positions/lots', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -2901,8 +2901,8 @@ export class BrokersWrapper {
    * @param params.offset {number} (optional) Number of fills to skip for pagination
    * @returns {Promise<FinaticResponse<PaginatedData<FDXBrokerPositionLotFill>>>} Standard response with success/Error/Warning structure
    * 
-   * Generated from: GET /api/v1/brokers/data/positions/lots/{lot_id}/fills
-   * @methodId get_position_lot_fills_api_v1_brokers_data_positions_lots__lot_id__fills_get
+   * Generated from: GET /api/beta/brokers/data/positions/lots/{lot_id}/fills
+   * @methodId get_position_lot_fills_api_beta_brokers_data_positions_lots__lot_id__fills_get
    * @category brokers
    * @example
    * ```typescript-client
@@ -2960,7 +2960,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots/{lot_id}/fills', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/positions/lots/{lot_id}/fills', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -2972,7 +2972,7 @@ export class BrokersWrapper {
     this.logger.debug('Get Position Lot Fills', {
       request_id: requestId,
       method: 'GET',
-      path: '/api/v1/brokers/data/positions/lots/{lot_id}/fills',
+      path: '/api/beta/brokers/data/positions/lots/{lot_id}/fills',
       params: resolvedParams,
       action: 'getPositionLotFills'
     });
@@ -2980,7 +2980,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet({ lotId: resolvedParams.lotId ?? null, ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGet({ lotId: resolvedParams.lotId ?? null, ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -3022,7 +3022,7 @@ export class BrokersWrapper {
       }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/brokers/data/positions/lots/{lot_id}/fills', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/positions/lots/{lot_id}/fills', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -3166,8 +3166,8 @@ export class BrokersWrapper {
    * @param params.connectionId {string} (optional) Temporary bypass for testing: specify connection ID directly
    * @returns {Promise<FinaticResponse<OrderActionResult>>} Standard response with success/Error/Warning structure
    * 
-   * Generated from: POST /api/v1/brokers/orders
-   * @methodId place_order_api_v1_brokers_orders_post
+   * Generated from: POST /api/beta/brokers/orders
+   * @methodId place_order_api_beta_brokers_orders_post
    * @category brokers
    * @example
    * ```typescript-client
@@ -3218,7 +3218,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('POST', '/api/v1/brokers/orders', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey('POST', '/api/beta/brokers/orders', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -3230,7 +3230,7 @@ export class BrokersWrapper {
     this.logger.debug('Place Order', {
       request_id: requestId,
       method: 'POST',
-      path: '/api/v1/brokers/orders',
+      path: '/api/beta/brokers/orders',
       params: resolvedParams,
       action: 'placeOrder'
     });
@@ -3238,7 +3238,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.placeOrderApiV1BrokersOrdersPost({ ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), orderRequest: resolvedParams.body ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.placeOrderApiBetaBrokersOrdersPost({ ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), orderRequest: resolvedParams.body ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -3280,7 +3280,7 @@ export class BrokersWrapper {
       }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('POST', '/api/v1/brokers/orders', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey('POST', '/api/beta/brokers/orders', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -3376,8 +3376,8 @@ export class BrokersWrapper {
    * @param params.orderId {string} Order ID
    * @returns {Promise<FinaticResponse<OrderActionResult>>} Standard response with success/Error/Warning structure
    * 
-   * Generated from: DELETE /api/v1/brokers/orders/{order_id}
-   * @methodId cancel_order_api_v1_brokers_orders__order_id__delete
+   * Generated from: DELETE /api/beta/brokers/orders/{order_id}
+   * @methodId cancel_order_api_beta_brokers_orders__order_id__delete
    * @category brokers
    * @example
    * ```typescript-client
@@ -3415,7 +3415,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/orders/{order_id}', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey('DELETE', '/api/beta/brokers/orders/{order_id}', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -3427,7 +3427,7 @@ export class BrokersWrapper {
     this.logger.debug('Cancel Order', {
       request_id: requestId,
       method: 'DELETE',
-      path: '/api/v1/brokers/orders/{order_id}',
+      path: '/api/beta/brokers/orders/{order_id}',
       params: resolvedParams,
       action: 'cancelOrder'
     });
@@ -3435,7 +3435,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.cancelOrderApiV1BrokersOrdersOrderIdDelete({ orderId: resolvedParams.orderId ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.cancelOrderApiBetaBrokersOrdersOrderIdDelete({ orderId: resolvedParams.orderId ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -3477,7 +3477,7 @@ export class BrokersWrapper {
       }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('DELETE', '/api/v1/brokers/orders/{order_id}', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey('DELETE', '/api/beta/brokers/orders/{order_id}', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       
@@ -3573,8 +3573,8 @@ export class BrokersWrapper {
    * @param params.connectionId {string} (optional) Temporary bypass for testing: specify connection ID directly
    * @returns {Promise<FinaticResponse<OrderActionResult>>} Standard response with success/Error/Warning structure
    * 
-   * Generated from: PATCH /api/v1/brokers/orders/{order_id}
-   * @methodId modify_order_api_v1_brokers_orders__order_id__patch
+   * Generated from: PATCH /api/beta/brokers/orders/{order_id}
+   * @methodId modify_order_api_beta_brokers_orders__order_id__patch
    * @category brokers
    * @example
    * ```typescript-client
@@ -3631,7 +3631,7 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('PATCH', '/api/v1/brokers/orders/{order_id}', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey('PATCH', '/api/beta/brokers/orders/{order_id}', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -3643,7 +3643,7 @@ export class BrokersWrapper {
     this.logger.debug('Modify Order', {
       request_id: requestId,
       method: 'PATCH',
-      path: '/api/v1/brokers/orders/{order_id}',
+      path: '/api/beta/brokers/orders/{order_id}',
       params: resolvedParams,
       action: 'modifyOrder'
     });
@@ -3651,7 +3651,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.modifyOrderApiV1BrokersOrdersOrderIdPatch({ orderId: resolvedParams.orderId ?? null, ...(resolvedParams.accountNumber !== undefined ? { accountNumber: resolvedParams.accountNumber } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), orderRequest: resolvedParams.body ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.modifyOrderApiBetaBrokersOrdersOrderIdPatch({ orderId: resolvedParams.orderId ?? null, ...(resolvedParams.accountNumber !== undefined ? { accountNumber: resolvedParams.accountNumber } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), orderRequest: resolvedParams.body ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -3693,7 +3693,7 @@ export class BrokersWrapper {
       }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('PATCH', '/api/v1/brokers/orders/{order_id}', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey('PATCH', '/api/beta/brokers/orders/{order_id}', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       

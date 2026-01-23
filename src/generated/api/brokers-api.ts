@@ -18,7 +18,7 @@ import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
 import globalAxios from 'axios';
 // Some imports not used depending on template conditions
 // @ts-ignore
-import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction } from '../common';
+import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction, replaceWithSerializableTypeIfNeeded } from '../common';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
 // @ts-ignore
@@ -36,10 +36,6 @@ import type { FinaticResponseDisconnectCompanyFromBrokerConnectionResult } from 
 // @ts-ignore
 import type { FinaticResponseListBrokerInfo } from '../models';
 // @ts-ignore
-import type { FinaticResponseListFDXBrokerAccount } from '../models';
-// @ts-ignore
-import type { FinaticResponseListFDXBrokerBalance } from '../models';
-// @ts-ignore
 import type { FinaticResponseListFDXBrokerOrder } from '../models';
 // @ts-ignore
 import type { FinaticResponseListFDXBrokerOrderEvent } from '../models';
@@ -56,13 +52,17 @@ import type { FinaticResponseListFDXBrokerPositionLotFill } from '../models';
 // @ts-ignore
 import type { FinaticResponseListFDXBrokerTransaction } from '../models';
 // @ts-ignore
+import type { FinaticResponseListLegacyBrokerAccount } from '../models';
+// @ts-ignore
+import type { FinaticResponseListLegacyBrokerBalance } from '../models';
+// @ts-ignore
 import type { FinaticResponseListUserBrokerConnectionWithPermissions } from '../models';
 // @ts-ignore
 import type { FinaticResponseOrderActionResult } from '../models';
 // @ts-ignore
-import type { ModifyOrderApiV1BrokersOrdersOrderIdPatchRequest } from '../models';
+import type { ModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest } from '../models';
 // @ts-ignore
-import type { PlaceOrderApiV1BrokersOrdersPostRequest } from '../models';
+import type { PlaceOrderApiBetaBrokersOrdersPostRequest } from '../models';
 /**
  * BrokersApi - axios parameter creator
  */
@@ -75,10 +75,10 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        cancelOrderApiV1BrokersOrdersOrderIdDelete: async (orderId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        cancelOrderApiBetaBrokersOrdersOrderIdDelete: async (orderId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'orderId' is not null or undefined
-            assertParamExists('cancelOrderApiV1BrokersOrdersOrderIdDelete', 'orderId', orderId)
-            const localVarPath = `/api/v1/brokers/orders/{order_id}`
+            assertParamExists('cancelOrderApiBetaBrokersOrdersOrderIdDelete', 'orderId', orderId)
+            const localVarPath = `/api/beta/brokers/orders/{order_id}`
                 .replace(`{${"order_id"}}`, encodeURIComponent(String(orderId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -109,10 +109,10 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete: async (connectionId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        disconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDelete: async (connectionId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'connectionId' is not null or undefined
-            assertParamExists('disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete', 'connectionId', connectionId)
-            const localVarPath = `/api/v1/brokers/disconnect-company/{connection_id}`
+            assertParamExists('disconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDelete', 'connectionId', connectionId)
+            const localVarPath = `/api/beta/brokers/disconnect-company/{connection_id}`
                 .replace(`{${"connection_id"}}`, encodeURIComponent(String(connectionId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -149,8 +149,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAccountsApiV1BrokersDataAccountsGet: async (brokerId?: string | null, connectionId?: string | null, accountType?: BrokerDataAccountTypeEnum | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/brokers/data/accounts`;
+        getAccountsApiBetaBrokersDataAccountsGet: async (brokerId?: string | null, connectionId?: string | null, accountType?: BrokerDataAccountTypeEnum | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/beta/brokers/data/accounts`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -215,8 +215,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getBalancesApiV1BrokersDataBalancesGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, unitCode?: string | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/brokers/data/balances`;
+        getBalancesApiBetaBrokersDataBalancesGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, unitCode?: string | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/beta/brokers/data/balances`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -277,8 +277,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getBrokersApiV1BrokersGet: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/brokers/`;
+        getBrokersApiBetaBrokersGet: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/beta/brokers/`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -312,10 +312,10 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet: async (orderId: string, connectionId?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGet: async (orderId: string, connectionId?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'orderId' is not null or undefined
-            assertParamExists('getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet', 'orderId', orderId)
-            const localVarPath = `/api/v1/brokers/data/orders/{order_id}/events`
+            assertParamExists('getOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGet', 'orderId', orderId)
+            const localVarPath = `/api/beta/brokers/data/orders/{order_id}/events`
                 .replace(`{${"order_id"}}`, encodeURIComponent(String(orderId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -366,10 +366,10 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet: async (orderId: string, connectionId?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGet: async (orderId: string, connectionId?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'orderId' is not null or undefined
-            assertParamExists('getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet', 'orderId', orderId)
-            const localVarPath = `/api/v1/brokers/data/orders/{order_id}/fills`
+            assertParamExists('getOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGet', 'orderId', orderId)
+            const localVarPath = `/api/beta/brokers/data/orders/{order_id}/fills`
                 .replace(`{${"order_id"}}`, encodeURIComponent(String(orderId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -422,8 +422,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrderGroupsApiV1BrokersDataOrdersGroupsGet: async (brokerId?: string | null, connectionId?: string | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/brokers/data/orders/groups`;
+        getOrderGroupsApiBetaBrokersDataOrdersGroupsGet: async (brokerId?: string | null, connectionId?: string | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/beta/brokers/data/orders/groups`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -496,8 +496,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrdersApiV1BrokersDataOrdersGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, orderStatus?: string | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/brokers/data/orders`;
+        getOrdersApiBetaBrokersDataOrdersGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, orderStatus?: string | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/beta/brokers/data/orders`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -582,10 +582,10 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet: async (lotId: string, connectionId?: string | null, limit?: number, offset?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGet: async (lotId: string, connectionId?: string | null, limit?: number, offset?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'lotId' is not null or undefined
-            assertParamExists('getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet', 'lotId', lotId)
-            const localVarPath = `/api/v1/brokers/data/positions/lots/{lot_id}/fills`
+            assertParamExists('getPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGet', 'lotId', lotId)
+            const localVarPath = `/api/beta/brokers/data/positions/lots/{lot_id}/fills`
                 .replace(`{${"lot_id"}}`, encodeURIComponent(String(lotId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -634,8 +634,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPositionLotsApiV1BrokersDataPositionsLotsGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, positionId?: string | null, limit?: number, offset?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/brokers/data/positions/lots`;
+        getPositionLotsApiBetaBrokersDataPositionsLotsGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, positionId?: string | null, limit?: number, offset?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/beta/brokers/data/positions/lots`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -704,8 +704,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPositionsApiV1BrokersDataPositionsGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, positionStatus?: BrokerDataPositionStatusEnum | null, limit?: number, offset?: number, updatedAfter?: string | null, updatedBefore?: string | null, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/brokers/data/positions`;
+        getPositionsApiBetaBrokersDataPositionsGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, positionStatus?: BrokerDataPositionStatusEnum | null, limit?: number, offset?: number, updatedAfter?: string | null, updatedBefore?: string | null, includeMetadata?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/beta/brokers/data/positions`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -796,8 +796,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTransactionsApiV1BrokersDataTransactionsGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, unitCode?: string | null, currency?: string | null, transactionType?: string | null, startDate?: string | null, endDate?: string | null, limit?: number, offset?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/brokers/data/transactions`;
+        getTransactionsApiBetaBrokersDataTransactionsGet: async (brokerId?: string | null, connectionId?: string | null, accountId?: string | null, unitCode?: string | null, currency?: string | null, transactionType?: string | null, startDate?: string | null, endDate?: string | null, limit?: number, offset?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/beta/brokers/data/transactions`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -870,8 +870,8 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listBrokerConnectionsApiV1BrokersConnectionsGet: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/brokers/connections`;
+        listBrokerConnectionsApiBetaBrokersConnectionsGet: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/beta/brokers/connections`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -900,14 +900,14 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string} orderId Order ID
          * @param {string | null} [accountNumber] Account number owning the order
          * @param {string | null} [connectionId] Temporary bypass for testing: specify connection ID directly
-         * @param {ModifyOrderApiV1BrokersOrdersOrderIdPatchRequest | null} [modifyOrderApiV1BrokersOrdersOrderIdPatchRequest] 
+         * @param {ModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest | null} [modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        modifyOrderApiV1BrokersOrdersOrderIdPatch: async (orderId: string, accountNumber?: string | null, connectionId?: string | null, modifyOrderApiV1BrokersOrdersOrderIdPatchRequest?: ModifyOrderApiV1BrokersOrdersOrderIdPatchRequest | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        modifyOrderApiBetaBrokersOrdersOrderIdPatch: async (orderId: string, accountNumber?: string | null, connectionId?: string | null, modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest?: ModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'orderId' is not null or undefined
-            assertParamExists('modifyOrderApiV1BrokersOrdersOrderIdPatch', 'orderId', orderId)
-            const localVarPath = `/api/v1/brokers/orders/{order_id}`
+            assertParamExists('modifyOrderApiBetaBrokersOrdersOrderIdPatch', 'orderId', orderId)
+            const localVarPath = `/api/beta/brokers/orders/{order_id}`
                 .replace(`{${"order_id"}}`, encodeURIComponent(String(orderId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -934,7 +934,7 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(modifyOrderApiV1BrokersOrdersOrderIdPatchRequest, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -945,12 +945,12 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * Create a new order via the specified broker connection.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  Standard parameters ------------------- The following fields constitute the unified Finatic *common order schema* and therefore appear individually as query parameters in the autogenerated OpenAPI documentation:  - ``broker`` - ``account_number`` - ``order_type`` - ``asset_type`` - ``action`` - ``time_in_force`` - ``symbol`` - ``order_qty``  They are surfaced as *query* parameters **only to make the accepted fields obvious in the interactive docs**. In production usage you should send these fields inside the JSON body (see ``order_request``) so that the entire order specification travels in one payload. (Nothing will break if you send both, but there is no need to do so.)  Body payload & broker-specific extras -------------------------------------  Put the standard parameters plus any broker-specific extensions under the ``order`` key of the body. Refer to the bundled OpenAPI examples below to see complete payloads for common order types (market, limit, spreads, etc.) across supported brokers.  For a formal reference of broker-specific extensions inspect the ``BrokerOrderPlaceExtras`` schema.  The endpoint resolves the active ``user_broker_connection`` by calling the ``get_user_broker_connection_ids_for_broker`` RPC in Supabase. If no active connection exists it returns a list of *available* brokers so your client can guide the user accordingly.  Broker Notes ------------ - The responses that you get back from the broker are not always the same. The response models are validated for each broker, but we do not standardize the repsonses.  - Tasty Trade: If you want to trade options for a particular stock, first fetch the full option chain via the GET https://api.tastyworks.com/option-chains/{stock_symbol}/nested endpoint. This endpoint returns all available expirations that tastytrade offers for that equity symbol. Each expiration contains a list of strikes, where each strike has a call and put field representing the call symbol and put symbol respectively.  We are planning to add a new endpoint to fetch the option chain for a particular stock and handle this logic for you, but for now you need to fetch the option chain manually.
          * @summary Place Order
          * @param {string | null} [connectionId] Temporary bypass for testing: specify connection ID directly
-         * @param {PlaceOrderApiV1BrokersOrdersPostRequest | null} [placeOrderApiV1BrokersOrdersPostRequest] 
+         * @param {PlaceOrderApiBetaBrokersOrdersPostRequest | null} [placeOrderApiBetaBrokersOrdersPostRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        placeOrderApiV1BrokersOrdersPost: async (connectionId?: string | null, placeOrderApiV1BrokersOrdersPostRequest?: PlaceOrderApiV1BrokersOrdersPostRequest | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/v1/brokers/orders`;
+        placeOrderApiBetaBrokersOrdersPost: async (connectionId?: string | null, placeOrderApiBetaBrokersOrdersPostRequest?: PlaceOrderApiBetaBrokersOrdersPostRequest | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/beta/brokers/orders`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -972,7 +972,7 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(placeOrderApiV1BrokersOrdersPostRequest, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(placeOrderApiBetaBrokersOrdersPostRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -995,10 +995,10 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async cancelOrderApiV1BrokersOrdersOrderIdDelete(orderId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseOrderActionResult>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.cancelOrderApiV1BrokersOrdersOrderIdDelete(orderId, options);
+        async cancelOrderApiBetaBrokersOrdersOrderIdDelete(orderId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseOrderActionResult>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.cancelOrderApiBetaBrokersOrdersOrderIdDelete(orderId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.cancelOrderApiV1BrokersOrdersOrderIdDelete']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.cancelOrderApiBetaBrokersOrdersOrderIdDelete']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1008,10 +1008,10 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete(connectionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseDisconnectCompanyFromBrokerConnectionResult>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete(connectionId, options);
+        async disconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDelete(connectionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseDisconnectCompanyFromBrokerConnectionResult>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.disconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDelete(connectionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.disconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDelete']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1027,10 +1027,10 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAccountsApiV1BrokersDataAccountsGet(brokerId?: string | null, connectionId?: string | null, accountType?: BrokerDataAccountTypeEnum | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerAccount>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAccountsApiV1BrokersDataAccountsGet(brokerId, connectionId, accountType, currency, limit, offset, includeMetadata, options);
+        async getAccountsApiBetaBrokersDataAccountsGet(brokerId?: string | null, connectionId?: string | null, accountType?: BrokerDataAccountTypeEnum | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListLegacyBrokerAccount>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAccountsApiBetaBrokersDataAccountsGet(brokerId, connectionId, accountType, currency, limit, offset, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getAccountsApiV1BrokersDataAccountsGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getAccountsApiBetaBrokersDataAccountsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1047,10 +1047,10 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getBalancesApiV1BrokersDataBalancesGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, unitCode?: string | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerBalance>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getBalancesApiV1BrokersDataBalancesGet(brokerId, connectionId, accountId, unitCode, currency, limit, offset, includeMetadata, options);
+        async getBalancesApiBetaBrokersDataBalancesGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, unitCode?: string | null, currency?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListLegacyBrokerBalance>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getBalancesApiBetaBrokersDataBalancesGet(brokerId, connectionId, accountId, unitCode, currency, limit, offset, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getBalancesApiV1BrokersDataBalancesGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getBalancesApiBetaBrokersDataBalancesGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1059,10 +1059,10 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getBrokersApiV1BrokersGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListBrokerInfo>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getBrokersApiV1BrokersGet(options);
+        async getBrokersApiBetaBrokersGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListBrokerInfo>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getBrokersApiBetaBrokersGet(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getBrokersApiV1BrokersGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getBrokersApiBetaBrokersGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1076,10 +1076,10 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(orderId: string, connectionId?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerOrderEvent>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(orderId, connectionId, limit, offset, includeMetadata, options);
+        async getOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGet(orderId: string, connectionId?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerOrderEvent>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGet(orderId, connectionId, limit, offset, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1093,10 +1093,10 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(orderId: string, connectionId?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerOrderFill>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(orderId, connectionId, limit, offset, includeMetadata, options);
+        async getOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGet(orderId: string, connectionId?: string | null, limit?: number, offset?: number, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerOrderFill>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGet(orderId, connectionId, limit, offset, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1112,10 +1112,10 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getOrderGroupsApiV1BrokersDataOrdersGroupsGet(brokerId?: string | null, connectionId?: string | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerOrderGroup>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrderGroupsApiV1BrokersDataOrdersGroupsGet(brokerId, connectionId, limit, offset, createdAfter, createdBefore, includeMetadata, options);
+        async getOrderGroupsApiBetaBrokersDataOrdersGroupsGet(brokerId?: string | null, connectionId?: string | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerOrderGroup>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrderGroupsApiBetaBrokersDataOrdersGroupsGet(brokerId, connectionId, limit, offset, createdAfter, createdBefore, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getOrderGroupsApiV1BrokersDataOrdersGroupsGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getOrderGroupsApiBetaBrokersDataOrdersGroupsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1136,10 +1136,10 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getOrdersApiV1BrokersDataOrdersGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, orderStatus?: string | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerOrder>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrdersApiV1BrokersDataOrdersGet(brokerId, connectionId, accountId, symbol, orderStatus, side, assetType, limit, offset, createdAfter, createdBefore, includeMetadata, options);
+        async getOrdersApiBetaBrokersDataOrdersGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, orderStatus?: string | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, limit?: number, offset?: number, createdAfter?: string | null, createdBefore?: string | null, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerOrder>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrdersApiBetaBrokersDataOrdersGet(brokerId, connectionId, accountId, symbol, orderStatus, side, assetType, limit, offset, createdAfter, createdBefore, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getOrdersApiV1BrokersDataOrdersGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getOrdersApiBetaBrokersDataOrdersGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1152,10 +1152,10 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet(lotId: string, connectionId?: string | null, limit?: number, offset?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerPositionLotFill>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet(lotId, connectionId, limit, offset, options);
+        async getPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGet(lotId: string, connectionId?: string | null, limit?: number, offset?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerPositionLotFill>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGet(lotId, connectionId, limit, offset, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1171,10 +1171,10 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPositionLotsApiV1BrokersDataPositionsLotsGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, positionId?: string | null, limit?: number, offset?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerPositionLot>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getPositionLotsApiV1BrokersDataPositionsLotsGet(brokerId, connectionId, accountId, symbol, positionId, limit, offset, options);
+        async getPositionLotsApiBetaBrokersDataPositionsLotsGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, positionId?: string | null, limit?: number, offset?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerPositionLot>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPositionLotsApiBetaBrokersDataPositionsLotsGet(brokerId, connectionId, accountId, symbol, positionId, limit, offset, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getPositionLotsApiV1BrokersDataPositionsLotsGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getPositionLotsApiBetaBrokersDataPositionsLotsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1195,10 +1195,10 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPositionsApiV1BrokersDataPositionsGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, positionStatus?: BrokerDataPositionStatusEnum | null, limit?: number, offset?: number, updatedAfter?: string | null, updatedBefore?: string | null, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerPosition>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getPositionsApiV1BrokersDataPositionsGet(brokerId, connectionId, accountId, symbol, side, assetType, positionStatus, limit, offset, updatedAfter, updatedBefore, includeMetadata, options);
+        async getPositionsApiBetaBrokersDataPositionsGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, symbol?: string | null, side?: BrokerDataOrderSideEnum | null, assetType?: BrokerDataAssetTypeEnum | null, positionStatus?: BrokerDataPositionStatusEnum | null, limit?: number, offset?: number, updatedAfter?: string | null, updatedBefore?: string | null, includeMetadata?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerPosition>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPositionsApiBetaBrokersDataPositionsGet(brokerId, connectionId, accountId, symbol, side, assetType, positionStatus, limit, offset, updatedAfter, updatedBefore, includeMetadata, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getPositionsApiV1BrokersDataPositionsGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getPositionsApiBetaBrokersDataPositionsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1217,10 +1217,10 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getTransactionsApiV1BrokersDataTransactionsGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, unitCode?: string | null, currency?: string | null, transactionType?: string | null, startDate?: string | null, endDate?: string | null, limit?: number, offset?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerTransaction>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getTransactionsApiV1BrokersDataTransactionsGet(brokerId, connectionId, accountId, unitCode, currency, transactionType, startDate, endDate, limit, offset, options);
+        async getTransactionsApiBetaBrokersDataTransactionsGet(brokerId?: string | null, connectionId?: string | null, accountId?: string | null, unitCode?: string | null, currency?: string | null, transactionType?: string | null, startDate?: string | null, endDate?: string | null, limit?: number, offset?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListFDXBrokerTransaction>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getTransactionsApiBetaBrokersDataTransactionsGet(brokerId, connectionId, accountId, unitCode, currency, transactionType, startDate, endDate, limit, offset, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getTransactionsApiV1BrokersDataTransactionsGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.getTransactionsApiBetaBrokersDataTransactionsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1229,10 +1229,10 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async listBrokerConnectionsApiV1BrokersConnectionsGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListUserBrokerConnectionWithPermissions>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listBrokerConnectionsApiV1BrokersConnectionsGet(options);
+        async listBrokerConnectionsApiBetaBrokersConnectionsGet(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListUserBrokerConnectionWithPermissions>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listBrokerConnectionsApiBetaBrokersConnectionsGet(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.listBrokerConnectionsApiV1BrokersConnectionsGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.listBrokerConnectionsApiBetaBrokersConnectionsGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1241,28 +1241,28 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * @param {string} orderId Order ID
          * @param {string | null} [accountNumber] Account number owning the order
          * @param {string | null} [connectionId] Temporary bypass for testing: specify connection ID directly
-         * @param {ModifyOrderApiV1BrokersOrdersOrderIdPatchRequest | null} [modifyOrderApiV1BrokersOrdersOrderIdPatchRequest] 
+         * @param {ModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest | null} [modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async modifyOrderApiV1BrokersOrdersOrderIdPatch(orderId: string, accountNumber?: string | null, connectionId?: string | null, modifyOrderApiV1BrokersOrdersOrderIdPatchRequest?: ModifyOrderApiV1BrokersOrdersOrderIdPatchRequest | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseOrderActionResult>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.modifyOrderApiV1BrokersOrdersOrderIdPatch(orderId, accountNumber, connectionId, modifyOrderApiV1BrokersOrdersOrderIdPatchRequest, options);
+        async modifyOrderApiBetaBrokersOrdersOrderIdPatch(orderId: string, accountNumber?: string | null, connectionId?: string | null, modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest?: ModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseOrderActionResult>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.modifyOrderApiBetaBrokersOrdersOrderIdPatch(orderId, accountNumber, connectionId, modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.modifyOrderApiV1BrokersOrdersOrderIdPatch']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.modifyOrderApiBetaBrokersOrdersOrderIdPatch']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
          * Create a new order via the specified broker connection.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  Standard parameters ------------------- The following fields constitute the unified Finatic *common order schema* and therefore appear individually as query parameters in the autogenerated OpenAPI documentation:  - ``broker`` - ``account_number`` - ``order_type`` - ``asset_type`` - ``action`` - ``time_in_force`` - ``symbol`` - ``order_qty``  They are surfaced as *query* parameters **only to make the accepted fields obvious in the interactive docs**. In production usage you should send these fields inside the JSON body (see ``order_request``) so that the entire order specification travels in one payload. (Nothing will break if you send both, but there is no need to do so.)  Body payload & broker-specific extras -------------------------------------  Put the standard parameters plus any broker-specific extensions under the ``order`` key of the body. Refer to the bundled OpenAPI examples below to see complete payloads for common order types (market, limit, spreads, etc.) across supported brokers.  For a formal reference of broker-specific extensions inspect the ``BrokerOrderPlaceExtras`` schema.  The endpoint resolves the active ``user_broker_connection`` by calling the ``get_user_broker_connection_ids_for_broker`` RPC in Supabase. If no active connection exists it returns a list of *available* brokers so your client can guide the user accordingly.  Broker Notes ------------ - The responses that you get back from the broker are not always the same. The response models are validated for each broker, but we do not standardize the repsonses.  - Tasty Trade: If you want to trade options for a particular stock, first fetch the full option chain via the GET https://api.tastyworks.com/option-chains/{stock_symbol}/nested endpoint. This endpoint returns all available expirations that tastytrade offers for that equity symbol. Each expiration contains a list of strikes, where each strike has a call and put field representing the call symbol and put symbol respectively.  We are planning to add a new endpoint to fetch the option chain for a particular stock and handle this logic for you, but for now you need to fetch the option chain manually.
          * @summary Place Order
          * @param {string | null} [connectionId] Temporary bypass for testing: specify connection ID directly
-         * @param {PlaceOrderApiV1BrokersOrdersPostRequest | null} [placeOrderApiV1BrokersOrdersPostRequest] 
+         * @param {PlaceOrderApiBetaBrokersOrdersPostRequest | null} [placeOrderApiBetaBrokersOrdersPostRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async placeOrderApiV1BrokersOrdersPost(connectionId?: string | null, placeOrderApiV1BrokersOrdersPostRequest?: PlaceOrderApiV1BrokersOrdersPostRequest | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseOrderActionResult>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.placeOrderApiV1BrokersOrdersPost(connectionId, placeOrderApiV1BrokersOrdersPostRequest, options);
+        async placeOrderApiBetaBrokersOrdersPost(connectionId?: string | null, placeOrderApiBetaBrokersOrdersPostRequest?: PlaceOrderApiBetaBrokersOrdersPostRequest | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseOrderActionResult>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.placeOrderApiBetaBrokersOrdersPost(connectionId, placeOrderApiBetaBrokersOrdersPostRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BrokersApi.placeOrderApiV1BrokersOrdersPost']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BrokersApi.placeOrderApiBetaBrokersOrdersPost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -1277,42 +1277,42 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
         /**
          * Cancel an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  The order_id is used to identify the order and automatically resolve the broker connection from the orders table.
          * @summary Cancel Order
-         * @param {BrokersApiCancelOrderApiV1BrokersOrdersOrderIdDeleteRequest} requestParameters Request parameters.
+         * @param {BrokersApiCancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        cancelOrderApiV1BrokersOrdersOrderIdDelete(requestParameters: BrokersApiCancelOrderApiV1BrokersOrdersOrderIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult> {
-            return localVarFp.cancelOrderApiV1BrokersOrdersOrderIdDelete(requestParameters.orderId, options).then((request) => request(axios, basePath));
+        cancelOrderApiBetaBrokersOrdersOrderIdDelete(requestParameters: BrokersApiCancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult> {
+            return localVarFp.cancelOrderApiBetaBrokersOrdersOrderIdDelete(requestParameters.orderId, options).then((request) => request(axios, basePath));
         },
         /**
          * Remove a company\'s access to a broker connection.  If the company is the only one with access, the entire connection is deleted. If other companies have access, only the company\'s access is removed.
          * @summary Disconnect Company From Broker
-         * @param {BrokersApiDisconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDeleteRequest} requestParameters Request parameters.
+         * @param {BrokersApiDisconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDeleteRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete(requestParameters: BrokersApiDisconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseDisconnectCompanyFromBrokerConnectionResult> {
-            return localVarFp.disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete(requestParameters.connectionId, options).then((request) => request(axios, basePath));
+        disconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDelete(requestParameters: BrokersApiDisconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseDisconnectCompanyFromBrokerConnectionResult> {
+            return localVarFp.disconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDelete(requestParameters.connectionId, options).then((request) => request(axios, basePath));
         },
         /**
          * Get accounts for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns accounts from connections the company has read access to.
          * @summary Get Accounts
-         * @param {BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest} requestParameters Request parameters.
+         * @param {BrokersApiGetAccountsApiBetaBrokersDataAccountsGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAccountsApiV1BrokersDataAccountsGet(requestParameters: BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerAccount> {
-            return localVarFp.getAccountsApiV1BrokersDataAccountsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountType, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
+        getAccountsApiBetaBrokersDataAccountsGet(requestParameters: BrokersApiGetAccountsApiBetaBrokersDataAccountsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListLegacyBrokerAccount> {
+            return localVarFp.getAccountsApiBetaBrokersDataAccountsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountType, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
          * Get current unit-based balances for all authorized broker connections.  Returns array of current balances (one per unit_code per account). This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
          * @summary Get Balances
-         * @param {BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest} requestParameters Request parameters.
+         * @param {BrokersApiGetBalancesApiBetaBrokersDataBalancesGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getBalancesApiV1BrokersDataBalancesGet(requestParameters: BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerBalance> {
-            return localVarFp.getBalancesApiV1BrokersDataBalancesGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.unitCode, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
+        getBalancesApiBetaBrokersDataBalancesGet(requestParameters: BrokersApiGetBalancesApiBetaBrokersDataBalancesGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListLegacyBrokerBalance> {
+            return localVarFp.getBalancesApiBetaBrokersDataBalancesGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.unitCode, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
          * Get all available brokers.  This is a fast operation that returns a cached list of available brokers. The list is loaded once at startup and never changes during runtime.  Returns ------- FinaticResponse[list[BrokerInfo]]     list of available brokers with their metadata.
@@ -1320,88 +1320,88 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getBrokersApiV1BrokersGet(options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListBrokerInfo> {
-            return localVarFp.getBrokersApiV1BrokersGet(options).then((request) => request(axios, basePath));
+        getBrokersApiBetaBrokersGet(options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListBrokerInfo> {
+            return localVarFp.getBrokersApiBetaBrokersGet(options).then((request) => request(axios, basePath));
         },
         /**
          * Get order events for a specific order.  This endpoint returns all lifecycle events for the specified order.
          * @summary Get Order Events
-         * @param {BrokersApiGetOrderEventsApiV1BrokersDataOrdersOrderIdEventsGetRequest} requestParameters Request parameters.
+         * @param {BrokersApiGetOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(requestParameters: BrokersApiGetOrderEventsApiV1BrokersDataOrdersOrderIdEventsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderEvent> {
-            return localVarFp.getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
+        getOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGet(requestParameters: BrokersApiGetOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderEvent> {
+            return localVarFp.getOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
          * Get order fills for a specific order.  This endpoint returns all execution fills for the specified order.
          * @summary Get Order Fills
-         * @param {BrokersApiGetOrderFillsApiV1BrokersDataOrdersOrderIdFillsGetRequest} requestParameters Request parameters.
+         * @param {BrokersApiGetOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(requestParameters: BrokersApiGetOrderFillsApiV1BrokersDataOrdersOrderIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderFill> {
-            return localVarFp.getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
+        getOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGet(requestParameters: BrokersApiGetOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderFill> {
+            return localVarFp.getOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
          * Get order groups.  This endpoint returns order groups that contain multiple orders.
          * @summary Get Order Groups
-         * @param {BrokersApiGetOrderGroupsApiV1BrokersDataOrdersGroupsGetRequest} requestParameters Request parameters.
+         * @param {BrokersApiGetOrderGroupsApiBetaBrokersDataOrdersGroupsGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrderGroupsApiV1BrokersDataOrdersGroupsGet(requestParameters: BrokersApiGetOrderGroupsApiV1BrokersDataOrdersGroupsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderGroup> {
-            return localVarFp.getOrderGroupsApiV1BrokersDataOrdersGroupsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
+        getOrderGroupsApiBetaBrokersDataOrdersGroupsGet(requestParameters: BrokersApiGetOrderGroupsApiBetaBrokersDataOrdersGroupsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderGroup> {
+            return localVarFp.getOrderGroupsApiBetaBrokersDataOrdersGroupsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
          * Get orders for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns orders from connections the company has read access to.
          * @summary Get Orders
-         * @param {BrokersApiGetOrdersApiV1BrokersDataOrdersGetRequest} requestParameters Request parameters.
+         * @param {BrokersApiGetOrdersApiBetaBrokersDataOrdersGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getOrdersApiV1BrokersDataOrdersGet(requestParameters: BrokersApiGetOrdersApiV1BrokersDataOrdersGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrder> {
-            return localVarFp.getOrdersApiV1BrokersDataOrdersGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.orderStatus, requestParameters.side, requestParameters.assetType, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
+        getOrdersApiBetaBrokersDataOrdersGet(requestParameters: BrokersApiGetOrdersApiBetaBrokersDataOrdersGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrder> {
+            return localVarFp.getOrdersApiBetaBrokersDataOrdersGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.orderStatus, requestParameters.side, requestParameters.assetType, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
          * Get position lot fills for a specific lot.  This endpoint returns all fills associated with a specific position lot.
          * @summary Get Position Lot Fills
-         * @param {BrokersApiGetPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGetRequest} requestParameters Request parameters.
+         * @param {BrokersApiGetPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet(requestParameters: BrokersApiGetPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPositionLotFill> {
-            return localVarFp.getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet(requestParameters.lotId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, options).then((request) => request(axios, basePath));
+        getPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGet(requestParameters: BrokersApiGetPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPositionLotFill> {
+            return localVarFp.getPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGet(requestParameters.lotId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, options).then((request) => request(axios, basePath));
         },
         /**
          * Get position lots (tax lots for positions).  This endpoint returns tax lots for positions, which are used for tax reporting. Each lot tracks when a position was opened/closed and at what prices.
          * @summary Get Position Lots
-         * @param {BrokersApiGetPositionLotsApiV1BrokersDataPositionsLotsGetRequest} requestParameters Request parameters.
+         * @param {BrokersApiGetPositionLotsApiBetaBrokersDataPositionsLotsGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPositionLotsApiV1BrokersDataPositionsLotsGet(requestParameters: BrokersApiGetPositionLotsApiV1BrokersDataPositionsLotsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPositionLot> {
-            return localVarFp.getPositionLotsApiV1BrokersDataPositionsLotsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.positionId, requestParameters.limit, requestParameters.offset, options).then((request) => request(axios, basePath));
+        getPositionLotsApiBetaBrokersDataPositionsLotsGet(requestParameters: BrokersApiGetPositionLotsApiBetaBrokersDataPositionsLotsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPositionLot> {
+            return localVarFp.getPositionLotsApiBetaBrokersDataPositionsLotsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.positionId, requestParameters.limit, requestParameters.offset, options).then((request) => request(axios, basePath));
         },
         /**
          * Get positions for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns positions from connections the company has read access to.
          * @summary Get Positions
-         * @param {BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest} requestParameters Request parameters.
+         * @param {BrokersApiGetPositionsApiBetaBrokersDataPositionsGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPositionsApiV1BrokersDataPositionsGet(requestParameters: BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPosition> {
-            return localVarFp.getPositionsApiV1BrokersDataPositionsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.side, requestParameters.assetType, requestParameters.positionStatus, requestParameters.limit, requestParameters.offset, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
+        getPositionsApiBetaBrokersDataPositionsGet(requestParameters: BrokersApiGetPositionsApiBetaBrokersDataPositionsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPosition> {
+            return localVarFp.getPositionsApiBetaBrokersDataPositionsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.side, requestParameters.assetType, requestParameters.positionStatus, requestParameters.limit, requestParameters.offset, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.includeMetadata, options).then((request) => request(axios, basePath));
         },
         /**
          * Get transactions for all authorized broker connections.  Returns transactions from connections the company has read access to. This endpoint is accessible from the portal and uses session-only authentication.
          * @summary Get Transactions
-         * @param {BrokersApiGetTransactionsApiV1BrokersDataTransactionsGetRequest} requestParameters Request parameters.
+         * @param {BrokersApiGetTransactionsApiBetaBrokersDataTransactionsGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTransactionsApiV1BrokersDataTransactionsGet(requestParameters: BrokersApiGetTransactionsApiV1BrokersDataTransactionsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerTransaction> {
-            return localVarFp.getTransactionsApiV1BrokersDataTransactionsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.unitCode, requestParameters.currency, requestParameters.transactionType, requestParameters.startDate, requestParameters.endDate, requestParameters.limit, requestParameters.offset, options).then((request) => request(axios, basePath));
+        getTransactionsApiBetaBrokersDataTransactionsGet(requestParameters: BrokersApiGetTransactionsApiBetaBrokersDataTransactionsGetRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerTransaction> {
+            return localVarFp.getTransactionsApiBetaBrokersDataTransactionsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.unitCode, requestParameters.currency, requestParameters.transactionType, requestParameters.startDate, requestParameters.endDate, requestParameters.limit, requestParameters.offset, options).then((request) => request(axios, basePath));
         },
         /**
          * List all broker connections for the current user with permissions.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for, including the current company\'s permissions (read/write) for each connection.
@@ -1409,28 +1409,28 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listBrokerConnectionsApiV1BrokersConnectionsGet(options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListUserBrokerConnectionWithPermissions> {
-            return localVarFp.listBrokerConnectionsApiV1BrokersConnectionsGet(options).then((request) => request(axios, basePath));
+        listBrokerConnectionsApiBetaBrokersConnectionsGet(options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListUserBrokerConnectionWithPermissions> {
+            return localVarFp.listBrokerConnectionsApiBetaBrokersConnectionsGet(options).then((request) => request(axios, basePath));
         },
         /**
          * Modify an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.
          * @summary Modify Order
-         * @param {BrokersApiModifyOrderApiV1BrokersOrdersOrderIdPatchRequest} requestParameters Request parameters.
+         * @param {BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        modifyOrderApiV1BrokersOrdersOrderIdPatch(requestParameters: BrokersApiModifyOrderApiV1BrokersOrdersOrderIdPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult> {
-            return localVarFp.modifyOrderApiV1BrokersOrdersOrderIdPatch(requestParameters.orderId, requestParameters.accountNumber, requestParameters.connectionId, requestParameters.modifyOrderApiV1BrokersOrdersOrderIdPatchRequest, options).then((request) => request(axios, basePath));
+        modifyOrderApiBetaBrokersOrdersOrderIdPatch(requestParameters: BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult> {
+            return localVarFp.modifyOrderApiBetaBrokersOrdersOrderIdPatch(requestParameters.orderId, requestParameters.accountNumber, requestParameters.connectionId, requestParameters.modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * Create a new order via the specified broker connection.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  Standard parameters ------------------- The following fields constitute the unified Finatic *common order schema* and therefore appear individually as query parameters in the autogenerated OpenAPI documentation:  - ``broker`` - ``account_number`` - ``order_type`` - ``asset_type`` - ``action`` - ``time_in_force`` - ``symbol`` - ``order_qty``  They are surfaced as *query* parameters **only to make the accepted fields obvious in the interactive docs**. In production usage you should send these fields inside the JSON body (see ``order_request``) so that the entire order specification travels in one payload. (Nothing will break if you send both, but there is no need to do so.)  Body payload & broker-specific extras -------------------------------------  Put the standard parameters plus any broker-specific extensions under the ``order`` key of the body. Refer to the bundled OpenAPI examples below to see complete payloads for common order types (market, limit, spreads, etc.) across supported brokers.  For a formal reference of broker-specific extensions inspect the ``BrokerOrderPlaceExtras`` schema.  The endpoint resolves the active ``user_broker_connection`` by calling the ``get_user_broker_connection_ids_for_broker`` RPC in Supabase. If no active connection exists it returns a list of *available* brokers so your client can guide the user accordingly.  Broker Notes ------------ - The responses that you get back from the broker are not always the same. The response models are validated for each broker, but we do not standardize the repsonses.  - Tasty Trade: If you want to trade options for a particular stock, first fetch the full option chain via the GET https://api.tastyworks.com/option-chains/{stock_symbol}/nested endpoint. This endpoint returns all available expirations that tastytrade offers for that equity symbol. Each expiration contains a list of strikes, where each strike has a call and put field representing the call symbol and put symbol respectively.  We are planning to add a new endpoint to fetch the option chain for a particular stock and handle this logic for you, but for now you need to fetch the option chain manually.
          * @summary Place Order
-         * @param {BrokersApiPlaceOrderApiV1BrokersOrdersPostRequest} requestParameters Request parameters.
+         * @param {BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        placeOrderApiV1BrokersOrdersPost(requestParameters: BrokersApiPlaceOrderApiV1BrokersOrdersPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult> {
-            return localVarFp.placeOrderApiV1BrokersOrdersPost(requestParameters.connectionId, requestParameters.placeOrderApiV1BrokersOrdersPostRequest, options).then((request) => request(axios, basePath));
+        placeOrderApiBetaBrokersOrdersPost(requestParameters: BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest = {}, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult> {
+            return localVarFp.placeOrderApiBetaBrokersOrdersPost(requestParameters.connectionId, requestParameters.placeOrderApiBetaBrokersOrdersPostRequest, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -1442,38 +1442,38 @@ export interface BrokersApiInterface {
     /**
      * Cancel an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  The order_id is used to identify the order and automatically resolve the broker connection from the orders table.
      * @summary Cancel Order
-     * @param {BrokersApiCancelOrderApiV1BrokersOrdersOrderIdDeleteRequest} requestParameters Request parameters.
+     * @param {BrokersApiCancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    cancelOrderApiV1BrokersOrdersOrderIdDelete(requestParameters: BrokersApiCancelOrderApiV1BrokersOrdersOrderIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult>;
+    cancelOrderApiBetaBrokersOrdersOrderIdDelete(requestParameters: BrokersApiCancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult>;
 
     /**
      * Remove a company\'s access to a broker connection.  If the company is the only one with access, the entire connection is deleted. If other companies have access, only the company\'s access is removed.
      * @summary Disconnect Company From Broker
-     * @param {BrokersApiDisconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDeleteRequest} requestParameters Request parameters.
+     * @param {BrokersApiDisconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDeleteRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete(requestParameters: BrokersApiDisconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseDisconnectCompanyFromBrokerConnectionResult>;
+    disconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDelete(requestParameters: BrokersApiDisconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseDisconnectCompanyFromBrokerConnectionResult>;
 
     /**
      * Get accounts for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns accounts from connections the company has read access to.
      * @summary Get Accounts
-     * @param {BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetAccountsApiBetaBrokersDataAccountsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getAccountsApiV1BrokersDataAccountsGet(requestParameters?: BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerAccount>;
+    getAccountsApiBetaBrokersDataAccountsGet(requestParameters?: BrokersApiGetAccountsApiBetaBrokersDataAccountsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListLegacyBrokerAccount>;
 
     /**
      * Get current unit-based balances for all authorized broker connections.  Returns array of current balances (one per unit_code per account). This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
      * @summary Get Balances
-     * @param {BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetBalancesApiBetaBrokersDataBalancesGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getBalancesApiV1BrokersDataBalancesGet(requestParameters?: BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerBalance>;
+    getBalancesApiBetaBrokersDataBalancesGet(requestParameters?: BrokersApiGetBalancesApiBetaBrokersDataBalancesGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListLegacyBrokerBalance>;
 
     /**
      * Get all available brokers.  This is a fast operation that returns a cached list of available brokers. The list is loaded once at startup and never changes during runtime.  Returns ------- FinaticResponse[list[BrokerInfo]]     list of available brokers with their metadata.
@@ -1481,79 +1481,79 @@ export interface BrokersApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getBrokersApiV1BrokersGet(options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListBrokerInfo>;
+    getBrokersApiBetaBrokersGet(options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListBrokerInfo>;
 
     /**
      * Get order events for a specific order.  This endpoint returns all lifecycle events for the specified order.
      * @summary Get Order Events
-     * @param {BrokersApiGetOrderEventsApiV1BrokersDataOrdersOrderIdEventsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(requestParameters: BrokersApiGetOrderEventsApiV1BrokersDataOrdersOrderIdEventsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderEvent>;
+    getOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGet(requestParameters: BrokersApiGetOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderEvent>;
 
     /**
      * Get order fills for a specific order.  This endpoint returns all execution fills for the specified order.
      * @summary Get Order Fills
-     * @param {BrokersApiGetOrderFillsApiV1BrokersDataOrdersOrderIdFillsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(requestParameters: BrokersApiGetOrderFillsApiV1BrokersDataOrdersOrderIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderFill>;
+    getOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGet(requestParameters: BrokersApiGetOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderFill>;
 
     /**
      * Get order groups.  This endpoint returns order groups that contain multiple orders.
      * @summary Get Order Groups
-     * @param {BrokersApiGetOrderGroupsApiV1BrokersDataOrdersGroupsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetOrderGroupsApiBetaBrokersDataOrdersGroupsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getOrderGroupsApiV1BrokersDataOrdersGroupsGet(requestParameters?: BrokersApiGetOrderGroupsApiV1BrokersDataOrdersGroupsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderGroup>;
+    getOrderGroupsApiBetaBrokersDataOrdersGroupsGet(requestParameters?: BrokersApiGetOrderGroupsApiBetaBrokersDataOrdersGroupsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrderGroup>;
 
     /**
      * Get orders for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns orders from connections the company has read access to.
      * @summary Get Orders
-     * @param {BrokersApiGetOrdersApiV1BrokersDataOrdersGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetOrdersApiBetaBrokersDataOrdersGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getOrdersApiV1BrokersDataOrdersGet(requestParameters?: BrokersApiGetOrdersApiV1BrokersDataOrdersGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrder>;
+    getOrdersApiBetaBrokersDataOrdersGet(requestParameters?: BrokersApiGetOrdersApiBetaBrokersDataOrdersGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerOrder>;
 
     /**
      * Get position lot fills for a specific lot.  This endpoint returns all fills associated with a specific position lot.
      * @summary Get Position Lot Fills
-     * @param {BrokersApiGetPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet(requestParameters: BrokersApiGetPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPositionLotFill>;
+    getPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGet(requestParameters: BrokersApiGetPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPositionLotFill>;
 
     /**
      * Get position lots (tax lots for positions).  This endpoint returns tax lots for positions, which are used for tax reporting. Each lot tracks when a position was opened/closed and at what prices.
      * @summary Get Position Lots
-     * @param {BrokersApiGetPositionLotsApiV1BrokersDataPositionsLotsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetPositionLotsApiBetaBrokersDataPositionsLotsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getPositionLotsApiV1BrokersDataPositionsLotsGet(requestParameters?: BrokersApiGetPositionLotsApiV1BrokersDataPositionsLotsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPositionLot>;
+    getPositionLotsApiBetaBrokersDataPositionsLotsGet(requestParameters?: BrokersApiGetPositionLotsApiBetaBrokersDataPositionsLotsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPositionLot>;
 
     /**
      * Get positions for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns positions from connections the company has read access to.
      * @summary Get Positions
-     * @param {BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetPositionsApiBetaBrokersDataPositionsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getPositionsApiV1BrokersDataPositionsGet(requestParameters?: BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPosition>;
+    getPositionsApiBetaBrokersDataPositionsGet(requestParameters?: BrokersApiGetPositionsApiBetaBrokersDataPositionsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerPosition>;
 
     /**
      * Get transactions for all authorized broker connections.  Returns transactions from connections the company has read access to. This endpoint is accessible from the portal and uses session-only authentication.
      * @summary Get Transactions
-     * @param {BrokersApiGetTransactionsApiV1BrokersDataTransactionsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetTransactionsApiBetaBrokersDataTransactionsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getTransactionsApiV1BrokersDataTransactionsGet(requestParameters?: BrokersApiGetTransactionsApiV1BrokersDataTransactionsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerTransaction>;
+    getTransactionsApiBetaBrokersDataTransactionsGet(requestParameters?: BrokersApiGetTransactionsApiBetaBrokersDataTransactionsGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListFDXBrokerTransaction>;
 
     /**
      * List all broker connections for the current user with permissions.  This endpoint is accessible from the portal and uses session-only authentication. Returns connections that the user has any permissions for, including the current company\'s permissions (read/write) for each connection.
@@ -1561,32 +1561,32 @@ export interface BrokersApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    listBrokerConnectionsApiV1BrokersConnectionsGet(options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListUserBrokerConnectionWithPermissions>;
+    listBrokerConnectionsApiBetaBrokersConnectionsGet(options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseListUserBrokerConnectionWithPermissions>;
 
     /**
      * Modify an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.
      * @summary Modify Order
-     * @param {BrokersApiModifyOrderApiV1BrokersOrdersOrderIdPatchRequest} requestParameters Request parameters.
+     * @param {BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    modifyOrderApiV1BrokersOrdersOrderIdPatch(requestParameters: BrokersApiModifyOrderApiV1BrokersOrdersOrderIdPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult>;
+    modifyOrderApiBetaBrokersOrdersOrderIdPatch(requestParameters: BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult>;
 
     /**
      * Create a new order via the specified broker connection.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  Standard parameters ------------------- The following fields constitute the unified Finatic *common order schema* and therefore appear individually as query parameters in the autogenerated OpenAPI documentation:  - ``broker`` - ``account_number`` - ``order_type`` - ``asset_type`` - ``action`` - ``time_in_force`` - ``symbol`` - ``order_qty``  They are surfaced as *query* parameters **only to make the accepted fields obvious in the interactive docs**. In production usage you should send these fields inside the JSON body (see ``order_request``) so that the entire order specification travels in one payload. (Nothing will break if you send both, but there is no need to do so.)  Body payload & broker-specific extras -------------------------------------  Put the standard parameters plus any broker-specific extensions under the ``order`` key of the body. Refer to the bundled OpenAPI examples below to see complete payloads for common order types (market, limit, spreads, etc.) across supported brokers.  For a formal reference of broker-specific extensions inspect the ``BrokerOrderPlaceExtras`` schema.  The endpoint resolves the active ``user_broker_connection`` by calling the ``get_user_broker_connection_ids_for_broker`` RPC in Supabase. If no active connection exists it returns a list of *available* brokers so your client can guide the user accordingly.  Broker Notes ------------ - The responses that you get back from the broker are not always the same. The response models are validated for each broker, but we do not standardize the repsonses.  - Tasty Trade: If you want to trade options for a particular stock, first fetch the full option chain via the GET https://api.tastyworks.com/option-chains/{stock_symbol}/nested endpoint. This endpoint returns all available expirations that tastytrade offers for that equity symbol. Each expiration contains a list of strikes, where each strike has a call and put field representing the call symbol and put symbol respectively.  We are planning to add a new endpoint to fetch the option chain for a particular stock and handle this logic for you, but for now you need to fetch the option chain manually.
      * @summary Place Order
-     * @param {BrokersApiPlaceOrderApiV1BrokersOrdersPostRequest} requestParameters Request parameters.
+     * @param {BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    placeOrderApiV1BrokersOrdersPost(requestParameters?: BrokersApiPlaceOrderApiV1BrokersOrdersPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult>;
+    placeOrderApiBetaBrokersOrdersPost(requestParameters?: BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult>;
 
 }
 
 /**
- * Request parameters for cancelOrderApiV1BrokersOrdersOrderIdDelete operation in BrokersApi.
+ * Request parameters for cancelOrderApiBetaBrokersOrdersOrderIdDelete operation in BrokersApi.
  */
-export interface BrokersApiCancelOrderApiV1BrokersOrdersOrderIdDeleteRequest {
+export interface BrokersApiCancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest {
     /**
      * Order ID
      */
@@ -1594,9 +1594,9 @@ export interface BrokersApiCancelOrderApiV1BrokersOrdersOrderIdDeleteRequest {
 }
 
 /**
- * Request parameters for disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete operation in BrokersApi.
+ * Request parameters for disconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDelete operation in BrokersApi.
  */
-export interface BrokersApiDisconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDeleteRequest {
+export interface BrokersApiDisconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDeleteRequest {
     /**
      * Connection ID
      */
@@ -1604,9 +1604,9 @@ export interface BrokersApiDisconnectCompanyFromBrokerApiV1BrokersDisconnectComp
 }
 
 /**
- * Request parameters for getAccountsApiV1BrokersDataAccountsGet operation in BrokersApi.
+ * Request parameters for getAccountsApiBetaBrokersDataAccountsGet operation in BrokersApi.
  */
-export interface BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest {
+export interface BrokersApiGetAccountsApiBetaBrokersDataAccountsGetRequest {
     /**
      * Filter by broker ID
      */
@@ -1644,9 +1644,9 @@ export interface BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest {
 }
 
 /**
- * Request parameters for getBalancesApiV1BrokersDataBalancesGet operation in BrokersApi.
+ * Request parameters for getBalancesApiBetaBrokersDataBalancesGet operation in BrokersApi.
  */
-export interface BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest {
+export interface BrokersApiGetBalancesApiBetaBrokersDataBalancesGetRequest {
     /**
      * Filter by broker ID
      */
@@ -1689,9 +1689,9 @@ export interface BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest {
 }
 
 /**
- * Request parameters for getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet operation in BrokersApi.
+ * Request parameters for getOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGet operation in BrokersApi.
  */
-export interface BrokersApiGetOrderEventsApiV1BrokersDataOrdersOrderIdEventsGetRequest {
+export interface BrokersApiGetOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGetRequest {
     /**
      * Order ID
      */
@@ -1719,9 +1719,9 @@ export interface BrokersApiGetOrderEventsApiV1BrokersDataOrdersOrderIdEventsGetR
 }
 
 /**
- * Request parameters for getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet operation in BrokersApi.
+ * Request parameters for getOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGet operation in BrokersApi.
  */
-export interface BrokersApiGetOrderFillsApiV1BrokersDataOrdersOrderIdFillsGetRequest {
+export interface BrokersApiGetOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGetRequest {
     /**
      * Order ID
      */
@@ -1749,9 +1749,9 @@ export interface BrokersApiGetOrderFillsApiV1BrokersDataOrdersOrderIdFillsGetReq
 }
 
 /**
- * Request parameters for getOrderGroupsApiV1BrokersDataOrdersGroupsGet operation in BrokersApi.
+ * Request parameters for getOrderGroupsApiBetaBrokersDataOrdersGroupsGet operation in BrokersApi.
  */
-export interface BrokersApiGetOrderGroupsApiV1BrokersDataOrdersGroupsGetRequest {
+export interface BrokersApiGetOrderGroupsApiBetaBrokersDataOrdersGroupsGetRequest {
     /**
      * Filter by broker ID
      */
@@ -1789,9 +1789,9 @@ export interface BrokersApiGetOrderGroupsApiV1BrokersDataOrdersGroupsGetRequest 
 }
 
 /**
- * Request parameters for getOrdersApiV1BrokersDataOrdersGet operation in BrokersApi.
+ * Request parameters for getOrdersApiBetaBrokersDataOrdersGet operation in BrokersApi.
  */
-export interface BrokersApiGetOrdersApiV1BrokersDataOrdersGetRequest {
+export interface BrokersApiGetOrdersApiBetaBrokersDataOrdersGetRequest {
     /**
      * Filter by broker ID
      */
@@ -1854,9 +1854,9 @@ export interface BrokersApiGetOrdersApiV1BrokersDataOrdersGetRequest {
 }
 
 /**
- * Request parameters for getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet operation in BrokersApi.
+ * Request parameters for getPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGet operation in BrokersApi.
  */
-export interface BrokersApiGetPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGetRequest {
+export interface BrokersApiGetPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGetRequest {
     /**
      * Position lot ID
      */
@@ -1879,9 +1879,9 @@ export interface BrokersApiGetPositionLotFillsApiV1BrokersDataPositionsLotsLotId
 }
 
 /**
- * Request parameters for getPositionLotsApiV1BrokersDataPositionsLotsGet operation in BrokersApi.
+ * Request parameters for getPositionLotsApiBetaBrokersDataPositionsLotsGet operation in BrokersApi.
  */
-export interface BrokersApiGetPositionLotsApiV1BrokersDataPositionsLotsGetRequest {
+export interface BrokersApiGetPositionLotsApiBetaBrokersDataPositionsLotsGetRequest {
     /**
      * Filter by broker ID
      */
@@ -1919,9 +1919,9 @@ export interface BrokersApiGetPositionLotsApiV1BrokersDataPositionsLotsGetReques
 }
 
 /**
- * Request parameters for getPositionsApiV1BrokersDataPositionsGet operation in BrokersApi.
+ * Request parameters for getPositionsApiBetaBrokersDataPositionsGet operation in BrokersApi.
  */
-export interface BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest {
+export interface BrokersApiGetPositionsApiBetaBrokersDataPositionsGetRequest {
     /**
      * Filter by broker ID
      */
@@ -1984,9 +1984,9 @@ export interface BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest {
 }
 
 /**
- * Request parameters for getTransactionsApiV1BrokersDataTransactionsGet operation in BrokersApi.
+ * Request parameters for getTransactionsApiBetaBrokersDataTransactionsGet operation in BrokersApi.
  */
-export interface BrokersApiGetTransactionsApiV1BrokersDataTransactionsGetRequest {
+export interface BrokersApiGetTransactionsApiBetaBrokersDataTransactionsGetRequest {
     /**
      * Filter by broker ID
      */
@@ -2039,9 +2039,9 @@ export interface BrokersApiGetTransactionsApiV1BrokersDataTransactionsGetRequest
 }
 
 /**
- * Request parameters for modifyOrderApiV1BrokersOrdersOrderIdPatch operation in BrokersApi.
+ * Request parameters for modifyOrderApiBetaBrokersOrdersOrderIdPatch operation in BrokersApi.
  */
-export interface BrokersApiModifyOrderApiV1BrokersOrdersOrderIdPatchRequest {
+export interface BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest {
     /**
      * Order ID
      */
@@ -2057,19 +2057,19 @@ export interface BrokersApiModifyOrderApiV1BrokersOrdersOrderIdPatchRequest {
      */
     readonly connectionId?: string | null
 
-    readonly modifyOrderApiV1BrokersOrdersOrderIdPatchRequest?: ModifyOrderApiV1BrokersOrdersOrderIdPatchRequest | null
+    readonly modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest?: ModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest | null
 }
 
 /**
- * Request parameters for placeOrderApiV1BrokersOrdersPost operation in BrokersApi.
+ * Request parameters for placeOrderApiBetaBrokersOrdersPost operation in BrokersApi.
  */
-export interface BrokersApiPlaceOrderApiV1BrokersOrdersPostRequest {
+export interface BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest {
     /**
      * Temporary bypass for testing: specify connection ID directly
      */
     readonly connectionId?: string | null
 
-    readonly placeOrderApiV1BrokersOrdersPostRequest?: PlaceOrderApiV1BrokersOrdersPostRequest | null
+    readonly placeOrderApiBetaBrokersOrdersPostRequest?: PlaceOrderApiBetaBrokersOrdersPostRequest | null
 }
 
 /**
@@ -2079,45 +2079,45 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
     /**
      * Cancel an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  The order_id is used to identify the order and automatically resolve the broker connection from the orders table.
      * @summary Cancel Order
-     * @param {BrokersApiCancelOrderApiV1BrokersOrdersOrderIdDeleteRequest} requestParameters Request parameters.
+     * @param {BrokersApiCancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public cancelOrderApiV1BrokersOrdersOrderIdDelete(requestParameters: BrokersApiCancelOrderApiV1BrokersOrdersOrderIdDeleteRequest, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).cancelOrderApiV1BrokersOrdersOrderIdDelete(requestParameters.orderId, options).then((request) => request(this.axios, this.basePath));
+    public cancelOrderApiBetaBrokersOrdersOrderIdDelete(requestParameters: BrokersApiCancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).cancelOrderApiBetaBrokersOrdersOrderIdDelete(requestParameters.orderId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Remove a company\'s access to a broker connection.  If the company is the only one with access, the entire connection is deleted. If other companies have access, only the company\'s access is removed.
      * @summary Disconnect Company From Broker
-     * @param {BrokersApiDisconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDeleteRequest} requestParameters Request parameters.
+     * @param {BrokersApiDisconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDeleteRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete(requestParameters: BrokersApiDisconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDeleteRequest, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).disconnectCompanyFromBrokerApiV1BrokersDisconnectCompanyConnectionIdDelete(requestParameters.connectionId, options).then((request) => request(this.axios, this.basePath));
+    public disconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDelete(requestParameters: BrokersApiDisconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDeleteRequest, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).disconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDelete(requestParameters.connectionId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Get accounts for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns accounts from connections the company has read access to.
      * @summary Get Accounts
-     * @param {BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetAccountsApiBetaBrokersDataAccountsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getAccountsApiV1BrokersDataAccountsGet(requestParameters: BrokersApiGetAccountsApiV1BrokersDataAccountsGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getAccountsApiV1BrokersDataAccountsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountType, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
+    public getAccountsApiBetaBrokersDataAccountsGet(requestParameters: BrokersApiGetAccountsApiBetaBrokersDataAccountsGetRequest = {}, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).getAccountsApiBetaBrokersDataAccountsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountType, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Get current unit-based balances for all authorized broker connections.  Returns array of current balances (one per unit_code per account). This endpoint is accessible from the portal and uses session-only authentication. Returns balances from connections the company has read access to.
      * @summary Get Balances
-     * @param {BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetBalancesApiBetaBrokersDataBalancesGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getBalancesApiV1BrokersDataBalancesGet(requestParameters: BrokersApiGetBalancesApiV1BrokersDataBalancesGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getBalancesApiV1BrokersDataBalancesGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.unitCode, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
+    public getBalancesApiBetaBrokersDataBalancesGet(requestParameters: BrokersApiGetBalancesApiBetaBrokersDataBalancesGetRequest = {}, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).getBalancesApiBetaBrokersDataBalancesGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.unitCode, requestParameters.currency, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2126,96 +2126,96 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getBrokersApiV1BrokersGet(options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getBrokersApiV1BrokersGet(options).then((request) => request(this.axios, this.basePath));
+    public getBrokersApiBetaBrokersGet(options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).getBrokersApiBetaBrokersGet(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Get order events for a specific order.  This endpoint returns all lifecycle events for the specified order.
      * @summary Get Order Events
-     * @param {BrokersApiGetOrderEventsApiV1BrokersDataOrdersOrderIdEventsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(requestParameters: BrokersApiGetOrderEventsApiV1BrokersDataOrdersOrderIdEventsGetRequest, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getOrderEventsApiV1BrokersDataOrdersOrderIdEventsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
+    public getOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGet(requestParameters: BrokersApiGetOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGetRequest, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).getOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Get order fills for a specific order.  This endpoint returns all execution fills for the specified order.
      * @summary Get Order Fills
-     * @param {BrokersApiGetOrderFillsApiV1BrokersDataOrdersOrderIdFillsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(requestParameters: BrokersApiGetOrderFillsApiV1BrokersDataOrdersOrderIdFillsGetRequest, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getOrderFillsApiV1BrokersDataOrdersOrderIdFillsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
+    public getOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGet(requestParameters: BrokersApiGetOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGetRequest, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).getOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGet(requestParameters.orderId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Get order groups.  This endpoint returns order groups that contain multiple orders.
      * @summary Get Order Groups
-     * @param {BrokersApiGetOrderGroupsApiV1BrokersDataOrdersGroupsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetOrderGroupsApiBetaBrokersDataOrdersGroupsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getOrderGroupsApiV1BrokersDataOrdersGroupsGet(requestParameters: BrokersApiGetOrderGroupsApiV1BrokersDataOrdersGroupsGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getOrderGroupsApiV1BrokersDataOrdersGroupsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
+    public getOrderGroupsApiBetaBrokersDataOrdersGroupsGet(requestParameters: BrokersApiGetOrderGroupsApiBetaBrokersDataOrdersGroupsGetRequest = {}, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).getOrderGroupsApiBetaBrokersDataOrdersGroupsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Get orders for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns orders from connections the company has read access to.
      * @summary Get Orders
-     * @param {BrokersApiGetOrdersApiV1BrokersDataOrdersGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetOrdersApiBetaBrokersDataOrdersGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getOrdersApiV1BrokersDataOrdersGet(requestParameters: BrokersApiGetOrdersApiV1BrokersDataOrdersGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getOrdersApiV1BrokersDataOrdersGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.orderStatus, requestParameters.side, requestParameters.assetType, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
+    public getOrdersApiBetaBrokersDataOrdersGet(requestParameters: BrokersApiGetOrdersApiBetaBrokersDataOrdersGetRequest = {}, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).getOrdersApiBetaBrokersDataOrdersGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.orderStatus, requestParameters.side, requestParameters.assetType, requestParameters.limit, requestParameters.offset, requestParameters.createdAfter, requestParameters.createdBefore, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Get position lot fills for a specific lot.  This endpoint returns all fills associated with a specific position lot.
      * @summary Get Position Lot Fills
-     * @param {BrokersApiGetPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet(requestParameters: BrokersApiGetPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGetRequest, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getPositionLotFillsApiV1BrokersDataPositionsLotsLotIdFillsGet(requestParameters.lotId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, options).then((request) => request(this.axios, this.basePath));
+    public getPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGet(requestParameters: BrokersApiGetPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGetRequest, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).getPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGet(requestParameters.lotId, requestParameters.connectionId, requestParameters.limit, requestParameters.offset, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Get position lots (tax lots for positions).  This endpoint returns tax lots for positions, which are used for tax reporting. Each lot tracks when a position was opened/closed and at what prices.
      * @summary Get Position Lots
-     * @param {BrokersApiGetPositionLotsApiV1BrokersDataPositionsLotsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetPositionLotsApiBetaBrokersDataPositionsLotsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getPositionLotsApiV1BrokersDataPositionsLotsGet(requestParameters: BrokersApiGetPositionLotsApiV1BrokersDataPositionsLotsGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getPositionLotsApiV1BrokersDataPositionsLotsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.positionId, requestParameters.limit, requestParameters.offset, options).then((request) => request(this.axios, this.basePath));
+    public getPositionLotsApiBetaBrokersDataPositionsLotsGet(requestParameters: BrokersApiGetPositionLotsApiBetaBrokersDataPositionsLotsGetRequest = {}, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).getPositionLotsApiBetaBrokersDataPositionsLotsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.positionId, requestParameters.limit, requestParameters.offset, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Get positions for all authorized broker connections.  This endpoint is accessible from the portal and uses session-only authentication. Returns positions from connections the company has read access to.
      * @summary Get Positions
-     * @param {BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetPositionsApiBetaBrokersDataPositionsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getPositionsApiV1BrokersDataPositionsGet(requestParameters: BrokersApiGetPositionsApiV1BrokersDataPositionsGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getPositionsApiV1BrokersDataPositionsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.side, requestParameters.assetType, requestParameters.positionStatus, requestParameters.limit, requestParameters.offset, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
+    public getPositionsApiBetaBrokersDataPositionsGet(requestParameters: BrokersApiGetPositionsApiBetaBrokersDataPositionsGetRequest = {}, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).getPositionsApiBetaBrokersDataPositionsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.symbol, requestParameters.side, requestParameters.assetType, requestParameters.positionStatus, requestParameters.limit, requestParameters.offset, requestParameters.updatedAfter, requestParameters.updatedBefore, requestParameters.includeMetadata, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Get transactions for all authorized broker connections.  Returns transactions from connections the company has read access to. This endpoint is accessible from the portal and uses session-only authentication.
      * @summary Get Transactions
-     * @param {BrokersApiGetTransactionsApiV1BrokersDataTransactionsGetRequest} requestParameters Request parameters.
+     * @param {BrokersApiGetTransactionsApiBetaBrokersDataTransactionsGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getTransactionsApiV1BrokersDataTransactionsGet(requestParameters: BrokersApiGetTransactionsApiV1BrokersDataTransactionsGetRequest = {}, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).getTransactionsApiV1BrokersDataTransactionsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.unitCode, requestParameters.currency, requestParameters.transactionType, requestParameters.startDate, requestParameters.endDate, requestParameters.limit, requestParameters.offset, options).then((request) => request(this.axios, this.basePath));
+    public getTransactionsApiBetaBrokersDataTransactionsGet(requestParameters: BrokersApiGetTransactionsApiBetaBrokersDataTransactionsGetRequest = {}, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).getTransactionsApiBetaBrokersDataTransactionsGet(requestParameters.brokerId, requestParameters.connectionId, requestParameters.accountId, requestParameters.unitCode, requestParameters.currency, requestParameters.transactionType, requestParameters.startDate, requestParameters.endDate, requestParameters.limit, requestParameters.offset, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2224,30 +2224,30 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public listBrokerConnectionsApiV1BrokersConnectionsGet(options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).listBrokerConnectionsApiV1BrokersConnectionsGet(options).then((request) => request(this.axios, this.basePath));
+    public listBrokerConnectionsApiBetaBrokersConnectionsGet(options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).listBrokerConnectionsApiBetaBrokersConnectionsGet(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Modify an existing order.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.
      * @summary Modify Order
-     * @param {BrokersApiModifyOrderApiV1BrokersOrdersOrderIdPatchRequest} requestParameters Request parameters.
+     * @param {BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public modifyOrderApiV1BrokersOrdersOrderIdPatch(requestParameters: BrokersApiModifyOrderApiV1BrokersOrdersOrderIdPatchRequest, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).modifyOrderApiV1BrokersOrdersOrderIdPatch(requestParameters.orderId, requestParameters.accountNumber, requestParameters.connectionId, requestParameters.modifyOrderApiV1BrokersOrdersOrderIdPatchRequest, options).then((request) => request(this.axios, this.basePath));
+    public modifyOrderApiBetaBrokersOrdersOrderIdPatch(requestParameters: BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).modifyOrderApiBetaBrokersOrdersOrderIdPatch(requestParameters.orderId, requestParameters.accountNumber, requestParameters.connectionId, requestParameters.modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * Create a new order via the specified broker connection.  This endpoint is accessible from the portal and uses session-only authentication. Requires trading permissions for the company.  Standard parameters ------------------- The following fields constitute the unified Finatic *common order schema* and therefore appear individually as query parameters in the autogenerated OpenAPI documentation:  - ``broker`` - ``account_number`` - ``order_type`` - ``asset_type`` - ``action`` - ``time_in_force`` - ``symbol`` - ``order_qty``  They are surfaced as *query* parameters **only to make the accepted fields obvious in the interactive docs**. In production usage you should send these fields inside the JSON body (see ``order_request``) so that the entire order specification travels in one payload. (Nothing will break if you send both, but there is no need to do so.)  Body payload & broker-specific extras -------------------------------------  Put the standard parameters plus any broker-specific extensions under the ``order`` key of the body. Refer to the bundled OpenAPI examples below to see complete payloads for common order types (market, limit, spreads, etc.) across supported brokers.  For a formal reference of broker-specific extensions inspect the ``BrokerOrderPlaceExtras`` schema.  The endpoint resolves the active ``user_broker_connection`` by calling the ``get_user_broker_connection_ids_for_broker`` RPC in Supabase. If no active connection exists it returns a list of *available* brokers so your client can guide the user accordingly.  Broker Notes ------------ - The responses that you get back from the broker are not always the same. The response models are validated for each broker, but we do not standardize the repsonses.  - Tasty Trade: If you want to trade options for a particular stock, first fetch the full option chain via the GET https://api.tastyworks.com/option-chains/{stock_symbol}/nested endpoint. This endpoint returns all available expirations that tastytrade offers for that equity symbol. Each expiration contains a list of strikes, where each strike has a call and put field representing the call symbol and put symbol respectively.  We are planning to add a new endpoint to fetch the option chain for a particular stock and handle this logic for you, but for now you need to fetch the option chain manually.
      * @summary Place Order
-     * @param {BrokersApiPlaceOrderApiV1BrokersOrdersPostRequest} requestParameters Request parameters.
+     * @param {BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public placeOrderApiV1BrokersOrdersPost(requestParameters: BrokersApiPlaceOrderApiV1BrokersOrdersPostRequest = {}, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).placeOrderApiV1BrokersOrdersPost(requestParameters.connectionId, requestParameters.placeOrderApiV1BrokersOrdersPostRequest, options).then((request) => request(this.axios, this.basePath));
+    public placeOrderApiBetaBrokersOrdersPost(requestParameters: BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest = {}, options?: RawAxiosRequestConfig) {
+        return BrokersApiFp(this.configuration).placeOrderApiBetaBrokersOrdersPost(requestParameters.connectionId, requestParameters.placeOrderApiBetaBrokersOrdersPostRequest, options).then((request) => request(this.axios, this.basePath));
     }
 }
 

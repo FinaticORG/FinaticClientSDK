@@ -14,9 +14,6 @@
 
 
 
-/**
- * Pending balance
- */
-export interface Pendingbalance {
+export interface LocationInner {
 }
 

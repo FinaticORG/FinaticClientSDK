@@ -99,8 +99,8 @@ export class CompanyWrapper {
    * @param params.companyId {string} Company ID
    * @returns {Promise<FinaticResponse<Accounts>>} Standard response with success/Error/Warning structure
    * 
-   * Generated from: GET /api/v1/company/{company_id}
-   * @methodId get_company_api_v1_company__company_id__get
+   * Generated from: GET /api/beta/company/{company_id}
+   * @methodId get_company_api_beta_company__company_id__get
    * @category company
    * @example
    * ```typescript-client
@@ -133,7 +133,7 @@ export class CompanyWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/v1/company/{company_id}', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey('GET', '/api/beta/company/{company_id}', resolvedParams, this.sdkConfig);
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -145,7 +145,7 @@ export class CompanyWrapper {
     this.logger.debug('Get Company', {
       request_id: requestId,
       method: 'GET',
-      path: '/api/v1/company/{company_id}',
+      path: '/api/beta/company/{company_id}',
       params: resolvedParams,
       action: 'getCompany'
     });
@@ -153,7 +153,7 @@ export class CompanyWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getCompanyApiV1CompanyCompanyIdGet({ companyId: resolvedParams.companyId ?? null }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getCompanyApiBetaCompanyCompanyIdGet({ companyId: resolvedParams.companyId ?? null }, { headers: { 'x-request-id': requestId } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -195,7 +195,7 @@ export class CompanyWrapper {
       }
       
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/v1/company/{company_id}', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey('GET', '/api/beta/company/{company_id}', resolvedParams, this.sdkConfig);
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
       

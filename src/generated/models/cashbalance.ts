@@ -15,7 +15,7 @@
 
 
 /**
- * Cash on hand
+ * Cash balance
  */
 export interface Cashbalance {
 }

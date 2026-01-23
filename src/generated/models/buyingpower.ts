@@ -15,7 +15,7 @@
 
 
 /**
- * Margin buying power
+ * Buying power
  */
 export interface Buyingpower {
 }

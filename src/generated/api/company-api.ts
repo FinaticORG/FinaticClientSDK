@@ -18,7 +18,7 @@ import type { AxiosPromise, AxiosInstance, RawAxiosRequestConfig } from 'axios';
 import globalAxios from 'axios';
 // Some imports not used depending on template conditions
 // @ts-ignore
-import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction } from '../common';
+import { DUMMY_BASE_URL, assertParamExists, setApiKeyToObject, setBasicAuthToObject, setBearerAuthToObject, setOAuthToObject, setSearchParams, serializeDataIfNeeded, toPathString, createRequestFunction, replaceWithSerializableTypeIfNeeded } from '../common';
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError, operationServerMap } from '../base';
 // @ts-ignore
@@ -37,10 +37,10 @@ export const CompanyApiAxiosParamCreator = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getCompanyApiV1CompanyCompanyIdGet: async (companyId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getCompanyApiBetaCompanyCompanyIdGet: async (companyId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'companyId' is not null or undefined
-            assertParamExists('getCompanyApiV1CompanyCompanyIdGet', 'companyId', companyId)
-            const localVarPath = `/api/v1/company/{company_id}`
+            assertParamExists('getCompanyApiBetaCompanyCompanyIdGet', 'companyId', companyId)
+            const localVarPath = `/api/beta/company/{company_id}`
                 .replace(`{${"company_id"}}`, encodeURIComponent(String(companyId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -80,10 +80,10 @@ export const CompanyApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getCompanyApiV1CompanyCompanyIdGet(companyId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseAccounts>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getCompanyApiV1CompanyCompanyIdGet(companyId, options);
+        async getCompanyApiBetaCompanyCompanyIdGet(companyId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseAccounts>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getCompanyApiBetaCompanyCompanyIdGet(companyId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['CompanyApi.getCompanyApiV1CompanyCompanyIdGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['CompanyApi.getCompanyApiBetaCompanyCompanyIdGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
@@ -98,12 +98,12 @@ export const CompanyApiFactory = function (configuration?: Configuration, basePa
         /**
          * Get public company details by ID (no user check, no sensitive data).
          * @summary Get Company
-         * @param {CompanyApiGetCompanyApiV1CompanyCompanyIdGetRequest} requestParameters Request parameters.
+         * @param {CompanyApiGetCompanyApiBetaCompanyCompanyIdGetRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getCompanyApiV1CompanyCompanyIdGet(requestParameters: CompanyApiGetCompanyApiV1CompanyCompanyIdGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseAccounts> {
-            return localVarFp.getCompanyApiV1CompanyCompanyIdGet(requestParameters.companyId, options).then((request) => request(axios, basePath));
+        getCompanyApiBetaCompanyCompanyIdGet(requestParameters: CompanyApiGetCompanyApiBetaCompanyCompanyIdGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseAccounts> {
+            return localVarFp.getCompanyApiBetaCompanyCompanyIdGet(requestParameters.companyId, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -115,18 +115,18 @@ export interface CompanyApiInterface {
     /**
      * Get public company details by ID (no user check, no sensitive data).
      * @summary Get Company
-     * @param {CompanyApiGetCompanyApiV1CompanyCompanyIdGetRequest} requestParameters Request parameters.
+     * @param {CompanyApiGetCompanyApiBetaCompanyCompanyIdGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getCompanyApiV1CompanyCompanyIdGet(requestParameters: CompanyApiGetCompanyApiV1CompanyCompanyIdGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseAccounts>;
+    getCompanyApiBetaCompanyCompanyIdGet(requestParameters: CompanyApiGetCompanyApiBetaCompanyCompanyIdGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseAccounts>;
 
 }
 
 /**
- * Request parameters for getCompanyApiV1CompanyCompanyIdGet operation in CompanyApi.
+ * Request parameters for getCompanyApiBetaCompanyCompanyIdGet operation in CompanyApi.
  */
-export interface CompanyApiGetCompanyApiV1CompanyCompanyIdGetRequest {
+export interface CompanyApiGetCompanyApiBetaCompanyCompanyIdGetRequest {
     /**
      * Company ID
      */
@@ -140,12 +140,12 @@ export class CompanyApi extends BaseAPI implements CompanyApiInterface {
     /**
      * Get public company details by ID (no user check, no sensitive data).
      * @summary Get Company
-     * @param {CompanyApiGetCompanyApiV1CompanyCompanyIdGetRequest} requestParameters Request parameters.
+     * @param {CompanyApiGetCompanyApiBetaCompanyCompanyIdGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getCompanyApiV1CompanyCompanyIdGet(requestParameters: CompanyApiGetCompanyApiV1CompanyCompanyIdGetRequest, options?: RawAxiosRequestConfig) {
-        return CompanyApiFp(this.configuration).getCompanyApiV1CompanyCompanyIdGet(requestParameters.companyId, options).then((request) => request(this.axios, this.basePath));
+    public getCompanyApiBetaCompanyCompanyIdGet(requestParameters: CompanyApiGetCompanyApiBetaCompanyCompanyIdGetRequest, options?: RawAxiosRequestConfig) {
+        return CompanyApiFp(this.configuration).getCompanyApiBetaCompanyCompanyIdGet(requestParameters.companyId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
