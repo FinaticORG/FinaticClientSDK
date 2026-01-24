@@ -19,6 +19,7 @@ import { coerceEnumValue } from '../utils/enum-coercion';
 import { convertToPlainObject } from '../utils/plain-object';
 
 import type { Accounts } from '../models';
+import type { FinaticResponseAccounts } from '../models';
 
 // Always import PaginatedData since method bodies may reference it (even if unreachable)
 import { PaginatedData } from '../utils/pagination';

@@ -32,10 +32,25 @@ import type { FDXBrokerPosition } from '../models';
 import type { FDXBrokerPositionLot } from '../models';
 import type { FDXBrokerPositionLotFill } from '../models';
 import type { FDXBrokerTransaction } from '../models';
+import type { FinaticResponseDisconnectCompanyFromBrokerConnectionResult } from '../models';
+import type { FinaticResponseListBrokerInfo } from '../models';
+import type { FinaticResponseListFDXBrokerOrder } from '../models';
+import type { FinaticResponseListFDXBrokerOrderEvent } from '../models';
+import type { FinaticResponseListFDXBrokerOrderFill } from '../models';
+import type { FinaticResponseListFDXBrokerOrderGroup } from '../models';
+import type { FinaticResponseListFDXBrokerPosition } from '../models';
+import type { FinaticResponseListFDXBrokerPositionLot } from '../models';
+import type { FinaticResponseListFDXBrokerPositionLotFill } from '../models';
+import type { FinaticResponseListFDXBrokerTransaction } from '../models';
+import type { FinaticResponseListLegacyBrokerAccount } from '../models';
+import type { FinaticResponseListLegacyBrokerBalance } from '../models';
+import type { FinaticResponseListUserBrokerConnectionWithPermissions } from '../models';
+import type { FinaticResponseOrderActionResult } from '../models';
 import type { LegacyBrokerAccount } from '../models';
 import type { LegacyBrokerBalance } from '../models';
+import type { ModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest } from '../models';
 import type { OrderActionResult } from '../models';
-import type { OrderRequest } from '../models';
+import type { PlaceOrderApiBetaBrokersOrdersPostRequest } from '../models';
 import type { UserBrokerConnectionWithPermissions } from '../models';
 
 // Always import PaginatedData since method bodies may reference it (even if unreachable)
@@ -259,7 +274,7 @@ export interface GetPositionLotFillsParams {
 
 export interface PlaceOrderParams {
   /** Broker-specific extra parameters object. This is used to pass in broker-specific fields if you want to send a reqeust to a broker API with the parameters that EXTEND our standardized query parameters. */
-  body?: OrderRequest;
+  body?: PlaceOrderApiBetaBrokersOrdersPostRequest;
   /** Temporary bypass for testing: specify connection ID directly */
   connectionId?: string;
 }
@@ -273,7 +288,7 @@ export interface ModifyOrderParams {
   /** Order ID */
   orderId: string;
   /** Broker-specific *modify order* payload. Pass **all** standard parameters plus any broker-specific extensions under the `order` key. See the schema for a formal reference. */
-  body?: OrderRequest;
+  body?: ModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest;
   /** Account number owning the order */
   accountNumber?: string;
   /** Temporary bypass for testing: specify connection ID directly */
@@ -3162,7 +3177,7 @@ export class BrokersWrapper {
    *
    * We are planning to add a new endpoint to fetch the option chain for a particular stock and
    * handle this logic for you, but for now you need to fetch the option chain manually.
-   * @param params.body {OrderRequest} (optional) Broker-specific extra parameters object. This is used to pass in broker-specific fields if you want to send a reqeust to a broker API with the parameters that EXTEND our standardized query parameters.
+   * @param params.body {PlaceOrderApiBetaBrokersOrdersPostRequest} (optional) Broker-specific extra parameters object. This is used to pass in broker-specific fields if you want to send a reqeust to a broker API with the parameters that EXTEND our standardized query parameters.
    * @param params.connectionId {string} (optional) Temporary bypass for testing: specify connection ID directly
    * @returns {Promise<FinaticResponse<OrderActionResult>>} Standard response with success/Error/Warning structure
    * 
@@ -3238,7 +3253,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.placeOrderApiBetaBrokersOrdersPost({ ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), orderRequest: resolvedParams.body ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.placeOrderApiBetaBrokersOrdersPost({ ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), placeOrderApiBetaBrokersOrdersPostRequest: resolvedParams.body ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -3568,7 +3583,7 @@ export class BrokersWrapper {
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Requires trading permissions for the company.
    * @param params.orderId {string} Order ID
-   * @param params.body {OrderRequest} (optional) Broker-specific *modify order* payload. Pass **all** standard parameters plus any broker-specific extensions under the `order` key. See the schema for a formal reference.
+   * @param params.body {ModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest} (optional) Broker-specific *modify order* payload. Pass **all** standard parameters plus any broker-specific extensions under the `order` key. See the schema for a formal reference.
    * @param params.accountNumber {string} (optional) Account number owning the order
    * @param params.connectionId {string} (optional) Temporary bypass for testing: specify connection ID directly
    * @returns {Promise<FinaticResponse<OrderActionResult>>} Standard response with success/Error/Warning structure
@@ -3651,7 +3666,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.modifyOrderApiBetaBrokersOrdersOrderIdPatch({ orderId: resolvedParams.orderId ?? null, ...(resolvedParams.accountNumber !== undefined ? { accountNumber: resolvedParams.accountNumber } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), orderRequest: resolvedParams.body ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.modifyOrderApiBetaBrokersOrdersOrderIdPatch({ orderId: resolvedParams.orderId ?? null, ...(resolvedParams.accountNumber !== undefined ? { accountNumber: resolvedParams.accountNumber } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest: resolvedParams.body ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
