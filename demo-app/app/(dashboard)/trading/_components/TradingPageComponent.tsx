@@ -408,6 +408,479 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
       },
     },
   ],
+  tasty_trade: [
+    {
+      id: 'tasty_trade-equity-market-buy',
+      label: 'Equity - Market Buy',
+      description: 'Market equity buy order for TastyTrade.',
+      assetType: 'equity',
+      orderType: 'market',
+      defaultOrder: {
+        orderType: 'market',
+        assetType: 'equity',
+        action: 'buy',
+        timeInForce: 'day',
+        symbol: 'AAPL',
+        orderQty: 10,
+        'automated-source': true,
+      },
+    },
+    {
+      id: 'tasty_trade-equity-limit-sell',
+      label: 'Equity - Limit Sell',
+      description: 'Limit equity sell order for TastyTrade.',
+      assetType: 'equity',
+      orderType: 'limit',
+      defaultOrder: {
+        orderType: 'limit',
+        assetType: 'equity',
+        action: 'sell',
+        timeInForce: 'gtc',
+        symbol: 'GOOGL',
+        orderQty: 5,
+        price: 1500.0,
+        'automated-source': true,
+      },
+    },
+    {
+      id: 'tasty_trade-equity-stop-buy-gtc',
+      label: 'Equity - Stop Buy (GTC)',
+      description: 'Stop equity buy order for TastyTrade (GTC).',
+      assetType: 'equity',
+      orderType: 'stop',
+      defaultOrder: {
+        orderType: 'stop',
+        assetType: 'equity',
+        action: 'buy',
+        timeInForce: 'gtc',
+        symbol: 'MSFT',
+        orderQty: 20,
+        stopPrice: 310.0,
+        'automated-source': true,
+      },
+    },
+    {
+      id: 'tasty_trade-equity-stop-limit-sell-gtd',
+      label: 'Equity - Stop Limit Sell (GTD)',
+      description: 'Stop-limit equity sell order for TastyTrade with expire time.',
+      assetType: 'equity',
+      orderType: 'stop_limit',
+      defaultOrder: {
+        orderType: 'stop_limit',
+        assetType: 'equity',
+        action: 'sell',
+        timeInForce: 'gtd',
+        expireTime: '2025-01-15T14:30:00Z',
+        symbol: 'TSLA',
+        orderQty: 3,
+        stopPrice: 200.0,
+        limitPrice: 195.0,
+        'automated-source': true,
+      },
+    },
+    {
+      id: 'tasty_trade-equity-option-limit-buy-single-leg',
+      label: 'Equity Option - Limit Buy (Single Leg)',
+      description: 'Single-leg equity option limit buy for TastyTrade.',
+      assetType: 'equity_option',
+      orderType: 'limit',
+      defaultOrder: {
+        orderType: 'limit',
+        assetType: 'equity_option',
+        action: 'buy',
+        timeInForce: 'day',
+        symbol: 'AAPL',
+        orderQty: 1,
+        price: 1.25,
+        expirationDate: '2025-06-21',
+        strikePrice: 150.0,
+        optionType: 'call',
+        'automated-source': true,
+        'price-effect': 'Debit',
+      },
+    },
+    {
+      id: 'tasty_trade-equity-option-limit-sell-single-leg',
+      label: 'Equity Option - Limit Sell (Single Leg)',
+      description: 'Single-leg equity option limit sell for TastyTrade.',
+      assetType: 'equity_option',
+      orderType: 'limit',
+      defaultOrder: {
+        orderType: 'limit',
+        assetType: 'equity_option',
+        action: 'sell',
+        timeInForce: 'gtc',
+        symbol: 'AAPL',
+        orderQty: 1,
+        price: 2.1,
+        expirationDate: '2025-06-21',
+        strikePrice: 140.0,
+        optionType: 'put',
+        'automated-source': true,
+        'price-effect': 'Credit',
+      },
+    },
+    {
+      id: 'tasty_trade-equity-option-limit-buy-debit-spread',
+      label: 'Equity Option - Limit Buy (Debit Spread)',
+      description: 'Multi-leg equity option limit buy debit spread for TastyTrade using legs array.',
+      assetType: 'equity_option',
+      orderType: 'limit',
+      defaultOrder: {
+        orderType: 'limit',
+        assetType: 'equity_option',
+        action: 'buy',
+        timeInForce: 'gtc',
+        symbol: 'SPY',
+        orderQty: 1,
+        price: 1.5,
+        'automated-source': true,
+        'price-effect': 'Debit',
+        legs: [
+          {
+            'instrument-type': 'Equity Option',
+            symbol: 'SPY',
+            quantity: 1,
+            action: 'Buy to Open',
+            expirationDate: '2025-06-21',
+            strikePrice: 430.0,
+            optionType: 'call',
+          },
+          {
+            'instrument-type': 'Equity Option',
+            symbol: 'SPY',
+            quantity: 1,
+            action: 'Sell to Open',
+            expirationDate: '2025-06-21',
+            strikePrice: 435.0,
+            optionType: 'call',
+          },
+        ],
+      },
+    },
+    {
+      id: 'tasty_trade-equity-option-limit-sell-credit-spread',
+      label: 'Equity Option - Limit Sell (Credit Spread)',
+      description: 'Multi-leg equity option limit sell credit spread for TastyTrade using legs array.',
+      assetType: 'equity_option',
+      orderType: 'limit',
+      defaultOrder: {
+        orderType: 'limit',
+        assetType: 'equity_option',
+        action: 'sell',
+        timeInForce: 'gtc',
+        symbol: 'SPY',
+        orderQty: 1,
+        price: 0.8,
+        'automated-source': true,
+        'price-effect': 'Credit',
+        legs: [
+          {
+            'instrument-type': 'Equity Option',
+            symbol: 'SPY',
+            quantity: 1,
+            action: 'Sell to Open',
+            expirationDate: '2025-06-21',
+            strikePrice: 430.0,
+            optionType: 'put',
+          },
+          {
+            'instrument-type': 'Equity Option',
+            symbol: 'SPY',
+            quantity: 1,
+            action: 'Buy to Open',
+            expirationDate: '2025-06-21',
+            strikePrice: 425.0,
+            optionType: 'put',
+          },
+        ],
+      },
+    },
+    {
+      id: 'tasty_trade-future-market-buy',
+      label: 'Future - Market Buy',
+      description: 'Market future buy order for TastyTrade.',
+      assetType: 'future',
+      orderType: 'market',
+      defaultOrder: {
+        orderType: 'market',
+        assetType: 'future',
+        action: 'buy',
+        timeInForce: 'day',
+        symbol: 'ES',
+        orderQty: 1,
+        'automated-source': true,
+      },
+    },
+    {
+      id: 'tasty_trade-future-limit-sell',
+      label: 'Future - Limit Sell',
+      description: 'Limit future sell order for TastyTrade.',
+      assetType: 'future',
+      orderType: 'limit',
+      defaultOrder: {
+        orderType: 'limit',
+        assetType: 'future',
+        action: 'sell',
+        timeInForce: 'gtc',
+        symbol: 'NQ',
+        orderQty: 1,
+        price: 15000.0,
+        'automated-source': true,
+      },
+    },
+    {
+      id: 'tasty_trade-future-option-limit-buy',
+      label: 'Future Option - Limit Buy',
+      description: 'Limit future option buy order for TastyTrade.',
+      assetType: 'future_option',
+      orderType: 'limit',
+      defaultOrder: {
+        orderType: 'limit',
+        assetType: 'future_option',
+        action: 'buy',
+        timeInForce: 'day',
+        symbol: 'ES',
+        orderQty: 1,
+        price: 50.0,
+        expirationDate: '2025-06-20',
+        strikePrice: 4000.0,
+        optionType: 'call',
+        'automated-source': true,
+        'price-effect': 'Debit',
+      },
+    },
+    {
+      id: 'tasty_trade-crypto-market-buy',
+      label: 'Crypto - Market Buy',
+      description: 'Crypto market buy order for TastyTrade.',
+      assetType: 'crypto',
+      orderType: 'market',
+      defaultOrder: {
+        orderType: 'market',
+        assetType: 'crypto',
+        action: 'buy',
+        timeInForce: 'gtc',
+        symbol: 'BTC',
+        orderQty: 0.001,
+        'automated-source': true,
+      },
+    },
+    {
+      id: 'tasty_trade-crypto-limit-sell',
+      label: 'Crypto - Limit Sell',
+      description: 'Crypto limit sell order for TastyTrade.',
+      assetType: 'crypto',
+      orderType: 'limit',
+      defaultOrder: {
+        orderType: 'limit',
+        assetType: 'crypto',
+        action: 'sell',
+        timeInForce: 'gtc',
+        symbol: 'ETH',
+        orderQty: 0.1,
+        price: 3200.0,
+        'automated-source': true,
+      },
+    },
+  ],
+  ninja_trader: [
+    {
+      id: 'ninja_trader-equity-market-buy',
+      label: 'Equity - Market Buy',
+      description: 'Market equity buy order for NinjaTrader.',
+      assetType: 'equity',
+      orderType: 'market',
+      defaultOrder: {
+        orderType: 'market',
+        assetType: 'equity',
+        action: 'buy',
+        timeInForce: 'day',
+        symbol: 'AAPL',
+        orderQty: 10,
+        isAutomated: true,
+      },
+    },
+    {
+      id: 'ninja_trader-equity-limit-sell',
+      label: 'Equity - Limit Sell',
+      description: 'Limit equity sell order for NinjaTrader.',
+      assetType: 'equity',
+      orderType: 'limit',
+      defaultOrder: {
+        orderType: 'limit',
+        assetType: 'equity',
+        action: 'sell',
+        timeInForce: 'gtc',
+        symbol: 'GOOGL',
+        orderQty: 5,
+        price: 1500.0,
+        isAutomated: true,
+      },
+    },
+    {
+      id: 'ninja_trader-equity-stop-buy-gtc',
+      label: 'Equity - Stop Buy (GTC)',
+      description: 'Stop equity buy order for NinjaTrader (GTC).',
+      assetType: 'equity',
+      orderType: 'stop',
+      defaultOrder: {
+        orderType: 'stop',
+        assetType: 'equity',
+        action: 'buy',
+        timeInForce: 'gtc',
+        symbol: 'MSFT',
+        orderQty: 20,
+        stopPrice: 310.0,
+        isAutomated: true,
+      },
+    },
+    {
+      id: 'ninja_trader-equity-stop-limit-sell-gtd',
+      label: 'Equity - Stop Limit Sell (GTD)',
+      description: 'Stop-limit equity sell order for NinjaTrader with expire time.',
+      assetType: 'equity',
+      orderType: 'stop_limit',
+      defaultOrder: {
+        orderType: 'stop_limit',
+        assetType: 'equity',
+        action: 'sell',
+        timeInForce: 'gtd',
+        expireTime: '2025-01-15T14:30:00Z',
+        symbol: 'TSLA',
+        orderQty: 3,
+        stopPrice: 200.0,
+        limitPrice: 195.0,
+        isAutomated: true,
+      },
+    },
+    {
+      id: 'ninja_trader-equity-option-limit-buy-single-leg',
+      label: 'Equity Option - Limit Buy (Single Leg)',
+      description: 'Single-leg equity option limit buy for NinjaTrader.',
+      assetType: 'equity_option',
+      orderType: 'limit',
+      defaultOrder: {
+        orderType: 'limit',
+        assetType: 'equity_option',
+        action: 'buy',
+        timeInForce: 'day',
+        symbol: 'AAPL',
+        orderQty: 1,
+        price: 1.25,
+        expirationDate: '2025-06-21',
+        strikePrice: 150.0,
+        optionType: 'call',
+        isAutomated: true,
+      },
+    },
+    {
+      id: 'ninja_trader-equity-option-limit-sell-single-leg',
+      label: 'Equity Option - Limit Sell (Single Leg)',
+      description: 'Single-leg equity option limit sell for NinjaTrader.',
+      assetType: 'equity_option',
+      orderType: 'limit',
+      defaultOrder: {
+        orderType: 'limit',
+        assetType: 'equity_option',
+        action: 'sell',
+        timeInForce: 'gtc',
+        symbol: 'AAPL',
+        orderQty: 1,
+        price: 2.1,
+        expirationDate: '2025-06-21',
+        strikePrice: 140.0,
+        optionType: 'put',
+        isAutomated: true,
+      },
+    },
+    {
+      id: 'ninja_trader-future-market-buy',
+      label: 'Future - Market Buy',
+      description: 'Market future buy order for NinjaTrader.',
+      assetType: 'future',
+      orderType: 'market',
+      defaultOrder: {
+        orderType: 'market',
+        assetType: 'future',
+        action: 'buy',
+        timeInForce: 'day',
+        symbol: 'ES',
+        orderQty: 1,
+        isAutomated: true,
+      },
+    },
+    {
+      id: 'ninja_trader-future-limit-sell',
+      label: 'Future - Limit Sell',
+      description: 'Limit future sell order for NinjaTrader.',
+      assetType: 'future',
+      orderType: 'limit',
+      defaultOrder: {
+        orderType: 'limit',
+        assetType: 'future',
+        action: 'sell',
+        timeInForce: 'gtc',
+        symbol: 'NQ',
+        orderQty: 1,
+        price: 15000.0,
+        isAutomated: true,
+      },
+    },
+    {
+      id: 'ninja_trader-future-option-limit-buy',
+      label: 'Future Option - Limit Buy',
+      description: 'Limit future option buy order for NinjaTrader.',
+      assetType: 'future_option',
+      orderType: 'limit',
+      defaultOrder: {
+        orderType: 'limit',
+        assetType: 'future_option',
+        action: 'buy',
+        timeInForce: 'day',
+        symbol: 'ES',
+        orderQty: 1,
+        price: 50.0,
+        expirationDate: '2025-06-20',
+        strikePrice: 4000.0,
+        optionType: 'call',
+        isAutomated: true,
+      },
+    },
+    {
+      id: 'ninja_trader-crypto-market-buy',
+      label: 'Crypto - Market Buy',
+      description: 'Crypto market buy order for NinjaTrader.',
+      assetType: 'crypto',
+      orderType: 'market',
+      defaultOrder: {
+        orderType: 'market',
+        assetType: 'crypto',
+        action: 'buy',
+        timeInForce: 'gtc',
+        symbol: 'BTC',
+        orderQty: 0.001,
+        isAutomated: true,
+      },
+    },
+    {
+      id: 'ninja_trader-crypto-limit-sell',
+      label: 'Crypto - Limit Sell',
+      description: 'Crypto limit sell order for NinjaTrader.',
+      assetType: 'crypto',
+      orderType: 'limit',
+      defaultOrder: {
+        orderType: 'limit',
+        assetType: 'crypto',
+        action: 'sell',
+        timeInForce: 'gtc',
+        symbol: 'ETH',
+        orderQty: 0.1,
+        price: 3200.0,
+        isAutomated: true,
+      },
+    },
+  ],
 };
 
 /**
@@ -597,14 +1070,21 @@ export function TradingPageComponent() {
     }
   }, [modifyOrder.assetType]);
 
-  // Load supported brokers
+  // Load supported brokers (exclude aliases and brokers that don't support trading)
   useEffect(() => {
     let cancelled = false;
     async function loadBrokers() {
       try {
         if (!sdkAdapter) return;
         const list = await sdkAdapter.getBrokerList();
-        if (!cancelled) setBrokers(list);
+        // Filter out aliases and brokers that don't support trading
+        const filteredList = Array.isArray(list)
+          ? list.filter(
+              (broker: any) =>
+                broker.is_alias === false && broker.supports_trading === true
+            )
+          : [];
+        if (!cancelled) setBrokers(filteredList);
       } catch (err) {
         console.error('Failed to load brokers:', err);
       }
@@ -669,9 +1149,21 @@ export function TradingPageComponent() {
     const connectedConnectionIds = new Set<string>();
 
     connections.forEach((c: any) => {
-      const connectionId = c?.id || c?.connection_id || '';
-      const brokerId = String(c?.broker_id || c?.broker || '').toLowerCase().trim();
-      const isConnected = c?.status === 'connected' || c?.status === 'active' || Boolean(c?.is_active || c?.active);
+      // Try multiple field names for connection ID (camelCase and snake_case)
+      const connectionId =
+        c?.id ||
+        c?.connectionId ||
+        c?.connection_id ||
+        '';
+      // Try multiple field names for broker ID (camelCase and snake_case)
+      const brokerId = String(
+        c?.brokerId || c?.broker_id || c?.broker || ''
+      ).toLowerCase().trim();
+      const isConnected =
+        c?.status === 'connected' ||
+        c?.status === 'active' ||
+        c?.status === 'ACTIVE' ||
+        Boolean(c?.is_active || c?.active || c?.isActive);
 
       if (connectionId) {
         connectionToBrokerMap.set(connectionId, brokerId);
@@ -681,20 +1173,48 @@ export function TradingPageComponent() {
       }
     });
 
-    // Filter accounts based on their user_broker_connection_id
+    // Filter accounts based on their connection_id or broker_id
     return activeAccounts.filter((a: any) => {
-      const accountConnectionId = a?.user_broker_connection_id || a?.connection_id || '';
+      // Try multiple field names for connection ID (camelCase and snake_case)
+      const accountConnectionId =
+        a?.connectionId ||
+        a?.connection_id ||
+        a?.user_broker_connection_id ||
+        '';
       
-      // In sandbox mode, show all accounts for the selected broker
-      if (isMockMode) {
-        // Match account to broker via connection
-        const accountBrokerId = connectionToBrokerMap.get(accountConnectionId);
-        return accountBrokerId === normalizedSelectedBroker;
+      // Try multiple field names for broker ID (camelCase and snake_case)
+      const accountBrokerId = String(
+        a?.brokerId || a?.broker_id || a?.broker || ''
+      ).toLowerCase().trim();
+
+      // First, try to match by broker ID directly (most reliable)
+      if (accountBrokerId === normalizedSelectedBroker) {
+        // In sandbox mode, show all accounts for the selected broker
+        if (isMockMode) {
+          return true;
+        }
+        // In live mode, verify the connection is connected
+        if (accountConnectionId) {
+          return connectedConnectionIds.has(accountConnectionId);
+        }
+        // If no connection ID but broker matches, allow it (fallback)
+        return true;
       }
 
-      // In live mode, only show accounts from connected brokers
-      // Check if this account's connection is in the connected set for the selected broker
-      return connectedConnectionIds.has(accountConnectionId);
+      // Fallback: Match account to broker via connection map
+      if (accountConnectionId) {
+        const mappedBrokerId = connectionToBrokerMap.get(accountConnectionId);
+        if (mappedBrokerId === normalizedSelectedBroker) {
+          // In sandbox mode, show all accounts for the selected broker
+          if (isMockMode) {
+            return true;
+          }
+          // In live mode, verify the connection is connected
+          return connectedConnectionIds.has(accountConnectionId);
+        }
+      }
+
+      return false;
     });
   }, [selectedBroker, activeAccounts, connections, isMockMode]);
 
@@ -1394,16 +1914,20 @@ export function TradingPageComponent() {
                   </SelectTrigger>
                   <SelectContent>
                     {availableAccounts.map((a: any) => {
+                      // Use the account's unique ID (UUID) as the key, with fallback to accountId
+                      const uniqueKey = a.id || a.accountId || a.broker_provided_account_id || a.account_id || '';
                       const accountId = String(
-                        a.broker_provided_account_id || a.account_id || ''
+                        a.broker_provided_account_id || a.account_id || a.accountId || ''
                       );
                       const accountName =
                         a.account_name ||
+                        a.accountName ||
                         a.broker_provided_account_id ||
                         a.account_id ||
+                        a.accountId ||
                         'Unknown Account';
                       return (
-                        <SelectItem key={accountId} value={accountId}>
+                        <SelectItem key={uniqueKey} value={accountId}>
                           {accountName}
                         </SelectItem>
                       );
@@ -1865,16 +2389,20 @@ export function TradingPageComponent() {
                       </SelectTrigger>
                       <SelectContent>
                         {availableAccounts.map((a: any) => {
+                          // Use the account's unique ID (UUID) as the key, with fallback to accountId
+                          const uniqueKey = a.id || a.accountId || a.broker_provided_account_id || a.account_id || '';
                           const accountId = String(
-                            a.broker_provided_account_id || a.account_id || ''
+                            a.broker_provided_account_id || a.account_id || a.accountId || ''
                           );
                           const accountName =
                             a.account_name ||
+                            a.accountName ||
                             a.broker_provided_account_id ||
                             a.account_id ||
+                            a.accountId ||
                             'Unknown Account';
                           return (
-                            <SelectItem key={accountId} value={accountId}>
+                            <SelectItem key={uniqueKey} value={accountId}>
                               {accountName}
                             </SelectItem>
                           );

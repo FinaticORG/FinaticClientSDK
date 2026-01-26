@@ -263,6 +263,20 @@ export class ClientSdkAdapter implements SdkAdapter {
     return this.extractData<any[]>(response);
   }
 
+  async getActiveAccounts(): Promise<any[]> {
+    // Get all accounts and filter active ones based on client SDK response format
+    const accounts = await this.getAllAccounts();
+    return Array.isArray(accounts)
+      ? accounts.filter(
+          (account: any) =>
+            account.accountStatus === 'ACTIVE' ||
+            account.status === 'ACTIVE' ||
+            account.status === 'active' ||
+            account.active === true
+        )
+      : [];
+  }
+
   async getBalances(filter?: any): Promise<any> {
     const response = await this.client.getBalances(filter || {});
     return this.extractData(response);
@@ -325,6 +339,26 @@ export class ClientSdkAdapter implements SdkAdapter {
 
   async getPositionLotFills(lotId: string, filter?: any): Promise<any> {
     const response = await this.client.getPositionLotFills({ lotId, ...(filter || {}) });
+    return this.extractData(response);
+  }
+
+  async placeOrder(order: any): Promise<any> {
+    // Client SDK expects { body: { broker: '...', order: {...} } } format
+    // The demo app passes { broker: '...', order: {...} } directly
+    // So we need to wrap it in { body: ... }
+    const requestBody = order.body ? order : { body: order };
+    const response = await this.client.placeOrder(requestBody);
+    // Return the full response (not just data) to match expected format
+    return response;
+  }
+
+  async cancelOrder(orderId: string): Promise<any> {
+    const response = await this.client.cancelOrder({ orderId });
+    return this.extractData(response);
+  }
+
+  async modifyOrder(orderId: string, modifications: any): Promise<any> {
+    const response = await this.client.modifyOrder({ orderId, ...modifications });
     return this.extractData(response);
   }
 }
@@ -545,7 +579,13 @@ export class ApiSdkAdapter implements SdkAdapter {
     // Get all accounts and filter active ones based on server SDK response format
     const accounts = await this.getAllAccounts();
     return Array.isArray(accounts)
-      ? accounts.filter((account: any) => account.status === 'active' || account.active)
+      ? accounts.filter(
+          (account: any) =>
+            account.accountStatus === 'ACTIVE' ||
+            account.status === 'ACTIVE' ||
+            account.status === 'active' ||
+            account.active === true
+        )
       : [];
   }
 
