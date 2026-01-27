@@ -107,7 +107,7 @@ export class CompanyWrapper {
    * ```typescript-client
    * // Minimal example with required parameters only
    * const result = await finatic.getCompany({
-    companyId: '00000000-0000-0000-0000-000000000000'
+    companyId: 'example-id'
    * });
    * 
    * // Access the response data

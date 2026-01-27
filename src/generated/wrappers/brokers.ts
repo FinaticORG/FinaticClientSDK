@@ -48,9 +48,7 @@ import type { FinaticResponseListUserBrokerConnectionWithPermissions } from '../
 import type { FinaticResponseOrderActionResult } from '../models';
 import type { LegacyBrokerAccount } from '../models';
 import type { LegacyBrokerBalance } from '../models';
-import type { ModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest } from '../models';
 import type { OrderActionResult } from '../models';
-import type { PlaceOrderApiBetaBrokersOrdersPostRequest } from '../models';
 import type { UserBrokerConnectionWithPermissions } from '../models';
 
 // Always import PaginatedData since method bodies may reference it (even if unreachable)
@@ -273,8 +271,25 @@ export interface GetPositionLotFillsParams {
 }
 
 export interface PlaceOrderParams {
-  /** Broker-specific extra parameters object. This is used to pass in broker-specific fields if you want to send a reqeust to a broker API with the parameters that EXTEND our standardized query parameters. */
-  body?: PlaceOrderApiBetaBrokersOrdersPostRequest;
+  /** Broker identifier (robinhood, tasty_trade, ninja_trader) */
+  broker: string;
+  /** Account number for the order */
+  accountNumber: number;
+  /** Order details including required and optional fields */
+  order: {
+    /** Type of order (market, limit, etc.) */
+    orderType: string;
+    /** Type of asset (equity, equity_option, crypto, forex) */
+    assetType: string;
+    /** Order action (buy, sell) */
+    action: string;
+    /** Time in force for the order */
+    timeInForce: string;
+    /** Trading symbol */
+    symbol: string;
+    /** Order quantity */
+    orderQty: number;
+  };
   /** Temporary bypass for testing: specify connection ID directly */
   connectionId?: string;
 }
@@ -287,10 +302,25 @@ export interface CancelOrderParams {
 export interface ModifyOrderParams {
   /** Order ID */
   orderId: string;
-  /** Broker-specific *modify order* payload. Pass **all** standard parameters plus any broker-specific extensions under the `order` key. See the schema for a formal reference. */
-  body?: ModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest;
-  /** Account number owning the order */
-  accountNumber?: string;
+  /** Broker identifier (robinhood, tasty_trade, ninja_trader) */
+  broker: string;
+  /** Account number for the order */
+  accountNumber: number;
+  /** Order details including required and optional fields */
+  order: {
+    /** Type of order (market, limit, etc.) */
+    orderType: string;
+    /** Type of asset (equity, equity_option, crypto, forex) */
+    assetType: string;
+    /** Order action (buy, sell) */
+    action: string;
+    /** Time in force for the order */
+    timeInForce: string;
+    /** Trading symbol */
+    symbol: string;
+    /** Order quantity */
+    orderQty: number;
+  };
   /** Temporary bypass for testing: specify connection ID directly */
   connectionId?: string;
 }
@@ -375,9 +405,9 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Full example with optional parameters
    * const result = await finatic.getBalances({
-    brokerId: 'alpaca',
-    connectionId: '00000000-0000-0000-0000-000000000000',
-    accountId: '123456789'
+    brokerId: 'example-id',
+    connectionId: 'example-id',
+    accountId: 'example-id'
    * });
    * 
    * // Handle response with warnings
@@ -590,8 +620,8 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Full example with optional parameters
    * const result = await finatic.getAccounts({
-    brokerId: 'alpaca',
-    connectionId: '00000000-0000-0000-0000-000000000000',
+    brokerId: 'example-id',
+    connectionId: 'example-id',
     accountType: 'margin'
    * });
    * 
@@ -1176,7 +1206,7 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Minimal example with required parameters only
    * const result = await finatic.disconnectCompanyFromBroker({
-    connectionId: '00000000-0000-0000-0000-000000000000'
+    connectionId: 'example-id'
    * });
    * 
    * // Access the response data
@@ -1391,9 +1421,9 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Full example with optional parameters
    * const result = await finatic.getOrders({
-    brokerId: 'alpaca',
-    connectionId: '00000000-0000-0000-0000-000000000000',
-    accountId: '123456789'
+    brokerId: 'example-id',
+    connectionId: 'example-id',
+    accountId: 'example-id'
    * });
    * 
    * // Handle response with warnings
@@ -1623,9 +1653,9 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Full example with optional parameters
    * const result = await finatic.getPositions({
-    brokerId: 'alpaca',
-    connectionId: '00000000-0000-0000-0000-000000000000',
-    accountId: '123456789'
+    brokerId: 'example-id',
+    connectionId: 'example-id',
+    accountId: 'example-id'
    * });
    * 
    * // Handle response with warnings
@@ -1859,9 +1889,9 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Full example with optional parameters
    * const result = await finatic.getTransactions({
-    brokerId: 'alpaca',
-    connectionId: '00000000-0000-0000-0000-000000000000',
-    accountId: '123456789'
+    brokerId: 'example-id',
+    connectionId: 'example-id',
+    accountId: 'example-id'
    * });
    * 
    * // Handle response with warnings
@@ -2061,7 +2091,7 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Minimal example with required parameters only
    * const result = await finatic.getOrderFills({
-    orderId: '00000000-0000-0000-0000-000000000000'
+    orderId: 'example-id'
    * });
    * 
    * // Access the response data
@@ -2075,9 +2105,9 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Full example with optional parameters
    * const result = await finatic.getOrderFills({
-    orderId: '00000000-0000-0000-0000-000000000000',
-    connectionId: '00000000-0000-0000-0000-000000000000',
-    limit: 100,
+    orderId: 'example-id',
+    connectionId: 'example-id',
+    limit: 0,
     offset: 0
    * });
    * 
@@ -2278,7 +2308,7 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Minimal example with required parameters only
    * const result = await finatic.getOrderEvents({
-    orderId: '00000000-0000-0000-0000-000000000000'
+    orderId: 'example-id'
    * });
    * 
    * // Access the response data
@@ -2292,9 +2322,9 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Full example with optional parameters
    * const result = await finatic.getOrderEvents({
-    orderId: '00000000-0000-0000-0000-000000000000',
-    connectionId: '00000000-0000-0000-0000-000000000000',
-    limit: 100,
+    orderId: 'example-id',
+    connectionId: 'example-id',
+    limit: 0,
     offset: 0
    * });
    * 
@@ -2507,9 +2537,9 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Full example with optional parameters
    * const result = await finatic.getOrderGroups({
-    brokerId: 'alpaca',
-    connectionId: '00000000-0000-0000-0000-000000000000',
-    limit: 100
+    brokerId: 'example-id',
+    connectionId: 'example-id',
+    limit: 0
    * });
    * 
    * // Handle response with warnings
@@ -2722,9 +2752,9 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Full example with optional parameters
    * const result = await finatic.getPositionLots({
-    brokerId: 'alpaca',
-    connectionId: '00000000-0000-0000-0000-000000000000',
-    accountId: '123456789'
+    brokerId: 'example-id',
+    connectionId: 'example-id',
+    accountId: 'example-id'
    * });
    * 
    * // Handle response with warnings
@@ -2923,7 +2953,7 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Minimal example with required parameters only
    * const result = await finatic.getPositionLotFills({
-    lotId: '00000000-0000-0000-0000-000000000000'
+    lotId: 'example-id'
    * });
    * 
    * // Access the response data
@@ -2937,9 +2967,9 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Full example with optional parameters
    * const result = await finatic.getPositionLotFills({
-    lotId: '00000000-0000-0000-0000-000000000000',
-    connectionId: '00000000-0000-0000-0000-000000000000',
-    limit: 100,
+    lotId: 'example-id',
+    connectionId: 'example-id',
+    limit: 0,
     offset: 0
    * });
    * 
@@ -3123,61 +3153,24 @@ export class BrokersWrapper {
   /**
    * Place Order
    * 
-   * Create a new order via the specified broker connection.
+   * Place a new order through the specified broker.
    *
-   * This endpoint is accessible from the portal and uses session-only authentication.
-   * Requires trading permissions for the company.
+   * Creates an order using the broker connection associated with your account.
+   * The order structure includes common fields (symbol, quantity, order type, etc.)
+   * shared across all brokers, plus broker-specific fields that vary by broker.
    *
-   * Standard parameters
-   * -------------------
-   * The following fields constitute the unified Finatic *common order schema* and
-   * therefore appear individually as query parameters in the autogenerated
-   * OpenAPI documentation:
-   *
-   * - ``broker``
-   * - ``account_number``
-   * - ``order_type``
-   * - ``asset_type``
-   * - ``action``
-   * - ``time_in_force``
-   * - ``symbol``
-   * - ``order_qty``
-   *
-   * They are surfaced as *query* parameters **only to make the accepted fields
-   * obvious in the interactive docs**. In production usage you should send these
-   * fields inside the JSON body (see ``order_request``) so that the entire order
-   * specification travels in one payload. (Nothing will break if you send both, but there is no need to do so.)
-   *
-   * Body payload & broker-specific extras
-   * -------------------------------------
-   *
-   * Put the standard parameters plus any broker-specific extensions under the
-   * ``order`` key of the body. Refer to the bundled OpenAPI examples below to
-   * see complete payloads for common order types (market, limit, spreads, etc.)
-   * across supported brokers.
-   *
-   * For a formal reference of broker-specific extensions inspect the
-   * ``BrokerOrderPlaceExtras`` schema.
-   *
-   * The endpoint resolves the active ``user_broker_connection`` by calling the
-   * ``get_user_broker_connection_ids_for_broker`` RPC in Supabase. If no active
-   * connection exists it returns a list of *available* brokers so your client
-   * can guide the user accordingly.
-   *
-   * Broker Notes
-   * ------------
-   * - The responses that you get back from the broker are not always the same.
-   * The response models are validated for each broker, but we do not standardize the repsonses.
-   *
-   * - Tasty Trade: If you want to trade options for a particular stock, first fetch the full
-   * option chain via the GET https://api.tastyworks.com/option-chains/{stock_symbol}/nested endpoint.
-   * This endpoint returns all available expirations that tastytrade offers for that equity symbol.
-   * Each expiration contains a list of strikes, where each strike has a call and put field representing
-   * the call symbol and put symbol respectively.
-   *
-   * We are planning to add a new endpoint to fetch the option chain for a particular stock and
-   * handle this logic for you, but for now you need to fetch the option chain manually.
-   * @param params.body {PlaceOrderApiBetaBrokersOrdersPostRequest} (optional) Broker-specific extra parameters object. This is used to pass in broker-specific fields if you want to send a reqeust to a broker API with the parameters that EXTEND our standardized query parameters.
+   * Common order fields include: broker, accountNumber, orderType, assetType,
+   * action, timeInForce, symbol, and orderQty. Additional broker-specific fields
+   * can be included in the order object - see the broker-specific tabs in the
+   * parameters section for details.
+   * @param params.broker {string} Broker identifier (robinhood, tasty_trade, ninja_trader)
+   * @param params.accountNumber {number} Account number for the order
+   * @param params.order.orderType {string} Type of order (market, limit, etc.)
+   * @param params.order.assetType {string} Type of asset (equity, equity_option, crypto, forex)
+   * @param params.order.action {string} Order action (buy, sell)
+   * @param params.order.timeInForce {string} Time in force for the order
+   * @param params.order.symbol {string} Trading symbol
+   * @param params.order.orderQty {number} Order quantity
    * @param params.connectionId {string} (optional) Temporary bypass for testing: specify connection ID directly
    * @returns {Promise<FinaticResponse<OrderActionResult>>} Standard response with success/Error/Warning structure
    * 
@@ -3186,19 +3179,31 @@ export class BrokersWrapper {
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example with no parameters
-   * const result = await finatic.placeOrder({});
+   * // This method requires broker and order with required fields:
+   * const result = await finatic.placeOrder({
+  broker: 'robinhood',
+  order: {
+    orderType: 'market',
+    assetType: 'equity',
+    action: 'buy',
+    timeInForce: 'day',
+    symbol: 'AAPL',
+    orderQty: 10
+  }
+   * });
    * 
    * // Access the response data
    * if (result.success) {
    *   console.log('Data:', result.success.data);
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message);
    * }
    * ```
    * @example
    * ```typescript-client
    * // Full example with optional parameters
    * const result = await finatic.placeOrder({
-    connectionId: '00000000-0000-0000-0000-000000000000'
+    connectionId: 'example-id'
    * });
    * 
    * // Handle response with warnings
@@ -3212,9 +3217,9 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async placeOrder(params?: PlaceOrderParams): Promise<FinaticResponse<OrderActionResult>> {
-    // Use params object (with default empty object)
-    const resolvedParams: PlaceOrderParams = params || {};    // Authentication check
+  async placeOrder(params: PlaceOrderParams): Promise<FinaticResponse<OrderActionResult>> {
+    // Use params object (required parameters present)
+    const resolvedParams: PlaceOrderParams = params;    // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -3253,7 +3258,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.placeOrderApiBetaBrokersOrdersPost({ ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), placeOrderApiBetaBrokersOrdersPostRequest: resolvedParams.body ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.placeOrderApiBetaBrokersOrdersPost({ ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), placeOrderApiBetaBrokersOrdersPostRequest: { broker: resolvedParams.broker, order: { accountNumber: resolvedParams.accountNumber, ...resolvedParams.order, ...(resolvedParams.order.timeInForce !== undefined && typeof resolvedParams.order.timeInForce === 'string' ? { timeInForce: { timeInForce: resolvedParams.order.timeInForce } } : resolvedParams.order.timeInForce !== undefined ? { timeInForce: resolvedParams.order.timeInForce } : {}) } }, connectionId: resolvedParams.connectionId }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -3383,11 +3388,8 @@ export class BrokersWrapper {
    * 
    * Cancel an existing order.
    *
-   * This endpoint is accessible from the portal and uses session-only authentication.
-   * Requires trading permissions for the company.
-   *
-   * The order_id is used to identify the order and automatically resolve the
-   * broker connection from the orders table.
+   * Cancels an order by its order ID. The broker connection is automatically
+   * resolved from the order record.
    * @param params.orderId {string} Order ID
    * @returns {Promise<FinaticResponse<OrderActionResult>>} Standard response with success/Error/Warning structure
    * 
@@ -3398,7 +3400,7 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Minimal example with required parameters only
    * const result = await finatic.cancelOrder({
-    orderId: 'order_1234567890abcdef'
+    orderId: 'example-id'
    * });
    * 
    * // Access the response data
@@ -3580,11 +3582,18 @@ export class BrokersWrapper {
    * 
    * Modify an existing order.
    *
-   * This endpoint is accessible from the portal and uses session-only authentication.
-   * Requires trading permissions for the company.
+   * Updates an order's parameters (price, quantity, etc.) by order ID.
+   * The order structure follows the same pattern as placing orders, with common
+   * fields shared across brokers and broker-specific fields available per broker.
    * @param params.orderId {string} Order ID
-   * @param params.body {ModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest} (optional) Broker-specific *modify order* payload. Pass **all** standard parameters plus any broker-specific extensions under the `order` key. See the schema for a formal reference.
-   * @param params.accountNumber {string} (optional) Account number owning the order
+   * @param params.broker {string} Broker identifier (robinhood, tasty_trade, ninja_trader)
+   * @param params.accountNumber {number} Account number for the order
+   * @param params.order.orderType {string} Type of order (market, limit, etc.)
+   * @param params.order.assetType {string} Type of asset (equity, equity_option, crypto, forex)
+   * @param params.order.action {string} Order action (buy, sell)
+   * @param params.order.timeInForce {string} Time in force for the order
+   * @param params.order.symbol {string} Trading symbol
+   * @param params.order.orderQty {number} Order quantity
    * @param params.connectionId {string} (optional) Temporary bypass for testing: specify connection ID directly
    * @returns {Promise<FinaticResponse<OrderActionResult>>} Standard response with success/Error/Warning structure
    * 
@@ -3595,7 +3604,7 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Minimal example with required parameters only
    * const result = await finatic.modifyOrder({
-    orderId: 'order_1234567890abcdef'
+    orderId: 'example-id'
    * });
    * 
    * // Access the response data
@@ -3609,9 +3618,8 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Full example with optional parameters
    * const result = await finatic.modifyOrder({
-    orderId: 'order_1234567890abcdef',
-    accountNumber: '123456789',
-    connectionId: '00000000-0000-0000-0000-000000000000'
+    orderId: 'example-id',
+    connectionId: 'example-id'
    * });
    * 
    * // Handle response with warnings
@@ -3666,7 +3674,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.modifyOrderApiBetaBrokersOrdersOrderIdPatch({ orderId: resolvedParams.orderId ?? null, ...(resolvedParams.accountNumber !== undefined ? { accountNumber: resolvedParams.accountNumber } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest: resolvedParams.body ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.modifyOrderApiBetaBrokersOrdersOrderIdPatch({ orderId: resolvedParams.orderId ?? null, ...(resolvedParams.accountNumber !== undefined ? { accountNumber: resolvedParams.accountNumber } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest: { broker: resolvedParams.broker, order: { accountNumber: resolvedParams.accountNumber, ...resolvedParams.order, ...(resolvedParams.order.timeInForce !== undefined && typeof resolvedParams.order.timeInForce === 'string' ? { timeInForce: { timeInForce: resolvedParams.order.timeInForce } } : resolvedParams.order.timeInForce !== undefined ? { timeInForce: resolvedParams.order.timeInForce } : {}) } }, connectionId: resolvedParams.connectionId }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},

@@ -22,7 +22,11 @@ import type { FinaticapiCoreStandardModelsAbstractResponsesFinaticResponsePortal
 import type { FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2 } from '../models';
 import type { FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2 } from '../models';
 import type { FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2 } from '../models';
+import type { PortalUrlResponse } from '../models';
+import type { SessionResponseData } from '../models';
 import type { SessionStartRequest } from '../models';
+import type { SessionUserResponse } from '../models';
+import type { TokenResponseData } from '../models';
 
 // Always import PaginatedData since method bodies may reference it (even if unreachable)
 import { PaginatedData } from '../utils/pagination';
@@ -117,7 +121,7 @@ export class SessionWrapper {
    * 
    * Initialize a new session with company API key.
    * @param params.xApiKey {string} Company API key
-   * @returns {Promise<FinaticResponse<void>>} Standard response with success/Error/Warning structure
+   * @returns {Promise<FinaticResponse<TokenResponseData>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: POST /api/beta/session/init
    * @methodId init_session_api_beta_session_init_post
@@ -133,7 +137,7 @@ export class SessionWrapper {
    * }
    * ```
    */
-  async initSession(params: InitSessionParams): Promise<FinaticResponse<void>> {
+  async initSession(params: InitSessionParams): Promise<FinaticResponse<TokenResponseData>> {
     // Use params object (required parameters present)
     const resolvedParams: InitSessionParams = params;    // Generate request ID
     const requestId = this._generateRequestId();
@@ -153,7 +157,7 @@ export class SessionWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<void>;
+        return cached as FinaticResponse<TokenResponseData>;
       }
     }
 
@@ -222,7 +226,7 @@ export class SessionWrapper {
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
-      return standardResponse as FinaticResponse<void>;
+      return standardResponse as FinaticResponse<TokenResponseData>;
       
     } catch (error) {
       try {
@@ -274,7 +278,7 @@ export class SessionWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<void> = {
+      const errorResponse: FinaticResponse<TokenResponseData> = {
         success: {
           data: null as any,
         },
@@ -300,23 +304,14 @@ export class SessionWrapper {
    * Start a session with a one-time token.
    * @param params.OneTimeToken {string} One-time use token obtained from init_session endpoint to authenticate and start the session
    * @param params.body {SessionStartRequest} Session start request containing optional user ID to associate with the session
-   * @returns {Promise<FinaticResponse<void>>} Standard response with success/Error/Warning structure
+   * @returns {Promise<FinaticResponse<SessionResponseData>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: POST /api/beta/session/start
    * @methodId start_session_api_beta_session_start_post
    * @category session
-   * @example
-   * ```typescript-client
-   * // Example with no parameters
-   * const result = await finatic.startSession({});
-   * 
-   * // Access the response data
-   * if (result.success) {
-   *   console.log('Data:', result.success.data);
-   * }
-   * ```
+
    */
-  async startSession(params: StartSessionParams): Promise<FinaticResponse<void>> {
+  async startSession(params: StartSessionParams): Promise<FinaticResponse<SessionResponseData>> {
     // Use params object (required parameters present)
     const resolvedParams: StartSessionParams = params;    // Generate request ID
     const requestId = this._generateRequestId();
@@ -336,7 +331,7 @@ export class SessionWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<void>;
+        return cached as FinaticResponse<SessionResponseData>;
       }
     }
 
@@ -405,7 +400,7 @@ export class SessionWrapper {
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
-      return standardResponse as FinaticResponse<void>;
+      return standardResponse as FinaticResponse<SessionResponseData>;
       
     } catch (error) {
       try {
@@ -457,7 +452,7 @@ export class SessionWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<void> = {
+      const errorResponse: FinaticResponse<SessionResponseData> = {
         success: {
           data: null as any,
         },
@@ -485,7 +480,7 @@ export class SessionWrapper {
    * The session must be in ACTIVE or AUTHENTICATING state and the request must come from the same device
    * that initiated the session. Device info is automatically validated from the request.
    * @param params No parameters required for this method
-   * @returns {Promise<FinaticResponse<void>>} Standard response with success/Error/Warning structure
+   * @returns {Promise<FinaticResponse<PortalUrlResponse>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/beta/session/portal
    * @methodId get_portal_url_api_beta_session_portal_get
@@ -501,7 +496,7 @@ export class SessionWrapper {
    * }
    * ```
    */
-  async getPortalUrl(params?: {}): Promise<FinaticResponse<void>> {
+  async getPortalUrl(params?: {}): Promise<FinaticResponse<PortalUrlResponse>> {
     // No parameters - use empty params object
     const resolvedParams: GetPortalUrlParams = params || {};    // Authentication check
     if (!this.sessionId || !this.companyId) {
@@ -526,7 +521,7 @@ export class SessionWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<void>;
+        return cached as FinaticResponse<PortalUrlResponse>;
       }
     }
 
@@ -595,7 +590,7 @@ export class SessionWrapper {
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
-      return standardResponse as FinaticResponse<void>;
+      return standardResponse as FinaticResponse<PortalUrlResponse>;
       
     } catch (error) {
       try {
@@ -647,7 +642,7 @@ export class SessionWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<void> = {
+      const errorResponse: FinaticResponse<PortalUrlResponse> = {
         success: {
           data: null as any,
         },
@@ -682,7 +677,7 @@ export class SessionWrapper {
    * - Only accessible to authenticated sessions with user_id
    * - Validates that header session_id matches path session_id
    * @param params.sessionId {string} Session ID
-   * @returns {Promise<FinaticResponse<void>>} Standard response with success/Error/Warning structure
+   * @returns {Promise<FinaticResponse<SessionUserResponse>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/beta/session/{session_id}/user
    * @methodId get_session_user_api_beta_session__session_id__user_get
@@ -691,7 +686,7 @@ export class SessionWrapper {
    * ```typescript-client
    * // Minimal example with required parameters only
    * const result = await finatic.getSessionUser({
-    sessionId: 'sess_1234567890abcdef'
+    sessionId: 'example-id'
    * });
    * 
    * // Access the response data
@@ -702,7 +697,7 @@ export class SessionWrapper {
    * }
    * ```
    */
-  async getSessionUser(params: GetSessionUserParams): Promise<FinaticResponse<void>> {
+  async getSessionUser(params: GetSessionUserParams): Promise<FinaticResponse<SessionUserResponse>> {
     // Use params object (required parameters present)
     const resolvedParams: GetSessionUserParams = params;    // Authentication check
     if (!this.sessionId || !this.companyId) {
@@ -727,7 +722,7 @@ export class SessionWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<void>;
+        return cached as FinaticResponse<SessionUserResponse>;
       }
     }
 
@@ -796,7 +791,7 @@ export class SessionWrapper {
       
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
-      return standardResponse as FinaticResponse<void>;
+      return standardResponse as FinaticResponse<SessionUserResponse>;
       
     } catch (error) {
       try {
@@ -848,7 +843,7 @@ export class SessionWrapper {
       }
       
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<void> = {
+      const errorResponse: FinaticResponse<SessionUserResponse> = {
         success: {
           data: null as any,
         },
