@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Activity, ArrowUpRight, Code2, Database, Lock, TrendingUp, Zap } from 'lucide-react';
+import { Activity, ArrowUpRight, Code2, Database, Globe, Lock, TrendingUp, Zap } from 'lucide-react';
 import { useFinatic } from '@/app/providers/FinaticProvider';
 import { useEffect, useReducer } from 'react';
 import Link from 'next/link';
@@ -17,10 +17,10 @@ const quickActions = [
     color: 'text-blue-400',
   },
   {
-    title: 'Database Management',
-    description: 'Manage your data models and queries',
-    icon: Database,
-    href: '/database',
+    title: 'Portal',
+    description: 'Connect and manage your broker connections',
+    icon: Globe,
+    href: '/portal',
     color: 'text-green-400',
   },
   {
