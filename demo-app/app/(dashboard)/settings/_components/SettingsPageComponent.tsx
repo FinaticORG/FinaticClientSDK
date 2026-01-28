@@ -361,8 +361,8 @@ export function SettingsPageComponent() {
 
         {/* Advanced Settings */}
         <TabsContent value="advanced" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            {/* SDK Configuration */}
+          {/* SDK Configuration - Full width on mobile, side panel on large screens */}
+          <div className="grid gap-4 xl:grid-cols-[320px_1fr]">
             <Card className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center gap-2">
@@ -447,7 +447,7 @@ export function SettingsPageComponent() {
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Server:</span>
                         <div className="flex items-center gap-1">
-                          {sdkType !== 'client' && serverStatus[sdkType as 'python' | 'node'] ? (
+                          {serverStatus[sdkType] ? (
                             <>
                               <CheckCircle className="w-3 h-3 text-green-500" />
                               <span className="text-green-600 text-xs">Online</span>
@@ -477,8 +477,8 @@ export function SettingsPageComponent() {
               </CardContent>
             </Card>
 
-            {/* Environment Settings */}
-            <div>
+            {/* Environment Settings - Takes remaining space */}
+            <div className="min-w-0 overflow-hidden">
               <EnvironmentSettings />
             </div>
           </div>

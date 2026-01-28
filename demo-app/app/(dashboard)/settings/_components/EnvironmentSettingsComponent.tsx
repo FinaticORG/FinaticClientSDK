@@ -3,9 +3,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Alert, AlertDescription } from "../../../../components/ui/alert"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Badge } from "@/components/ui/badge"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { 
   Settings, 
   Save, 
@@ -15,7 +16,10 @@ import {
   Key,
   Globe,
   Eye,
-  EyeOff
+  EyeOff,
+  ChevronDown,
+  ChevronRight,
+  Info
 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useEnvironmentConfig } from "@/app/providers/EnvironmentConfigProvider"
@@ -28,28 +32,24 @@ interface EnvironmentVariable {
   isPassword: boolean
   isActive?: boolean
   activeReason?: string
+  category: 'api-keys' | 'server-urls' | 'public-urls' | 'mock-settings'
 }
 
-const getAllEnvironmentVariables = (mode: 'sandbox' | 'live', environment: 'dev' | 'staging' | 'prod'): EnvironmentVariable[] => {
+const getAllEnvironmentVariables = (
+  mode: 'sandbox' | 'live',
+  environment: 'dev' | 'staging' | 'prod'
+): EnvironmentVariable[] => {
   const baseVars: EnvironmentVariable[] = [
     // API Keys (mode-specific)
     {
       key: "FINATIC_API_KEY",
       value: "",
-      description: "Default API key (fallback if mode-specific keys not set)",
-      isPublic: false,
-      isPassword: true,
-      isActive: false,
-      activeReason: "Used as fallback only"
-    },
-    {
-      key: "FINATIC_API_KEY_LIVE",
-      value: "",
       description: "API key for Live mode",
       isPublic: false,
       isPassword: true,
       isActive: mode === 'live',
-      activeReason: mode === 'live' ? "Active (Live mode selected)" : "Inactive (Live mode not selected)"
+      activeReason: mode === 'live' ? "Live mode selected" : "Live mode not selected",
+      category: 'api-keys'
     },
     {
       key: "FINATIC_API_KEY_SANDBOX",
@@ -58,81 +58,90 @@ const getAllEnvironmentVariables = (mode: 'sandbox' | 'live', environment: 'dev'
       isPublic: false,
       isPassword: true,
       isActive: mode === 'sandbox',
-      activeReason: mode === 'sandbox' ? "Active (Sandbox mode selected)" : "Inactive (Sandbox mode not selected)"
+      activeReason: mode === 'sandbox' ? "Sandbox mode selected" : "Sandbox mode not selected",
+      category: 'api-keys'
     },
     // API URLs (environment-specific, server-side)
     {
       key: "FINATIC_API_URL",
       value: "",
-      description: "Default API URL (server-side, fallback if env-specific URLs not set)",
+      description: "Default API URL (server-side fallback)",
       isPublic: false,
       isPassword: false,
       isActive: false,
-      activeReason: "Used as fallback only"
+      activeReason: "Fallback only",
+      category: 'server-urls'
     },
     {
       key: "FINATIC_API_URL_DEV",
       value: "",
-      description: "API URL for Development environment (server-side)",
+      description: "Development environment (server-side)",
       isPublic: false,
       isPassword: false,
       isActive: environment === 'dev',
-      activeReason: environment === 'dev' ? "Active (Dev environment selected)" : "Inactive (Dev environment not selected)"
+      activeReason: environment === 'dev' ? "Dev selected" : "Dev not selected",
+      category: 'server-urls'
     },
     {
       key: "FINATIC_API_URL_STAGING",
       value: "",
-      description: "API URL for Staging environment (server-side)",
+      description: "Staging environment (server-side)",
       isPublic: false,
       isPassword: false,
       isActive: environment === 'staging',
-      activeReason: environment === 'staging' ? "Active (Staging environment selected)" : "Inactive (Staging environment not selected)"
+      activeReason: environment === 'staging' ? "Staging selected" : "Staging not selected",
+      category: 'server-urls'
     },
     {
       key: "FINATIC_API_URL_PROD",
       value: "",
-      description: "API URL for Production environment (server-side)",
+      description: "Production environment (server-side)",
       isPublic: false,
       isPassword: false,
       isActive: environment === 'prod',
-      activeReason: environment === 'prod' ? "Active (Prod environment selected)" : "Inactive (Prod environment not selected)"
+      activeReason: environment === 'prod' ? "Prod selected" : "Prod not selected",
+      category: 'server-urls'
     },
     // Public API URLs (environment-specific, client-side)
     {
       key: "NEXT_PUBLIC_FINATIC_API_URL",
       value: "",
-      description: "Default public API URL (accessible in browser, fallback)",
+      description: "Default public API URL (browser fallback)",
       isPublic: true,
       isPassword: false,
       isActive: false,
-      activeReason: "Used as fallback only"
+      activeReason: "Fallback only",
+      category: 'public-urls'
     },
     {
       key: "NEXT_PUBLIC_FINATIC_API_URL_DEV",
       value: "",
-      description: "Public API URL for Development environment (accessible in browser)",
+      description: "Development environment (browser)",
       isPublic: true,
       isPassword: false,
       isActive: environment === 'dev',
-      activeReason: environment === 'dev' ? "Active (Dev environment selected)" : "Inactive (Dev environment not selected)"
+      activeReason: environment === 'dev' ? "Dev selected" : "Dev not selected",
+      category: 'public-urls'
     },
     {
       key: "NEXT_PUBLIC_FINATIC_API_URL_STAGING",
       value: "",
-      description: "Public API URL for Staging environment (accessible in browser)",
+      description: "Staging environment (browser)",
       isPublic: true,
       isPassword: false,
       isActive: environment === 'staging',
-      activeReason: environment === 'staging' ? "Active (Staging environment selected)" : "Inactive (Staging environment not selected)"
+      activeReason: environment === 'staging' ? "Staging selected" : "Staging not selected",
+      category: 'public-urls'
     },
     {
       key: "NEXT_PUBLIC_FINATIC_API_URL_PROD",
       value: "",
-      description: "Public API URL for Production environment (accessible in browser)",
+      description: "Production environment (browser)",
       isPublic: true,
       isPassword: false,
       isActive: environment === 'prod',
-      activeReason: environment === 'prod' ? "Active (Prod environment selected)" : "Inactive (Prod environment not selected)"
+      activeReason: environment === 'prod' ? "Prod selected" : "Prod not selected",
+      category: 'public-urls'
     },
     // Mock mode settings
     {
@@ -140,18 +149,27 @@ const getAllEnvironmentVariables = (mode: 'sandbox' | 'live', environment: 'dev'
       value: "",
       description: "Enable mock mode for development",
       isPublic: true,
-      isPassword: false
+      isPassword: false,
+      category: 'mock-settings'
     },
     {
       key: "NEXT_PUBLIC_FINATIC_MOCK_API_ONLY",
       value: "",
       description: "Use only mock data (no real API calls)",
       isPublic: true,
-      isPassword: false
+      isPassword: false,
+      category: 'mock-settings'
     }
   ]
 
   return baseVars
+}
+
+const categoryConfig = {
+  'api-keys': { title: 'API Keys', icon: Key, description: 'Authentication keys for API access' },
+  'server-urls': { title: 'Server-Side URLs', icon: Globe, description: 'API URLs accessible only from server' },
+  'public-urls': { title: 'Public URLs', icon: Globe, description: 'API URLs accessible from browser' },
+  'mock-settings': { title: 'Mock Settings', icon: Settings, description: 'Development mock configuration' }
 }
 
 export function EnvironmentSettings() {
@@ -162,6 +180,12 @@ export function EnvironmentSettings() {
   const [isReloading, setIsReloading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [showPasswords, setShowPasswords] = useState<{ [key: string]: boolean }>({})
+  const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({
+    'api-keys': true,
+    'server-urls': true,
+    'public-urls': false,
+    'mock-settings': false
+  })
 
   // Update env vars when mode or environment changes
   useEffect(() => {
@@ -267,6 +291,13 @@ export function EnvironmentSettings() {
     }))
   }
 
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }))
+  }
+
   const getInputType = (envVar: EnvironmentVariable) => {
     if (envVar.isPassword) {
       return showPasswords[envVar.key] ? 'text' : 'password'
@@ -292,178 +323,238 @@ export function EnvironmentSettings() {
     updateEnvVar(key, booleanValue)
   }
 
+  // Group env vars by category
+  const groupedEnvVars = envVars.reduce((acc, envVar) => {
+    if (!acc[envVar.category]) {
+      acc[envVar.category] = []
+    }
+    acc[envVar.category].push(envVar)
+    return acc
+  }, {} as Record<string, EnvironmentVariable[]>)
+
+  const categoryOrder: Array<keyof typeof categoryConfig> = ['api-keys', 'server-urls', 'public-urls', 'mock-settings']
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">Environment Variables</h2>
-          <p className="text-muted-foreground">Manage your application's environment configuration</p>
+    <Card className="bg-card border-border">
+      <CardHeader className="pb-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-lg font-semibold text-foreground">Environment Variables</CardTitle>
+            <CardDescription>Configure API keys, URLs, and mock settings</CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetToDefaults}
+              disabled={isLoading || isSaving || isReloading}
+              className="border-border text-foreground hover:bg-accent bg-transparent"
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Reset
+            </Button>
+            <Button
+              size="sm"
+              onClick={saveEnvironmentVariables}
+              disabled={isLoading || isSaving || isReloading}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {isSaving ? 'Saving...' : isReloading ? 'Reloading...' : 'Save'}
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={resetToDefaults}
-            disabled={isLoading || isSaving || isReloading}
-            className="border-border text-foreground hover:bg-accent bg-transparent"
-          >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Reset to Defaults
-          </Button>
-          <Button
-            onClick={saveEnvironmentVariables}
-            disabled={isLoading || isSaving || isReloading}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            <Save className="w-4 h-4 mr-2" />
-            {isSaving ? 'Saving...' : isReloading ? 'Reloading...' : 'Save Changes'}
-          </Button>
-        </div>
-      </div>
+      </CardHeader>
 
-      {/* Message Alert */}
-      {message && (
-        <Alert className={message.type === 'success' ? 'border-green-500/20 bg-green-500/10' : 'border-red-500/20 bg-red-500/10'}>
-          {message.type === 'success' ? (
-            <CheckCircle className="h-4 w-4 text-green-500" />
-          ) : (
-            <AlertCircle className="h-4 w-4 text-red-500" />
-          )}
-          <AlertDescription className={message.type === 'success' ? 'text-green-700' : 'text-red-700'}>
-            {message.text}
-          </AlertDescription>
-        </Alert>
-      )}
+      <CardContent className="space-y-4">
+        {/* Message Alert */}
+        {message && (
+          <Alert className={message.type === 'success' ? 'border-green-500/20 bg-green-500/10' : 'border-red-500/20 bg-red-500/10'}>
+            {message.type === 'success' ? (
+              <CheckCircle className="h-4 w-4 text-green-500" />
+            ) : (
+              <AlertCircle className="h-4 w-4 text-red-500" />
+            )}
+            <AlertDescription className={message.type === 'success' ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}>
+              {message.text}
+            </AlertDescription>
+          </Alert>
+        )}
 
-      {/* Environment Variables */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Loading indicator */}
         {isReloading && (
-          <div className="col-span-full flex items-center justify-center p-4 bg-muted/20 rounded-lg border border-border">
+          <div className="flex items-center justify-center p-4 bg-muted/20 rounded-lg border border-border">
             <div className="flex items-center gap-2 text-muted-foreground">
               <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
               <span>Reloading environment variables...</span>
             </div>
           </div>
         )}
-        {envVars.map((envVar) => (
-          <Card key={envVar.key} className="bg-card border-border">
-            <CardHeader>
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start gap-2 mb-2">
-                    {envVar.isPassword ? (
-                      <Key className="w-5 h-5 text-foreground flex-shrink-0 mt-0.5" />
-                    ) : (
-                      <Globe className="w-5 h-5 text-foreground flex-shrink-0 mt-0.5" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <CardTitle className="text-lg text-foreground break-all">{envVar.key}</CardTitle>
-                    </div>
-                  </div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {envVar.isPublic && (
-                        <span className="px-2 py-1 text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded inline-block">
-                          PUBLIC
-                        </span>
-                      )}
-                      {envVar.isActive !== undefined && (
-                        <span className={`px-2 py-1 text-xs rounded inline-block ${
-                          envVar.isActive 
-                            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
-                            : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
-                        }`}>
-                          {envVar.isActive ? 'ACTIVE' : 'INACTIVE'}
-                        </span>
-                      )}
-                    </div>
-                </div>
-                {envVar.isPassword && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => togglePasswordVisibility(envVar.key)}
-                    className="text-muted-foreground hover:text-foreground flex-shrink-0"
-                  >
-                    {showPasswords[envVar.key] ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </Button>
-                )}
-              </div>
-              <CardDescription className="text-muted-foreground">
-                {envVar.description}
-                {envVar.activeReason && (
-                  <span className="block mt-1 text-xs italic">
-                    {envVar.activeReason}
-                  </span>
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {envVar.key.includes('USE_MOCKS') || envVar.key.includes('MOCK_API_ONLY') ? (
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-foreground">Enable</Label>
-                    <p className="text-xs text-muted-foreground">
-                      {envVar.value === 'true' ? 'Enabled' : 'Disabled'}
-                    </p>
-                  </div>
-                  <Switch
-                    checked={envVar.value === 'true'}
-                    onCheckedChange={() => handleBooleanChange(envVar.key, envVar.value)}
-                  />
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label className="text-foreground">Value</Label>
-                  <div className="relative">
-                    <Input
-                      type={getInputType(envVar)}
-                      value={envVar.value}
-                      onChange={(e) => updateEnvVar(envVar.key, e.target.value)}
-                      placeholder={getDefaultValue(envVar.key)}
-                      className="bg-input border-border text-foreground pr-10"
-                    />
-                    {envVar.isPassword && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => togglePasswordVisibility(envVar.key)}
-                      >
-                        {showPasswords[envVar.key] ? (
-                          <EyeOff className="w-4 h-4 text-muted-foreground" />
-                        ) : (
-                          <Eye className="w-4 h-4 text-muted-foreground" />
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
 
-      {/* Info Card */}
-      <Card className="bg-muted/20 border-border">
-        <CardHeader>
-          <CardTitle className="text-foreground flex items-center gap-2">
-            <Settings className="w-5 h-5" />
-            Important Notes
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>• <strong>PUBLIC</strong> variables are accessible in the browser and should not contain sensitive data</p>
-          <p>• Changes will be applied after saving and refreshing the page</p>
-          <p>• Make sure to restart your development server after changing environment variables</p>
-          <p>• API keys and sensitive data should only be set in non-public variables</p>
-        </CardContent>
-      </Card>
-    </div>
+        {/* Environment Variables by Category */}
+        <div className="space-y-3">
+          {categoryOrder.map((category) => {
+            const config = categoryConfig[category]
+            const variables = groupedEnvVars[category] || []
+            const activeCount = variables.filter(v => v.isActive).length
+            const IconComponent = config.icon
+
+            return (
+              <Collapsible
+                key={category}
+                open={expandedCategories[category]}
+                onOpenChange={() => toggleCategory(category)}
+              >
+                <div className="rounded-lg border border-border bg-muted/5 overflow-hidden">
+                  <CollapsibleTrigger asChild>
+                    <button className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/50 transition-colors text-left">
+                      <div className="flex items-center gap-3">
+                        <IconComponent className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium text-foreground">{config.title}</div>
+                          <div className="text-xs text-muted-foreground hidden sm:block">{config.description}</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {activeCount > 0 && (
+                          <Badge variant="secondary" className="text-xs">
+                            {activeCount} active
+                          </Badge>
+                        )}
+                        {expandedCategories[category] ? (
+                          <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </div>
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="border-t border-border">
+                      {/* Table-like layout for environment variables */}
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead className="sr-only">
+                            <tr>
+                              <th>Status</th>
+                              <th>Variable</th>
+                              <th>Value</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-border">
+                            {variables.map((envVar) => (
+                              <tr key={envVar.key} className="group hover:bg-muted/30 transition-colors">
+                                {/* Status indicator */}
+                                <td className="w-10 px-3 py-3 align-middle">
+                                  <div className="flex items-center justify-center">
+                                    {envVar.isActive !== undefined ? (
+                                      <div 
+                                        className={`w-2 h-2 rounded-full ${
+                                          envVar.isActive ? 'bg-green-500' : 'bg-gray-400'
+                                        }`}
+                                        title={envVar.isActive ? 'Active' : 'Inactive'}
+                                      />
+                                    ) : (
+                                      <div className="w-2 h-2 rounded-full bg-blue-500" title="Always available" />
+                                    )}
+                                  </div>
+                                </td>
+                                
+                                {/* Variable name and description */}
+                                <td className="px-3 py-3 align-middle">
+                                  <div className="flex flex-col gap-1 min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-foreground whitespace-nowrap">
+                                        {envVar.key}
+                                      </code>
+                                      <div className="flex items-center gap-1 flex-wrap">
+                                        {envVar.isPublic && (
+                                          <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 border-blue-500/30 text-blue-500">
+                                            PUBLIC
+                                          </Badge>
+                                        )}
+                                        {envVar.isActive !== undefined && (
+                                          <Badge 
+                                            variant="outline" 
+                                            className={`text-[10px] px-1 py-0 h-4 ${
+                                              envVar.isActive 
+                                                ? 'border-green-500/30 text-green-500' 
+                                                : 'border-gray-500/30 text-gray-500'
+                                            }`}
+                                          >
+                                            {envVar.isActive ? 'ACTIVE' : 'INACTIVE'}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">{envVar.description}</p>
+                                    {envVar.activeReason && (
+                                      <p className="text-[10px] text-muted-foreground/70 italic">{envVar.activeReason}</p>
+                                    )}
+                                  </div>
+                                </td>
+                                
+                                {/* Input field */}
+                                <td className="px-3 py-3 align-middle w-48 sm:w-64 md:w-72">
+                                  {envVar.key.includes('USE_MOCKS') || envVar.key.includes('MOCK_API_ONLY') ? (
+                                    <div className="flex items-center justify-end gap-3">
+                                      <span className="text-xs text-muted-foreground">
+                                        {envVar.value === 'true' ? 'Enabled' : 'Disabled'}
+                                      </span>
+                                      <Switch
+                                        checked={envVar.value === 'true'}
+                                        onCheckedChange={() => handleBooleanChange(envVar.key, envVar.value)}
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="relative">
+                                      <Input
+                                        type={getInputType(envVar)}
+                                        value={envVar.value}
+                                        onChange={(e) => updateEnvVar(envVar.key, e.target.value)}
+                                        placeholder={getDefaultValue(envVar.key) || 'Not set'}
+                                        className="bg-input border-border text-foreground text-sm h-8 pr-8 w-full"
+                                      />
+                                      {envVar.isPassword && (
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          className="absolute right-0 top-0 h-full px-2 hover:bg-transparent"
+                                          onClick={() => togglePasswordVisibility(envVar.key)}
+                                        >
+                                          {showPasswords[envVar.key] ? (
+                                            <EyeOff className="w-3.5 h-3.5 text-muted-foreground" />
+                                          ) : (
+                                            <Eye className="w-3.5 h-3.5 text-muted-foreground" />
+                                          )}
+                                        </Button>
+                                      )}
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </div>
+              </Collapsible>
+            )
+          })}
+        </div>
+
+        {/* Info footer */}
+        <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/30 border border-border/50">
+          <Info className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+          <div className="text-xs text-muted-foreground space-y-1">
+            <p><strong>PUBLIC</strong> variables are accessible in the browser - do not store sensitive data.</p>
+            <p>Restart your development server after changing environment variables.</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
