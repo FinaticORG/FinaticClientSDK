@@ -1306,10 +1306,10 @@ export function TradingPageComponent() {
         symbol: customOrder.symbol,
         orderQty: customOrder.orderQty,
       },
-    };
+      };
 
-    // Add optional fields
-    if (customOrder.price !== undefined) {
+      // Add optional fields to order object
+      if (customOrder.price !== undefined) {
       payload.order.price = customOrder.price;
     }
     if (customOrder.stopPrice !== undefined) {
@@ -1396,23 +1396,6 @@ export function TradingPageComponent() {
         throw new Error('Broker is required. Please select a broker.');
       }
       
-      // Build nested structure: { broker, accountNumber, order: {...}, connectionId? }
-      const orderObject: any = {
-        orderType: customOrder.orderType,
-        assetType: customOrder.assetType,
-        action: customOrder.action,
-        timeInForce: customOrder.timeInForce,
-        symbol: customOrder.symbol,
-        orderQty: customOrder.orderQty,
-      // Build flat order parameters
-      // Double-check broker is still set (should be validated above, but be safe)
-      const normalizedBroker =
-        selectedBroker && selectedBroker.trim() !== '' ? selectedBroker.trim().toLowerCase() : '';
-
-      if (!normalizedBroker) {
-        throw new Error('Broker is required. Please select a broker.');
-      }
-
       // Build nested structure: { broker, accountNumber, order: {...}, connectionId? }
       const orderObject: any = {
         orderType: customOrder.orderType,
