@@ -137,11 +137,11 @@ export function OverviewDashboard() {
       {/* Quick Actions */}
       <div>
         <h2 className="text-xl font-semibold mb-4 text-foreground">Quick Actions</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 items-stretch">
           {quickActions.map(action => (
-            <Link key={action.title} href={action.href} className="block">
-              <Card className="bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer group">
-                <CardHeader>
+            <Link key={action.title} href={action.href} className="block h-full">
+              <Card className="h-full flex flex-col bg-card border-border hover:bg-accent/50 transition-colors cursor-pointer group">
+                <CardHeader className="flex-1">
                   <div className="flex items-center justify-between">
                     <action.icon className={`h-8 w-8 ${action.color}`} />
                     <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />

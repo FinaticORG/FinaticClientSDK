@@ -9,6 +9,7 @@ interface EnvironmentConfigContextValue {
   environment: EnvironmentType;
   setMode: (mode: EnvironmentMode) => void;
   setEnvironment: (env: EnvironmentType) => void;
+  setRuntime: (mode: EnvironmentMode, env: EnvironmentType) => void;
   getApiKey: () => string | undefined;
   getApiUrl: () => string | undefined;
   getPublicApiUrl: () => string | undefined;
@@ -63,6 +64,19 @@ export function EnvironmentConfigProvider({ children }: { children: React.ReactN
     }
   }, []);
 
+  const setRuntime = useCallback((newMode: EnvironmentMode, newEnv: EnvironmentType) => {
+    setModeState(newMode);
+    setEnvironmentState(newEnv);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(STORAGE_KEY_MODE, newMode);
+        localStorage.setItem(STORAGE_KEY_ENVIRONMENT, newEnv);
+      } catch {
+        // Ignore localStorage errors
+      }
+    }
+  }, []);
+
   // Get API key based on mode (server-side only, returns undefined for client)
   const getApiKey = useCallback((): string | undefined => {
     if (typeof window !== 'undefined') return undefined; // Client-side can't access server env vars
@@ -98,6 +112,7 @@ export function EnvironmentConfigProvider({ children }: { children: React.ReactN
         environment,
         setMode,
         setEnvironment,
+        setRuntime,
         getApiKey,
         getApiUrl,
         getPublicApiUrl,

@@ -37,7 +37,7 @@ import { useState, useEffect } from 'react';
 export function DeveloperPageComponent() {
   const { theme, setTheme } = useTheme();
   const { sdkType, setSdkType, sessionInfo } = useFinatic();
-  const { mode, environment, setMode, setEnvironment } = useEnvironmentConfig();
+  const { mode, environment, setRuntime, getPublicApiUrl } = useEnvironmentConfig();
   const [mounted, setMounted] = useState(false);
 
   const [localSdkType, setLocalSdkType] = useState<SdkType>(sdkType);
@@ -103,6 +103,68 @@ export function DeveloperPageComponent() {
     { value: 'system', label: 'System', icon: Computer },
   ];
 
+  const runtimeOptions: Array<{
+    id: string;
+    mode: EnvironmentMode;
+    environment: EnvironmentType;
+    title: string;
+    description: string;
+    icon: typeof Globe;
+  }> = [
+    {
+      id: 'sandbox:dev',
+      mode: 'sandbox',
+      environment: 'dev',
+      title: 'Sandbox - Development',
+      description: 'Test data + local development server',
+      icon: Code,
+    },
+    {
+      id: 'sandbox:staging',
+      mode: 'sandbox',
+      environment: 'staging',
+      title: 'Sandbox - Staging',
+      description: 'Test data + pre-production environment',
+      icon: Globe,
+    },
+    {
+      id: 'sandbox:prod',
+      mode: 'sandbox',
+      environment: 'prod',
+      title: 'Sandbox - Production',
+      description: 'Test data + production endpoints',
+      icon: AlertCircle,
+    },
+    {
+      id: 'live:dev',
+      mode: 'live',
+      environment: 'dev',
+      title: 'Live - Development',
+      description: 'Real mode + local development server',
+      icon: Code,
+    },
+    {
+      id: 'live:staging',
+      mode: 'live',
+      environment: 'staging',
+      title: 'Live - Staging',
+      description: 'Real mode + pre-production environment',
+      icon: Globe,
+    },
+    {
+      id: 'live:prod',
+      mode: 'live',
+      environment: 'prod',
+      title: 'Live - Production',
+      description: 'Real production data and keys',
+      icon: CheckCircle,
+    },
+  ];
+
+  const selectedRuntimeId = `${mode}:${environment}`;
+  const selectedRuntime = runtimeOptions.find((o) => o.id === selectedRuntimeId);
+  const publicApiUrl = getPublicApiUrl();
+
   return (
     <div className="flex-1 space-y-6 p-6">
       <div className="flex items-center justify-between">
@@ -129,93 +191,47 @@ export function DeveloperPageComponent() {
 
         <TabsContent value="environment" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="text-foreground flex items-center gap-2">
-                  <Globe className="w-5 h-5" />
-                  Mode Selection
-                </CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  Choose between Sandbox (test) or Live (production) mode
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Tabs value={mode} onValueChange={(value) => setMode(value as EnvironmentMode)}>
-                  <TabsList className="grid w-full grid-cols-2 bg-muted">
-                    <TabsTrigger value="sandbox">Sandbox</TabsTrigger>
-                    <TabsTrigger value="live">Live</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="sandbox" className="mt-4">
-                    <div className="p-4 bg-muted/20 rounded-lg border border-border">
-                      <div className="flex items-center gap-2 mb-2">
-                        <AlertCircle className="w-4 h-4 text-yellow-500" />
-                        <span className="text-sm font-medium text-foreground">Sandbox Mode</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Uses test data and sandbox API keys. Safe for development and testing.
-                      </p>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="live" className="mt-4">
-                    <div className="p-4 bg-muted/20 rounded-lg border border-border">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle className="w-4 h-4 text-green-500" />
-                        <span className="text-sm font-medium text-foreground">Live Mode</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Uses real production data and live API keys. Use with caution.
-                      </p>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-border md:col-span-2">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center gap-2">
                   <Server className="w-5 h-5" />
-                  Environment Selection
+                  Runtime Selection
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">
-                  Choose the API environment to connect to
+                  Select the exact Mode + Environment combination used for token and API URL resolution
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-foreground">Environment</Label>
-                  <Select value={environment} onValueChange={(value) => setEnvironment(value as EnvironmentType)}>
+                  <Label className="text-foreground">Runtime</Label>
+                  <Select
+                    value={selectedRuntimeId}
+                    onValueChange={(value) => {
+                      const [nextMode, nextEnvironment] = value.split(':') as [
+                        EnvironmentMode,
+                        EnvironmentType,
+                      ];
+                      setRuntime(nextMode, nextEnvironment);
+                    }}
+                  >
                     <SelectTrigger className="bg-input border-border text-foreground">
-                      <SelectValue />
+                      <SelectValue placeholder="Select runtime..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="dev">
-                        <div className="flex items-center gap-2">
-                          <Code className="w-4 h-4" />
-                          <div>
-                            <div className="font-medium">Development</div>
-                            <div className="text-xs text-muted-foreground">Local development server</div>
-                          </div>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="staging">
-                        <div className="flex items-center gap-2">
-                          <Globe className="w-4 h-4" />
-                          <div>
-                            <div className="font-medium">Staging</div>
-                            <div className="text-xs text-muted-foreground">Pre-production environment</div>
-                          </div>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="prod">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="w-4 h-4" />
-                          <div>
-                            <div className="font-medium">Production</div>
-                            <div className="text-xs text-muted-foreground">Live production environment</div>
-                          </div>
-                        </div>
-                      </SelectItem>
+                      {runtimeOptions.map((opt) => {
+                        const Icon = opt.icon;
+                        return (
+                          <SelectItem key={opt.id} value={opt.id}>
+                            <div className="flex items-center gap-2">
+                              <Icon className="w-4 h-4" />
+                              <div>
+                                <div className="font-medium">{opt.title}</div>
+                                <div className="text-xs text-muted-foreground">{opt.description}</div>
+                              </div>
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
@@ -223,7 +239,16 @@ export function DeveloperPageComponent() {
                 <div className="p-4 bg-muted/20 rounded-lg border border-border">
                   <div className="flex items-center gap-2 mb-2">
                     <Monitor className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm font-medium text-foreground">Current Configuration</span>
+                    <span className="text-sm font-medium text-foreground">Current Runtime</span>
+                    {mode === 'live' ? (
+                      <Badge variant="outline" className="ml-auto border-green-500/30 text-green-400">
+                        LIVE
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="ml-auto border-yellow-500/30 text-yellow-400">
+                        SANDBOX
+                      </Badge>
+                    )}
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center justify-between">
@@ -234,14 +259,22 @@ export function DeveloperPageComponent() {
                       <span className="text-muted-foreground">Environment:</span>
                       <span className="text-foreground font-medium capitalize">{environment}</span>
                     </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">API URL:</span>
+                      <span className="text-foreground font-medium truncate max-w-[60%]">
+                        {publicApiUrl || 'Not set'}
+                      </span>
+                    </div>
+                    {selectedRuntime?.description ? (
+                      <div className="text-xs text-muted-foreground pt-1">{selectedRuntime.description}</div>
+                    ) : null}
                   </div>
                 </div>
 
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Changing the environment will update the API URL and API key used for all requests.
-                    You may need to refresh the page for changes to take full effect.
+                    Changing runtime updates the API URL and key resolution for requests. The SDK will reinitialize automatically.
                   </AlertDescription>
                 </Alert>
               </CardContent>
