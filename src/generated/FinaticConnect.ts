@@ -1664,21 +1664,6 @@ export class FinaticConnect extends EventEmitter {
    * }
    * ```
    * @example
-   * ```typescript-client
-   * // Full example with optional parameters
-   * const result = await finatic.placeOrder({ connectionId: 'example-id' });
-   * 
-   * // Handle response with warnings
-   * if (result.success) {
-   *   console.log('Data:', result.success.data);
-   *   if (result.warning && result.warning.length > 0) {
-   *     console.warn('Warnings:', result.warning);
-   *   }
-   * } else if (result.error) {
-   *   console.error('Error:', result.error.message, result.error.code);
-   * }
-   * ```
-   * @example
    * ```typescript-server
    * // Example with no parameters
    * const result = await finatic.placeOrder();
@@ -1690,16 +1675,12 @@ export class FinaticConnect extends EventEmitter {
    * ```
    * @example
    * ```python
-   * # This method accepts an optional body parameter. See the parameters section for details.
-   * result = await finatic.place_order(
-   *     # body={...}  # Optional - see parameters section for structure
-   * )
+   * # Example with no parameters
+   * result = await finatic.place_order()
    * 
    * # Access the response data
    * if result.success:
    *     print('Data:', result.success['data'])
-   * elif result.error:
-   *     print('Error:', result.error['message'])
    * ```
    * @example
    * ```python
@@ -1792,21 +1773,6 @@ export class FinaticConnect extends EventEmitter {
    *   console.log('Data:', result.success.data);
    * } else if (result.error) {
    *   console.error('Error:', result.error.message);
-   * }
-   * ```
-   * @example
-   * ```typescript-client
-   * // Full example with optional parameters
-   * const result = await finatic.modifyOrder({ orderId: 'example-id', connectionId: 'example-id' });
-   * 
-   * // Handle response with warnings
-   * if (result.success) {
-   *   console.log('Data:', result.success.data);
-   *   if (result.warning && result.warning.length > 0) {
-   *     console.warn('Warnings:', result.warning);
-   *   }
-   * } else if (result.error) {
-   *   console.error('Error:', result.error.message, result.error.code);
    * }
    * ```
    * @example

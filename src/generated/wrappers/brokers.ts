@@ -290,8 +290,6 @@ export interface PlaceOrderParams {
     /** Order quantity */
     orderQty: number;
   };
-  /** Temporary bypass for testing: specify connection ID directly */
-  connectionId?: string;
 }
 
 export interface CancelOrderParams {
@@ -321,8 +319,6 @@ export interface ModifyOrderParams {
     /** Order quantity */
     orderQty: number;
   };
-  /** Temporary bypass for testing: specify connection ID directly */
-  connectionId?: string;
 }
 
 
@@ -3171,7 +3167,6 @@ export class BrokersWrapper {
    * @param params.order.timeInForce {string} Time in force for the order
    * @param params.order.symbol {string} Trading symbol
    * @param params.order.orderQty {number} Order quantity
-   * @param params.connectionId {string} (optional) Temporary bypass for testing: specify connection ID directly
    * @returns {Promise<FinaticResponse<OrderActionResult>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: POST /api/beta/brokers/orders
@@ -3197,23 +3192,6 @@ export class BrokersWrapper {
    *   console.log('Data:', result.success.data);
    * } else if (result.error) {
    *   console.error('Error:', result.error.message);
-   * }
-   * ```
-   * @example
-   * ```typescript-client
-   * // Full example with optional parameters
-   * const result = await finatic.placeOrder({
-    connectionId: 'example-id'
-   * });
-   * 
-   * // Handle response with warnings
-   * if (result.success) {
-   *   console.log('Data:', result.success.data);
-   *   if (result.warning && result.warning.length > 0) {
-   *     console.warn('Warnings:', result.warning);
-   *   }
-   * } else if (result.error) {
-   *   console.error('Error:', result.error.message, result.error.code);
    * }
    * ```
    */
@@ -3258,7 +3236,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.placeOrderApiBetaBrokersOrdersPost({ ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), placeOrderApiBetaBrokersOrdersPostRequest: { broker: resolvedParams.broker, order: { accountNumber: resolvedParams.accountNumber, ...resolvedParams.order, ...(resolvedParams.order.timeInForce !== undefined && typeof resolvedParams.order.timeInForce === 'string' ? { timeInForce: { timeInForce: resolvedParams.order.timeInForce } } : resolvedParams.order.timeInForce !== undefined ? { timeInForce: resolvedParams.order.timeInForce } : {}) } }, connectionId: resolvedParams.connectionId }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.placeOrderApiBetaBrokersOrdersPost({ placeOrderApiBetaBrokersOrdersPostRequest: { broker: resolvedParams.broker, order: { accountNumber: resolvedParams.accountNumber, ...resolvedParams.order, ...(resolvedParams.order.timeInForce !== undefined && typeof resolvedParams.order.timeInForce === 'string' ? { timeInForce: { timeInForce: resolvedParams.order.timeInForce } } : resolvedParams.order.timeInForce !== undefined ? { timeInForce: resolvedParams.order.timeInForce } : {}) } } }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -3594,7 +3572,6 @@ export class BrokersWrapper {
    * @param params.order.timeInForce {string} Time in force for the order
    * @param params.order.symbol {string} Trading symbol
    * @param params.order.orderQty {number} Order quantity
-   * @param params.connectionId {string} (optional) Temporary bypass for testing: specify connection ID directly
    * @returns {Promise<FinaticResponse<OrderActionResult>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: PATCH /api/beta/brokers/orders/{order_id}
@@ -3612,24 +3589,6 @@ export class BrokersWrapper {
    *   console.log('Data:', result.success.data);
    * } else if (result.error) {
    *   console.error('Error:', result.error.message);
-   * }
-   * ```
-   * @example
-   * ```typescript-client
-   * // Full example with optional parameters
-   * const result = await finatic.modifyOrder({
-    orderId: 'example-id',
-    connectionId: 'example-id'
-   * });
-   * 
-   * // Handle response with warnings
-   * if (result.success) {
-   *   console.log('Data:', result.success.data);
-   *   if (result.warning && result.warning.length > 0) {
-   *     console.warn('Warnings:', result.warning);
-   *   }
-   * } else if (result.error) {
-   *   console.error('Error:', result.error.message, result.error.code);
    * }
    * ```
    */
@@ -3674,7 +3633,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.modifyOrderApiBetaBrokersOrdersOrderIdPatch({ orderId: resolvedParams.orderId ?? null, ...(resolvedParams.accountNumber !== undefined ? { accountNumber: resolvedParams.accountNumber } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest: { broker: resolvedParams.broker, order: { accountNumber: resolvedParams.accountNumber, ...resolvedParams.order, ...(resolvedParams.order.timeInForce !== undefined && typeof resolvedParams.order.timeInForce === 'string' ? { timeInForce: { timeInForce: resolvedParams.order.timeInForce } } : resolvedParams.order.timeInForce !== undefined ? { timeInForce: resolvedParams.order.timeInForce } : {}) } }, connectionId: resolvedParams.connectionId }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.modifyOrderApiBetaBrokersOrdersOrderIdPatch({ placeOrderApiBetaBrokersOrdersPostRequest: { broker: resolvedParams.broker, order: { accountNumber: resolvedParams.accountNumber, ...resolvedParams.order, ...(resolvedParams.order.timeInForce !== undefined && typeof resolvedParams.order.timeInForce === 'string' ? { timeInForce: { timeInForce: resolvedParams.order.timeInForce } } : resolvedParams.order.timeInForce !== undefined ? { timeInForce: resolvedParams.order.timeInForce } : {}) } } }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
