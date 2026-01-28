@@ -8,7 +8,6 @@ import {
   Database,
   Home,
   Lock,
-  Settings,
   TrendingUp,
   Users,
   Code,
@@ -142,22 +141,6 @@ export function AppSidebar({ className, ...props }: AppSidebarProps) {
         </div>
       </ScrollArea>
 
-      {/* Footer */}
-      <div className="border-t border-sidebar-border p-4">
-        <Link href="/settings">
-          <Button
-            variant="ghost"
-            className={cn(
-              "w-full justify-start gap-3 text-left font-normal hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-              pathname === "/settings" && "bg-sidebar-accent text-sidebar-accent-foreground"
-            )}
-          >
-            <Settings className="h-4 w-4" />
-            Settings
-            {pathname === "/settings" && <ChevronRight className="ml-auto h-4 w-4" />}
-          </Button>
-        </Link>
-      </div>
     </div>
   )
 }
