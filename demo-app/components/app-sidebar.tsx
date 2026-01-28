@@ -1,8 +1,9 @@
 "use client"
 
-import type * as React from "react"
+import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useTheme } from "next-themes"
 import {
   BarChart3,
   Database,
@@ -16,6 +17,9 @@ import {
   Search,
   Command,
   DoorOpen,
+  Sun,
+  Moon,
+  Computer,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -81,6 +85,26 @@ interface AppSidebarProps extends React.ComponentProps<"div"> {}
 
 export function AppSidebar({ className, ...props }: AppSidebarProps) {
   const pathname = usePathname()
+  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const cycleTheme = React.useCallback(() => {
+    const current = theme ?? "system"
+    const next = current === "system" ? "light" : current === "light" ? "dark" : "system"
+    setTheme(next)
+  }, [setTheme, theme])
+
+  const ThemeIcon = !mounted
+    ? Computer
+    : theme === "light"
+      ? Sun
+      : theme === "dark"
+        ? Moon
+        : Computer
 
   return (
     <div
@@ -141,6 +165,17 @@ export function AppSidebar({ className, ...props }: AppSidebarProps) {
         </div>
       </ScrollArea>
 
+      {/* Theme */}
+      <div className="border-t border-sidebar-border p-4">
+        <button
+          type="button"
+          onClick={cycleTheme}
+          aria-label="Toggle theme"
+          className="flex h-10 w-10 items-center justify-center rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        >
+          <ThemeIcon className="h-4 w-4" />
+        </button>
+      </div>
     </div>
   )
 }
