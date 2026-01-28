@@ -172,7 +172,7 @@ export function OverviewDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-              <p className="text-xs text-green-400">{stat.change} from last month</p>
+              <p className="text-xs text-green-400">{stat.change} this session</p>
             </CardContent>
           </Card>
         ))}
