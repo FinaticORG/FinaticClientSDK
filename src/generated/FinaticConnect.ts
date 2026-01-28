@@ -626,7 +626,9 @@ export class FinaticConnect extends EventEmitter {
     const data = response?.success?.data;
     return {
       user_id: data?.user_id || '',
-      company_id: data?.company_id || this.companyId || '',
+      // The 'getSessionUser' endpoint currently returns 'SessionUserResponse' which contains 'user_id'.
+      // Company context is tracked from 'startSession' and stored on the instance.
+      company_id: this.companyId || '',
     };
   }
 
@@ -663,18 +665,12 @@ export class FinaticConnect extends EventEmitter {
    * Get Company
    * 
    * Get public company details by ID (no user check, no sensitive data).
-   * 
-   * Convenience method that delegates to company wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: getCompany({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
    * @methodId get_company_api_beta_company__company_id__get
    * @category company
    * @example
    * ```typescript-client
    * // Minimal example with required parameters only
-   * const result = await finatic.getCompany({ companyId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.getCompany({ companyId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -686,7 +682,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Minimal example with required parameters only
-   * const result = await finatic.getCompany({ companyId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.getCompany({ companyId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -699,7 +695,7 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Minimal example with required parameters only
    * result = await finatic.get_company(
-   *            company_id='00000000-0000-0000-0000-000000000000'
+   *            company_id='example'
    * )
    * 
    * # Access the response data
@@ -721,12 +717,6 @@ export class FinaticConnect extends EventEmitter {
    * Returns array of current balances (one per unit_code per account).
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns balances from connections the company has read access to.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: getBalances({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
    * @methodId get_balances_api_beta_brokers_data_balances_get
    * @category brokers
    * @example
@@ -742,7 +732,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getBalances({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * const result = await finatic.getBalances({ brokerId: 'example-id', connectionId: 'example-id', accountId: 'example-id' });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -777,9 +767,9 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Full example with optional parameters
    * result = await finatic.get_balances(
-   *            broker_id='alpaca',
-            connection_id='00000000-0000-0000-0000-000000000000',
-            account_id='123456789'
+   *            broker_id='example',
+            connection_id='example',
+            account_id='example'
    * )
    * 
    * # Handle response with warnings
@@ -802,12 +792,6 @@ export class FinaticConnect extends EventEmitter {
    * 
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns accounts from connections the company has read access to.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: getAccounts({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
    * @methodId get_accounts_api_beta_brokers_data_accounts_get
    * @category brokers
    * @example
@@ -823,7 +807,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getAccounts({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountType: 'margin' });
+   * const result = await finatic.getAccounts({ brokerId: 'example-id', connectionId: 'example-id', accountType: 'margin' });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -858,8 +842,8 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Full example with optional parameters
    * result = await finatic.get_accounts(
-   *            broker_id='alpaca',
-            connection_id='00000000-0000-0000-0000-000000000000',
+   *            broker_id='example',
+            connection_id='example',
             account_type='margin'
    * )
    * 
@@ -888,12 +872,6 @@ export class FinaticConnect extends EventEmitter {
    * -------
    * FinaticResponse[list[BrokerInfo]]
    *     list of available brokers with their metadata.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: getBrokers({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
    * @methodId get_brokers_api_beta_brokers__get
    * @category brokers
    * @example
@@ -938,12 +916,6 @@ export class FinaticConnect extends EventEmitter {
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns connections that the user has any permissions for, including the current
    * company's permissions (read/write) for each connection.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: getBrokerConnections({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
    * @methodId list_broker_connections_api_beta_brokers_connections_get
    * @category brokers
    * @example
@@ -987,18 +959,12 @@ export class FinaticConnect extends EventEmitter {
    * 
    * If the company is the only one with access, the entire connection is deleted.
    * If other companies have access, only the company's access is removed.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: disconnectCompanyFromBroker({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
    * @methodId disconnect_company_from_broker_api_beta_brokers_disconnect_company__connection_id__delete
    * @category brokers
    * @example
    * ```typescript-client
    * // Minimal example with required parameters only
-   * const result = await finatic.disconnectCompanyFromBroker({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.disconnectCompanyFromBroker({ connectionId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -1010,7 +976,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Minimal example with required parameters only
-   * const result = await finatic.disconnectCompanyFromBroker({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.disconnectCompanyFromBroker({ connectionId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -1023,7 +989,7 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Minimal example with required parameters only
    * result = await finatic.disconnect_company_from_broker(
-   *            connection_id='00000000-0000-0000-0000-000000000000'
+   *            connection_id='example'
    * )
    * 
    * # Access the response data
@@ -1044,12 +1010,6 @@ export class FinaticConnect extends EventEmitter {
    * 
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns orders from connections the company has read access to.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: getOrders({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
    * @methodId get_orders_api_beta_brokers_data_orders_get
    * @category brokers
    * @example
@@ -1065,7 +1025,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getOrders({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * const result = await finatic.getOrders({ brokerId: 'example-id', connectionId: 'example-id', accountId: 'example-id' });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -1100,9 +1060,9 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Full example with optional parameters
    * result = await finatic.get_orders(
-   *            broker_id='alpaca',
-            connection_id='00000000-0000-0000-0000-000000000000',
-            account_id='123456789'
+   *            broker_id='example',
+            connection_id='example',
+            account_id='example'
    * )
    * 
    * # Handle response with warnings
@@ -1125,12 +1085,6 @@ export class FinaticConnect extends EventEmitter {
    * 
    * This endpoint is accessible from the portal and uses session-only authentication.
    * Returns positions from connections the company has read access to.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: getPositions({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
    * @methodId get_positions_api_beta_brokers_data_positions_get
    * @category brokers
    * @example
@@ -1146,7 +1100,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getPositions({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * const result = await finatic.getPositions({ brokerId: 'example-id', connectionId: 'example-id', accountId: 'example-id' });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -1181,9 +1135,9 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Full example with optional parameters
    * result = await finatic.get_positions(
-   *            broker_id='alpaca',
-            connection_id='00000000-0000-0000-0000-000000000000',
-            account_id='123456789'
+   *            broker_id='example',
+            connection_id='example',
+            account_id='example'
    * )
    * 
    * # Handle response with warnings
@@ -1206,12 +1160,6 @@ export class FinaticConnect extends EventEmitter {
    * 
    * Returns transactions from connections the company has read access to.
    * This endpoint is accessible from the portal and uses session-only authentication.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: getTransactions({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
    * @methodId get_transactions_api_beta_brokers_data_transactions_get
    * @category brokers
    * @example
@@ -1227,7 +1175,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getTransactions({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * const result = await finatic.getTransactions({ brokerId: 'example-id', connectionId: 'example-id', accountId: 'example-id' });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -1262,9 +1210,9 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Full example with optional parameters
    * result = await finatic.get_transactions(
-   *            broker_id='alpaca',
-            connection_id='00000000-0000-0000-0000-000000000000',
-            account_id='123456789'
+   *            broker_id='example',
+            connection_id='example',
+            account_id='example'
    * )
    * 
    * # Handle response with warnings
@@ -1286,18 +1234,12 @@ export class FinaticConnect extends EventEmitter {
    * Get order fills for a specific order.
    * 
    * This endpoint returns all execution fills for the specified order.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: getOrderFills({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
    * @methodId get_order_fills_api_beta_brokers_data_orders__order_id__fills_get
    * @category brokers
    * @example
    * ```typescript-client
    * // Minimal example with required parameters only
-   * const result = await finatic.getOrderFills({ orderId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.getOrderFills({ orderId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -1309,7 +1251,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getOrderFills({ orderId: '00000000-0000-0000-0000-000000000000', connectionId: '00000000-0000-0000-0000-000000000000', limit: 100, offset: 0 });
+   * const result = await finatic.getOrderFills({ orderId: 'example-id', connectionId: 'example-id', limit: 0, offset: 0 });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -1324,7 +1266,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Minimal example with required parameters only
-   * const result = await finatic.getOrderFills({ orderId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.getOrderFills({ orderId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -1337,7 +1279,7 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Minimal example with required parameters only
    * result = await finatic.get_order_fills(
-   *            order_id='00000000-0000-0000-0000-000000000000'
+   *            order_id='example'
    * )
    * 
    * # Access the response data
@@ -1350,10 +1292,10 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Full example with optional parameters
    * result = await finatic.get_order_fills(
-   *            order_id='00000000-0000-0000-0000-000000000000',
-            connection_id='00000000-0000-0000-0000-000000000000',
-            limit=100,
-            offset=0
+   *            order_id='example',
+            connection_id='example',
+            limit='example',
+            offset='example'
    * )
    * 
    * # Handle response with warnings
@@ -1375,18 +1317,12 @@ export class FinaticConnect extends EventEmitter {
    * Get order events for a specific order.
    * 
    * This endpoint returns all lifecycle events for the specified order.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: getOrderEvents({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
    * @methodId get_order_events_api_beta_brokers_data_orders__order_id__events_get
    * @category brokers
    * @example
    * ```typescript-client
    * // Minimal example with required parameters only
-   * const result = await finatic.getOrderEvents({ orderId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.getOrderEvents({ orderId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -1398,7 +1334,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getOrderEvents({ orderId: '00000000-0000-0000-0000-000000000000', connectionId: '00000000-0000-0000-0000-000000000000', limit: 100, offset: 0 });
+   * const result = await finatic.getOrderEvents({ orderId: 'example-id', connectionId: 'example-id', limit: 0, offset: 0 });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -1413,7 +1349,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Minimal example with required parameters only
-   * const result = await finatic.getOrderEvents({ orderId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.getOrderEvents({ orderId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -1426,7 +1362,7 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Minimal example with required parameters only
    * result = await finatic.get_order_events(
-   *            order_id='00000000-0000-0000-0000-000000000000'
+   *            order_id='example'
    * )
    * 
    * # Access the response data
@@ -1439,10 +1375,10 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Full example with optional parameters
    * result = await finatic.get_order_events(
-   *            order_id='00000000-0000-0000-0000-000000000000',
-            connection_id='00000000-0000-0000-0000-000000000000',
-            limit=100,
-            offset=0
+   *            order_id='example',
+            connection_id='example',
+            limit='example',
+            offset='example'
    * )
    * 
    * # Handle response with warnings
@@ -1464,12 +1400,6 @@ export class FinaticConnect extends EventEmitter {
    * Get order groups.
    * 
    * This endpoint returns order groups that contain multiple orders.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: getOrderGroups({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
    * @methodId get_order_groups_api_beta_brokers_data_orders_groups_get
    * @category brokers
    * @example
@@ -1485,7 +1415,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getOrderGroups({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', limit: 100 });
+   * const result = await finatic.getOrderGroups({ brokerId: 'example-id', connectionId: 'example-id', limit: 0 });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -1520,9 +1450,9 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Full example with optional parameters
    * result = await finatic.get_order_groups(
-   *            broker_id='alpaca',
-            connection_id='00000000-0000-0000-0000-000000000000',
-            limit=100
+   *            broker_id='example',
+            connection_id='example',
+            limit='example'
    * )
    * 
    * # Handle response with warnings
@@ -1545,12 +1475,6 @@ export class FinaticConnect extends EventEmitter {
    * 
    * This endpoint returns tax lots for positions, which are used for tax reporting.
    * Each lot tracks when a position was opened/closed and at what prices.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: getPositionLots({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
    * @methodId get_position_lots_api_beta_brokers_data_positions_lots_get
    * @category brokers
    * @example
@@ -1566,7 +1490,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getPositionLots({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * const result = await finatic.getPositionLots({ brokerId: 'example-id', connectionId: 'example-id', accountId: 'example-id' });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -1601,9 +1525,9 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Full example with optional parameters
    * result = await finatic.get_position_lots(
-   *            broker_id='alpaca',
-            connection_id='00000000-0000-0000-0000-000000000000',
-            account_id='123456789'
+   *            broker_id='example',
+            connection_id='example',
+            account_id='example'
    * )
    * 
    * # Handle response with warnings
@@ -1625,18 +1549,12 @@ export class FinaticConnect extends EventEmitter {
    * Get position lot fills for a specific lot.
    * 
    * This endpoint returns all fills associated with a specific position lot.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: getPositionLotFills({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
    * @methodId get_position_lot_fills_api_beta_brokers_data_positions_lots__lot_id__fills_get
    * @category brokers
    * @example
    * ```typescript-client
    * // Minimal example with required parameters only
-   * const result = await finatic.getPositionLotFills({ lotId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.getPositionLotFills({ lotId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -1648,7 +1566,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Full example with optional parameters
-   * const result = await finatic.getPositionLotFills({ lotId: '00000000-0000-0000-0000-000000000000', connectionId: '00000000-0000-0000-0000-000000000000', limit: 100, offset: 0 });
+   * const result = await finatic.getPositionLotFills({ lotId: 'example-id', connectionId: 'example-id', limit: 0, offset: 0 });
    * 
    * // Handle response with warnings
    * if (result.success) {
@@ -1663,7 +1581,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Minimal example with required parameters only
-   * const result = await finatic.getPositionLotFills({ lotId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.getPositionLotFills({ lotId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -1676,7 +1594,7 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Minimal example with required parameters only
    * result = await finatic.get_position_lot_fills(
-   *            lot_id='00000000-0000-0000-0000-000000000000'
+   *            lot_id='example'
    * )
    * 
    * # Access the response data
@@ -1689,10 +1607,10 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Full example with optional parameters
    * result = await finatic.get_position_lot_fills(
-   *            lot_id='00000000-0000-0000-0000-000000000000',
-            connection_id='00000000-0000-0000-0000-000000000000',
-            limit=100,
-            offset=0
+   *            lot_id='example',
+            connection_id='example',
+            limit='example',
+            offset='example'
    * )
    * 
    * # Handle response with warnings
@@ -1711,91 +1629,38 @@ export class FinaticConnect extends EventEmitter {
   /**
    * Place Order
    * 
-   * Create a new order via the specified broker connection.
+   * Place a new order through the specified broker.
    * 
-   * This endpoint is accessible from the portal and uses session-only authentication.
-   * Requires trading permissions for the company.
+   * Creates an order using the broker connection associated with your account.
+   * The order structure includes common fields (symbol, quantity, order type, etc.)
+   * shared across all brokers, plus broker-specific fields that vary by broker.
    * 
-   * Standard parameters
-   * -------------------
-   * The following fields constitute the unified Finatic *common order schema* and
-   * therefore appear individually as query parameters in the autogenerated
-   * OpenAPI documentation:
-   * 
-   * - ``broker``
-   * - ``account_number``
-   * - ``order_type``
-   * - ``asset_type``
-   * - ``action``
-   * - ``time_in_force``
-   * - ``symbol``
-   * - ``order_qty``
-   * 
-   * They are surfaced as *query* parameters **only to make the accepted fields
-   * obvious in the interactive docs**. In production usage you should send these
-   * fields inside the JSON body (see ``order_request``) so that the entire order
-   * specification travels in one payload. (Nothing will break if you send both, but there is no need to do so.)
-   * 
-   * Body payload & broker-specific extras
-   * -------------------------------------
-   * 
-   * Put the standard parameters plus any broker-specific extensions under the
-   * ``order`` key of the body. Refer to the bundled OpenAPI examples below to
-   * see complete payloads for common order types (market, limit, spreads, etc.)
-   * across supported brokers.
-   * 
-   * For a formal reference of broker-specific extensions inspect the
-   * ``BrokerOrderPlaceExtras`` schema.
-   * 
-   * The endpoint resolves the active ``user_broker_connection`` by calling the
-   * ``get_user_broker_connection_ids_for_broker`` RPC in Supabase. If no active
-   * connection exists it returns a list of *available* brokers so your client
-   * can guide the user accordingly.
-   * 
-   * Broker Notes
-   * ------------
-   * - The responses that you get back from the broker are not always the same.
-   * The response models are validated for each broker, but we do not standardize the repsonses.
-   * 
-   * - Tasty Trade: If you want to trade options for a particular stock, first fetch the full
-   * option chain via the GET https://api.tastyworks.com/option-chains/{stock_symbol}/nested endpoint.
-   * This endpoint returns all available expirations that tastytrade offers for that equity symbol.
-   * Each expiration contains a list of strikes, where each strike has a call and put field representing
-   * the call symbol and put symbol respectively.
-   * 
-   * We are planning to add a new endpoint to fetch the option chain for a particular stock and
-   * handle this logic for you, but for now you need to fetch the option chain manually.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: placeOrder({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
+   * Common order fields include: broker, accountNumber, orderType, assetType,
+   * action, timeInForce, symbol, and orderQty. Additional broker-specific fields
+   * can be included in the order object - see the broker-specific tabs in the
+   * parameters section for details.
    * @methodId place_order_api_beta_brokers_orders_post
    * @category brokers
    * @example
    * ```typescript-client
-   * // Example with no parameters
-   * const result = await finatic.placeOrder();
+   * // This method requires the following required fields:
+   * const result = await finatic.placeOrder({
+  broker: 'robinhood',
+  order: {
+    orderType: 'market',
+    assetType: 'equity',
+    action: 'buy',
+    timeInForce: 'day',
+    symbol: 'AAPL',
+    orderQty: 10
+  }
+   * });
    * 
    * // Access the response data
    * if (result.success) {
    *   console.log('Data:', result.success.data);
-   * }
-   * ```
-   * @example
-   * ```typescript-client
-   * // Full example with optional parameters
-   * const result = await finatic.placeOrder({ connectionId: '00000000-0000-0000-0000-000000000000' });
-   * 
-   * // Handle response with warnings
-   * if (result.success) {
-   *   console.log('Data:', result.success.data);
-   *   if (result.warning && result.warning.length > 0) {
-   *     console.warn('Warnings:', result.warning);
-   *   }
    * } else if (result.error) {
-   *   console.error('Error:', result.error.message, result.error.code);
+   *   console.error('Error:', result.error.message);
    * }
    * ```
    * @example
@@ -1821,7 +1686,7 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Full example with optional parameters
    * result = await finatic.place_order(
-   *            connection_id='00000000-0000-0000-0000-000000000000'
+   *            connection_id='example'
    * )
    * 
    * # Handle response with warnings
@@ -1833,7 +1698,7 @@ export class FinaticConnect extends EventEmitter {
    *     print('Error:', result.error['message'], result.error['code'])
    * ```
    */
-  async placeOrder(params?: PlaceOrderParams): Promise<Awaited<ReturnType<typeof this.brokers.placeOrder>>> {
+  async placeOrder(params: PlaceOrderParams): Promise<Awaited<ReturnType<typeof this.brokers.placeOrder>>> {
     return await this.brokers.placeOrder(params);
   }
 
@@ -1842,23 +1707,14 @@ export class FinaticConnect extends EventEmitter {
    * 
    * Cancel an existing order.
    * 
-   * This endpoint is accessible from the portal and uses session-only authentication.
-   * Requires trading permissions for the company.
-   * 
-   * The order_id is used to identify the order and automatically resolve the
-   * broker connection from the orders table.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: cancelOrder({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
+   * Cancels an order by its order ID. The broker connection is automatically
+   * resolved from the order record.
    * @methodId cancel_order_api_beta_brokers_orders__order_id__delete
    * @category brokers
    * @example
    * ```typescript-client
    * // Minimal example with required parameters only
-   * const result = await finatic.cancelOrder({ orderId: 'order_1234567890abcdef' });
+   * const result = await finatic.cancelOrder({ orderId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -1870,7 +1726,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Minimal example with required parameters only
-   * const result = await finatic.cancelOrder({ orderId: 'order_1234567890abcdef' });
+   * const result = await finatic.cancelOrder({ orderId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -1883,7 +1739,7 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Minimal example with required parameters only
    * result = await finatic.cancel_order(
-   *            order_id='order_1234567890abcdef'
+   *            order_id='example'
    * )
    * 
    * # Access the response data
@@ -1902,20 +1758,15 @@ export class FinaticConnect extends EventEmitter {
    * 
    * Modify an existing order.
    * 
-   * This endpoint is accessible from the portal and uses session-only authentication.
-   * Requires trading permissions for the company.
-   * 
-   * Convenience method that delegates to brokers wrapper.
-   * 
-   * @param params - Optional parameters object. Only include the fields you want to use.
-   *                 Example: modifyOrder({ accountId: "123", limit: 10, offset: 0 })
-   * @returns FinaticResponse with success, error, and warning fields
+   * Updates an order's parameters (price, quantity, etc.) by order ID.
+   * The order structure follows the same pattern as placing orders, with common
+   * fields shared across brokers and broker-specific fields available per broker.
    * @methodId modify_order_api_beta_brokers_orders__order_id__patch
    * @category brokers
    * @example
    * ```typescript-client
    * // Minimal example with required parameters only
-   * const result = await finatic.modifyOrder({ orderId: 'order_1234567890abcdef' });
+   * const result = await finatic.modifyOrder({ orderId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -1925,24 +1776,9 @@ export class FinaticConnect extends EventEmitter {
    * }
    * ```
    * @example
-   * ```typescript-client
-   * // Full example with optional parameters
-   * const result = await finatic.modifyOrder({ orderId: 'order_1234567890abcdef', accountNumber: '123456789', connectionId: '00000000-0000-0000-0000-000000000000' });
-   * 
-   * // Handle response with warnings
-   * if (result.success) {
-   *   console.log('Data:', result.success.data);
-   *   if (result.warning && result.warning.length > 0) {
-   *     console.warn('Warnings:', result.warning);
-   *   }
-   * } else if (result.error) {
-   *   console.error('Error:', result.error.message, result.error.code);
-   * }
-   * ```
-   * @example
    * ```typescript-server
    * // Minimal example with required parameters only
-   * const result = await finatic.modifyOrder({ orderId: 'order_1234567890abcdef' });
+   * const result = await finatic.modifyOrder({ orderId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -1955,7 +1791,7 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Minimal example with required parameters only
    * result = await finatic.modify_order(
-   *            order_id='order_1234567890abcdef'
+   *            order_id='example'
    * )
    * 
    * # Access the response data
@@ -1968,9 +1804,9 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Full example with optional parameters
    * result = await finatic.modify_order(
-   *            order_id='order_1234567890abcdef',
-            account_number='123456789',
-            connection_id='00000000-0000-0000-0000-000000000000'
+   *            order_id='example',
+            account_number='example',
+            connection_id='example'
    * )
    * 
    * # Handle response with warnings
@@ -2002,7 +1838,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Get all items with optional filters
-   * const result = await finatic.getAllBalances({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * const result = await finatic.getAllBalances({ brokerId: 'example-id', connectionId: 'example-id', accountId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2017,7 +1853,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Get all items with optional filters
-   * const result = await finatic.getAllBalances({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * const result = await finatic.getAllBalances({ brokerId: 'example-id', connectionId: 'example-id', accountId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2033,9 +1869,9 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Get all items with optional filters
    * result = await finatic.get_all_balances(
-   *            broker_id='alpaca',
-            connection_id='00000000-0000-0000-0000-000000000000',
-            account_id='123456789'
+   *            broker_id='example',
+            connection_id='example',
+            account_id='example'
    * )
    * 
    * # Access the response data
@@ -2119,7 +1955,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Get all items with optional filters
-   * const result = await finatic.getAllAccounts({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountType: 'margin' });
+   * const result = await finatic.getAllAccounts({ brokerId: 'example-id', connectionId: 'example-id', accountType: 'margin' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2134,7 +1970,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Get all items with optional filters
-   * const result = await finatic.getAllAccounts({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountType: 'margin' });
+   * const result = await finatic.getAllAccounts({ brokerId: 'example-id', connectionId: 'example-id', accountType: 'margin' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2150,8 +1986,8 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Get all items with optional filters
    * result = await finatic.get_all_accounts(
-   *            broker_id='alpaca',
-            connection_id='00000000-0000-0000-0000-000000000000',
+   *            broker_id='example',
+            connection_id='example',
             account_type='margin'
    * )
    * 
@@ -2236,7 +2072,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Get all items with optional filters
-   * const result = await finatic.getAllOrders({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * const result = await finatic.getAllOrders({ brokerId: 'example-id', connectionId: 'example-id', accountId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2251,7 +2087,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Get all items with optional filters
-   * const result = await finatic.getAllOrders({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * const result = await finatic.getAllOrders({ brokerId: 'example-id', connectionId: 'example-id', accountId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2267,9 +2103,9 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Get all items with optional filters
    * result = await finatic.get_all_orders(
-   *            broker_id='alpaca',
-            connection_id='00000000-0000-0000-0000-000000000000',
-            account_id='123456789'
+   *            broker_id='example',
+            connection_id='example',
+            account_id='example'
    * )
    * 
    * # Access the response data
@@ -2353,7 +2189,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Get all items with optional filters
-   * const result = await finatic.getAllPositions({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * const result = await finatic.getAllPositions({ brokerId: 'example-id', connectionId: 'example-id', accountId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2368,7 +2204,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Get all items with optional filters
-   * const result = await finatic.getAllPositions({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * const result = await finatic.getAllPositions({ brokerId: 'example-id', connectionId: 'example-id', accountId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2384,9 +2220,9 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Get all items with optional filters
    * result = await finatic.get_all_positions(
-   *            broker_id='alpaca',
-            connection_id='00000000-0000-0000-0000-000000000000',
-            account_id='123456789'
+   *            broker_id='example',
+            connection_id='example',
+            account_id='example'
    * )
    * 
    * # Access the response data
@@ -2470,7 +2306,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Get all items with optional filters
-   * const result = await finatic.getAllTransactions({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * const result = await finatic.getAllTransactions({ brokerId: 'example-id', connectionId: 'example-id', accountId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2485,7 +2321,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Get all items with optional filters
-   * const result = await finatic.getAllTransactions({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * const result = await finatic.getAllTransactions({ brokerId: 'example-id', connectionId: 'example-id', accountId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2501,9 +2337,9 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Get all items with optional filters
    * result = await finatic.get_all_transactions(
-   *            broker_id='alpaca',
-            connection_id='00000000-0000-0000-0000-000000000000',
-            account_id='123456789'
+   *            broker_id='example',
+            connection_id='example',
+            account_id='example'
    * )
    * 
    * # Access the response data
@@ -2587,7 +2423,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Get all items with optional filters
-   * const result = await finatic.getAllOrderFills({ connectionId: '00000000-0000-0000-0000-000000000000', includeMetadata: false });
+   * const result = await finatic.getAllOrderFills({ connectionId: 'example-id', includeMetadata: true });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2602,7 +2438,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Get all items with optional filters
-   * const result = await finatic.getAllOrderFills({ connectionId: '00000000-0000-0000-0000-000000000000', includeMetadata: false });
+   * const result = await finatic.getAllOrderFills({ connectionId: 'example-id', includeMetadata: true });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2618,8 +2454,8 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Get all items with optional filters
    * result = await finatic.get_all_order_fills(
-   *            connection_id='00000000-0000-0000-0000-000000000000',
-            include_metadata=false
+   *            connection_id='example',
+            include_metadata='example'
    * )
    * 
    * # Access the response data
@@ -2703,7 +2539,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Get all items with optional filters
-   * const result = await finatic.getAllOrderEvents({ connectionId: '00000000-0000-0000-0000-000000000000', includeMetadata: false });
+   * const result = await finatic.getAllOrderEvents({ connectionId: 'example-id', includeMetadata: true });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2718,7 +2554,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Get all items with optional filters
-   * const result = await finatic.getAllOrderEvents({ connectionId: '00000000-0000-0000-0000-000000000000', includeMetadata: false });
+   * const result = await finatic.getAllOrderEvents({ connectionId: 'example-id', includeMetadata: true });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2734,8 +2570,8 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Get all items with optional filters
    * result = await finatic.get_all_order_events(
-   *            connection_id='00000000-0000-0000-0000-000000000000',
-            include_metadata=false
+   *            connection_id='example',
+            include_metadata='example'
    * )
    * 
    * # Access the response data
@@ -2819,7 +2655,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Get all items with optional filters
-   * const result = await finatic.getAllOrderGroups({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', createdAfter: '2024-01-01T00:00:00Z' });
+   * const result = await finatic.getAllOrderGroups({ brokerId: 'example-id', connectionId: 'example-id', createdAfter: 'example' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2834,7 +2670,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Get all items with optional filters
-   * const result = await finatic.getAllOrderGroups({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', createdAfter: '2024-01-01T00:00:00Z' });
+   * const result = await finatic.getAllOrderGroups({ brokerId: 'example-id', connectionId: 'example-id', createdAfter: 'example' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2850,9 +2686,9 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Get all items with optional filters
    * result = await finatic.get_all_order_groups(
-   *            broker_id='alpaca',
-            connection_id='00000000-0000-0000-0000-000000000000',
-            created_after='2024-01-01T00:00:00Z'
+   *            broker_id='example',
+            connection_id='example',
+            created_after='example'
    * )
    * 
    * # Access the response data
@@ -2936,7 +2772,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Get all items with optional filters
-   * const result = await finatic.getAllPositionLots({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * const result = await finatic.getAllPositionLots({ brokerId: 'example-id', connectionId: 'example-id', accountId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2951,7 +2787,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Get all items with optional filters
-   * const result = await finatic.getAllPositionLots({ brokerId: 'alpaca', connectionId: '00000000-0000-0000-0000-000000000000', accountId: '123456789' });
+   * const result = await finatic.getAllPositionLots({ brokerId: 'example-id', connectionId: 'example-id', accountId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -2967,9 +2803,9 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Get all items with optional filters
    * result = await finatic.get_all_position_lots(
-   *            broker_id='alpaca',
-            connection_id='00000000-0000-0000-0000-000000000000',
-            account_id='123456789'
+   *            broker_id='example',
+            connection_id='example',
+            account_id='example'
    * )
    * 
    * # Access the response data
@@ -3053,7 +2889,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-server
    * // Get all items with optional filters
-   * const result = await finatic.getAllPositionLotFills({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.getAllPositionLotFills({ connectionId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -3068,7 +2904,7 @@ export class FinaticConnect extends EventEmitter {
    * @example
    * ```typescript-client
    * // Get all items with optional filters
-   * const result = await finatic.getAllPositionLotFills({ connectionId: '00000000-0000-0000-0000-000000000000' });
+   * const result = await finatic.getAllPositionLotFills({ connectionId: 'example-id' });
    * 
    * // Access the response data
    * if (result.success) {
@@ -3084,7 +2920,7 @@ export class FinaticConnect extends EventEmitter {
    * ```python
    * # Get all items with optional filters
    * result = await finatic.get_all_position_lot_fills(
-   *            connection_id='00000000-0000-0000-0000-000000000000'
+   *            connection_id='example'
    * )
    * 
    * # Access the response data

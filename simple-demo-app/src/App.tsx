@@ -12,12 +12,13 @@ import {
   isAuthenticated,
   getUserId,
   openPortal,
-  getBrokers,
-  getAllAccounts,
-  getAllOrders,
-  getAllPositions,
-  getAllBalances,
-  getAllTransactions,
+  placeOrder,
+  // getBrokers,
+  // getAllAccounts,
+  // getAllOrders,
+  // getAllPositions,
+  // getAllBalances,
+  // getAllTransactions,
 } from './sdk';
 import './App.css';
 
@@ -30,14 +31,10 @@ function App() {
     userId: null as string | null,
   });
 
-  // Data State
-  const [accounts, setAccounts] = useState<any[]>([]);
-  const [orders, setOrders] = useState<any[]>([]);
-  const [positions, setPositions] = useState<any[]>([]);
-  const [balances, setBalances] = useState<any[]>([]);
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [brokers, setBrokers] = useState<any[]>([]);
-  const [loadingData, setLoadingData] = useState(false);
+  // Trading State
+  const [placingOrder, setPlacingOrder] = useState(false);
+  const [orderResult, setOrderResult] = useState<any>(null);
+  const [orderError, setOrderError] = useState<string | null>(null);
 
   // Initialize SDK on mount
   useEffect(() => {
@@ -72,36 +69,40 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Load all data
-  const loadData = async () => {
-    if (!authStatus.isAuthenticated) return;
+  // Handle place order
+  const handlePlaceOrder = async () => {
+    if (!authStatus.isAuthenticated) {
+      setOrderError('Please authenticate first');
+      return;
+    }
 
-    setLoadingData(true);
-    setError(null);
+    setPlacingOrder(true);
+    setOrderError(null);
+    setOrderResult(null);
 
     try {
-      // Load all data in parallel using SDK functions
-      const [brokersData, accountsData, ordersData, positionsData, balancesData, transactionsData] =
-        await Promise.all([
-          getBrokers(),
-          getAllAccounts(),
-          getAllOrders(),
-          getAllPositions(),
-          getAllBalances(),
-          getAllTransactions(),
-        ]);
+      // Example order - adjust these values for your testing
+      const result = await placeOrder({
+        broker: 'robinhood', // Change to your broker
+        accountNumber: 123456789, // Change to your account number
+        order: {
+          orderType: 'market',
+          assetType: 'equity',
+          action: 'buy',
+          timeInForce: 'day',
+          symbol: 'AAPL',
+          orderQty: 1,
+        },
+      });
 
-      setBrokers(brokersData);
-      setAccounts(accountsData);
-      setOrders(ordersData);
-      setPositions(positionsData);
-      setBalances(balancesData);
-      setTransactions(transactionsData);
+      setOrderResult(result);
+      console.log('Order placed successfully:', result);
     } catch (err) {
-      console.error('Error loading data:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load data');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to place order';
+      setOrderError(errorMessage);
+      console.error('Error placing order:', err);
     } finally {
-      setLoadingData(false);
+      setPlacingOrder(false);
     }
   };
 
@@ -111,7 +112,6 @@ function App() {
       await openPortal({
         onSuccess: () => {
           updateAuthStatus();
-          loadData();
         },
         onError: (err: Error) => {
           setError(err.message);
@@ -138,7 +138,7 @@ function App() {
   }
 
   // Error state (before SDK initialized)
-  if (error && !authStatus.isAuthenticated && brokers.length === 0) {
+  if (error && !authStatus.isAuthenticated) {
     return (
       <div className="app">
         <div className="container">
@@ -181,121 +181,35 @@ function App() {
         {authStatus.isAuthenticated && (
           <div className="data-section">
             <div className="actions">
-              <button onClick={loadData} className="btn btn-primary" disabled={loadingData}>
-                {loadingData ? 'Loading...' : 'Load Data'}
+              <button 
+                onClick={handlePlaceOrder} 
+                className="btn btn-primary" 
+                disabled={placingOrder}
+              >
+                {placingOrder ? 'Placing Order...' : 'Place Order (Test)'}
               </button>
             </div>
 
-            <div className="data-grid">
-              <div className="data-card">
-                <h3>Brokers ({brokers.length})</h3>
-                <div className="data-list">
-                  {brokers.length === 0 ? (
-                    <p className="empty">No brokers found</p>
-                  ) : (
-                    brokers.map((broker: any, idx: number) => (
-                      <div key={idx} className="data-item">
-                        <strong>{broker.name || broker.id}</strong>
-                        {broker.status && <span className="badge">{broker.status}</span>}
-                      </div>
-                    ))
-                  )}
-                </div>
+            {orderError && (
+              <div className="error" style={{ marginTop: '1rem' }}>
+                Order Error: {orderError}
               </div>
+            )}
 
-              <div className="data-card">
-                <h3>Accounts ({accounts.length})</h3>
-                <div className="data-list">
-                  {accounts.length === 0 ? (
-                    <p className="empty">No accounts found</p>
-                  ) : (
-                    accounts.map((account: any, idx: number) => (
-                      <div key={idx} className="data-item">
-                        <strong>{account.account_id || account.id}</strong>
-                        {account.broker && <span className="badge">{account.broker}</span>}
-                      </div>
-                    ))
-                  )}
-                </div>
+            {orderResult && (
+              <div className="data-card" style={{ marginTop: '1rem' }}>
+                <h3>Order Result</h3>
+                <pre style={{ 
+                  background: '#f5f5f5', 
+                  padding: '1rem', 
+                  borderRadius: '4px',
+                  overflow: 'auto',
+                  maxHeight: '400px'
+                }}>
+                  {JSON.stringify(orderResult, null, 2)}
+                </pre>
               </div>
-
-              <div className="data-card">
-                <h3>Orders ({orders.length})</h3>
-                <div className="data-list">
-                  {orders.length === 0 ? (
-                    <p className="empty">No orders found</p>
-                  ) : (
-                    orders.slice(0, 10).map((order: any, idx: number) => (
-                      <div key={idx} className="data-item">
-                        <strong>{order.symbol || order.instrument?.symbol || 'N/A'}</strong>
-                        <span>
-                          {order.side || ''} {order.quantity || order.qty || ''}
-                        </span>
-                        {order.status && <span className="badge">{order.status}</span>}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              <div className="data-card">
-                <h3>Positions ({positions.length})</h3>
-                <div className="data-list">
-                  {positions.length === 0 ? (
-                    <p className="empty">No positions found</p>
-                  ) : (
-                    positions.slice(0, 10).map((position: any, idx: number) => (
-                      <div key={idx} className="data-item">
-                        <strong>{position.symbol || position.instrument?.symbol || 'N/A'}</strong>
-                        <span>Qty: {position.quantity || position.size || position.qty || 0}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              <div className="data-card">
-                <h3>Balances ({balances.length})</h3>
-                <div className="data-list">
-                  {balances.length === 0 ? (
-                    <p className="empty">No balances found</p>
-                  ) : (
-                    balances.map((balance: any, idx: number) => (
-                      <div key={idx} className="data-item">
-                        <strong>{balance.account_id || balance.id || 'N/A'}</strong>
-                        <span>
-                          {balance.total_value || balance.balance
-                            ? `$${Number(balance.total_value || balance.balance).toLocaleString()}`
-                            : '$N/A'}
-                        </span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              <div className="data-card">
-                <h3>Transactions ({transactions.length})</h3>
-                <div className="data-list">
-                  {transactions.length === 0 ? (
-                    <p className="empty">No transactions found</p>
-                  ) : (
-                    transactions.slice(0, 10).map((transaction: any, idx: number) => (
-                      <div key={idx} className="data-item">
-                        <strong>{transaction.transaction_id || transaction.id || 'N/A'}</strong>
-                        <span>
-                          {transaction.transaction_type || transaction.type || 'N/A'} -{' '}
-                          {transaction.amount || transaction.value
-                            ? `$${Number(transaction.amount || transaction.value).toLocaleString()}`
-                            : '$N/A'}
-                        </span>
-                        {transaction.status && <span className="badge">{transaction.status}</span>}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         )}
       </div>

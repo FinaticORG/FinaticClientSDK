@@ -194,109 +194,128 @@ export async function openPortal(options?: {
       };
 
   await finaticInstance.openPortal({
-    ...options,
+    theme: options?.theme,
+    brokers: options?.brokers,
+    email: options?.email,
+    mode: options?.mode,
     onSuccess: wrappedOnSuccess,
+    onError: options?.onError,
+    onClose: options?.onClose,
   });
 }
 
+// Data fetching methods - COMMENTED OUT (focus on trading)
+// Uncomment these if you need to test data fetching methods
+
+// /**
+//  * Get all brokers
+//  * 
+//  * @returns Promise<any[]> - Array of brokers
+//  */
+// export async function getBrokers(): Promise<any[]> {
+//   if (!finaticInstance) {
+//     throw new Error('SDK not initialized. Call initializeSDK() first.');
+//   }
+
+//   const response = await finaticInstance.getBrokers();
+//   return extractData(response) || [];
+// }
+
+// /**
+//  * Get all accounts
+//  * 
+//  * @returns Promise<any[]> - Array of accounts
+//  */
+// export async function getAllAccounts(): Promise<any[]> {
+//   if (!finaticInstance) {
+//     throw new Error('SDK not initialized. Call initializeSDK() first.');
+//   }
+
+//   const response = await finaticInstance.getAllAccounts();
+//   return extractData(response) || [];
+// }
+
+// /**
+//  * Get all orders
+//  * 
+//  * @returns Promise<any[]> - Array of orders
+//  */
+// export async function getAllOrders(): Promise<any[]> {
+//   if (!finaticInstance) {
+//     throw new Error('SDK not initialized. Call initializeSDK() first.');
+//   }
+
+//   const response = await finaticInstance.getAllOrders();
+//   return extractData(response) || [];
+// }
+
+// /**
+//  * Get all positions
+//  * 
+//  * @returns Promise<any[]> - Array of positions
+//  */
+// export async function getAllPositions(): Promise<any[]> {
+//   if (!finaticInstance) {
+//     throw new Error('SDK not initialized. Call initializeSDK() first.');
+//   }
+
+//   const response = await finaticInstance.getAllPositions();
+//   return extractData(response) || [];
+// }
+
+// /**
+//  * Get all balances
+//  * 
+//  * @returns Promise<any[]> - Array of balances
+//  */
+// export async function getAllBalances(): Promise<any[]> {
+//   if (!finaticInstance) {
+//     throw new Error('SDK not initialized. Call initializeSDK() first.');
+//   }
+
+//   const response = await finaticInstance.getAllBalances();
+//   return extractData(response) || [];
+// }
+
+// /**
+//  * Get all transactions
+//  * 
+//  * @returns Promise<any[]> - Array of transactions
+//  */
+// export async function getAllTransactions(): Promise<any[]> {
+//   if (!finaticInstance) {
+//     throw new Error('SDK not initialized. Call initializeSDK() first.');
+//   }
+
+//   const response = await finaticInstance.getAllTransactions();
+//   return extractData(response) || [];
+// }
+
 /**
- * Get all brokers
+ * Place an order
  * 
- * @returns Promise<any[]> - Array of brokers
+ * @param params - Order parameters
+ * @returns Promise<any> - Order result
  */
-export async function getBrokers(): Promise<any[]> {
+export async function placeOrder(params: {
+  broker: string;
+  accountNumber: number;
+  order: {
+    orderType: string;
+    assetType: string;
+    action: string;
+    timeInForce: string;
+    symbol: string;
+    orderQty: number;
+  };
+}): Promise<any> {
   if (!finaticInstance) {
     throw new Error('SDK not initialized. Call initializeSDK() first.');
   }
 
-  const response = await finaticInstance.getBrokers();
-  return extractData(response) || [];
+  const response = await finaticInstance.placeOrder(params);
+  return response;
 }
 
-/**
- * Get all accounts
- * 
- * @returns Promise<any[]> - Array of accounts
- */
-export async function getAllAccounts(): Promise<any[]> {
-  if (!finaticInstance) {
-    throw new Error('SDK not initialized. Call initializeSDK() first.');
-  }
-
-  const response = await finaticInstance.getAllAccounts();
-  return extractData(response) || [];
-}
-
-/**
- * Get all orders
- * 
- * @returns Promise<any[]> - Array of orders
- */
-export async function getAllOrders(): Promise<any[]> {
-  if (!finaticInstance) {
-    throw new Error('SDK not initialized. Call initializeSDK() first.');
-  }
-
-  const response = await finaticInstance.getAllOrders();
-  return extractData(response) || [];
-}
-
-/**
- * Get all positions
- * 
- * @returns Promise<any[]> - Array of positions
- */
-export async function getAllPositions(): Promise<any[]> {
-  if (!finaticInstance) {
-    throw new Error('SDK not initialized. Call initializeSDK() first.');
-  }
-
-  const response = await finaticInstance.getAllPositions();
-  return extractData(response) || [];
-}
-
-/**
- * Get all balances
- * 
- * @returns Promise<any[]> - Array of balances
- */
-export async function getAllBalances(): Promise<any[]> {
-  if (!finaticInstance) {
-    throw new Error('SDK not initialized. Call initializeSDK() first.');
-  }
-
-  const response = await finaticInstance.getAllBalances();
-  return extractData(response) || [];
-}
-
-/**
- * Get all transactions
- * 
- * @returns Promise<any[]> - Array of transactions
- */
-export async function getAllTransactions(): Promise<any[]> {
-  if (!finaticInstance) {
-    throw new Error('SDK not initialized. Call initializeSDK() first.');
-  }
-
-  const response = await finaticInstance.getAllTransactions();
-  return extractData(response) || [];
-}
-
-/**
- * Extract data from FinaticResponse format
- * Handles both new format { success: { data: [...] } } and legacy formats
- * 
- * @param response - The response from an SDK method
- * @returns any[] - Extracted array data
- */
-function extractData(response: any): any[] {
-  if (response?.success?.data) {
-    return Array.isArray(response.success.data) ? response.success.data : [];
-  }
-  if (response?.data) {
-    return Array.isArray(response.data) ? response.data : [];
-  }
-  return Array.isArray(response) ? response : [];
-}
+// Helper function removed - not needed for trading demo
 
