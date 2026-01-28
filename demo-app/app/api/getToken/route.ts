@@ -41,7 +41,7 @@ async function handleRequest(request: Request) {
     }
 
     // Make request to Finatic API
-    const response = await fetch(`${apiUrl}/api/v1/session/init`, {
+    const response = await fetch(`${apiUrl}/api/beta/session/init`, {
       method: 'POST',
       headers: {
         'X-API-Key': apiKey,

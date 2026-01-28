@@ -13,12 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useFinatic } from '@/app/providers/FinaticProvider';
@@ -50,7 +45,7 @@ type OrderPresetConfig = {
 const getNearestFriday = (): string => {
   const today = new Date();
   const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 5 = Friday, 6 = Saturday
-  
+
   // Calculate days until next Friday
   // If today is Friday (5), use today (0 days)
   // If today is Saturday (6), use next Friday (6 days)
@@ -66,10 +61,10 @@ const getNearestFriday = (): string => {
     // Monday (1) through Thursday (4), use next Friday
     daysUntilFriday = 5 - dayOfWeek;
   }
-  
+
   const fridayDate = new Date(today);
   fridayDate.setDate(today.getDate() + daysUntilFriday);
-  
+
   const year = fridayDate.getFullYear();
   const month = String(fridayDate.getMonth() + 1).padStart(2, '0');
   const day = String(fridayDate.getDate()).padStart(2, '0');
@@ -81,8 +76,7 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'robinhood-equity-market-buy-regular-hours',
       label: 'Equity - Market Buy (Regular Hours)',
-      description:
-        'Market equity buy order - matches Robinhood example (regular market hours).',
+      description: 'Market equity buy order - matches Robinhood example (regular market hours).',
       assetType: 'equity',
       orderType: 'market',
       defaultOrder: {
@@ -99,8 +93,7 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'robinhood-equity-limit-sell-extended-hours',
       label: 'Equity - Limit Sell (Extended Hours)',
-      description:
-        'Limit equity sell order - matches Robinhood example (extended hours).',
+      description: 'Limit equity sell order - matches Robinhood example (extended hours).',
       assetType: 'equity',
       orderType: 'limit',
       defaultOrder: {
@@ -136,8 +129,7 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'robinhood-equity-stop-limit-sell-gtd',
       label: 'Equity - Stop Limit Sell (GTD)',
-      description:
-        'Stop-limit equity sell order - matches Robinhood example with expire time.',
+      description: 'Stop-limit equity sell order - matches Robinhood example with expire time.',
       assetType: 'equity',
       orderType: 'stop_limit',
       defaultOrder: {
@@ -157,8 +149,7 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'robinhood-equity-trailing-stop-buy-gtc',
       label: 'Equity - Trailing Stop Buy (GTC)',
-      description:
-        'Trailing-stop equity buy order - matches Robinhood example (GTC).',
+      description: 'Trailing-stop equity buy order - matches Robinhood example (GTC).',
       assetType: 'equity',
       orderType: 'trailing_stop',
       defaultOrder: {
@@ -176,8 +167,7 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'robinhood-equity-option-limit-buy-single-leg',
       label: 'Equity Option - Limit Buy (Single Leg)',
-      description:
-        'Single-leg equity option limit buy - matches Robinhood example.',
+      description: 'Single-leg equity option limit buy - matches Robinhood example.',
       assetType: 'equity_option',
       orderType: 'limit',
       defaultOrder: {
@@ -198,8 +188,7 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'robinhood-equity-option-limit-sell-single-leg',
       label: 'Equity Option - Limit Sell (Single Leg)',
-      description:
-        'Single-leg equity option limit sell - matches Robinhood example.',
+      description: 'Single-leg equity option limit sell - matches Robinhood example.',
       assetType: 'equity_option',
       orderType: 'limit',
       defaultOrder: {
@@ -220,8 +209,7 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'robinhood-equity-option-stop-limit-buy-single-leg',
       label: 'Equity Option - Stop Limit Buy (Single Leg)',
-      description:
-        'Single-leg equity option stop-limit buy - matches Robinhood example.',
+      description: 'Single-leg equity option stop-limit buy - matches Robinhood example.',
       assetType: 'equity_option',
       orderType: 'stop_limit',
       defaultOrder: {
@@ -243,8 +231,7 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'robinhood-equity-option-stop-limit-sell-single-leg',
       label: 'Equity Option - Stop Limit Sell (Single Leg)',
-      description:
-        'Single-leg equity option stop-limit sell - matches Robinhood example.',
+      description: 'Single-leg equity option stop-limit sell - matches Robinhood example.',
       assetType: 'equity_option',
       orderType: 'stop_limit',
       defaultOrder: {
@@ -266,8 +253,7 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'robinhood-equity-option-limit-buy-debit-spread',
       label: 'Equity Option - Limit Buy (Debit Spread)',
-      description:
-        'Multi-leg equity option limit buy debit spread - matches Robinhood example.',
+      description: 'Multi-leg equity option limit buy debit spread - matches Robinhood example.',
       assetType: 'equity_option',
       orderType: 'limit',
       defaultOrder: {
@@ -303,8 +289,7 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'robinhood-equity-option-limit-sell-credit-spread',
       label: 'Equity Option - Limit Sell (Credit Spread)',
-      description:
-        'Multi-leg equity option limit sell credit spread - matches Robinhood example.',
+      description: 'Multi-leg equity option limit sell credit spread - matches Robinhood example.',
       assetType: 'equity_option',
       orderType: 'limit',
       defaultOrder: {
@@ -340,8 +325,7 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'robinhood-crypto-market-buy-quantity',
       label: 'Crypto - Market Buy (Amount In Quantity)',
-      description:
-        'Crypto market buy order using amountIn="quantity" - matches Robinhood example.',
+      description: 'Crypto market buy order using amountIn="quantity" - matches Robinhood example.',
       assetType: 'crypto',
       orderType: 'market',
       defaultOrder: {
@@ -357,8 +341,7 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'robinhood-crypto-market-buy-price',
       label: 'Crypto - Market Buy (Amount In Price)',
-      description:
-        'Crypto market buy order using amountIn="price" - matches Robinhood example.',
+      description: 'Crypto market buy order using amountIn="price" - matches Robinhood example.',
       assetType: 'crypto',
       orderType: 'market',
       defaultOrder: {
@@ -374,8 +357,7 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'robinhood-crypto-limit-buy-quantity',
       label: 'Crypto - Limit Buy (Amount In Quantity)',
-      description:
-        'Crypto limit buy order using amountIn="quantity" - matches Robinhood example.',
+      description: 'Crypto limit buy order using amountIn="quantity" - matches Robinhood example.',
       assetType: 'crypto',
       orderType: 'limit',
       defaultOrder: {
@@ -392,8 +374,7 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'robinhood-crypto-limit-sell-price',
       label: 'Crypto - Limit Sell (Amount In Price)',
-      description:
-        'Crypto limit sell order using amountIn="price" - matches Robinhood example.',
+      description: 'Crypto limit sell order using amountIn="price" - matches Robinhood example.',
       assetType: 'crypto',
       orderType: 'limit',
       defaultOrder: {
@@ -523,7 +504,8 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'tasty_trade-equity-option-limit-buy-debit-spread',
       label: 'Equity Option - Limit Buy (Debit Spread)',
-      description: 'Multi-leg equity option limit buy debit spread for TastyTrade using legs array.',
+      description:
+        'Multi-leg equity option limit buy debit spread for TastyTrade using legs array.',
       assetType: 'equity_option',
       orderType: 'limit',
       defaultOrder: {
@@ -561,7 +543,8 @@ const BROKER_ORDER_PRESETS: Record<string, OrderPresetConfig[]> = {
     {
       id: 'tasty_trade-equity-option-limit-sell-credit-spread',
       label: 'Equity Option - Limit Sell (Credit Spread)',
-      description: 'Multi-leg equity option limit sell credit spread for TastyTrade using legs array.',
+      description:
+        'Multi-leg equity option limit sell credit spread for TastyTrade using legs array.',
       assetType: 'equity_option',
       orderType: 'limit',
       defaultOrder: {
@@ -891,7 +874,7 @@ const buildPresetPayloadForContext = (
   brokerId: string,
   accountNumber: string | undefined,
   preset: OrderPresetConfig,
-  equityOptionExpirationDate?: string,
+  equityOptionExpirationDate?: string
 ) => {
   const payload: any = {
     broker: brokerId,
@@ -963,22 +946,19 @@ export function TradingPageComponent() {
   const [isOrderPresetsOpen, setIsOrderPresetsOpen] = useState(true);
 
   // Order presets state
-  const [presetAssetFilter, setPresetAssetFilter] = useState<
-    'all' | SupportedAssetType
-  >('all');
-  const [presetOrderTypeFilter, setPresetOrderTypeFilter] = useState<
-    'all' | SupportedOrderType
-  >('all');
+  const [presetAssetFilter, setPresetAssetFilter] = useState<'all' | SupportedAssetType>('all');
+  const [presetOrderTypeFilter, setPresetOrderTypeFilter] = useState<'all' | SupportedOrderType>(
+    'all'
+  );
   const [expandedPresetId, setExpandedPresetId] = useState<string | null>(null);
-  const [presetPayloadTextById, setPresetPayloadTextById] = useState<
-    Record<string, string>
-  >({});
+  const [presetPayloadTextById, setPresetPayloadTextById] = useState<Record<string, string>>({});
   const [placingPresetId, setPlacingPresetId] = useState<string | null>(null);
-  const [presetResponseById, setPresetResponseById] = useState<
-    Record<string, any>
-  >({});
-  const [expandedResponsePresetIds, setExpandedResponsePresetIds] = useState<Set<string>>(new Set());
-  const [equityOptionExpirationDate, setEquityOptionExpirationDate] = useState<string>(getNearestFriday());
+  const [presetResponseById, setPresetResponseById] = useState<Record<string, any>>({});
+  const [expandedResponsePresetIds, setExpandedResponsePresetIds] = useState<Set<string>>(
+    new Set()
+  );
+  const [equityOptionExpirationDate, setEquityOptionExpirationDate] =
+    useState<string>(getNearestFriday());
 
   // Tab state
   const [activeTab, setActiveTab] = useState<'place' | 'cancel' | 'modify'>('place');
@@ -1034,7 +1014,12 @@ export function TradingPageComponent() {
   });
 
   const optionFieldsComplete = (fields: OptionFieldValues): boolean => {
-    if (!fields.expirationDate || !fields.strikePrice || !fields.optionType || !fields.positionEffect) {
+    if (
+      !fields.expirationDate ||
+      !fields.strikePrice ||
+      !fields.optionType ||
+      !fields.positionEffect
+    ) {
       return false;
     }
     const strikePriceNumber = Number(fields.strikePrice);
@@ -1081,8 +1066,7 @@ export function TradingPageComponent() {
         // Filter out aliases and brokers that don't support trading
         const filteredList = Array.isArray(list)
           ? list.filter(
-              (broker: any) =>
-                broker.is_alias === false && broker.supports_trading === true
+              (broker: any) => broker.is_alias === false && broker.supports_trading === true
             )
           : [];
         if (!cancelled) setBrokers(filteredList);
@@ -1151,15 +1135,11 @@ export function TradingPageComponent() {
 
     connections.forEach((c: any) => {
       // Try multiple field names for connection ID (camelCase and snake_case)
-      const connectionId =
-        c?.id ||
-        c?.connectionId ||
-        c?.connection_id ||
-        '';
+      const connectionId = c?.id || c?.connectionId || c?.connection_id || '';
       // Try multiple field names for broker ID (camelCase and snake_case)
-      const brokerId = String(
-        c?.brokerId || c?.broker_id || c?.broker || ''
-      ).toLowerCase().trim();
+      const brokerId = String(c?.brokerId || c?.broker_id || c?.broker || '')
+        .toLowerCase()
+        .trim();
       const isConnected =
         c?.status === 'connected' ||
         c?.status === 'active' ||
@@ -1178,15 +1158,12 @@ export function TradingPageComponent() {
     return activeAccounts.filter((a: any) => {
       // Try multiple field names for connection ID (camelCase and snake_case)
       const accountConnectionId =
-        a?.connectionId ||
-        a?.connection_id ||
-        a?.user_broker_connection_id ||
-        '';
-      
+        a?.connectionId || a?.connection_id || a?.user_broker_connection_id || '';
+
       // Try multiple field names for broker ID (camelCase and snake_case)
-      const accountBrokerId = String(
-        a?.brokerId || a?.broker_id || a?.broker || ''
-      ).toLowerCase().trim();
+      const accountBrokerId = String(a?.brokerId || a?.broker_id || a?.broker || '')
+        .toLowerCase()
+        .trim();
 
       // First, try to match by broker ID directly (most reliable)
       if (accountBrokerId === normalizedSelectedBroker) {
@@ -1225,10 +1202,7 @@ export function TradingPageComponent() {
     // Always auto-select first account when accounts change
     if (filteredAccounts.length > 0) {
       const firstAccount = filteredAccounts[0];
-      const accountId =
-        firstAccount.broker_provided_account_id ||
-        firstAccount.account_id ||
-        '';
+      const accountId = firstAccount.broker_provided_account_id || firstAccount.account_id || '';
       setSelectedAccountId(String(accountId));
     } else {
       // Clear selection if no accounts available
@@ -1240,8 +1214,7 @@ export function TradingPageComponent() {
   // Get selected account details
   const selectedAccount = useMemo(() => {
     return availableAccounts.find(
-      (a: any) =>
-        String(a.broker_provided_account_id || a.account_id) === selectedAccountId
+      (a: any) => String(a.broker_provided_account_id || a.account_id) === selectedAccountId
     );
   }, [availableAccounts, selectedAccountId]);
 
@@ -1250,12 +1223,15 @@ export function TradingPageComponent() {
     if (!selectedBroker) return false;
     return connections.some((c: any) => {
       // Normalize broker IDs for comparison (handle case sensitivity and format differences)
-      const connectionBrokerId = String(c?.broker_id || c?.broker || '').toLowerCase().trim();
+      const connectionBrokerId = String(c?.broker_id || c?.broker || '')
+        .toLowerCase()
+        .trim();
       const selectedBrokerId = String(selectedBroker).toLowerCase().trim();
-      
+
       // Check if status is 'connected' (the actual field name from BrokerConnection type)
-      const isConnected = c?.status === 'connected' || c?.status === 'active' || Boolean(c?.is_active || c?.active);
-      
+      const isConnected =
+        c?.status === 'connected' || c?.status === 'active' || Boolean(c?.is_active || c?.active);
+
       return connectionBrokerId === selectedBrokerId && isConnected;
     });
   }, [selectedBroker, connections]);
@@ -1270,7 +1246,7 @@ export function TradingPageComponent() {
 
     const presetsForBroker = BROKER_ORDER_PRESETS[selectedBroker] ?? [];
 
-    setPresetPayloadTextById(previous => {
+    setPresetPayloadTextById((previous) => {
       const next: Record<string, string> = {};
       const accountNumber =
         selectedAccount?.broker_provided_account_id ||
@@ -1289,7 +1265,7 @@ export function TradingPageComponent() {
             selectedBroker,
             accountNumber || undefined,
             preset,
-            equityOptionExpirationDate,
+            equityOptionExpirationDate
           );
           next[preset.id] = JSON.stringify(payload, null, 2);
         }
@@ -1409,14 +1385,13 @@ export function TradingPageComponent() {
 
       // Build flat order parameters
       // Double-check broker is still set (should be validated above, but be safe)
-      const normalizedBroker = selectedBroker && selectedBroker.trim() !== '' 
-        ? selectedBroker.trim().toLowerCase()
-        : '';
-      
+      const normalizedBroker =
+        selectedBroker && selectedBroker.trim() !== '' ? selectedBroker.trim().toLowerCase() : '';
+
       if (!normalizedBroker) {
         throw new Error('Broker is required. Please select a broker.');
       }
-      
+
       // Build nested structure: { broker, accountNumber, order: {...}, connectionId? }
       const orderObject: any = {
         orderType: customOrder.orderType,
@@ -1460,7 +1435,7 @@ export function TradingPageComponent() {
       // Debug: Log the order params being sent
       console.log('🔍 placeCustomOrder - orderParams:', JSON.stringify(orderParams, null, 2));
       console.log('🔍 placeCustomOrder - selectedBroker:', selectedBroker);
-      
+
       // Use SDK's placeOrder method with flat parameters
       let response;
       if (sdkAdapter?.placeOrder) {
@@ -1508,10 +1483,7 @@ export function TradingPageComponent() {
       }
 
       if (!isMockMode && !isBrokerConnected) {
-        addLog(
-          'error',
-          'Broker must be connected to place orders from presets in live mode',
-        );
+        addLog('error', 'Broker must be connected to place orders from presets in live mode');
         return;
       }
 
@@ -1529,10 +1501,10 @@ export function TradingPageComponent() {
               selectedBroker,
               accountNumber,
               preset,
-              equityOptionExpirationDate,
+              equityOptionExpirationDate
             ),
             null,
-            2,
+            2
           );
         parsedPayload = JSON.parse(rawText);
       } catch {
@@ -1548,19 +1520,23 @@ export function TradingPageComponent() {
       // Build nested structure: { broker, order: {...}, connectionId? }
       // Extract order fields from parsedPayload (which may have nested structure)
       const orderData = parsedPayload.order || parsedPayload;
-      
+
       // Use selectedBroker if it's set, otherwise try to get from payload
       // selectedBroker should always be set since we validate it above
-      const brokerValue = selectedBroker && selectedBroker.trim() !== '' 
-        ? selectedBroker.trim().toLowerCase()
-        : (orderData.broker || parsedPayload.broker || '').trim().toLowerCase();
-      
+      const brokerValue =
+        selectedBroker && selectedBroker.trim() !== ''
+          ? selectedBroker.trim().toLowerCase()
+          : (orderData.broker || parsedPayload.broker || '').trim().toLowerCase();
+
       // Validate broker is set (double-check)
       if (!brokerValue || brokerValue === '') {
-        addLog('error', `Broker is required. selectedBroker="${selectedBroker}", orderData.broker="${orderData.broker}", parsedPayload.broker="${parsedPayload.broker}"`);
+        addLog(
+          'error',
+          `Broker is required. selectedBroker="${selectedBroker}", orderData.broker="${orderData.broker}", parsedPayload.broker="${parsedPayload.broker}"`
+        );
         return;
       }
-      
+
       // Build order object (without accountNumber - it goes at top level)
       const orderObject: any = {
         orderType: orderData.orderType || preset.defaultOrder.orderType,
@@ -1570,7 +1546,7 @@ export function TradingPageComponent() {
         symbol: orderData.symbol || preset.defaultOrder.symbol,
         orderQty: orderData.orderQty || preset.defaultOrder.orderQty,
       };
-      
+
       // Build final params with nested structure (accountNumber at top level)
       const orderParams: any = {
         broker: brokerValue, // Normalize broker name
@@ -1589,14 +1565,28 @@ export function TradingPageComponent() {
         orderObject.expireTime = orderData.expireTime;
       }
       // Add any other fields from the preset to order object
-      Object.keys(orderData).forEach(key => {
-        if (!['accountNumber', 'orderType', 'assetType', 'action', 'timeInForce', 'symbol', 'orderQty', 'price', 'stopPrice', 'expireTime', 'broker'].includes(key)) {
+      Object.keys(orderData).forEach((key) => {
+        if (
+          ![
+            'accountNumber',
+            'orderType',
+            'assetType',
+            'action',
+            'timeInForce',
+            'symbol',
+            'orderQty',
+            'price',
+            'stopPrice',
+            'expireTime',
+            'broker',
+          ].includes(key)
+        ) {
           orderObject[key] = orderData[key];
         }
       });
 
       setPlacingPresetId(preset.id);
-      setPresetResponseById(previous => ({ ...previous, [preset.id]: null }));
+      setPresetResponseById((previous) => ({ ...previous, [preset.id]: null }));
 
       try {
         let response;
@@ -1608,25 +1598,21 @@ export function TradingPageComponent() {
           throw new Error('SDK not available');
         }
 
-        setPresetResponseById(previous => ({ ...previous, [preset.id]: response }));
-        setExpandedResponsePresetIds(previous => new Set(previous).add(preset.id));
+        setPresetResponseById((previous) => ({ ...previous, [preset.id]: response }));
+        setExpandedResponsePresetIds((previous) => new Set(previous).add(preset.id));
         setCustomResponse(response);
         addLog(
           'success',
-          `Preset "${preset.label}" placed successfully - ${
-            response?.message || 'ok'
-          }`,
+          `Preset "${preset.label}" placed successfully - ${response?.message || 'ok'}`
         );
       } catch (error: any) {
         const errorMessage = error?.message || 'Preset order failed';
         const errorResponse = { error: errorMessage };
-        setPresetResponseById(previous => ({ ...previous, [preset.id]: errorResponse }));
-        setExpandedResponsePresetIds(previous => new Set(previous).add(preset.id));
+        setPresetResponseById((previous) => ({ ...previous, [preset.id]: errorResponse }));
+        setExpandedResponsePresetIds((previous) => new Set(previous).add(preset.id));
         addLog('error', errorMessage);
       } finally {
-        setPlacingPresetId(previousId =>
-          previousId === preset.id ? null : previousId,
-        );
+        setPlacingPresetId((previousId) => (previousId === preset.id ? null : previousId));
       }
     },
     [
@@ -1640,7 +1626,7 @@ export function TradingPageComponent() {
       selectedAccount,
       presetPayloadTextById,
       equityOptionExpirationDate,
-    ],
+    ]
   );
 
   // Cancel order
@@ -1686,7 +1672,7 @@ export function TradingPageComponent() {
     // Backend infers broker, account, and connection from the order record
     return {
       method: 'DELETE',
-      url: `/api/v1/brokers/orders/${cancelOrderId}`,
+      url: `/api/beta/brokers/orders/${cancelOrderId}`,
       body: null,
       queryParams: null,
     };
@@ -1739,7 +1725,7 @@ export function TradingPageComponent() {
     if (modifyOrder.assetType === 'equity_option' && optionFieldsComplete(modifyOptionFields)) {
       Object.assign(orderObject, buildOptionPayload(modifyOptionFields));
     }
-    
+
     // Build final params with nested structure (accountNumber at top level)
     const orderParams: any = {
       orderId: modifyOrderId,
@@ -1810,7 +1796,7 @@ export function TradingPageComponent() {
         symbol: modifyOrder.symbol,
         orderQty: modifyOrder.orderQty,
       };
-      
+
       // Add optional fields to order object
       if (modifyOrder.price !== undefined) {
         orderObject.price = modifyOrder.price;
@@ -1821,7 +1807,7 @@ export function TradingPageComponent() {
       if (modifyOrder.expireTime) {
         orderObject.expireTime = modifyOrder.expireTime;
       }
-      
+
       // Merge broker-specific extras into order object
       if (extras && Object.keys(extras).length > 0) {
         Object.assign(orderObject, extras);
@@ -1831,7 +1817,7 @@ export function TradingPageComponent() {
       if (modifyOrder.assetType === 'equity_option' && optionFieldsComplete(modifyOptionFields)) {
         Object.assign(orderObject, buildOptionPayload(modifyOptionFields));
       }
-      
+
       // Build final params with nested structure (accountNumber at top level)
       const modifyParams: any = {
         orderId: modifyOrderId,
@@ -1865,7 +1851,9 @@ export function TradingPageComponent() {
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Orders Playground</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Orders Playground
+          </h1>
           <p className="text-sm text-muted-foreground sm:text-base">
             Compose and place orders to connected broker accounts
           </p>
@@ -1877,7 +1865,10 @@ export function TradingPageComponent() {
             </Badge>
           )}
           {isMockMode && (
-            <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20">
+            <Badge
+              variant="secondary"
+              className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+            >
               Sandbox Mode
             </Badge>
           )}
@@ -1913,403 +1904,435 @@ export function TradingPageComponent() {
         </CardHeader>
         {isOrdersPlaygroundOpen && (
           <CardContent className="space-y-4 sm:space-y-6">
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
+            <Tabs
+              value={activeTab}
+              onValueChange={(v) => setActiveTab(v as any)}
+              className="w-full"
+            >
               <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6">
-                <TabsTrigger value="place" className="text-xs sm:text-sm">Place Order</TabsTrigger>
-                <TabsTrigger value="cancel" className="text-xs sm:text-sm">Cancel Order</TabsTrigger>
-                <TabsTrigger value="modify" className="text-xs sm:text-sm">Modify Order</TabsTrigger>
+                <TabsTrigger value="place" className="text-xs sm:text-sm">
+                  Place Order
+                </TabsTrigger>
+                <TabsTrigger value="cancel" className="text-xs sm:text-sm">
+                  Cancel Order
+                </TabsTrigger>
+                <TabsTrigger value="modify" className="text-xs sm:text-sm">
+                  Modify Order
+                </TabsTrigger>
               </TabsList>
 
               {/* Place Order Tab */}
               <TabsContent value="place" className="space-y-4 sm:space-y-6">
                 {/* Broker and Account Selection */}
                 <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label className="text-foreground text-xs sm:text-sm">Broker</Label>
-                <Select value={selectedBroker} onValueChange={setSelectedBroker}>
-                  <SelectTrigger className="bg-input border-border text-foreground">
-                    <SelectValue placeholder="Select a broker" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {brokers.map((b: any) => (
-                      <SelectItem key={b.id} value={b.id}>
-                        {b.display_name || b.name || b.id}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {selectedBroker && (
-                  <div className="flex items-center gap-2">
-                    {!isMockMode && isBrokerConnected && (
-                      <span className="text-xs text-green-600 dark:text-green-400 font-medium">
-                        Connected
-                      </span>
-                    )}
-                    {!isMockMode && !isBrokerConnected && (
-                      <span className="text-xs text-yellow-600 dark:text-yellow-400">
-                        Not connected. Connect it first to place orders in live mode.
-                      </span>
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-xs sm:text-sm">Broker</Label>
+                    <Select value={selectedBroker} onValueChange={setSelectedBroker}>
+                      <SelectTrigger className="bg-input border-border text-foreground">
+                        <SelectValue placeholder="Select a broker" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {brokers.map((b: any) => (
+                          <SelectItem key={b.id} value={b.id}>
+                            {b.display_name || b.name || b.id}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedBroker && (
+                      <div className="flex items-center gap-2">
+                        {!isMockMode && isBrokerConnected && (
+                          <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                            Connected
+                          </span>
+                        )}
+                        {!isMockMode && !isBrokerConnected && (
+                          <span className="text-xs text-yellow-600 dark:text-yellow-400">
+                            Not connected. Connect it first to place orders in live mode.
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
 
-              <div className="space-y-2">
-                <Label className="text-foreground text-xs sm:text-sm">Account</Label>
-                <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
-                  <SelectTrigger className="bg-input border-border text-foreground">
-                    <SelectValue
-                      placeholder={
-                        availableAccounts.length
-                          ? 'Select an account'
-                          : selectedBroker
-                            ? 'No accounts available'
-                            : 'Select broker first'
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableAccounts.map((a: any) => {
-                      // Use the account's unique ID (UUID) as the key, with fallback to accountId
-                      const uniqueKey = a.id || a.accountId || a.broker_provided_account_id || a.account_id || '';
-                      const accountId = String(
-                        a.broker_provided_account_id || a.account_id || a.accountId || ''
-                      );
-                      const accountName =
-                        a.account_name ||
-                        a.accountName ||
-                        a.broker_provided_account_id ||
-                        a.account_id ||
-                        a.accountId ||
-                        'Unknown Account';
-                      return (
-                        <SelectItem key={uniqueKey} value={accountId}>
-                          {accountName}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-                {selectedAccount && (
-                  <p className="text-xs text-muted-foreground">
-                    Account ID: {selectedAccount.broker_provided_account_id || selectedAccount.account_id}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {selectedBroker && availableAccounts.length === 0 && !isMockMode && (
-              <div className="rounded-md border border-yellow-500/20 bg-yellow-500/10 p-3">
-                <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                  No accounts available for this broker. Make sure the broker is connected and has active accounts.
-                </p>
-              </div>
-            )}
-
-            {/* Order Form */}
-            {selectedBroker && availableAccounts.length > 0 && (
-              <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <Label className="text-foreground">Symbol</Label>
-                      <Input
-                        className="bg-input border-border text-foreground w-full"
-                        value={customOrder.symbol}
-                        onChange={e => setCustomOrder(p => ({ ...p, symbol: e.target.value }))}
-                        placeholder="AAPL"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-foreground">Quantity</Label>
-                      <Input
-                        type="number"
-                        className="bg-input border-border text-foreground w-full"
-                        value={customOrder.orderQty}
-                        onChange={e =>
-                          setCustomOrder(p => ({ ...p, orderQty: Number(e.target.value) }))
-                        }
-                        min="1"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-foreground">Side</Label>
-                      <Select
-                        value={customOrder.action}
-                        onValueChange={v => setCustomOrder(p => ({ ...p, action: v as any }))}
-                      >
-                        <SelectTrigger className="bg-input border-border text-foreground w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="buy">Buy</SelectItem>
-                          <SelectItem value="sell">Sell</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-foreground">Order Type</Label>
-                      <Select
-                        value={customOrder.orderType}
-                        onValueChange={v => setCustomOrder(p => ({ ...p, orderType: v as any }))}
-                      >
-                        <SelectTrigger className="bg-input border-border text-foreground w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="market">Market</SelectItem>
-                          <SelectItem value="limit">Limit</SelectItem>
-                          <SelectItem value="stop">Stop</SelectItem>
-                          <SelectItem value="stop_limit">Stop Limit</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-foreground">Asset Type</Label>
-                      <Select
-                        value={customOrder.assetType}
-                        onValueChange={v => setCustomOrder(p => ({ ...p, assetType: v as any }))}
-                      >
-                        <SelectTrigger className="bg-input border-border text-foreground w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="equity">Equity</SelectItem>
-                          <SelectItem value="equity_option">Equity Option</SelectItem>
-                          <SelectItem value="crypto">Crypto</SelectItem>
-                          <SelectItem value="forex">Forex</SelectItem>
-                          <SelectItem value="future">Future</SelectItem>
-                          <SelectItem value="future_option">Future Option</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-foreground">Time In Force</Label>
-                      <Select
-                        value={customOrder.timeInForce}
-                        onValueChange={v => setCustomOrder(p => ({ ...p, timeInForce: v as any }))}
-                      >
-                        <SelectTrigger className="bg-input border-border text-foreground w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="day">Day</SelectItem>
-                          <SelectItem value="gtc">GTC (Good Till Cancel)</SelectItem>
-                          <SelectItem value="gtd">GTD (Good Till Date)</SelectItem>
-                          <SelectItem value="ioc">IOC (Immediate Or Cancel)</SelectItem>
-                          <SelectItem value="fok">FOK (Fill Or Kill)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {(customOrder.orderType === 'limit' || customOrder.orderType === 'stop_limit') && (
-                      <div className="space-y-1">
-                        <Label className="text-foreground">Price</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          className="bg-input border-border text-foreground w-full"
-                          value={customOrder.price ?? ''}
-                          onChange={e =>
-                            setCustomOrder(p => ({
-                              ...p,
-                              price: e.target.value ? Number(e.target.value) : undefined,
-                            }))
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-xs sm:text-sm">Account</Label>
+                    <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+                      <SelectTrigger className="bg-input border-border text-foreground">
+                        <SelectValue
+                          placeholder={
+                            availableAccounts.length
+                              ? 'Select an account'
+                              : selectedBroker
+                                ? 'No accounts available'
+                                : 'Select broker first'
                           }
-                          placeholder="0.00"
                         />
-                      </div>
-                    )}
-                    {(customOrder.orderType === 'stop' || customOrder.orderType === 'stop_limit') && (
-                      <div className="space-y-1">
-                        <Label className="text-foreground">Stop Price</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          className="bg-input border-border text-foreground w-full"
-                          value={customOrder.stopPrice ?? ''}
-                          onChange={e =>
-                            setCustomOrder(p => ({
-                              ...p,
-                              stopPrice: e.target.value ? Number(e.target.value) : undefined,
-                            }))
-                          }
-                          placeholder="0.00"
-                        />
-                      </div>
-                    )}
-                    {customOrder.timeInForce === 'gtd' && (
-                      <div className="space-y-1">
-                        <Label className="text-foreground">Expire Time (ISO 8601)</Label>
-                        <Input
-                          type="datetime-local"
-                          className="bg-input border-border text-foreground w-full"
-                          value={
-                            customOrder.expireTime
-                              ? new Date(customOrder.expireTime).toISOString().slice(0, 16)
-                              : ''
-                          }
-                          onChange={e => {
-                            if (e.target.value) {
-                              const date = new Date(e.target.value);
-                              setCustomOrder(p => ({
-                                ...p,
-                                expireTime: date.toISOString(),
-                              }));
-                            } else {
-                              setCustomOrder(p => ({ ...p, expireTime: undefined }));
-                            }
-                          }}
-                        />
-                      </div>
-                    )}
-                    {customOrder.assetType === 'equity_option' && (
-                      <>
-                        <div className="space-y-1">
-                          <Label className="text-foreground">Expiration Date (YYYY-MM-DD)</Label>
-                          <Input
-                            type="date"
-                            className="bg-input border-border text-foreground w-full"
-                            value={customOptionFields.expirationDate}
-                            onChange={e =>
-                              setCustomOptionFields(p => ({
-                                ...p,
-                                expirationDate: e.target.value,
-                              }))
-                            }
-                            placeholder="2025-11-20"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-foreground">Strike Price</Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            className="bg-input border-border text-foreground w-full"
-                            value={customOptionFields.strikePrice}
-                            onChange={e =>
-                              setCustomOptionFields(p => ({
-                                ...p,
-                                strikePrice: e.target.value,
-                              }))
-                            }
-                            placeholder="10.00"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-foreground">Option Type</Label>
-                          <Select
-                            value={customOptionFields.optionType}
-                            onValueChange={v =>
-                              setCustomOptionFields(p => ({
-                                ...p,
-                                optionType: v as 'call' | 'put',
-                              }))
-                            }
-                          >
-                            <SelectTrigger className="bg-input border-border text-foreground w-full">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="call">Call</SelectItem>
-                              <SelectItem value="put">Put</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-foreground">Position Effect</Label>
-                          <Select
-                            value={customOptionFields.positionEffect}
-                            onValueChange={v =>
-                              setCustomOptionFields(p => ({
-                                ...p,
-                                positionEffect: v as 'open' | 'close',
-                              }))
-                            }
-                          >
-                            <SelectTrigger className="bg-input border-border text-foreground w-full">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="open">Open</SelectItem>
-                              <SelectItem value="close">Close</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableAccounts.map((a: any) => {
+                          // Use the account's unique ID (UUID) as the key, with fallback to accountId
+                          const uniqueKey =
+                            a.id ||
+                            a.accountId ||
+                            a.broker_provided_account_id ||
+                            a.account_id ||
+                            '';
+                          const accountId = String(
+                            a.broker_provided_account_id || a.account_id || a.accountId || ''
+                          );
+                          const accountName =
+                            a.account_name ||
+                            a.accountName ||
+                            a.broker_provided_account_id ||
+                            a.account_id ||
+                            a.accountId ||
+                            'Unknown Account';
+                          return (
+                            <SelectItem key={uniqueKey} value={accountId}>
+                              {accountName}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    {selectedAccount && (
+                      <p className="text-xs text-muted-foreground">
+                        Account ID:{' '}
+                        {selectedAccount.broker_provided_account_id || selectedAccount.account_id}
+                      </p>
                     )}
                   </div>
-                  <div className="space-y-1">
-                    <Label className="text-foreground">Broker-Specific Extras (JSON)</Label>
-                    <Textarea
-                      className="bg-input border-border text-foreground min-h-24 font-mono text-xs"
-                      value={customExtrasText}
-                      onChange={e => setCustomExtrasText(e.target.value)}
-                      placeholder='{"extendedHours": false, "marketHours": "regular_hours"}'
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Optional broker-specific fields (e.g., extendedHours for Robinhood, accountSpec for NinjaTrader)
+                </div>
+
+                {selectedBroker && availableAccounts.length === 0 && !isMockMode && (
+                  <div className="rounded-md border border-yellow-500/20 bg-yellow-500/10 p-3">
+                    <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                      No accounts available for this broker. Make sure the broker is connected and
+                      has active accounts.
                     </p>
                   </div>
-                  
-                  {/* Payload Preview */}
-                  {orderPayloadPreview && (
-                    <details className="rounded-md border border-border/60 bg-muted/10">
-                      <summary className="cursor-pointer px-3 py-2 text-sm font-medium text-foreground hover:bg-muted/20">
-                        View Payload
-                      </summary>
-                      <div className="border-t border-border/60 p-3">
-                        <pre className="whitespace-pre-wrap break-words text-xs text-foreground font-mono overflow-auto max-h-64">
-                          {JSON.stringify(orderPayloadPreview, null, 2)}
-                        </pre>
-                      </div>
-                    </details>
-                  )}
-                  {orderPayloadPreview === null && customExtrasText && (
-                    <div className="rounded-md border border-yellow-500/20 bg-yellow-500/10 p-2">
-                      <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                        Invalid JSON in extras field. Please fix the JSON syntax.
-                      </p>
-                    </div>
-                  )}
+                )}
 
-                  <div className="flex gap-2 pt-1">
-                    <Button
-                      onClick={placeCustomOrder}
-                      disabled={
-                        !selectedBroker ||
-                        !selectedAccountId ||
-                        !customOrder.symbol ||
-                        placingCustom ||
-                        (!isMockMode && !isBrokerConnected) ||
-                        orderPayloadPreview === null
-                      }
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4"
-                    >
-                      {placingCustom ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Placing...
-                        </>
-                      ) : (
-                        <>Place Order</>
+                {/* Order Form */}
+                {selectedBroker && availableAccounts.length > 0 && (
+                  <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-foreground">Symbol</Label>
+                          <Input
+                            className="bg-input border-border text-foreground w-full"
+                            value={customOrder.symbol}
+                            onChange={(e) =>
+                              setCustomOrder((p) => ({ ...p, symbol: e.target.value }))
+                            }
+                            placeholder="AAPL"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-foreground">Quantity</Label>
+                          <Input
+                            type="number"
+                            className="bg-input border-border text-foreground w-full"
+                            value={customOrder.orderQty}
+                            onChange={(e) =>
+                              setCustomOrder((p) => ({ ...p, orderQty: Number(e.target.value) }))
+                            }
+                            min="1"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-foreground">Side</Label>
+                          <Select
+                            value={customOrder.action}
+                            onValueChange={(v) =>
+                              setCustomOrder((p) => ({ ...p, action: v as any }))
+                            }
+                          >
+                            <SelectTrigger className="bg-input border-border text-foreground w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="buy">Buy</SelectItem>
+                              <SelectItem value="sell">Sell</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-foreground">Order Type</Label>
+                          <Select
+                            value={customOrder.orderType}
+                            onValueChange={(v) =>
+                              setCustomOrder((p) => ({ ...p, orderType: v as any }))
+                            }
+                          >
+                            <SelectTrigger className="bg-input border-border text-foreground w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="market">Market</SelectItem>
+                              <SelectItem value="limit">Limit</SelectItem>
+                              <SelectItem value="stop">Stop</SelectItem>
+                              <SelectItem value="stop_limit">Stop Limit</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-foreground">Asset Type</Label>
+                          <Select
+                            value={customOrder.assetType}
+                            onValueChange={(v) =>
+                              setCustomOrder((p) => ({ ...p, assetType: v as any }))
+                            }
+                          >
+                            <SelectTrigger className="bg-input border-border text-foreground w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="equity">Equity</SelectItem>
+                              <SelectItem value="equity_option">Equity Option</SelectItem>
+                              <SelectItem value="crypto">Crypto</SelectItem>
+                              <SelectItem value="forex">Forex</SelectItem>
+                              <SelectItem value="future">Future</SelectItem>
+                              <SelectItem value="future_option">Future Option</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-foreground">Time In Force</Label>
+                          <Select
+                            value={customOrder.timeInForce}
+                            onValueChange={(v) =>
+                              setCustomOrder((p) => ({ ...p, timeInForce: v as any }))
+                            }
+                          >
+                            <SelectTrigger className="bg-input border-border text-foreground w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="day">Day</SelectItem>
+                              <SelectItem value="gtc">GTC (Good Till Cancel)</SelectItem>
+                              <SelectItem value="gtd">GTD (Good Till Date)</SelectItem>
+                              <SelectItem value="ioc">IOC (Immediate Or Cancel)</SelectItem>
+                              <SelectItem value="fok">FOK (Fill Or Kill)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {(customOrder.orderType === 'limit' ||
+                          customOrder.orderType === 'stop_limit') && (
+                          <div className="space-y-1">
+                            <Label className="text-foreground">Price</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              className="bg-input border-border text-foreground w-full"
+                              value={customOrder.price ?? ''}
+                              onChange={(e) =>
+                                setCustomOrder((p) => ({
+                                  ...p,
+                                  price: e.target.value ? Number(e.target.value) : undefined,
+                                }))
+                              }
+                              placeholder="0.00"
+                            />
+                          </div>
+                        )}
+                        {(customOrder.orderType === 'stop' ||
+                          customOrder.orderType === 'stop_limit') && (
+                          <div className="space-y-1">
+                            <Label className="text-foreground">Stop Price</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              className="bg-input border-border text-foreground w-full"
+                              value={customOrder.stopPrice ?? ''}
+                              onChange={(e) =>
+                                setCustomOrder((p) => ({
+                                  ...p,
+                                  stopPrice: e.target.value ? Number(e.target.value) : undefined,
+                                }))
+                              }
+                              placeholder="0.00"
+                            />
+                          </div>
+                        )}
+                        {customOrder.timeInForce === 'gtd' && (
+                          <div className="space-y-1">
+                            <Label className="text-foreground">Expire Time (ISO 8601)</Label>
+                            <Input
+                              type="datetime-local"
+                              className="bg-input border-border text-foreground w-full"
+                              value={
+                                customOrder.expireTime
+                                  ? new Date(customOrder.expireTime).toISOString().slice(0, 16)
+                                  : ''
+                              }
+                              onChange={(e) => {
+                                if (e.target.value) {
+                                  const date = new Date(e.target.value);
+                                  setCustomOrder((p) => ({
+                                    ...p,
+                                    expireTime: date.toISOString(),
+                                  }));
+                                } else {
+                                  setCustomOrder((p) => ({ ...p, expireTime: undefined }));
+                                }
+                              }}
+                            />
+                          </div>
+                        )}
+                        {customOrder.assetType === 'equity_option' && (
+                          <>
+                            <div className="space-y-1">
+                              <Label className="text-foreground">
+                                Expiration Date (YYYY-MM-DD)
+                              </Label>
+                              <Input
+                                type="date"
+                                className="bg-input border-border text-foreground w-full"
+                                value={customOptionFields.expirationDate}
+                                onChange={(e) =>
+                                  setCustomOptionFields((p) => ({
+                                    ...p,
+                                    expirationDate: e.target.value,
+                                  }))
+                                }
+                                placeholder="2025-11-20"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-foreground">Strike Price</Label>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                className="bg-input border-border text-foreground w-full"
+                                value={customOptionFields.strikePrice}
+                                onChange={(e) =>
+                                  setCustomOptionFields((p) => ({
+                                    ...p,
+                                    strikePrice: e.target.value,
+                                  }))
+                                }
+                                placeholder="10.00"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-foreground">Option Type</Label>
+                              <Select
+                                value={customOptionFields.optionType}
+                                onValueChange={(v) =>
+                                  setCustomOptionFields((p) => ({
+                                    ...p,
+                                    optionType: v as 'call' | 'put',
+                                  }))
+                                }
+                              >
+                                <SelectTrigger className="bg-input border-border text-foreground w-full">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="call">Call</SelectItem>
+                                  <SelectItem value="put">Put</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-foreground">Position Effect</Label>
+                              <Select
+                                value={customOptionFields.positionEffect}
+                                onValueChange={(v) =>
+                                  setCustomOptionFields((p) => ({
+                                    ...p,
+                                    positionEffect: v as 'open' | 'close',
+                                  }))
+                                }
+                              >
+                                <SelectTrigger className="bg-input border-border text-foreground w-full">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="open">Open</SelectItem>
+                                  <SelectItem value="close">Close</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-foreground">Broker-Specific Extras (JSON)</Label>
+                        <Textarea
+                          className="bg-input border-border text-foreground min-h-24 font-mono text-xs"
+                          value={customExtrasText}
+                          onChange={(e) => setCustomExtrasText(e.target.value)}
+                          placeholder='{"extendedHours": false, "marketHours": "regular_hours"}'
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Optional broker-specific fields (e.g., extendedHours for Robinhood,
+                          accountSpec for NinjaTrader)
+                        </p>
+                      </div>
+
+                      {/* Payload Preview */}
+                      {orderPayloadPreview && (
+                        <details className="rounded-md border border-border/60 bg-muted/10">
+                          <summary className="cursor-pointer px-3 py-2 text-sm font-medium text-foreground hover:bg-muted/20">
+                            View Payload
+                          </summary>
+                          <div className="border-t border-border/60 p-3">
+                            <pre className="whitespace-pre-wrap break-words text-xs text-foreground font-mono overflow-auto max-h-64">
+                              {JSON.stringify(orderPayloadPreview, null, 2)}
+                            </pre>
+                          </div>
+                        </details>
                       )}
-                    </Button>
+                      {orderPayloadPreview === null && customExtrasText && (
+                        <div className="rounded-md border border-yellow-500/20 bg-yellow-500/10 p-2">
+                          <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                            Invalid JSON in extras field. Please fix the JSON syntax.
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2 pt-1">
+                        <Button
+                          onClick={placeCustomOrder}
+                          disabled={
+                            !selectedBroker ||
+                            !selectedAccountId ||
+                            !customOrder.symbol ||
+                            placingCustom ||
+                            (!isMockMode && !isBrokerConnected) ||
+                            orderPayloadPreview === null
+                          }
+                          className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4"
+                        >
+                          {placingCustom ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Placing...
+                            </>
+                          ) : (
+                            <>Place Order</>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-foreground">Response</Label>
+                      <div className="rounded-md border border-border/60 bg-muted/10 p-3 max-h-96 overflow-auto text-xs text-foreground">
+                        {customResponse ? (
+                          <pre className="whitespace-pre-wrap break-words font-mono">
+                            {JSON.stringify(customResponse, null, 2)}
+                          </pre>
+                        ) : (
+                          <div className="text-muted-foreground">No response yet.</div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-foreground">Response</Label>
-                  <div className="rounded-md border border-border/60 bg-muted/10 p-3 max-h-96 overflow-auto text-xs text-foreground">
-                    {customResponse ? (
-                      <pre className="whitespace-pre-wrap break-words font-mono">
-                        {JSON.stringify(customResponse, null, 2)}
-                      </pre>
-                    ) : (
-                      <div className="text-muted-foreground">No response yet.</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+                )}
               </TabsContent>
 
               {/* Cancel Order Tab */}
@@ -2321,12 +2344,13 @@ export function TradingPageComponent() {
                       <Input
                         className="bg-input border-border text-foreground"
                         value={cancelOrderId}
-                        onChange={e => setCancelOrderId(e.target.value)}
+                        onChange={(e) => setCancelOrderId(e.target.value)}
                         placeholder="Enter order ID to cancel"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Enter the broker-provided order ID that you want to cancel. The backend will automatically
-                        infer the broker, account, and connection from the order record.
+                        Enter the broker-provided order ID that you want to cancel. The backend will
+                        automatically infer the broker, account, and connection from the order
+                        record.
                       </p>
                     </div>
 
@@ -2339,8 +2363,12 @@ export function TradingPageComponent() {
                         <div className="border-t border-border/60 p-3">
                           <div className="space-y-2">
                             <div>
-                              <span className="text-xs font-semibold text-foreground">Method: </span>
-                              <span className="text-xs text-foreground font-mono">{cancelOrderUrlPreview.method}</span>
+                              <span className="text-xs font-semibold text-foreground">
+                                Method:{' '}
+                              </span>
+                              <span className="text-xs text-foreground font-mono">
+                                {cancelOrderUrlPreview.method}
+                              </span>
                             </div>
                             <div>
                               <span className="text-xs font-semibold text-foreground">URL: </span>
@@ -2353,7 +2381,9 @@ export function TradingPageComponent() {
                               <span className="text-xs text-muted-foreground font-mono">null</span>
                             </div>
                             <div>
-                              <span className="text-xs font-semibold text-foreground">Query Params: </span>
+                              <span className="text-xs font-semibold text-foreground">
+                                Query Params:{' '}
+                              </span>
                               <span className="text-xs text-muted-foreground font-mono">null</span>
                             </div>
                           </div>
@@ -2446,7 +2476,12 @@ export function TradingPageComponent() {
                       <SelectContent>
                         {availableAccounts.map((a: any) => {
                           // Use the account's unique ID (UUID) as the key, with fallback to accountId
-                          const uniqueKey = a.id || a.accountId || a.broker_provided_account_id || a.account_id || '';
+                          const uniqueKey =
+                            a.id ||
+                            a.accountId ||
+                            a.broker_provided_account_id ||
+                            a.account_id ||
+                            '';
                           const accountId = String(
                             a.broker_provided_account_id || a.account_id || a.accountId || ''
                           );
@@ -2467,7 +2502,8 @@ export function TradingPageComponent() {
                     </Select>
                     {selectedAccount && (
                       <p className="text-xs text-muted-foreground">
-                        Account ID: {selectedAccount.broker_provided_account_id || selectedAccount.account_id}
+                        Account ID:{' '}
+                        {selectedAccount.broker_provided_account_id || selectedAccount.account_id}
                       </p>
                     )}
                   </div>
@@ -2476,7 +2512,8 @@ export function TradingPageComponent() {
                 {selectedBroker && availableAccounts.length === 0 && !isMockMode && (
                   <div className="rounded-md border border-yellow-500/20 bg-yellow-500/10 p-3">
                     <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                      No accounts available for this broker. Make sure the broker is connected and has active accounts.
+                      No accounts available for this broker. Make sure the broker is connected and
+                      has active accounts.
                     </p>
                   </div>
                 )}
@@ -2489,7 +2526,7 @@ export function TradingPageComponent() {
                         <Input
                           className="bg-input border-border text-foreground"
                           value={modifyOrderId}
-                          onChange={e => setModifyOrderId(e.target.value)}
+                          onChange={(e) => setModifyOrderId(e.target.value)}
                           placeholder="Enter order ID to modify"
                         />
                         <p className="text-xs text-muted-foreground">
@@ -2503,7 +2540,9 @@ export function TradingPageComponent() {
                           <Input
                             className="bg-input border-border text-foreground w-full"
                             value={modifyOrder.symbol}
-                            onChange={e => setModifyOrder(p => ({ ...p, symbol: e.target.value }))}
+                            onChange={(e) =>
+                              setModifyOrder((p) => ({ ...p, symbol: e.target.value }))
+                            }
                             placeholder="AAPL"
                           />
                         </div>
@@ -2513,8 +2552,8 @@ export function TradingPageComponent() {
                             type="number"
                             className="bg-input border-border text-foreground w-full"
                             value={modifyOrder.orderQty}
-                            onChange={e =>
-                              setModifyOrder(p => ({ ...p, orderQty: Number(e.target.value) }))
+                            onChange={(e) =>
+                              setModifyOrder((p) => ({ ...p, orderQty: Number(e.target.value) }))
                             }
                             min="1"
                           />
@@ -2523,7 +2562,9 @@ export function TradingPageComponent() {
                           <Label className="text-foreground">Side</Label>
                           <Select
                             value={modifyOrder.action}
-                            onValueChange={v => setModifyOrder(p => ({ ...p, action: v as any }))}
+                            onValueChange={(v) =>
+                              setModifyOrder((p) => ({ ...p, action: v as any }))
+                            }
                           >
                             <SelectTrigger className="bg-input border-border text-foreground w-full">
                               <SelectValue />
@@ -2538,7 +2579,9 @@ export function TradingPageComponent() {
                           <Label className="text-foreground">Order Type</Label>
                           <Select
                             value={modifyOrder.orderType}
-                            onValueChange={v => setModifyOrder(p => ({ ...p, orderType: v as any }))}
+                            onValueChange={(v) =>
+                              setModifyOrder((p) => ({ ...p, orderType: v as any }))
+                            }
                           >
                             <SelectTrigger className="bg-input border-border text-foreground w-full">
                               <SelectValue />
@@ -2555,7 +2598,9 @@ export function TradingPageComponent() {
                           <Label className="text-foreground">Asset Type</Label>
                           <Select
                             value={modifyOrder.assetType}
-                            onValueChange={v => setModifyOrder(p => ({ ...p, assetType: v as any }))}
+                            onValueChange={(v) =>
+                              setModifyOrder((p) => ({ ...p, assetType: v as any }))
+                            }
                           >
                             <SelectTrigger className="bg-input border-border text-foreground w-full">
                               <SelectValue />
@@ -2574,7 +2619,9 @@ export function TradingPageComponent() {
                           <Label className="text-foreground">Time In Force</Label>
                           <Select
                             value={modifyOrder.timeInForce}
-                            onValueChange={v => setModifyOrder(p => ({ ...p, timeInForce: v as any }))}
+                            onValueChange={(v) =>
+                              setModifyOrder((p) => ({ ...p, timeInForce: v as any }))
+                            }
                           >
                             <SelectTrigger className="bg-input border-border text-foreground w-full">
                               <SelectValue />
@@ -2588,7 +2635,8 @@ export function TradingPageComponent() {
                             </SelectContent>
                           </Select>
                         </div>
-                        {(modifyOrder.orderType === 'limit' || modifyOrder.orderType === 'stop_limit') && (
+                        {(modifyOrder.orderType === 'limit' ||
+                          modifyOrder.orderType === 'stop_limit') && (
                           <div className="space-y-1">
                             <Label className="text-foreground">Price</Label>
                             <Input
@@ -2596,8 +2644,8 @@ export function TradingPageComponent() {
                               step="0.01"
                               className="bg-input border-border text-foreground w-full"
                               value={modifyOrder.price ?? ''}
-                              onChange={e =>
-                                setModifyOrder(p => ({
+                              onChange={(e) =>
+                                setModifyOrder((p) => ({
                                   ...p,
                                   price: e.target.value ? Number(e.target.value) : undefined,
                                 }))
@@ -2606,7 +2654,8 @@ export function TradingPageComponent() {
                             />
                           </div>
                         )}
-                        {(modifyOrder.orderType === 'stop' || modifyOrder.orderType === 'stop_limit') && (
+                        {(modifyOrder.orderType === 'stop' ||
+                          modifyOrder.orderType === 'stop_limit') && (
                           <div className="space-y-1">
                             <Label className="text-foreground">Stop Price</Label>
                             <Input
@@ -2614,8 +2663,8 @@ export function TradingPageComponent() {
                               step="0.01"
                               className="bg-input border-border text-foreground w-full"
                               value={modifyOrder.stopPrice ?? ''}
-                              onChange={e =>
-                                setModifyOrder(p => ({
+                              onChange={(e) =>
+                                setModifyOrder((p) => ({
                                   ...p,
                                   stopPrice: e.target.value ? Number(e.target.value) : undefined,
                                 }))
@@ -2635,15 +2684,15 @@ export function TradingPageComponent() {
                                   ? new Date(modifyOrder.expireTime).toISOString().slice(0, 16)
                                   : ''
                               }
-                              onChange={e => {
+                              onChange={(e) => {
                                 if (e.target.value) {
                                   const date = new Date(e.target.value);
-                                  setModifyOrder(p => ({
+                                  setModifyOrder((p) => ({
                                     ...p,
                                     expireTime: date.toISOString(),
                                   }));
                                 } else {
-                                  setModifyOrder(p => ({ ...p, expireTime: undefined }));
+                                  setModifyOrder((p) => ({ ...p, expireTime: undefined }));
                                 }
                               }}
                             />
@@ -2652,13 +2701,15 @@ export function TradingPageComponent() {
                         {modifyOrder.assetType === 'equity_option' && (
                           <>
                             <div className="space-y-1">
-                              <Label className="text-foreground">Expiration Date (YYYY-MM-DD)</Label>
+                              <Label className="text-foreground">
+                                Expiration Date (YYYY-MM-DD)
+                              </Label>
                               <Input
                                 type="date"
                                 className="bg-input border-border text-foreground w-full"
                                 value={modifyOptionFields.expirationDate}
-                                onChange={e =>
-                                  setModifyOptionFields(p => ({
+                                onChange={(e) =>
+                                  setModifyOptionFields((p) => ({
                                     ...p,
                                     expirationDate: e.target.value,
                                   }))
@@ -2673,8 +2724,8 @@ export function TradingPageComponent() {
                                 step="0.01"
                                 className="bg-input border-border text-foreground w-full"
                                 value={modifyOptionFields.strikePrice}
-                                onChange={e =>
-                                  setModifyOptionFields(p => ({
+                                onChange={(e) =>
+                                  setModifyOptionFields((p) => ({
                                     ...p,
                                     strikePrice: e.target.value,
                                   }))
@@ -2686,8 +2737,8 @@ export function TradingPageComponent() {
                               <Label className="text-foreground">Option Type</Label>
                               <Select
                                 value={modifyOptionFields.optionType}
-                                onValueChange={v =>
-                                  setModifyOptionFields(p => ({
+                                onValueChange={(v) =>
+                                  setModifyOptionFields((p) => ({
                                     ...p,
                                     optionType: v as 'call' | 'put',
                                   }))
@@ -2706,8 +2757,8 @@ export function TradingPageComponent() {
                               <Label className="text-foreground">Position Effect</Label>
                               <Select
                                 value={modifyOptionFields.positionEffect}
-                                onValueChange={v =>
-                                  setModifyOptionFields(p => ({
+                                onValueChange={(v) =>
+                                  setModifyOptionFields((p) => ({
                                     ...p,
                                     positionEffect: v as 'open' | 'close',
                                   }))
@@ -2730,14 +2781,15 @@ export function TradingPageComponent() {
                         <Textarea
                           className="bg-input border-border text-foreground min-h-24 font-mono text-xs"
                           value={modifyExtrasText}
-                          onChange={e => setModifyExtrasText(e.target.value)}
+                          onChange={(e) => setModifyExtrasText(e.target.value)}
                           placeholder='{"extendedHours": false, "marketHours": "regular_hours"}'
                         />
                         <p className="text-xs text-muted-foreground">
-                          Optional broker-specific fields (e.g., extendedHours for Robinhood, accountSpec for NinjaTrader)
+                          Optional broker-specific fields (e.g., extendedHours for Robinhood,
+                          accountSpec for NinjaTrader)
                         </p>
                       </div>
-                      
+
                       {/* Payload Preview */}
                       {modifyOrderPayloadPreview && (
                         <details className="rounded-md border border-border/60 bg-muted/10">
@@ -2818,7 +2870,8 @@ export function TradingPageComponent() {
                   Order Presets
                 </CardTitle>
                 <CardDescription className="text-muted-foreground text-xs sm:text-sm break-words">
-                  Quickly send common broker-specific orders. Select a broker above, pick a preset, inspect and edit the JSON payload, then place the order.
+                  Quickly send common broker-specific orders. Select a broker above, pick a preset,
+                  inspect and edit the JSON payload, then place the order.
                 </CardDescription>
               </div>
               <div className="flex-shrink-0 mt-0.5 self-start">
@@ -2833,232 +2886,224 @@ export function TradingPageComponent() {
         </CardHeader>
         {isOrderPresetsOpen && (
           <CardContent className="space-y-4">
-          {!selectedBroker && (
-            <p className="text-sm text-muted-foreground">
-              Select a broker in the Orders Playground to view presets.
-            </p>
-          )}
+            {!selectedBroker && (
+              <p className="text-sm text-muted-foreground">
+                Select a broker in the Orders Playground to view presets.
+              </p>
+            )}
 
-          {selectedBroker && (
-            <>
-              {!(BROKER_ORDER_PRESETS[selectedBroker]?.length ?? 0) && (
-                <p className="text-sm text-muted-foreground">
-                  No presets available yet for this broker.
-                </p>
-              )}
+            {selectedBroker && (
+              <>
+                {!(BROKER_ORDER_PRESETS[selectedBroker]?.length ?? 0) && (
+                  <p className="text-sm text-muted-foreground">
+                    No presets available yet for this broker.
+                  </p>
+                )}
 
-              {(BROKER_ORDER_PRESETS[selectedBroker]?.length ?? 0) > 0 && (
-                <>
-                  {/* Filters */}
-                  <div className="flex flex-col gap-3">
-                    <p className="text-xs sm:text-sm text-muted-foreground">
-                      Showing presets for broker{' '}
-                      <span className="font-medium text-foreground">
-                        {selectedBroker}
-                      </span>
-                    </p>
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
-                      <div className="space-y-1 flex-1 sm:flex-initial">
-                        <Label className="text-xs text-muted-foreground">Asset Class</Label>
-                        <Select
-                          value={presetAssetFilter}
-                          onValueChange={value =>
-                            setPresetAssetFilter(value as 'all' | SupportedAssetType)
-                          }
-                        >
-                          <SelectTrigger className="bg-input border-border text-foreground h-8 w-full sm:w-40 text-xs sm:text-sm">
-                            <SelectValue placeholder="All Asset Classes" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All</SelectItem>
-                            <SelectItem value="equity">Equity</SelectItem>
-                            <SelectItem value="equity_option">Equity Option</SelectItem>
-                            <SelectItem value="crypto">Crypto</SelectItem>
-                            <SelectItem value="forex">Forex</SelectItem>
-                            <SelectItem value="future">Future</SelectItem>
-                            <SelectItem value="future_option">Future Option</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-1 flex-1 sm:flex-initial">
-                        <Label className="text-xs text-muted-foreground">Order Type</Label>
-                        <Select
-                          value={presetOrderTypeFilter}
-                          onValueChange={value =>
-                            setPresetOrderTypeFilter(
-                              value as 'all' | SupportedOrderType,
-                            )
-                          }
-                        >
-                          <SelectTrigger className="bg-input border-border text-foreground h-8 w-full sm:w-40 text-xs sm:text-sm">
-                            <SelectValue placeholder="All Order Types" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All</SelectItem>
-                            <SelectItem value="market">Market</SelectItem>
-                            <SelectItem value="limit">Limit</SelectItem>
-                            <SelectItem value="stop">Stop</SelectItem>
-                            <SelectItem value="stop_limit">Stop Limit</SelectItem>
-                          <SelectItem value="trailing_stop">Trailing Stop</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {presetAssetFilter === 'equity_option' && (
+                {(BROKER_ORDER_PRESETS[selectedBroker]?.length ?? 0) > 0 && (
+                  <>
+                    {/* Filters */}
+                    <div className="flex flex-col gap-3">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
+                        Showing presets for broker{' '}
+                        <span className="font-medium text-foreground">{selectedBroker}</span>
+                      </p>
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
                         <div className="space-y-1 flex-1 sm:flex-initial">
-                          <Label className="text-xs text-muted-foreground">Expiration Date</Label>
-                          <Input
-                            type="date"
-                            className="bg-input border-border text-foreground h-8 w-full sm:w-40 text-xs sm:text-sm"
-                            value={equityOptionExpirationDate}
-                            onChange={e => setEquityOptionExpirationDate(e.target.value)}
-                          />
-                          <p className="text-xs text-muted-foreground">
-                            Sets expiration date for all equity option presets
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Presets list */}
-                  <div className="space-y-3">
-                    {(BROKER_ORDER_PRESETS[selectedBroker] ?? [])
-                      .filter(preset => {
-                        if (
-                          presetAssetFilter !== 'all' &&
-                          preset.assetType !== presetAssetFilter
-                        ) {
-                          return false;
-                        }
-                        if (
-                          presetOrderTypeFilter !== 'all' &&
-                          preset.orderType !== presetOrderTypeFilter
-                        ) {
-                          return false;
-                        }
-                        return true;
-                      })
-                      .map(preset => {
-                        const isExpanded = expandedPresetId === preset.id;
-                        const payloadText =
-                          presetPayloadTextById[preset.id] ?? '';
-
-                        return (
-                          <div
-                            key={preset.id}
-                            className="space-y-2 rounded-md border border-border/60 bg-muted/5 p-3"
+                          <Label className="text-xs text-muted-foreground">Asset Class</Label>
+                          <Select
+                            value={presetAssetFilter}
+                            onValueChange={(value) =>
+                              setPresetAssetFilter(value as 'all' | SupportedAssetType)
+                            }
                           >
-                            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                              <div className="space-y-1 min-w-0 flex-1">
-                                <p className="text-sm font-medium text-foreground break-words">
-                                  {preset.label}
-                                </p>
-                                <button
-                                  type="button"
-                                  className="text-xs text-muted-foreground underline-offset-2 hover:underline"
-                                  onClick={() =>
-                                    setExpandedPresetId(previous =>
-                                      previous === preset.id ? null : preset.id,
-                                    )
-                                  }
-                                >
-                                  {isExpanded
-                                    ? 'Hide payload'
-                                    : 'Show and edit payload JSON'}
-                                </button>
-                                <p className="text-xs text-muted-foreground break-words">
-                                  {preset.description}
-                                </p>
-                              </div>
-                              <Button
-                                size="sm"
-                                className="h-8 px-3 text-xs w-full sm:w-auto flex-shrink-0"
-                                onClick={() => placePresetOrder(preset)}
-                                disabled={
-                                  !selectedBroker ||
-                                  !selectedAccountId ||
-                                  (!isMockMode && !isBrokerConnected) ||
-                                  placingPresetId === preset.id
-                                }
-                              >
-                                {placingPresetId === preset.id ? (
-                                  <>
-                                    <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                                    Placing...
-                                  </>
-                                ) : (
-                                  <>Place Preset</>
-                                )}
-                              </Button>
-                            </div>
-
-                            {isExpanded && (
-                              <div className="space-y-1">
-                                <Textarea
-                                  className="bg-input border-border text-foreground min-h-24 font-mono text-xs"
-                                  value={payloadText}
-                                  onChange={event =>
-                                    setPresetPayloadTextById(previous => ({
-                                      ...previous,
-                                      [preset.id]: event.target.value,
-                                    }))
-                                  }
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                  Payload must match the{' '}
-                                  <span className="font-medium">
-                                    order_place_query_params_request
-                                  </span>{' '}
-                                  structure for the selected broker. Broker and
-                                  accountNumber are automatically aligned with
-                                  your current selection when placing.
-                                </p>
-                              </div>
-                            )}
-
-                            {/* Response Section */}
-                            {presetResponseById[preset.id] && (
-                              <div className="space-y-2 border-t border-border/60 pt-3">
-                                <button
-                                  type="button"
-                                  className="flex items-center gap-2 text-xs text-foreground font-medium hover:text-foreground/80 transition-colors"
-                                  onClick={() =>
-                                    setExpandedResponsePresetIds(previous => {
-                                      const next = new Set(previous);
-                                      if (next.has(preset.id)) {
-                                        next.delete(preset.id);
-                                      } else {
-                                        next.add(preset.id);
-                                      }
-                                      return next;
-                                    })
-                                  }
-                                >
-                                  <span>Response</span>
-                                  {expandedResponsePresetIds.has(preset.id) ? (
-                                    <ChevronUp className="h-3 w-3" />
-                                  ) : (
-                                    <ChevronDown className="h-3 w-3" />
-                                  )}
-                                </button>
-                                {expandedResponsePresetIds.has(preset.id) && (
-                                  <div className="rounded-md border border-border/60 bg-muted/10 p-3 max-h-64 overflow-auto">
-                                    <pre className="whitespace-pre-wrap break-words text-xs text-foreground font-mono">
-                                      {JSON.stringify(presetResponseById[preset.id], null, 2)}
-                                    </pre>
-                                  </div>
-                                )}
-                              </div>
-                            )}
+                            <SelectTrigger className="bg-input border-border text-foreground h-8 w-full sm:w-40 text-xs sm:text-sm">
+                              <SelectValue placeholder="All Asset Classes" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All</SelectItem>
+                              <SelectItem value="equity">Equity</SelectItem>
+                              <SelectItem value="equity_option">Equity Option</SelectItem>
+                              <SelectItem value="crypto">Crypto</SelectItem>
+                              <SelectItem value="forex">Forex</SelectItem>
+                              <SelectItem value="future">Future</SelectItem>
+                              <SelectItem value="future_option">Future Option</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1 flex-1 sm:flex-initial">
+                          <Label className="text-xs text-muted-foreground">Order Type</Label>
+                          <Select
+                            value={presetOrderTypeFilter}
+                            onValueChange={(value) =>
+                              setPresetOrderTypeFilter(value as 'all' | SupportedOrderType)
+                            }
+                          >
+                            <SelectTrigger className="bg-input border-border text-foreground h-8 w-full sm:w-40 text-xs sm:text-sm">
+                              <SelectValue placeholder="All Order Types" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All</SelectItem>
+                              <SelectItem value="market">Market</SelectItem>
+                              <SelectItem value="limit">Limit</SelectItem>
+                              <SelectItem value="stop">Stop</SelectItem>
+                              <SelectItem value="stop_limit">Stop Limit</SelectItem>
+                              <SelectItem value="trailing_stop">Trailing Stop</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {presetAssetFilter === 'equity_option' && (
+                          <div className="space-y-1 flex-1 sm:flex-initial">
+                            <Label className="text-xs text-muted-foreground">Expiration Date</Label>
+                            <Input
+                              type="date"
+                              className="bg-input border-border text-foreground h-8 w-full sm:w-40 text-xs sm:text-sm"
+                              value={equityOptionExpirationDate}
+                              onChange={(e) => setEquityOptionExpirationDate(e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              Sets expiration date for all equity option presets
+                            </p>
                           </div>
-                        );
-                      })}
-                  </div>
-                </>
-              )}
-            </>
-          )}
-        </CardContent>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Presets list */}
+                    <div className="space-y-3">
+                      {(BROKER_ORDER_PRESETS[selectedBroker] ?? [])
+                        .filter((preset) => {
+                          if (
+                            presetAssetFilter !== 'all' &&
+                            preset.assetType !== presetAssetFilter
+                          ) {
+                            return false;
+                          }
+                          if (
+                            presetOrderTypeFilter !== 'all' &&
+                            preset.orderType !== presetOrderTypeFilter
+                          ) {
+                            return false;
+                          }
+                          return true;
+                        })
+                        .map((preset) => {
+                          const isExpanded = expandedPresetId === preset.id;
+                          const payloadText = presetPayloadTextById[preset.id] ?? '';
+
+                          return (
+                            <div
+                              key={preset.id}
+                              className="space-y-2 rounded-md border border-border/60 bg-muted/5 p-3"
+                            >
+                              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div className="space-y-1 min-w-0 flex-1">
+                                  <p className="text-sm font-medium text-foreground break-words">
+                                    {preset.label}
+                                  </p>
+                                  <button
+                                    type="button"
+                                    className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+                                    onClick={() =>
+                                      setExpandedPresetId((previous) =>
+                                        previous === preset.id ? null : preset.id
+                                      )
+                                    }
+                                  >
+                                    {isExpanded ? 'Hide payload' : 'Show and edit payload JSON'}
+                                  </button>
+                                  <p className="text-xs text-muted-foreground break-words">
+                                    {preset.description}
+                                  </p>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  className="h-8 px-3 text-xs w-full sm:w-auto flex-shrink-0"
+                                  onClick={() => placePresetOrder(preset)}
+                                  disabled={
+                                    !selectedBroker ||
+                                    !selectedAccountId ||
+                                    (!isMockMode && !isBrokerConnected) ||
+                                    placingPresetId === preset.id
+                                  }
+                                >
+                                  {placingPresetId === preset.id ? (
+                                    <>
+                                      <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                                      Placing...
+                                    </>
+                                  ) : (
+                                    <>Place Preset</>
+                                  )}
+                                </Button>
+                              </div>
+
+                              {isExpanded && (
+                                <div className="space-y-1">
+                                  <Textarea
+                                    className="bg-input border-border text-foreground min-h-24 font-mono text-xs"
+                                    value={payloadText}
+                                    onChange={(event) =>
+                                      setPresetPayloadTextById((previous) => ({
+                                        ...previous,
+                                        [preset.id]: event.target.value,
+                                      }))
+                                    }
+                                  />
+                                  <p className="text-xs text-muted-foreground">
+                                    Payload must match the{' '}
+                                    <span className="font-medium">
+                                      order_place_query_params_request
+                                    </span>{' '}
+                                    structure for the selected broker. Broker and accountNumber are
+                                    automatically aligned with your current selection when placing.
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* Response Section */}
+                              {presetResponseById[preset.id] && (
+                                <div className="space-y-2 border-t border-border/60 pt-3">
+                                  <button
+                                    type="button"
+                                    className="flex items-center gap-2 text-xs text-foreground font-medium hover:text-foreground/80 transition-colors"
+                                    onClick={() =>
+                                      setExpandedResponsePresetIds((previous) => {
+                                        const next = new Set(previous);
+                                        if (next.has(preset.id)) {
+                                          next.delete(preset.id);
+                                        } else {
+                                          next.add(preset.id);
+                                        }
+                                        return next;
+                                      })
+                                    }
+                                  >
+                                    <span>Response</span>
+                                    {expandedResponsePresetIds.has(preset.id) ? (
+                                      <ChevronUp className="h-3 w-3" />
+                                    ) : (
+                                      <ChevronDown className="h-3 w-3" />
+                                    )}
+                                  </button>
+                                  {expandedResponsePresetIds.has(preset.id) && (
+                                    <div className="rounded-md border border-border/60 bg-muted/10 p-3 max-h-64 overflow-auto">
+                                      <pre className="whitespace-pre-wrap break-words text-xs text-foreground font-mono">
+                                        {JSON.stringify(presetResponseById[preset.id], null, 2)}
+                                      </pre>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </CardContent>
         )}
       </Card>
     </div>
