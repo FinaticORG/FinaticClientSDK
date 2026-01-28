@@ -32,7 +32,7 @@ interface EnvironmentVariable {
   isPassword: boolean
   isActive?: boolean
   activeReason?: string
-  category: 'api-keys' | 'server-urls' | 'public-urls' | 'mock-settings'
+  category: 'api-keys' | 'server-urls' | 'public-urls'
 }
 
 const getAllEnvironmentVariables = (
@@ -42,38 +42,76 @@ const getAllEnvironmentVariables = (
   const baseVars: EnvironmentVariable[] = [
     // API Keys (mode-specific)
     {
-      key: "FINATIC_API_KEY",
+      key: "FINATIC_API_DEV_KEY",
       value: "",
-      description: "API key for Live mode",
+      description: "Dev API key for Live mode",
       isPublic: false,
       isPassword: true,
-      isActive: mode === 'live',
-      activeReason: mode === 'live' ? "Live mode selected" : "Live mode not selected",
+      isActive: mode === 'live' && environment === 'dev',
+      activeReason: mode === 'live' && environment === 'dev' ? "Live + Dev selected" : "Not active",
       category: 'api-keys'
     },
     {
-      key: "FINATIC_API_KEY_SANDBOX",
+      key: "FINATIC_API_DEV_SANDBOX_KEY",
       value: "",
-      description: "API key for Sandbox mode",
+      description: "Dev API key for Sandbox mode",
       isPublic: false,
       isPassword: true,
-      isActive: mode === 'sandbox',
-      activeReason: mode === 'sandbox' ? "Sandbox mode selected" : "Sandbox mode not selected",
+      isActive: mode === 'sandbox' && environment === 'dev',
+      activeReason: mode === 'sandbox' && environment === 'dev' ? "Sandbox + Dev selected" : "Not active",
+      category: 'api-keys'
+    },
+    {
+      key: "FINATIC_API_STAGING_KEY",
+      value: "",
+      description: "Staging API key for Live mode",
+      isPublic: false,
+      isPassword: true,
+      isActive: mode === 'live' && environment === 'staging',
+      activeReason:
+        mode === 'live' && environment === 'staging' ? "Live + Staging selected" : "Not active",
+      category: 'api-keys'
+    },
+    {
+      key: "FINATIC_API_STAGING_SANDBOX_KEY",
+      value: "",
+      description: "Staging API key for Sandbox mode",
+      isPublic: false,
+      isPassword: true,
+      isActive: mode === 'sandbox' && environment === 'staging',
+      activeReason:
+        mode === 'sandbox' && environment === 'staging'
+          ? "Sandbox + Staging selected"
+          : "Not active",
+      category: 'api-keys'
+    },
+    {
+      key: "FINATIC_API_PRODUCTION_KEY",
+      value: "",
+      description: "Production API key for Live mode",
+      isPublic: false,
+      isPassword: true,
+      isActive: mode === 'live' && environment === 'prod',
+      activeReason:
+        mode === 'live' && environment === 'prod' ? "Live + Production selected" : "Not active",
+      category: 'api-keys'
+    },
+    {
+      key: "FINATIC_API_PRODUCTION_SANDBOX_KEY",
+      value: "",
+      description: "Production API key for Sandbox mode",
+      isPublic: false,
+      isPassword: true,
+      isActive: mode === 'sandbox' && environment === 'prod',
+      activeReason:
+        mode === 'sandbox' && environment === 'prod'
+          ? "Sandbox + Production selected"
+          : "Not active",
       category: 'api-keys'
     },
     // API URLs (environment-specific, server-side)
     {
-      key: "FINATIC_API_URL",
-      value: "",
-      description: "Default API URL (server-side fallback)",
-      isPublic: false,
-      isPassword: false,
-      isActive: false,
-      activeReason: "Fallback only",
-      category: 'server-urls'
-    },
-    {
-      key: "FINATIC_API_URL_DEV",
+      key: "FINATIC_DEV_API_URL",
       value: "",
       description: "Development environment (server-side)",
       isPublic: false,
@@ -83,7 +121,7 @@ const getAllEnvironmentVariables = (
       category: 'server-urls'
     },
     {
-      key: "FINATIC_API_URL_STAGING",
+      key: "FINATIC_STAGING_API_URL",
       value: "",
       description: "Staging environment (server-side)",
       isPublic: false,
@@ -93,7 +131,7 @@ const getAllEnvironmentVariables = (
       category: 'server-urls'
     },
     {
-      key: "FINATIC_API_URL_PROD",
+      key: "FINATIC_PRODUCTION_API_URL",
       value: "",
       description: "Production environment (server-side)",
       isPublic: false,
@@ -104,17 +142,7 @@ const getAllEnvironmentVariables = (
     },
     // Public API URLs (environment-specific, client-side)
     {
-      key: "NEXT_PUBLIC_FINATIC_API_URL",
-      value: "",
-      description: "Default public API URL (browser fallback)",
-      isPublic: true,
-      isPassword: false,
-      isActive: false,
-      activeReason: "Fallback only",
-      category: 'public-urls'
-    },
-    {
-      key: "NEXT_PUBLIC_FINATIC_API_URL_DEV",
+      key: "NEXT_PUBLIC_FINATIC_DEV_API_URL",
       value: "",
       description: "Development environment (browser)",
       isPublic: true,
@@ -124,7 +152,7 @@ const getAllEnvironmentVariables = (
       category: 'public-urls'
     },
     {
-      key: "NEXT_PUBLIC_FINATIC_API_URL_STAGING",
+      key: "NEXT_PUBLIC_FINATIC_STAGING_API_URL",
       value: "",
       description: "Staging environment (browser)",
       isPublic: true,
@@ -134,7 +162,7 @@ const getAllEnvironmentVariables = (
       category: 'public-urls'
     },
     {
-      key: "NEXT_PUBLIC_FINATIC_API_URL_PROD",
+      key: "NEXT_PUBLIC_FINATIC_PRODUCTION_API_URL",
       value: "",
       description: "Production environment (browser)",
       isPublic: true,
@@ -143,23 +171,6 @@ const getAllEnvironmentVariables = (
       activeReason: environment === 'prod' ? "Prod selected" : "Prod not selected",
       category: 'public-urls'
     },
-    // Mock mode settings
-    {
-      key: "NEXT_PUBLIC_FINATIC_USE_MOCKS",
-      value: "",
-      description: "Enable mock mode for development",
-      isPublic: true,
-      isPassword: false,
-      category: 'mock-settings'
-    },
-    {
-      key: "NEXT_PUBLIC_FINATIC_MOCK_API_ONLY",
-      value: "",
-      description: "Use only mock data (no real API calls)",
-      isPublic: true,
-      isPassword: false,
-      category: 'mock-settings'
-    }
   ]
 
   return baseVars
@@ -168,8 +179,7 @@ const getAllEnvironmentVariables = (
 const categoryConfig = {
   'api-keys': { title: 'API Keys', icon: Key, description: 'Authentication keys for API access' },
   'server-urls': { title: 'Server-Side URLs', icon: Globe, description: 'API URLs accessible only from server' },
-  'public-urls': { title: 'Public URLs', icon: Globe, description: 'API URLs accessible from browser' },
-  'mock-settings': { title: 'Mock Settings', icon: Settings, description: 'Development mock configuration' }
+  'public-urls': { title: 'Public URLs', icon: Globe, description: 'API URLs accessible from browser' }
 }
 
 export function EnvironmentSettings() {
@@ -183,8 +193,7 @@ export function EnvironmentSettings() {
   const [expandedCategories, setExpandedCategories] = useState<{ [key: string]: boolean }>({
     'api-keys': true,
     'server-urls': true,
-    'public-urls': false,
-    'mock-settings': false
+    'public-urls': false
   })
 
   // Update env vars when mode or environment changes
@@ -277,10 +286,14 @@ export function EnvironmentSettings() {
   const resetToDefaults = () => {
     setEnvVars(prev => prev.map(envVar => ({
       ...envVar,
-      value: envVar.key === 'FINATIC_API_URL' ? 'http://localhost:8000' :
-             envVar.key === 'NEXT_PUBLIC_FINATIC_API_URL' ? 'http://localhost:8000' :
-             envVar.key === 'NEXT_PUBLIC_FINATIC_USE_MOCKS' ? 'false' :
-             envVar.key === 'NEXT_PUBLIC_FINATIC_MOCK_API_ONLY' ? 'false' : ''
+      value:
+        envVar.key === 'FINATIC_DEV_API_URL' ? 'http://localhost:8000' :
+        envVar.key === 'FINATIC_STAGING_API_URL' ? 'https://api-staging.finatic.dev' :
+        envVar.key === 'FINATIC_PRODUCTION_API_URL' ? 'https://api.finatic.dev' :
+        envVar.key === 'NEXT_PUBLIC_FINATIC_DEV_API_URL' ? 'http://localhost:8000' :
+        envVar.key === 'NEXT_PUBLIC_FINATIC_STAGING_API_URL' ? 'https://api-staging.finatic.dev' :
+        envVar.key === 'NEXT_PUBLIC_FINATIC_PRODUCTION_API_URL' ? 'https://api.finatic.dev' :
+''
     })))
   }
 
@@ -307,12 +320,15 @@ export function EnvironmentSettings() {
 
   const getDefaultValue = (key: string) => {
     switch (key) {
-      case 'FINATIC_API_URL':
-      case 'NEXT_PUBLIC_FINATIC_API_URL':
+      case 'FINATIC_DEV_API_URL':
+      case 'NEXT_PUBLIC_FINATIC_DEV_API_URL':
         return 'http://localhost:8000'
-      case 'NEXT_PUBLIC_FINATIC_USE_MOCKS':
-      case 'NEXT_PUBLIC_FINATIC_MOCK_API_ONLY':
-        return 'false'
+      case 'FINATIC_STAGING_API_URL':
+      case 'NEXT_PUBLIC_FINATIC_STAGING_API_URL':
+        return 'https://api-staging.finatic.dev'
+      case 'FINATIC_PRODUCTION_API_URL':
+      case 'NEXT_PUBLIC_FINATIC_PRODUCTION_API_URL':
+        return 'https://api.finatic.dev'
       default:
         return ''
     }
@@ -332,7 +348,7 @@ export function EnvironmentSettings() {
     return acc
   }, {} as Record<string, EnvironmentVariable[]>)
 
-  const categoryOrder: Array<keyof typeof categoryConfig> = ['api-keys', 'server-urls', 'public-urls', 'mock-settings']
+  const categoryOrder: Array<keyof typeof categoryConfig> = ['api-keys', 'server-urls', 'public-urls']
 
   return (
     <Card className="bg-card border-border">
@@ -496,18 +512,7 @@ export function EnvironmentSettings() {
                                 
                                 {/* Input field */}
                                 <td className="px-3 py-3 align-middle w-48 sm:w-64 md:w-72">
-                                  {envVar.key.includes('USE_MOCKS') || envVar.key.includes('MOCK_API_ONLY') ? (
-                                    <div className="flex items-center justify-end gap-3">
-                                      <span className="text-xs text-muted-foreground">
-                                        {envVar.value === 'true' ? 'Enabled' : 'Disabled'}
-                                      </span>
-                                      <Switch
-                                        checked={envVar.value === 'true'}
-                                        onCheckedChange={() => handleBooleanChange(envVar.key, envVar.value)}
-                                      />
-                                    </div>
-                                  ) : (
-                                    <div className="relative">
+                                  <div className="relative">
                                       <Input
                                         type={getInputType(envVar)}
                                         value={envVar.value}
@@ -531,7 +536,6 @@ export function EnvironmentSettings() {
                                         </Button>
                                       )}
                                     </div>
-                                  )}
                                 </td>
                               </tr>
                             ))}

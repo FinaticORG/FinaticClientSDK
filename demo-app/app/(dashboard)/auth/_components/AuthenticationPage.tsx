@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { CheckCircle, AlertTriangle, RefreshCw, User, Shield, Trash2 } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 import { useFinatic } from '@/app/providers/FinaticProvider';
+import { useEnvironmentConfig } from '@/app/providers/EnvironmentConfigProvider';
 
 export function AuthenticationPageComponent() {
   const {
@@ -15,7 +16,6 @@ export function AuthenticationPageComponent() {
     sdkAdapter,
     isLoading,
     error,
-    isMockMode,
     sessionInfo,
     logs,
     addLog,
@@ -29,6 +29,7 @@ export function AuthenticationPageComponent() {
     currentUserId: contextUserId,
     checkAuth,
   } = useFinatic();
+  const { mode } = useEnvironmentConfig();
   const [isAuthedStatus, setIsAuthedStatus] = useState<boolean | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
@@ -124,7 +125,7 @@ export function AuthenticationPageComponent() {
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Mode</span>
-              <span className="text-foreground font-medium">{isMockMode ? 'Mock' : 'Real'}</span>
+              <span className="text-foreground font-medium capitalize">{mode}</span>
             </div>
             <Separator />
             <div className="space-y-1">

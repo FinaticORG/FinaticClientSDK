@@ -1,9 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-
-export type EnvironmentMode = 'sandbox' | 'live';
-export type EnvironmentType = 'dev' | 'staging' | 'prod';
+import React, { createContext, useContext, useState, useCallback } from 'react';
+import * as environmentUtils from '@/lib/utils';
+import type { EnvironmentMode, EnvironmentType } from '@/lib/utils';
 
 interface EnvironmentConfigContextValue {
   mode: EnvironmentMode;
@@ -68,29 +67,28 @@ export function EnvironmentConfigProvider({ children }: { children: React.ReactN
   const getApiKey = useCallback((): string | undefined => {
     if (typeof window !== 'undefined') return undefined; // Client-side can't access server env vars
     
-    const apiKeyEnvVar = mode === 'sandbox' ? 'FINATIC_API_KEY_SANDBOX' : 'FINATIC_API_KEY_LIVE';
-    return process.env[apiKeyEnvVar] || process.env.FINATIC_API_KEY;
-  }, [mode]);
+    return environmentUtils.getApiKey(mode, environment);
+  }, [mode, environment]);
 
   // Get API URL based on mode and environment (server-side only)
   const getApiUrl = useCallback((): string | undefined => {
     if (typeof window !== 'undefined') return undefined; // Client-side can't access server env vars
     
-    const apiUrlEnvVar = `FINATIC_API_URL_${environment.toUpperCase()}`;
-    return process.env[apiUrlEnvVar] || process.env.FINATIC_API_URL || 'http://localhost:8000';
-  }, [mode, environment]);
+    return environmentUtils.getApiUrl(environment, 'http://localhost:8000');
+  }, [environment]);
 
   // Get public API URL based on mode and environment (available client-side)
   const getPublicApiUrl = useCallback((): string | undefined => {
-    const publicApiUrlEnvVar = `NEXT_PUBLIC_FINATIC_API_URL_${environment.toUpperCase()}`;
-    
     if (typeof window !== 'undefined') {
       // Client-side: check if it's in window (set via runtime config)
-      return (window as any).__FINATIC_PUBLIC_API_URL__ || process.env[publicApiUrlEnvVar] || process.env.NEXT_PUBLIC_FINATIC_API_URL;
+      return (
+        (window as any).__FINATIC_PUBLIC_API_URL__ ||
+        environmentUtils.getPublicApiUrl(environment, 'http://localhost:8000')
+      );
     }
     
     // Server-side
-    return process.env[publicApiUrlEnvVar] || process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
+    return environmentUtils.getPublicApiUrl(environment, 'http://localhost:8000');
   }, [environment]);
 
   return (

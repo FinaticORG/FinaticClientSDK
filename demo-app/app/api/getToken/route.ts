@@ -1,41 +1,27 @@
 import { NextResponse } from 'next/server';
+import { getApiKey, getApiUrl, type EnvironmentMode, type EnvironmentType } from '@/lib/utils';
 
 async function handleRequest(request: Request) {
   try {
-    // Check if mock mode is enabled
-    const isMockMode = process.env.NEXT_PUBLIC_FINATIC_USE_MOCKS === 'true';
+    const { searchParams } = new URL(request.url);
+    const mode = (searchParams.get('mode') as EnvironmentMode | null) || 'live';
+    const environment = (searchParams.get('environment') as EnvironmentType | null) || 'dev';
 
-    if (isMockMode) {
-      console.log('🔧 Mock mode enabled - returning mock token');
-
-      // Return mock session init response (matching new FinaticResponse format)
-      const mockResponse = {
-        trace_id: 'mock-trace-' + Date.now(),
-        success: {
-          data: {
-            one_time_token: 'mock_token_' + Date.now(),
-            expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes from now
-          },
-          meta: null,
-        },
-        error: null,
-        warning: null,
-      };
-
-      return NextResponse.json(mockResponse);
-    }
-
-    // Get API key and URL from environment variables (simplified)
-    const apiKey = process.env.FINATIC_API_KEY;
-    const apiUrl = process.env.FINATIC_API_URL || 'http://localhost:8000';
+    // Get API key and URL from environment variables based on mode and environment
+    const apiKey = getApiKey(mode, environment);
+    const apiUrl = getApiUrl(environment, 'http://localhost:8000');
 
     console.log('Using API key:', apiKey ? 'present' : 'missing');
     console.log('Using API URL:', apiUrl);
+    console.log('Using mode/environment:', mode, environment);
 
     if (!apiKey) {
-      console.log('No Finatic API key found (FINATIC_API_KEY not set)');
+      console.log('No Finatic API key found for selected mode and environment');
       return NextResponse.json(
-        { error: 'Server configuration error - FINATIC_API_KEY not set' },
+        {
+          error:
+            'Server configuration error - missing Finatic API key for selected mode/environment',
+        },
         { status: 500 }
       );
     }

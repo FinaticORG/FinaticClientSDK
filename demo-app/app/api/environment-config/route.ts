@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import {
+  getApiKey,
+  getApiUrl,
+  getPublicApiUrl,
+  type EnvironmentMode,
+  type EnvironmentType,
+} from '@/lib/utils';
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const mode = searchParams.get('mode') as 'sandbox' | 'live' | null;
-    const environment = searchParams.get('environment') as 'dev' | 'staging' | 'prod' | null;
+    const mode = searchParams.get('mode') as EnvironmentMode | null;
+    const environment = searchParams.get('environment') as EnvironmentType | null;
 
     if (!mode || !environment) {
       return NextResponse.json(
@@ -13,17 +20,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get API key based on mode
-    const apiKeyEnvVar = mode === 'sandbox' ? 'FINATIC_API_KEY_SANDBOX' : 'FINATIC_API_KEY_LIVE';
-    const apiKey = process.env[apiKeyEnvVar] || process.env.FINATIC_API_KEY;
-
-    // Get API URL based on environment
-    const apiUrlEnvVar = `FINATIC_API_URL_${environment.toUpperCase()}`;
-    const apiUrl = process.env[apiUrlEnvVar] || process.env.FINATIC_API_URL || 'http://localhost:8000';
-
-    // Get public API URL based on environment
-    const publicApiUrlEnvVar = `NEXT_PUBLIC_FINATIC_API_URL_${environment.toUpperCase()}`;
-    const publicApiUrl = process.env[publicApiUrlEnvVar] || process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
+    const apiKey = getApiKey(mode, environment);
+    const apiUrl = getApiUrl(environment, 'http://localhost:8000');
+    const publicApiUrl = getPublicApiUrl(environment, 'http://localhost:8000');
 
     return NextResponse.json({
       apiKey: apiKey || null,
@@ -34,9 +33,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error getting environment config:', error);
-    return NextResponse.json(
-      { error: 'Failed to get environment configuration' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to get environment configuration' }, { status: 500 });
   }
 }

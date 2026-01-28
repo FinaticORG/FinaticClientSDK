@@ -90,88 +90,75 @@ export async function POST(request: NextRequest) {
 
     // Add Finatic API Configuration section
     // API Keys (mode-specific)
-    const apiKeyVars = Object.keys(updatedVars).filter(key => 
-      key === 'FINATIC_API_KEY' || 
-      key === 'FINATIC_API_KEY_LIVE' || 
-      key === 'FINATIC_API_KEY_SANDBOX'
+    const apiKeyVars = Object.keys(updatedVars).filter(
+      (key) =>
+        key === 'FINATIC_API_DEV_KEY' ||
+        key === 'FINATIC_API_DEV_SANDBOX_KEY' ||
+        key === 'FINATIC_API_STAGING_KEY' ||
+        key === 'FINATIC_API_STAGING_SANDBOX_KEY' ||
+        key === 'FINATIC_API_PRODUCTION_KEY' ||
+        key === 'FINATIC_API_PRODUCTION_SANDBOX_KEY'
     );
     if (apiKeyVars.length > 0) {
       newContent += '\n# Finatic API Keys\n';
-      if (updatedVars.FINATIC_API_KEY) {
-        newContent += `FINATIC_API_KEY=${updatedVars.FINATIC_API_KEY}\n`;
+      if (updatedVars.FINATIC_API_DEV_KEY) {
+        newContent += `FINATIC_API_DEV_KEY=${updatedVars.FINATIC_API_DEV_KEY}\n`;
       }
-      if (updatedVars.FINATIC_API_KEY_LIVE) {
-        newContent += `FINATIC_API_KEY_LIVE=${updatedVars.FINATIC_API_KEY_LIVE}\n`;
+      if (updatedVars.FINATIC_API_DEV_SANDBOX_KEY) {
+        newContent += `FINATIC_API_DEV_SANDBOX_KEY=${updatedVars.FINATIC_API_DEV_SANDBOX_KEY}\n`;
       }
-      if (updatedVars.FINATIC_API_KEY_SANDBOX) {
-        newContent += `FINATIC_API_KEY_SANDBOX=${updatedVars.FINATIC_API_KEY_SANDBOX}\n`;
+      if (updatedVars.FINATIC_API_STAGING_KEY) {
+        newContent += `FINATIC_API_STAGING_KEY=${updatedVars.FINATIC_API_STAGING_KEY}\n`;
+      }
+      if (updatedVars.FINATIC_API_STAGING_SANDBOX_KEY) {
+        newContent += `FINATIC_API_STAGING_SANDBOX_KEY=${updatedVars.FINATIC_API_STAGING_SANDBOX_KEY}\n`;
+      }
+      if (updatedVars.FINATIC_API_PRODUCTION_KEY) {
+        newContent += `FINATIC_API_PRODUCTION_KEY=${updatedVars.FINATIC_API_PRODUCTION_KEY}\n`;
+      }
+      if (updatedVars.FINATIC_API_PRODUCTION_SANDBOX_KEY) {
+        newContent += `FINATIC_API_PRODUCTION_SANDBOX_KEY=${updatedVars.FINATIC_API_PRODUCTION_SANDBOX_KEY}\n`;
       }
     }
 
     // API URLs (environment-specific)
-    const apiUrlVars = Object.keys(updatedVars).filter(key => 
-      key === 'FINATIC_API_URL' || 
-      key.startsWith('FINATIC_API_URL_')
+    const apiUrlVars = Object.keys(updatedVars).filter(
+      (key) =>
+        key === 'FINATIC_DEV_API_URL' ||
+        key === 'FINATIC_STAGING_API_URL' ||
+        key === 'FINATIC_PRODUCTION_API_URL'
     );
     if (apiUrlVars.length > 0) {
       newContent += '\n# Finatic API URLs (Server-side)\n';
-      if (updatedVars.FINATIC_API_URL) {
-        newContent += `FINATIC_API_URL=${updatedVars.FINATIC_API_URL}\n`;
+      if (updatedVars.FINATIC_DEV_API_URL) {
+        newContent += `FINATIC_DEV_API_URL=${updatedVars.FINATIC_DEV_API_URL}\n`;
       }
-      if (updatedVars.FINATIC_API_URL_DEV) {
-        newContent += `FINATIC_API_URL_DEV=${updatedVars.FINATIC_API_URL_DEV}\n`;
+      if (updatedVars.FINATIC_STAGING_API_URL) {
+        newContent += `FINATIC_STAGING_API_URL=${updatedVars.FINATIC_STAGING_API_URL}\n`;
       }
-      if (updatedVars.FINATIC_API_URL_STAGING) {
-        newContent += `FINATIC_API_URL_STAGING=${updatedVars.FINATIC_API_URL_STAGING}\n`;
-      }
-      if (updatedVars.FINATIC_API_URL_PROD) {
-        newContent += `FINATIC_API_URL_PROD=${updatedVars.FINATIC_API_URL_PROD}\n`;
+      if (updatedVars.FINATIC_PRODUCTION_API_URL) {
+        newContent += `FINATIC_PRODUCTION_API_URL=${updatedVars.FINATIC_PRODUCTION_API_URL}\n`;
       }
     }
 
     // Add Next.js Public Variables section
-    const publicVars = Object.keys(updatedVars).filter(key => 
-      key.startsWith('NEXT_PUBLIC_') && 
-      !key.includes('USE_MOCKS') && 
-      !key.includes('MOCK_API_ONLY')
-    );
+    const publicVars = Object.keys(updatedVars).filter((key) => key.startsWith('NEXT_PUBLIC_'));
     if (publicVars.length > 0) {
       newContent += '\n# Next.js Public Variables (available in browser)\n';
-      if (updatedVars.NEXT_PUBLIC_FINATIC_API_URL) {
-        newContent += `NEXT_PUBLIC_FINATIC_API_URL=${updatedVars.NEXT_PUBLIC_FINATIC_API_URL}\n`;
+      if (updatedVars.NEXT_PUBLIC_FINATIC_DEV_API_URL) {
+        newContent += `NEXT_PUBLIC_FINATIC_DEV_API_URL=${updatedVars.NEXT_PUBLIC_FINATIC_DEV_API_URL}\n`;
       }
-      if (updatedVars.NEXT_PUBLIC_FINATIC_API_URL_DEV) {
-        newContent += `NEXT_PUBLIC_FINATIC_API_URL_DEV=${updatedVars.NEXT_PUBLIC_FINATIC_API_URL_DEV}\n`;
+      if (updatedVars.NEXT_PUBLIC_FINATIC_STAGING_API_URL) {
+        newContent += `NEXT_PUBLIC_FINATIC_STAGING_API_URL=${updatedVars.NEXT_PUBLIC_FINATIC_STAGING_API_URL}\n`;
       }
-      if (updatedVars.NEXT_PUBLIC_FINATIC_API_URL_STAGING) {
-        newContent += `NEXT_PUBLIC_FINATIC_API_URL_STAGING=${updatedVars.NEXT_PUBLIC_FINATIC_API_URL_STAGING}\n`;
-      }
-      if (updatedVars.NEXT_PUBLIC_FINATIC_API_URL_PROD) {
-        newContent += `NEXT_PUBLIC_FINATIC_API_URL_PROD=${updatedVars.NEXT_PUBLIC_FINATIC_API_URL_PROD}\n`;
-      }
-    }
-
-    // Add Mock Mode Configuration section
-    const mockVars = Object.keys(updatedVars).filter(
-      key => key.includes('MOCK') || key.includes('USE_MOCKS')
-    );
-    if (mockVars.length > 0) {
-      newContent += '\n# Mock Mode Configuration\n';
-      if (updatedVars.NEXT_PUBLIC_FINATIC_USE_MOCKS !== undefined) {
-        newContent += `NEXT_PUBLIC_FINATIC_USE_MOCKS=${updatedVars.NEXT_PUBLIC_FINATIC_USE_MOCKS}\n`;
-      }
-      if (updatedVars.NEXT_PUBLIC_FINATIC_MOCK_API_ONLY !== undefined) {
-        newContent += `NEXT_PUBLIC_FINATIC_MOCK_API_ONLY=${updatedVars.NEXT_PUBLIC_FINATIC_MOCK_API_ONLY}\n`;
+      if (updatedVars.NEXT_PUBLIC_FINATIC_PRODUCTION_API_URL) {
+        newContent += `NEXT_PUBLIC_FINATIC_PRODUCTION_API_URL=${updatedVars.NEXT_PUBLIC_FINATIC_PRODUCTION_API_URL}\n`;
       }
     }
 
     // Add any other variables that don't fit the above categories
     const otherVars = Object.keys(updatedVars).filter(
-      key =>
-        !key.startsWith('NEXT_PUBLIC_') &&
-        !key.includes('FINATIC_API') &&
-        !key.includes('MOCK') &&
-        !key.includes('USE_MOCKS')
+      (key) => !key.startsWith('NEXT_PUBLIC_') && !key.startsWith('FINATIC_')
     );
     if (otherVars.length > 0) {
       newContent += '\n# Other Environment Variables\n';

@@ -11,7 +11,7 @@ import React, {
 } from 'react';
 import { FinaticConnect } from '@finatic/client';
 import { SdkType, SdkAdapter, createSdkAdapter } from '@/lib/sdk-adapter';
-// Removed: import { useEnvironmentConfig } from './EnvironmentConfigProvider';
+import { useEnvironmentConfig } from '@/app/providers/EnvironmentConfigProvider';
 
 export type { SdkType };
 
@@ -61,7 +61,6 @@ interface FinaticContextValue {
   sdkAdapter: SdkAdapter | null;
   isLoading: boolean;
   error: string | null;
-  isMockMode: boolean;
   sessionInfo: string;
   logs: LogEntry[];
   addLog: (type: LogEntry['type'], message: string) => void;
@@ -85,12 +84,11 @@ interface FinaticContextValue {
 const FinaticContext = createContext<FinaticContextValue | undefined>(undefined);
 
 export function FinaticProvider({ children }: { children: React.ReactNode }) {
-  // Simplified: No longer using mode/environment config
+  const { mode, environment, getPublicApiUrl } = useEnvironmentConfig();
 
   const [finatic, setFinatic] = useState<FinaticConnect | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isMockMode, setIsMockMode] = useState(false);
   const [sessionInfo, setSessionInfo] = useState<string>('Not initialized');
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [storedUserId, setStoredUserIdState] = useState<string | null>(null);
@@ -530,9 +528,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     // Clear API base URL ref
     apiBaseUrlRef.current = null;
 
-    // Clear mock mode
-    setIsMockMode(false);
-
     addLog('success', '✅ SDK state fully cleared - old instance removed');
   }, [addLog]);
 
@@ -557,9 +552,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       addLog('info', `🔄 Reinitializing SDK`);
 
-      const useMocks = process.env.NEXT_PUBLIC_FINATIC_USE_MOCKS === 'true';
-      const mockApiOnly = process.env.NEXT_PUBLIC_FINATIC_MOCK_API_ONLY === 'true';
-      setIsMockMode(useMocks || mockApiOnly);
+      const publicApiUrl = getPublicApiUrl() || 'http://localhost:8000';
 
       const existingUserId = getStoredUserId();
       if (existingUserId) {
@@ -638,144 +631,19 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      if (useMocks) {
-        addLog('info', 'Initializing SDK in MOCK mode');
-        setSessionInfo('Mock Mode - No real API calls');
-        const mockApiUrl = process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
-        apiBaseUrlRef.current = mockApiUrl;
-        const initStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
-        const mockFinatic = await FinaticConnect.init(
-          'mock-token',
-          existingUserId || 'mock-user-123',
-          {
-            baseUrl: mockApiUrl,
-          }
-        );
-        const wrapped = new Proxy(mockFinatic as unknown as Record<string, unknown>, {
-          get(target, prop, receiver) {
-            const value = Reflect.get(target, prop, receiver);
-            if (typeof value === 'function') {
-              return function wrappedMethod(this: unknown, ...args: unknown[]) {
-                const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
-                try {
-                  const result = (value as Function).apply(target, args);
-                  if (result && typeof (result as Promise<unknown>).then === 'function') {
-                    return (result as Promise<unknown>)
-                      .then((res) => {
-                        const duration =
-                          (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
-                          start;
-                        const bytes = estimateBytes(res);
-                        recordMethodCall(String(prop), duration, bytes, false);
-                        return res;
-                      })
-                      .catch((err) => {
-                        const duration =
-                          (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
-                          start;
-                        recordMethodCall(String(prop), duration, 0, true);
-                        throw err;
-                      });
-                  }
-                  const duration =
-                    (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
-                  const bytes = estimateBytes(result);
-                  recordMethodCall(String(prop), duration, bytes, false);
-                  return result;
-                } catch (err) {
-                  const duration =
-                    (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
-                  recordMethodCall(String(prop), duration, 0, true);
-                  throw err;
-                }
-              };
-            }
-            return value;
-          },
-        });
-        setFinatic(wrapped as unknown as FinaticConnect);
-        const initDuration =
-          (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
-        recordMethodCall('FinaticConnect.init', initDuration, 0, false);
-        addLog('success', `✅ SDK fully reinitialized in MOCK mode`);
-        addLog('info', `New SDK instance created using API URL: ${mockApiUrl}`);
-        return;
-      }
+      addLog('info', 'Initializing SDK');
+      addLog('info', `Using mode/environment: ${mode}/${environment}`);
 
-      if (mockApiOnly) {
-        addLog('info', 'Initializing SDK in MOCK API ONLY mode');
-        setSessionInfo('Mock API Only Mode - Mock API calls, real portal');
-        const mockOnlyApiUrl = process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
-        apiBaseUrlRef.current = mockOnlyApiUrl;
-        const initStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
-        const mockFinatic = await FinaticConnect.init(
-          'mock-token',
-          existingUserId || 'mock-user-123',
-          {
-            baseUrl: mockOnlyApiUrl,
-          }
-        );
-        const wrapped = new Proxy(mockFinatic as unknown as Record<string, unknown>, {
-          get(target, prop, receiver) {
-            const value = Reflect.get(target, prop, receiver);
-            if (typeof value === 'function') {
-              return function wrappedMethod(this: unknown, ...args: unknown[]) {
-                const start = typeof performance !== 'undefined' ? performance.now() : Date.now();
-                try {
-                  const result = (value as Function).apply(target, args);
-                  if (result && typeof (result as Promise<unknown>).then === 'function') {
-                    return (result as Promise<unknown>)
-                      .then((res) => {
-                        const duration =
-                          (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
-                          start;
-                        const bytes = estimateBytes(res);
-                        recordMethodCall(String(prop), duration, bytes, false);
-                        return res;
-                      })
-                      .catch((err) => {
-                        const duration =
-                          (typeof performance !== 'undefined' ? performance.now() : Date.now()) -
-                          start;
-                        recordMethodCall(String(prop), duration, 0, true);
-                        throw err;
-                      });
-                  }
-                  const duration =
-                    (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
-                  const bytes = estimateBytes(result);
-                  recordMethodCall(String(prop), duration, bytes, false);
-                  return result;
-                } catch (err) {
-                  const duration =
-                    (typeof performance !== 'undefined' ? performance.now() : Date.now()) - start;
-                  recordMethodCall(String(prop), duration, 0, true);
-                  throw err;
-                }
-              };
-            }
-            return value;
-          },
-        });
-        setFinatic(wrapped as unknown as FinaticConnect);
-        const initDuration =
-          (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
-        recordMethodCall('FinaticConnect.init', initDuration, 0, false);
-        addLog('success', `✅ SDK fully reinitialized in MOCK API ONLY mode`);
-        addLog('info', `New SDK instance created using API URL: ${mockOnlyApiUrl}`);
-        return;
-      }
-
-      addLog('info', 'Initializing SDK in REAL mode');
-
-      const apiUrl = process.env.NEXT_PUBLIC_FINATIC_API_URL || 'http://localhost:8000';
+      const apiUrl = publicApiUrl;
 
       addLog('info', `Using API URL: ${apiUrl}`);
       apiBaseUrlRef.current = apiUrl;
       const initStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
       // Get token from API
-      const response = await fetch('/api/getToken');
+      const response = await fetch(
+        `/api/getToken?${new URLSearchParams({ mode, environment }).toString()}`
+      );
       if (!response.ok) {
         addLog('error', 'Failed to get token from /api/getToken');
         throw new Error('Failed to get token');
@@ -942,7 +810,19 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
       isInitializingRef.current = false;
     }
-  }, [addLog, getStoredUserId, estimateBytes, recordMethodCall, sdkType, clearSDKState, setAuthState, setStoredUserId]);
+  }, [
+    addLog,
+    getStoredUserId,
+    estimateBytes,
+    recordMethodCall,
+    sdkType,
+    clearSDKState,
+    setAuthState,
+    setStoredUserId,
+    mode,
+    environment,
+    getPublicApiUrl,
+  ]);
 
   // Load storedUserId from localStorage after mount to prevent hydration mismatch
   useEffect(() => {
@@ -965,7 +845,12 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sdkType]); // Only depend on sdkType, not initializeSDK function
 
-  // Removed: Re-initialize when mode or environment changes (no longer using mode/environment)
+  // Re-initialize when mode or environment changes
+  useEffect(() => {
+    if (isInitializingRef.current) return;
+    void initializeSDK();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, environment]);
 
   // Check authentication when SDK is ready (finatic or sdkAdapter changes)
   // Only check when the SDK instance actually changes, not when checkAuth function reference changes
@@ -1093,7 +978,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       sdkAdapter,
       isLoading,
       error,
-      isMockMode,
       sessionInfo,
       logs,
       addLog,
@@ -1116,7 +1000,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       sdkAdapter,
       isLoading,
       error,
-      isMockMode,
       sessionInfo,
       logs,
       addLog,

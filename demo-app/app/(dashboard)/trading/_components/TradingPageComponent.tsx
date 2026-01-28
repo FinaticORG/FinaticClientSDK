@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useFinatic } from '@/app/providers/FinaticProvider';
+import { useEnvironmentConfig } from '@/app/providers/EnvironmentConfigProvider';
 
 type SupportedAssetType =
   | 'equity'
@@ -908,7 +909,9 @@ const buildPresetPayloadForContext = (
 };
 
 export function TradingPageComponent() {
-  const { finatic, sdkAdapter, addLog, isMockMode } = useFinatic();
+  const { finatic, sdkAdapter, addLog } = useFinatic();
+  const { mode } = useEnvironmentConfig();
+  const isSandboxMode = mode === 'sandbox';
 
   // Broker and account selection
   const [selectedBroker, setSelectedBroker] = useState<string>('');
@@ -1168,7 +1171,7 @@ export function TradingPageComponent() {
       // First, try to match by broker ID directly (most reliable)
       if (accountBrokerId === normalizedSelectedBroker) {
         // In sandbox mode, show all accounts for the selected broker
-        if (isMockMode) {
+        if (isSandboxMode) {
           return true;
         }
         // In live mode, verify the connection is connected
@@ -1184,7 +1187,7 @@ export function TradingPageComponent() {
         const mappedBrokerId = connectionToBrokerMap.get(accountConnectionId);
         if (mappedBrokerId === normalizedSelectedBroker) {
           // In sandbox mode, show all accounts for the selected broker
-          if (isMockMode) {
+          if (isSandboxMode) {
             return true;
           }
           // In live mode, verify the connection is connected
@@ -1194,7 +1197,7 @@ export function TradingPageComponent() {
 
       return false;
     });
-  }, [selectedBroker, activeAccounts, connections, isMockMode]);
+  }, [selectedBroker, activeAccounts, connections, isSandboxMode]);
 
   // Update available accounts when filtered accounts change
   useEffect(() => {
@@ -1355,7 +1358,7 @@ export function TradingPageComponent() {
     }
 
     // In live mode, verify broker is connected
-    if (!isMockMode && !isBrokerConnected) {
+    if (!isSandboxMode && !isBrokerConnected) {
       addLog('error', 'Broker must be connected to place orders in live mode');
       return;
     }
@@ -1500,7 +1503,7 @@ export function TradingPageComponent() {
         return;
       }
 
-      if (!isMockMode && !isBrokerConnected) {
+      if (!isSandboxMode && !isBrokerConnected) {
         addLog('error', 'Broker must be connected to place orders from presets in live mode');
         return;
       }
@@ -1639,7 +1642,7 @@ export function TradingPageComponent() {
       addLog,
       selectedBroker,
       selectedAccountId,
-      isMockMode,
+      isSandboxMode,
       isBrokerConnected,
       selectedAccount,
       presetPayloadTextById,
@@ -1783,7 +1786,7 @@ export function TradingPageComponent() {
     }
 
     // In live mode, verify broker is connected
-    if (!isMockMode && !isBrokerConnected) {
+    if (!isSandboxMode && !isBrokerConnected) {
       addLog('error', 'Broker must be connected to modify orders in live mode');
       return;
     }
@@ -1877,12 +1880,12 @@ export function TradingPageComponent() {
           </p>
         </div>
         <div className="flex-shrink-0">
-          {!isMockMode && (
+          {!isSandboxMode && (
             <Badge variant="secondary" className="bg-blue-500/10 text-blue-400 border-blue-500/20">
               Live Mode
             </Badge>
           )}
-          {isMockMode && (
+          {isSandboxMode && (
             <Badge
               variant="secondary"
               className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
@@ -1959,12 +1962,12 @@ export function TradingPageComponent() {
                     </Select>
                     {selectedBroker && (
                       <div className="flex items-center gap-2">
-                        {!isMockMode && isBrokerConnected && (
+                        {!isSandboxMode && isBrokerConnected && (
                           <span className="text-xs text-green-600 dark:text-green-400 font-medium">
                             Connected
                           </span>
                         )}
-                        {!isMockMode && !isBrokerConnected && (
+                        {!isSandboxMode && !isBrokerConnected && (
                           <span className="text-xs text-yellow-600 dark:text-yellow-400">
                             Not connected. Connect it first to place orders in live mode.
                           </span>
@@ -2023,7 +2026,7 @@ export function TradingPageComponent() {
                   </div>
                 </div>
 
-                {selectedBroker && availableAccounts.length === 0 && !isMockMode && (
+                {selectedBroker && availableAccounts.length === 0 && !isSandboxMode && (
                   <div className="rounded-md border border-yellow-500/20 bg-yellow-500/10 p-3">
                     <p className="text-sm text-yellow-600 dark:text-yellow-400">
                       No accounts available for this broker. Make sure the broker is connected and
@@ -2321,7 +2324,7 @@ export function TradingPageComponent() {
                             !selectedAccountId ||
                             !customOrder.symbol ||
                             placingCustom ||
-                            (!isMockMode && !isBrokerConnected) ||
+                            (!isSandboxMode && !isBrokerConnected) ||
                             orderPayloadPreview === null
                           }
                           className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4"
@@ -2463,12 +2466,12 @@ export function TradingPageComponent() {
                     </Select>
                     {selectedBroker && (
                       <div className="flex items-center gap-2">
-                        {!isMockMode && isBrokerConnected && (
+                        {!isSandboxMode && isBrokerConnected && (
                           <span className="text-xs text-green-600 dark:text-green-400 font-medium">
                             Connected
                           </span>
                         )}
-                        {!isMockMode && !isBrokerConnected && (
+                        {!isSandboxMode && !isBrokerConnected && (
                           <span className="text-xs text-yellow-600 dark:text-yellow-400">
                             Not connected. Connect it first to modify orders in live mode.
                           </span>
@@ -2527,7 +2530,7 @@ export function TradingPageComponent() {
                   </div>
                 </div>
 
-                {selectedBroker && availableAccounts.length === 0 && !isMockMode && (
+                {selectedBroker && availableAccounts.length === 0 && !isSandboxMode && (
                   <div className="rounded-md border border-yellow-500/20 bg-yellow-500/10 p-3">
                     <p className="text-sm text-yellow-600 dark:text-yellow-400">
                       No accounts available for this broker. Make sure the broker is connected and
@@ -2838,7 +2841,7 @@ export function TradingPageComponent() {
                             !modifyOrderId ||
                             !modifyOrder.symbol ||
                             modifyingOrder ||
-                            (!isMockMode && !isBrokerConnected) ||
+                            (!isSandboxMode && !isBrokerConnected) ||
                             modifyOrderPayloadPreview === null
                           }
                           className="bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4"
@@ -3041,7 +3044,7 @@ export function TradingPageComponent() {
                                   disabled={
                                     !selectedBroker ||
                                     !selectedAccountId ||
-                                    (!isMockMode && !isBrokerConnected) ||
+                                    (!isSandboxMode && !isBrokerConnected) ||
                                     placingPresetId === preset.id
                                   }
                                 >
