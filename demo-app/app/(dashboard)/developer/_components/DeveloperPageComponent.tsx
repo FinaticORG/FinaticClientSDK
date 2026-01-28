@@ -165,6 +165,27 @@ export function DeveloperPageComponent() {
   const selectedRuntime = runtimeOptions.find((o) => o.id === selectedRuntimeId);
   const publicApiUrl = getPublicApiUrl();
 
+  const bestEffortClearBrowserCaches = async () => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      // Cache API - best effort (only affects CacheStorage, not HTTP cache)
+      if ('caches' in window) {
+        const cacheKeys = await caches.keys();
+        await Promise.all(cacheKeys.map((key) => caches.delete(key)));
+      }
+    } catch {
+      // Ignore cache clearing errors
+    }
+
+    try {
+      // Session storage is commonly used for runtime scoped state
+      window.sessionStorage?.clear();
+    } catch {
+      // Ignore storage clearing errors
+    }
+  };
+
   return (
     <div className="flex-1 space-y-6 p-6">
       <div className="flex items-center justify-between">
@@ -206,12 +227,24 @@ export function DeveloperPageComponent() {
                   <Label className="text-foreground">Runtime</Label>
                   <Select
                     value={selectedRuntimeId}
-                    onValueChange={(value) => {
+                    onValueChange={async (value) => {
                       const [nextMode, nextEnvironment] = value.split(':') as [
                         EnvironmentMode,
                         EnvironmentType,
                       ];
                       setRuntime(nextMode, nextEnvironment);
+
+                      // Runtime changes affect token + portal URL resolution.
+                      // Force a full reload to avoid any stale, in-memory SDK/portal state.
+                      await bestEffortClearBrowserCaches();
+
+                      try {
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('__finatic_runtime_reload', Date.now().toString());
+                        window.location.replace(url.toString());
+                      } catch {
+                        window.location.reload();
+                      }
                     }}
                   >
                     <SelectTrigger className="bg-input border-border text-foreground">
