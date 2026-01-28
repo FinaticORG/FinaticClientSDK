@@ -77,7 +77,7 @@ export async function initializeSDK(): Promise<FinaticConnect> {
   // This prevents exposing your API key in the frontend bundle.
   
   // Fetch token from Finatic API
-  const response = await fetch(`${API_BASE_URL}/api/v1/session/init`, {
+  const response = await fetch(`${API_BASE_URL}/api/beta/session/init`, {
     method: 'POST',
     headers: {
       'X-API-Key': apiKey,

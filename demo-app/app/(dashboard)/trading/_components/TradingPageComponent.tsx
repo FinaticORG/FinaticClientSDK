@@ -900,8 +900,9 @@ const buildPresetPayloadForContext = (
     },
   };
 
+  // Account number goes at top level, not in order object
   if (accountNumber) {
-    payload.order.accountNumber = accountNumber;
+    payload.accountNumber = accountNumber;
   }
 
   // Replace expiration dates in equity_option orders
@@ -1395,62 +1396,78 @@ export function TradingPageComponent() {
     setCustomResponse(null);
 
     try {
-      // Build order payload matching order_place_query_params_request.py structure
+      // Validate required fields
+      if (!selectedBroker || selectedBroker.trim() === '') {
+        throw new Error('Broker is required. Please select a broker.');
+      }
+
+      // Build order payload with flattened structure (new SDK format)
       const accountNumber =
         selectedAccount?.broker_provided_account_id ||
         selectedAccount?.account_id ||
         selectedAccountId;
 
-      const orderPayload: any = {
-        broker: selectedBroker,
-        order: {
-          orderType: customOrder.orderType,
-          assetType: customOrder.assetType,
-          action: customOrder.action,
-          timeInForce: customOrder.timeInForce,
-          accountNumber: accountNumber,
-          symbol: customOrder.symbol,
-          orderQty: customOrder.orderQty,
-        },
+      // Build flat order parameters
+      // Double-check broker is still set (should be validated above, but be safe)
+      const normalizedBroker = selectedBroker && selectedBroker.trim() !== '' 
+        ? selectedBroker.trim().toLowerCase()
+        : '';
+      
+      if (!normalizedBroker) {
+        throw new Error('Broker is required. Please select a broker.');
+      }
+      
+      // Build nested structure: { broker, accountNumber, order: {...}, connectionId? }
+      const orderObject: any = {
+        orderType: customOrder.orderType,
+        assetType: customOrder.assetType,
+        action: customOrder.action,
+        timeInForce: customOrder.timeInForce,
+        symbol: customOrder.symbol,
+        orderQty: customOrder.orderQty,
       };
 
-      // Add optional fields
+      // Add optional fields to order object
       if (customOrder.price !== undefined) {
-        orderPayload.order.price = customOrder.price;
+        orderObject.price = customOrder.price;
       }
       if (customOrder.stopPrice !== undefined) {
-        orderPayload.order.stopPrice = customOrder.stopPrice;
+        orderObject.stopPrice = customOrder.stopPrice;
       }
       if (customOrder.expireTime) {
-        orderPayload.order.expireTime = customOrder.expireTime;
+        orderObject.expireTime = customOrder.expireTime;
       }
 
       // Merge broker-specific extras into order object
       if (extras && Object.keys(extras).length > 0) {
-        orderPayload.order = { ...orderPayload.order, ...extras };
+        Object.assign(orderObject, extras);
       }
 
       // Add option fields if assetType is equity_option
       if (customOrder.assetType === 'equity_option' && optionFieldsComplete(customOptionFields)) {
-        orderPayload.order = {
-          ...orderPayload.order,
-          ...buildOptionPayload(customOptionFields),
-        };
+        Object.assign(orderObject, buildOptionPayload(customOptionFields));
       }
 
-      // Use SDK adapter's placeOrder method
-      // The payload is already in the correct format: { broker: '...', order: {...} }
+      // Build final params with nested structure (accountNumber at top level)
+      const orderParams: any = {
+        broker: normalizedBroker, // Normalize broker name
+        accountNumber: accountNumber, // Account number at top level
+        order: orderObject,
+      };
+
+      // Note: connectionId is optional and can be added if needed
+
+      // Debug: Log the order params being sent
+      console.log('🔍 placeCustomOrder - orderParams:', JSON.stringify(orderParams, null, 2));
+      console.log('🔍 placeCustomOrder - selectedBroker:', selectedBroker);
+      
+      // Use SDK's placeOrder method with flat parameters
       let response;
       if (sdkAdapter?.placeOrder) {
-        // SDK adapter expects the discriminated union format
-        response = await sdkAdapter.placeOrder(orderPayload);
+        // SDK adapter now expects flat parameters
+        response = await sdkAdapter.placeOrder(orderParams);
       } else if (finatic) {
-        // FinaticConnect.placeOrder expects BrokerOrderParams (discriminated union)
-        // which is { broker: '...', order: {...} }
-        const orderParams: any = {
-          broker: orderPayload.broker as 'robinhood' | 'tasty_trade' | 'ninja_trader',
-          order: orderPayload.order,
-        };
+        // FinaticConnect.placeOrder now expects flat parameters
         response = await finatic.placeOrder(orderParams);
       } else {
         throw new Error('SDK not available');
@@ -1474,6 +1491,11 @@ export function TradingPageComponent() {
     async (preset: OrderPresetConfig) => {
       if (!sdkAdapter && !finatic) {
         addLog('error', 'SDK not initialized');
+        return;
+      }
+      // Validate required fields
+      if (!selectedBroker || selectedBroker.trim() === '') {
+        addLog('error', 'Broker is required. Please select a broker.');
         return;
       }
       if (!selectedBroker) {
@@ -1523,18 +1545,55 @@ export function TradingPageComponent() {
         return;
       }
 
-      // Ensure broker and accountNumber are aligned with current selection
-      const payload: any = {
-        ...parsedPayload,
-        broker: selectedBroker,
-        order: {
-          ...(parsedPayload.order ?? {}),
-        },
+      // Build nested structure: { broker, order: {...}, connectionId? }
+      // Extract order fields from parsedPayload (which may have nested structure)
+      const orderData = parsedPayload.order || parsedPayload;
+      
+      // Use selectedBroker if it's set, otherwise try to get from payload
+      // selectedBroker should always be set since we validate it above
+      const brokerValue = selectedBroker && selectedBroker.trim() !== '' 
+        ? selectedBroker.trim().toLowerCase()
+        : (orderData.broker || parsedPayload.broker || '').trim().toLowerCase();
+      
+      // Validate broker is set (double-check)
+      if (!brokerValue || brokerValue === '') {
+        addLog('error', `Broker is required. selectedBroker="${selectedBroker}", orderData.broker="${orderData.broker}", parsedPayload.broker="${parsedPayload.broker}"`);
+        return;
+      }
+      
+      // Build order object (without accountNumber - it goes at top level)
+      const orderObject: any = {
+        orderType: orderData.orderType || preset.defaultOrder.orderType,
+        assetType: orderData.assetType || preset.assetType,
+        action: orderData.action || preset.defaultOrder.action,
+        timeInForce: orderData.timeInForce || preset.defaultOrder.timeInForce,
+        symbol: orderData.symbol || preset.defaultOrder.symbol,
+        orderQty: orderData.orderQty || preset.defaultOrder.orderQty,
+      };
+      
+      // Build final params with nested structure (accountNumber at top level)
+      const orderParams: any = {
+        broker: brokerValue, // Normalize broker name
+        accountNumber: accountNumber || orderData.accountNumber, // Account number at top level
+        order: orderObject,
       };
 
-      if (accountNumber) {
-        payload.order.accountNumber = accountNumber;
+      // Add any optional fields from the preset payload to order object
+      if (orderData.price !== undefined) {
+        orderObject.price = orderData.price;
       }
+      if (orderData.stopPrice !== undefined) {
+        orderObject.stopPrice = orderData.stopPrice;
+      }
+      if (orderData.expireTime) {
+        orderObject.expireTime = orderData.expireTime;
+      }
+      // Add any other fields from the preset to order object
+      Object.keys(orderData).forEach(key => {
+        if (!['accountNumber', 'orderType', 'assetType', 'action', 'timeInForce', 'symbol', 'orderQty', 'price', 'stopPrice', 'expireTime', 'broker'].includes(key)) {
+          orderObject[key] = orderData[key];
+        }
+      });
 
       setPlacingPresetId(preset.id);
       setPresetResponseById(previous => ({ ...previous, [preset.id]: null }));
@@ -1542,15 +1601,8 @@ export function TradingPageComponent() {
       try {
         let response;
         if (sdkAdapter?.placeOrder) {
-          response = await sdkAdapter.placeOrder(payload);
+          response = await sdkAdapter.placeOrder(orderParams);
         } else if (finatic) {
-          const orderParams: any = {
-            broker: payload.broker as
-              | 'robinhood'
-              | 'tasty_trade'
-              | 'ninja_trader',
-            order: payload.order,
-          };
           response = await finatic.placeOrder(orderParams);
         } else {
           throw new Error('SDK not available');
@@ -1634,7 +1686,7 @@ export function TradingPageComponent() {
     // Backend infers broker, account, and connection from the order record
     return {
       method: 'DELETE',
-      url: `/api/v1/brokers/orders/${cancelOrderId}`,
+      url: `/api/beta/brokers/orders/${cancelOrderId}`,
       body: null,
       queryParams: null,
     };
@@ -1657,45 +1709,46 @@ export function TradingPageComponent() {
       return null;
     }
 
-    const payload: any = {
-      broker: selectedBroker,
-      order: {
-        orderId: modifyOrderId,
-        orderType: modifyOrder.orderType,
-        assetType: modifyOrder.assetType,
-        action: modifyOrder.action,
-        timeInForce: modifyOrder.timeInForce,
-        accountNumber: accountNumber,
-        symbol: modifyOrder.symbol,
-        orderQty: modifyOrder.orderQty,
-      },
+    // Build nested structure: { orderId, broker, accountNumber, order: {...}, connectionId? }
+    const orderObject: any = {
+      orderType: modifyOrder.orderType,
+      assetType: modifyOrder.assetType,
+      action: modifyOrder.action,
+      timeInForce: modifyOrder.timeInForce,
+      symbol: modifyOrder.symbol,
+      orderQty: modifyOrder.orderQty,
     };
 
-    // Add optional fields
+    // Add optional fields to order object
     if (modifyOrder.price !== undefined) {
-      payload.order.price = modifyOrder.price;
+      orderObject.price = modifyOrder.price;
     }
     if (modifyOrder.stopPrice !== undefined) {
-      payload.order.stopPrice = modifyOrder.stopPrice;
+      orderObject.stopPrice = modifyOrder.stopPrice;
     }
     if (modifyOrder.expireTime) {
-      payload.order.expireTime = modifyOrder.expireTime;
+      orderObject.expireTime = modifyOrder.expireTime;
     }
 
     // Merge broker-specific extras into order object
     if (extras && Object.keys(extras).length > 0) {
-      payload.order = { ...payload.order, ...extras };
+      Object.assign(orderObject, extras);
     }
 
     // Add option fields if assetType is equity_option
     if (modifyOrder.assetType === 'equity_option' && optionFieldsComplete(modifyOptionFields)) {
-      payload.order = {
-        ...payload.order,
-        ...buildOptionPayload(modifyOptionFields),
-      };
+      Object.assign(orderObject, buildOptionPayload(modifyOptionFields));
     }
+    
+    // Build final params with nested structure (accountNumber at top level)
+    const orderParams: any = {
+      orderId: modifyOrderId,
+      broker: selectedBroker.trim().toLowerCase(),
+      accountNumber: accountNumber, // Account number at top level
+      order: orderObject,
+    };
 
-    return payload;
+    return orderParams;
   }, [
     selectedBroker,
     selectedAccountId,
@@ -1748,47 +1801,50 @@ export function TradingPageComponent() {
         selectedAccount?.account_id ||
         selectedAccountId;
 
-      const modifyPayload: any = {
-        broker: selectedBroker,
-        order: {
-          orderId: modifyOrderId,
-          orderType: modifyOrder.orderType,
-          assetType: modifyOrder.assetType,
-          action: modifyOrder.action,
-          timeInForce: modifyOrder.timeInForce,
-          accountNumber: accountNumber,
-          symbol: modifyOrder.symbol,
-          orderQty: modifyOrder.orderQty,
-        },
+      // Build nested structure: { orderId, broker, accountNumber, order: {...}, connectionId? }
+      const orderObject: any = {
+        orderType: modifyOrder.orderType,
+        assetType: modifyOrder.assetType,
+        action: modifyOrder.action,
+        timeInForce: modifyOrder.timeInForce,
+        symbol: modifyOrder.symbol,
+        orderQty: modifyOrder.orderQty,
       };
-
-      // Add optional fields
+      
+      // Add optional fields to order object
       if (modifyOrder.price !== undefined) {
-        modifyPayload.order.price = modifyOrder.price;
+        orderObject.price = modifyOrder.price;
       }
       if (modifyOrder.stopPrice !== undefined) {
-        modifyPayload.order.stopPrice = modifyOrder.stopPrice;
+        orderObject.stopPrice = modifyOrder.stopPrice;
       }
       if (modifyOrder.expireTime) {
-        modifyPayload.order.expireTime = modifyOrder.expireTime;
+        orderObject.expireTime = modifyOrder.expireTime;
       }
-
+      
       // Merge broker-specific extras into order object
       if (extras && Object.keys(extras).length > 0) {
-        modifyPayload.order = { ...modifyPayload.order, ...extras };
+        Object.assign(orderObject, extras);
       }
 
       // Add option fields if assetType is equity_option
       if (modifyOrder.assetType === 'equity_option' && optionFieldsComplete(modifyOptionFields)) {
-        modifyPayload.order = {
-          ...modifyPayload.order,
-          ...buildOptionPayload(modifyOptionFields),
-        };
+        Object.assign(orderObject, buildOptionPayload(modifyOptionFields));
       }
+      
+      // Build final params with nested structure (accountNumber at top level)
+      const modifyParams: any = {
+        orderId: modifyOrderId,
+        broker: selectedBroker.trim().toLowerCase(),
+        accountNumber: accountNumber, // Account number at top level
+        order: orderObject,
+      };
 
       let response;
       if (sdkAdapter?.modifyOrder) {
-        response = await sdkAdapter.modifyOrder(modifyPayload);
+        response = await sdkAdapter.modifyOrder(modifyParams);
+      } else if (finatic) {
+        response = await finatic.modifyOrder(modifyParams);
       } else {
         throw new Error('Modify order not available');
       }
