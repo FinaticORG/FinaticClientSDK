@@ -5,22 +5,22 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, AlertTriangle, RefreshCw, User, Shield, Trash2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { CheckCircle, AlertTriangle, RefreshCw, User, Shield, Trash2, ArrowRight, DoorOpen, Zap } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 import { useFinatic } from '@/app/providers/FinaticProvider';
 import { useEnvironmentConfig } from '@/app/providers/EnvironmentConfigProvider';
+import Link from 'next/link';
 
 export function AuthenticationPageComponent() {
   const {
     finatic,
     isLoading,
     error,
-    sessionInfo,
     logs,
     addLog,
     reinitialize,
     storedUserId,
-    setStoredUserId,
     clearStoredUserId,
     clearLogs,
     isAuthed,
@@ -42,7 +42,17 @@ export function AuthenticationPageComponent() {
     setCurrentUserId(contextUserId);
   }, [isAuthed, contextUserId]);
 
-  const connectionBadge = useMemo(() => {
+  // Get session ID from finatic instance
+  const sessionId = useMemo(() => {
+    if (!finatic) return null;
+    try {
+      return finatic.getSessionId?.() ?? null;
+    } catch {
+      return null;
+    }
+  }, [finatic]);
+
+  const statusBadge = useMemo(() => {
     if (error) {
       return (
         <Badge variant="secondary" className="bg-red-500/10 text-red-800 border-red-500/20">
@@ -60,20 +70,31 @@ export function AuthenticationPageComponent() {
         </Badge>
       );
     }
+    if (!isSdkReady) {
+      return (
+        <Badge variant="secondary" className="bg-gray-500/10 text-gray-500 border-gray-500/20">
+          <Shield className="w-3 h-3 mr-1" /> Not Initialized
+        </Badge>
+      );
+    }
     return (
       <Badge variant="secondary" className="bg-green-500/10 text-green-800 border-green-500/20">
-        <CheckCircle className="w-3 h-3 mr-1" /> Ready
+        <CheckCircle className="w-3 h-3 mr-1" /> Initialized
       </Badge>
     );
-  }, [error, isLoading]);
+  }, [error, isLoading, isSdkReady]);
 
   const handleCheckAuth = async () => {
-    if (!isSdkReady) return;
+    if (!isSdkReady) {
+      addLog('error', 'SDK not ready - cannot check authentication');
+      return;
+    }
     try {
-      addLog('info', 'Checking authentication status');
-      // Use the context checkAuth function which handles both client and server SDKs
+      addLog('info', 'Checking authentication status...');
       await checkAuth();
-      addLog('success', 'Authentication check completed');
+      const sdkIsAuthed = finatic?.isAuthed() ?? false;
+      const sdkUserId = finatic?.getUserId() ?? null;
+      addLog('success', `Authentication check completed - isAuthed: ${sdkIsAuthed}, userId: ${sdkUserId ?? 'none'}`);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to check authentication';
       addLog('error', msg);
@@ -97,61 +118,105 @@ export function AuthenticationPageComponent() {
     <div className="flex-1 space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Authentication</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">SDK Initialization</h1>
           <p className="text-muted-foreground">
-            Interact with the Finatic SDK and inspect auth state
+            Initialize the Finatic SDK using <code className="text-xs bg-muted px-1 py-0.5 rounded">FinaticConnect.init()</code>
           </p>
         </div>
-        <div className="flex items-center gap-2">{connectionBadge}</div>
+        <div className="flex items-center gap-2">{statusBadge}</div>
       </div>
 
+      {/* Authentication CTA - Show when not authenticated */}
+      {isSdkReady && !isAuthedStatus && (
+        <Alert className="border-blue-500/30 bg-blue-500/5">
+          <DoorOpen className="h-4 w-4 text-blue-500" />
+          <AlertTitle className="text-foreground">Ready to Authenticate</AlertTitle>
+          <AlertDescription className="text-muted-foreground">
+            The SDK is initialized but you haven&apos;t authenticated yet. Open the Portal to connect your brokerage accounts.
+          </AlertDescription>
+          <div className="mt-3">
+            <Link href="/portal">
+              <Button className="gap-2">
+                <DoorOpen className="h-4 w-4" />
+                Open Portal to Authenticate
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+        </Alert>
+      )}
+
+      {/* Authenticated status - Show when authenticated */}
+      {isSdkReady && isAuthedStatus && (
+        <Alert className="border-green-500/30 bg-green-500/5">
+          <CheckCircle className="h-4 w-4 text-green-500" />
+          <AlertTitle className="text-foreground">Authenticated</AlertTitle>
+          <AlertDescription className="text-muted-foreground">
+            You are authenticated as user: <code className="text-xs bg-muted px-1 py-0.5 rounded">{currentUserId}</code>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* SDK Initialization Card */}
         <Card className="bg-card border-border">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-2">
-              <Shield className="w-4 h-4" /> SDK Session
+              <Zap className="w-4 h-4" /> SDK Status
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              Initialization and environment
+              FinaticConnect.init() configuration
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Mode</span>
-              <span className="text-foreground font-medium capitalize">{mode}</span>
+              <span className="text-muted-foreground">Environment</span>
+              <Badge variant="outline" className="capitalize">{mode}</Badge>
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Initialized</span>
+              <span className={`font-medium ${isSdkReady ? 'text-green-500' : 'text-muted-foreground'}`}>
+                {isSdkReady ? 'Yes' : 'No'}
+              </span>
             </div>
             <Separator />
             <div className="space-y-1">
-              <div className="text-muted-foreground">Session</div>
-              <div className="text-foreground">{sessionInfo}</div>
+              <div className="text-muted-foreground">Session ID</div>
+              <div className="text-foreground font-mono text-xs break-all">
+                {sessionId ?? 'None'}
+              </div>
             </div>
             {error && <div className="text-xs text-red-500">{error}</div>}
             <div className="pt-2">
               <Button
                 disabled={isLoading}
                 onClick={() => void reinitialize()}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                className="w-full"
+                variant="outline"
               >
-                <RefreshCw className="h-4 w-4 mr-2" /> Reinitialize SDK
+                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} /> 
+                {isLoading ? 'Reinitializing...' : 'Reinitialize SDK'}
               </Button>
             </div>
           </CardContent>
         </Card>
 
+        {/* User Card */}
         <Card className="bg-card border-border">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-2">
-              <User className="w-4 h-4" /> User
+              <User className="w-4 h-4" /> User Session
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              Manage the active user id
+              Stored user ID from authentication
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-2">
               <Label className="text-foreground text-sm">Stored User ID</Label>
-              <div className="text-sm text-muted-foreground break-all">
-                {storedUserId ?? 'None'}
+              <div className="text-sm text-muted-foreground break-all font-mono">
+                {storedUserId ?? <span className="text-muted-foreground/50 italic">Not authenticated</span>}
               </div>
             </div>
             <div className="flex gap-2">
@@ -159,33 +224,36 @@ export function AuthenticationPageComponent() {
                 variant="outline"
                 onClick={() => void handleClearUser()}
                 className="border-border"
+                disabled={!storedUserId}
               >
-                Clear
+                Clear User
               </Button>
             </div>
           </CardContent>
         </Card>
 
+        {/* Auth Status Card */}
         <Card className="bg-card border-border">
           <CardHeader>
             <CardTitle className="text-foreground flex items-center gap-2">
               <CheckCircle className="w-4 h-4" /> Auth Status
             </CardTitle>
-            <CardDescription className="text-muted-foreground">Query the SDK</CardDescription>
+            <CardDescription className="text-muted-foreground">Query SDK auth state</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-center gap-2">
               <Button
                 onClick={() => void handleCheckAuth()}
                 disabled={!isSdkReady}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                variant="outline"
+                className="w-full"
               >
-                Check Authentication
+                Refresh Auth Status
               </Button>
             </div>
             <div className="rounded-md border border-border p-3 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">isAuthed()</span>
+                <span className="text-muted-foreground font-mono text-xs">isAuthed()</span>
                 <span
                   className={`font-medium ${isAuthedStatus ? 'text-green-500' : 'text-muted-foreground'}`}
                 >
@@ -194,21 +262,22 @@ export function AuthenticationPageComponent() {
               </div>
               <Separator className="my-2" />
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">getUserId()</span>
-                <span className="font-mono text-foreground">{currentUserId ?? '-'}</span>
+                <span className="text-muted-foreground font-mono text-xs">getUserId()</span>
+                <span className="font-mono text-xs text-foreground">{currentUserId ?? '-'}</span>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Logs Card */}
       <Card className="bg-card border-border">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-foreground">Logs</CardTitle>
+              <CardTitle className="text-foreground">Initialization Logs</CardTitle>
               <CardDescription className="text-muted-foreground">
-                SDK initialization and actions
+                SDK initialization events and actions
               </CardDescription>
             </div>
             <Button

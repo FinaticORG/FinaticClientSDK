@@ -43,7 +43,7 @@ const navigation = [
     title: "CORE FEATURES",
     items: [
       {
-        title: "Authentication",
+        title: "Initialization",
         url: "/auth",
         icon: Lock,
       },

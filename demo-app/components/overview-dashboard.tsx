@@ -10,15 +10,15 @@ import Link from 'next/link';
 
 const quickActions = [
   {
-    title: 'Authentication Setup',
-    description: 'Configure user authentication and security',
+    title: 'SDK Initialization',
+    description: 'Initialize the SDK and manage session state',
     icon: Lock,
     href: '/auth',
     color: 'text-blue-400',
   },
   {
     title: 'Portal',
-    description: 'Connect and manage your broker connections',
+    description: 'Authenticate and connect your brokerage accounts',
     icon: Globe,
     href: '/portal',
     color: 'text-green-400',

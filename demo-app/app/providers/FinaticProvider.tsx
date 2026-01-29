@@ -292,7 +292,9 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const checkAuth = useCallback(async () => {
+    console.log('🔍 checkAuth() called, finatic instance:', !!finatic);
     if (!finatic) {
+      console.log('🔍 checkAuth() - No finatic instance, setting auth to false');
       setIsAuthed(false);
       setCurrentUserId(null);
       return;
@@ -301,9 +303,11 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     try {
       const authed = finatic.isAuthed();
       const uid = finatic.getUserId() ?? null;
+      console.log('🔍 checkAuth() - SDK returned:', { isAuthed: authed, userId: uid });
 
       setIsAuthed(authed);
       setCurrentUserId(uid);
+      console.log('🔍 checkAuth() - State updated to:', { isAuthed: authed, currentUserId: uid });
     } catch (error) {
       console.error('Error checking auth:', error);
       setIsAuthed(false);
@@ -555,9 +559,14 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
         );
       }
 
-      setSessionInfo(
-        `Real Mode - Authenticated${existingUserId ? ` (User: ${existingUserId})` : ''}`
-      );
+      // Set session info based on actual auth status
+      const isAuth = (wrapped as unknown as FinaticConnect).isAuthed();
+      const authenticatedUserId = (wrapped as unknown as FinaticConnect).getUserId();
+      if (isAuth && authenticatedUserId) {
+        setSessionInfo(`Authenticated (User: ${authenticatedUserId.substring(0, 8)}...)`);
+      } else {
+        setSessionInfo('Initialized - Not Authenticated');
+      }
       const initDuration =
         (typeof performance !== 'undefined' ? performance.now() : Date.now()) - initStart;
       recordMethodCall('FinaticConnect.init', initDuration, 0, false);
