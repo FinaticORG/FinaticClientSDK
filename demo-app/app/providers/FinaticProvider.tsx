@@ -71,6 +71,8 @@ interface FinaticContextValue {
   currentUserId: string | null;
   checkAuth: () => Promise<void>;
   setAuthState: (isAuthenticated: boolean, userId: string | null) => void;
+  // Logout - clears user, auth state, and reinitializes SDK
+  logout: () => Promise<void>;
 }
 
 const FinaticContext = createContext<FinaticContextValue | undefined>(undefined);
@@ -330,7 +332,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
 
   // Full cleanup function to clear all SDK-related state
   // This ensures the old SDK instance is completely cleared before creating a new one
-  const clearSDKState = useCallback(async () => {
+  const clearSDKState = useCallback(async (clearAuth: boolean = false) => {
     addLog('info', '🔄 Clearing old SDK instance and all related state...');
 
     // Store the old instance ID for logging before clearing
@@ -370,6 +372,13 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
 
     // Clear API base URL ref
     apiBaseUrlRef.current = null;
+
+    // Clear auth state if requested (used when logging out/clearing user)
+    if (clearAuth) {
+      addLog('info', '🔐 Clearing authentication state...');
+      setIsAuthed(false);
+      setCurrentUserId(null);
+    }
 
     addLog('success', '✅ SDK state fully cleared - old instance removed');
   }, [addLog, finatic]);
@@ -598,6 +607,19 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     getPublicApiUrl,
   ]);
 
+  // Logout function - clears user data and refreshes page to ensure clean state
+  const logout = useCallback(async () => {
+    // 1. Clear stored userId from localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('finatic_user_id');
+      
+      // 2. Refresh the page to get a completely fresh session
+      // This is the most reliable way to ensure all state is cleared
+      // and the portal code will create a new session on page load
+      window.location.reload();
+    }
+  }, []);
+
   // Load storedUserId from localStorage after mount to prevent hydration mismatch
   // Also clean up old SDK type preference since we only use client SDK now
   useEffect(() => {
@@ -762,6 +784,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       currentUserId,
       checkAuth,
       setAuthState,
+      logout,
     }),
     [
       finatic,
@@ -777,6 +800,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       clearStoredUserId,
       usage,
       clearUsage,
+      logout,
       isAuthed,
       currentUserId,
       checkAuth,

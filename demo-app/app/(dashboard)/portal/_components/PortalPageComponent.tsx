@@ -36,12 +36,13 @@ export default function PortalPageComponent(): JSX.Element {
     finatic,
     storedUserId,
     setStoredUserId,
-    clearStoredUserId,
     addLog,
     isAuthed,
     currentUserId,
     checkAuth,
     setAuthState,
+    logout,
+    isLoading,
   } = useFinatic();
   const [portalMessage, setPortalMessage] = useState<string>('');
   const [portalError, setPortalError] = useState<string>('');
@@ -419,11 +420,12 @@ export default function PortalPageComponent(): JSX.Element {
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => clearStoredUserId()}
-                    disabled={!storedUserId || storedUserId === 'None' || storedUserId === null || storedUserId === undefined}
-                    aria-label="Clear stored user"
+                    onClick={() => void logout()}
+                    disabled={!storedUserId || storedUserId === 'None' || storedUserId === null || storedUserId === undefined || isLoading}
+                    aria-label="Logout"
+                    className="hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50"
                   >
-                    <Trash2 className="size-4" />
+                    <Trash2 className={`size-4 ${isLoading ? 'animate-spin' : ''}`} />
                   </Button>
                 </div>
               </div>

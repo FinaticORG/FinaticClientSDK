@@ -21,11 +21,11 @@ export function AuthenticationPageComponent() {
     addLog,
     reinitialize,
     storedUserId,
-    clearStoredUserId,
     clearLogs,
     isAuthed,
     currentUserId: contextUserId,
     checkAuth,
+    logout,
   } = useFinatic();
   const { mode } = useEnvironmentConfig();
   const [isAuthedStatus, setIsAuthedStatus] = useState<boolean | null>(null);
@@ -102,11 +102,9 @@ export function AuthenticationPageComponent() {
   };
 
   const handleClearUser = async () => {
-    addLog('info', 'Clearing stored userId and reinitializing SDK');
-    clearStoredUserId();
-    await reinitialize();
-    setIsAuthedStatus(null);
-    setCurrentUserId(null);
+    addLog('info', 'Logging out - clearing user and reinitializing SDK');
+    await logout();
+    // Local state will be synced via useEffect when context state updates
   };
 
   const handleClearLogs = () => {
@@ -223,10 +221,10 @@ export function AuthenticationPageComponent() {
               <Button
                 variant="outline"
                 onClick={() => void handleClearUser()}
-                className="border-border"
-                disabled={!storedUserId}
+                className="border-border hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50"
+                disabled={!storedUserId || isLoading}
               >
-                Clear User
+                {isLoading ? 'Logging out...' : 'Logout'}
               </Button>
             </div>
           </CardContent>
