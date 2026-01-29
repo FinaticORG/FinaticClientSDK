@@ -25,7 +25,7 @@ import {
   ChevronDown,
   Palette,
 } from 'lucide-react';
-import type { BrokerInfo } from '@/../src/types/api/broker';
+import type { BrokerInfo } from '@finatic/client';
 
 type PortalEvent = { type: string; data: unknown; timestamp: string };
 
@@ -34,8 +34,6 @@ type PortalEvent = { type: string; data: unknown; timestamp: string };
 export default function PortalPageComponent(): JSX.Element {
   const {
     finatic,
-    sdkAdapter,
-    sdkType,
     storedUserId,
     setStoredUserId,
     clearStoredUserId,
@@ -58,10 +56,6 @@ export default function PortalPageComponent(): JSX.Element {
 
   const [optionsOpen, setOptionsOpen] = useState<boolean>(true);
   const [eventsOpen, setEventsOpen] = useState<boolean>(true);
-
-  // Server SDK portal state
-  const [portalUrl, setPortalUrl] = useState<string>('');
-  const [confirmingAuth, setConfirmingAuth] = useState<boolean>(false);
 
   // Persist portal event history for the current day
   const getDayKey = useCallback(
@@ -150,14 +144,18 @@ export default function PortalPageComponent(): JSX.Element {
   useEffect(() => {
     let cancelled = false;
     async function loadBrokers() {
-      if (!sdkAdapter) return;
+      if (!finatic) return;
       try {
         setBrokersLoading(true);
         setBrokersError('');
-        const list = await sdkAdapter.getBrokerList();
+        const response = await finatic.getBrokers();
+        // Extract data from FinaticResponse
+        const list = response?.success?.data || response;
         if (!cancelled) {
           // Ensure list is always an array
-          const brokerArray = Array.isArray(list) ? list : Object.values(list || {});
+          const brokerArray: BrokerInfo[] = Array.isArray(list) 
+            ? (list as BrokerInfo[]) 
+            : (Object.values(list || {}) as BrokerInfo[]);
           setAvailableBrokers(brokerArray);
         }
       } catch (err: any) {
@@ -172,18 +170,17 @@ export default function PortalPageComponent(): JSX.Element {
     return () => {
       cancelled = true;
     };
-  }, [sdkAdapter]);
+  }, [finatic]);
 
   const brokerFilter: string[] = useMemo(() => selectedBrokers, [selectedBrokers]);
   // Only show default and stockAlgos presets
   const themeOptions = useMemo(() => ['default', 'stockAlgos'], []);
 
   const handleOpenPortal = useCallback(async () => {
-    if (!sdkAdapter) return;
+    if (!finatic) return;
     addLog('info', 'Opening portal...');
     setPortalMessage('');
     setPortalError('');
-    setPortalUrl('');
     appendEvent({ type: 'portal-open', data: {}, timestamp: new Date().toLocaleTimeString() });
 
     if (brokerFilter.length > 0) {
@@ -207,35 +204,22 @@ export default function PortalPageComponent(): JSX.Element {
         addLog('info', `Opening portal with mode: ${themeMode}`);
       }
 
-      await sdkAdapter.openPortal({
+      await finatic.openPortal({
         ...options,
-        onSuccess: async (userIdOrUrl: string) => {
-          if (sdkType === 'client') {
-            // Client SDK: userId is returned
-            addLog('success', `Portal opened successfully for user: ${userIdOrUrl}`);
-            setPortalMessage('Portal opened successfully');
-            // Set auth state immediately (SDK already stored userId internally)
-            setAuthState(true, userIdOrUrl);
-            setStoredUserId(userIdOrUrl);
-            addLog('info', `Stored userId in localStorage: ${userIdOrUrl}`);
-            // Verify auth state
-            await checkAuth();
-            appendEvent({
-              type: 'portal-success',
-              data: { userId: userIdOrUrl },
-              timestamp: new Date().toLocaleTimeString(),
-            });
-          } else {
-            // Server SDK: portal URL is returned, store it for iframe display
-            setPortalUrl(userIdOrUrl);
-            setPortalMessage('Portal URL received - complete authentication in the portal below');
-            addLog('info', `Portal URL: ${userIdOrUrl}`);
-            appendEvent({
-              type: 'portal-url-received',
-              data: { portalUrl: userIdOrUrl },
-              timestamp: new Date().toLocaleTimeString(),
-            });
-          }
+        onSuccess: async (userId: string) => {
+          addLog('success', `Portal opened successfully for user: ${userId}`);
+          setPortalMessage('Portal opened successfully');
+          // Set auth state immediately (SDK already stored userId internally)
+          setAuthState(true, userId);
+          setStoredUserId(userId);
+          addLog('info', `Stored userId in localStorage: ${userId}`);
+          // Verify auth state
+          await checkAuth();
+          appendEvent({
+            type: 'portal-success',
+            data: { userId },
+            timestamp: new Date().toLocaleTimeString(),
+          });
         },
         onError: (error: Error) => {
           setPortalError(error.message);
@@ -266,8 +250,7 @@ export default function PortalPageComponent(): JSX.Element {
       addLog('error', errorMsg);
     }
   }, [
-    sdkAdapter,
-    sdkType,
+    finatic,
     addLog,
     brokerFilter,
     emailParam,
@@ -275,44 +258,10 @@ export default function PortalPageComponent(): JSX.Element {
     themeMode,
     setStoredUserId,
     checkAuth,
+    setAuthState,
     appendEvent,
   ]);
 
-  // Handler for confirming authentication with server SDKs
-  const handleConfirmAuth = useCallback(async () => {
-    if (!sdkAdapter || sdkType === 'client') return;
-
-    setConfirmingAuth(true);
-    try {
-      addLog('info', 'Confirming portal authentication...');
-      const userInfo = await (sdkAdapter as any).confirmPortalAuth();
-
-      if (userInfo?.user_id) {
-        addLog('success', `Authentication confirmed for user: ${userInfo.user_id}`);
-        setPortalMessage('Authentication confirmed successfully!');
-        // Clear the portal URL since authentication is complete
-        setPortalUrl('');
-        // Directly update authentication state first, before setStoredUserId which triggers checkAuth()
-        setAuthState(true, userInfo.user_id);
-        // Update stored user ID after setting auth state to avoid race condition
-        setStoredUserId(userInfo.user_id);
-        appendEvent({
-          type: 'portal-success',
-          data: { userId: userInfo.user_id },
-          timestamp: new Date().toLocaleTimeString(),
-        });
-      }
-    } catch (err: any) {
-      const errorMsg =
-        typeof err?.message === 'string'
-          ? err.message
-          : String(err) || 'Authentication not yet complete';
-      setPortalError(errorMsg);
-      addLog('error', errorMsg);
-    } finally {
-      setConfirmingAuth(false);
-    }
-  }, [sdkAdapter, sdkType, addLog, setStoredUserId, setAuthState, appendEvent]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -331,54 +280,10 @@ export default function PortalPageComponent(): JSX.Element {
       </div>
 
       <div className="flex justify-center">
-        <Button onClick={handleOpenPortal} disabled={!sdkAdapter} className="gap-2 px-6">
+        <Button onClick={handleOpenPortal} disabled={!finatic} className="gap-2 px-6">
           <DoorOpen className="size-4" /> Open Portal
         </Button>
       </div>
-
-      {/* Server SDK Portal iframe */}
-      {sdkType !== 'client' && portalUrl && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Portal Authentication</CardTitle>
-            <CardDescription>
-              Complete authentication in the portal below, then click "Confirm Authentication" when
-              done.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="border rounded-lg overflow-hidden" style={{ height: '600px' }}>
-              <iframe
-                src={portalUrl}
-                width="100%"
-                height="100%"
-                frameBorder="0"
-                title="Finatic Portal"
-                className="w-full h-full"
-              />
-            </div>
-            <div className="flex justify-center">
-              <Button
-                onClick={handleConfirmAuth}
-                disabled={confirmingAuth || !sdkAdapter}
-                className="gap-2 px-6"
-              >
-                {confirmingAuth ? (
-                  <>
-                    <RefreshCw className="size-4 animate-spin" />
-                    Confirming...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="size-4" />
-                    Confirm Authentication
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Portal status messages */}
       {(portalMessage || portalError) && (

@@ -909,7 +909,7 @@ const buildPresetPayloadForContext = (
 };
 
 export function TradingPageComponent() {
-  const { finatic, sdkAdapter, addLog } = useFinatic();
+  const { finatic, addLog } = useFinatic();
   const { mode } = useEnvironmentConfig();
   const isSandboxMode = mode === 'sandbox';
 
@@ -1064,14 +1064,14 @@ export function TradingPageComponent() {
     let cancelled = false;
     async function loadBrokers() {
       try {
-        if (!sdkAdapter) return;
-        const list = await sdkAdapter.getBrokerList();
+        if (!finatic) return;
+        const response = await finatic.getBrokers();
+        const list = response?.success?.data || response;
         // Filter out aliases and brokers that don't support trading
-        const filteredList = Array.isArray(list)
-          ? list.filter(
-              (broker: any) => broker.is_alias === false && broker.supports_trading === true
-            )
-          : [];
+        const brokerArray = Array.isArray(list) ? list : Object.values(list || {});
+        const filteredList = brokerArray.filter(
+          (broker: any) => broker.is_alias === false && broker.supports_trading === true
+        );
         if (!cancelled) setBrokers(filteredList);
       } catch (err) {
         console.error('Failed to load brokers:', err);
@@ -1081,18 +1081,19 @@ export function TradingPageComponent() {
     return () => {
       cancelled = true;
     };
-  }, [sdkAdapter]);
+  }, [finatic]);
 
   // Load active broker connections
   useEffect(() => {
-    if (!sdkAdapter) return;
+    if (!finatic) return;
     let cancelled = false;
     async function loadConnections() {
       try {
-        if (!sdkAdapter) return;
-        const list = await sdkAdapter.getBrokerConnections();
+        if (!finatic) return;
+        const response = await finatic.getBrokerConnections();
+        const list = response?.success?.data || response;
         if (!cancelled) {
-          setConnections(list);
+          setConnections(Array.isArray(list) ? list : []);
         }
       } catch (err) {
         console.error('Failed to load connections:', err);
@@ -1102,18 +1103,28 @@ export function TradingPageComponent() {
     return () => {
       cancelled = true;
     };
-  }, [sdkAdapter]);
+  }, [finatic]);
 
   // Load active accounts
   useEffect(() => {
-    if (!sdkAdapter) return;
+    if (!finatic) return;
     let cancelled = false;
     async function loadActiveAccounts() {
       try {
-        if (!sdkAdapter) return;
-        const all = await sdkAdapter.getActiveAccounts();
+        if (!finatic) return;
+        const response = await finatic.getAllAccounts();
+        const all = response?.success?.data || response;
+        const accounts = Array.isArray(all) ? all : [];
+        // Filter active accounts
+        const active = accounts.filter(
+          (account: any) =>
+            account.accountStatus === 'ACTIVE' ||
+            account.status === 'ACTIVE' ||
+            account.status === 'active' ||
+            account.active === true
+        );
         if (!cancelled) {
-          setActiveAccounts(all || []);
+          setActiveAccounts(active);
         }
       } catch (err) {
         console.error('Failed to load active accounts:', err);
@@ -1123,7 +1134,7 @@ export function TradingPageComponent() {
     return () => {
       cancelled = true;
     };
-  }, [sdkAdapter]);
+  }, [finatic]);
 
   // Filter available accounts based on mode and selected broker
   const filteredAccounts = useMemo(() => {
@@ -1344,7 +1355,7 @@ export function TradingPageComponent() {
 
   // Place custom order
   const placeCustomOrder = async () => {
-    if (!sdkAdapter && !finatic) {
+    if (!finatic) {
       addLog('error', 'SDK not initialized');
       return;
     }
@@ -1440,20 +1451,11 @@ export function TradingPageComponent() {
       console.log('🔍 placeCustomOrder - orderParams:', JSON.stringify(orderParams, null, 2));
       console.log('🔍 placeCustomOrder - selectedBroker:', selectedBroker);
 
-      // Use SDK's placeOrder method with flat parameters
-      let response;
-      if (sdkAdapter?.placeOrder) {
-        // SDK adapter now expects flat parameters
-        response = await sdkAdapter.placeOrder(orderParams);
-      } else if (finatic) {
-        // FinaticConnect.placeOrder now expects flat parameters
-        response = await finatic.placeOrder(orderParams);
-      } else {
-        throw new Error('SDK not available');
-      }
+      // Use SDK's placeOrder method
+      const response = await finatic.placeOrder(orderParams);
 
       setCustomResponse(response);
-      addLog('success', `Order placed successfully - ${response?.message || 'ok'}`);
+      addLog('success', `Order placed successfully - ${response?.success?.data?.message || 'ok'}`);
     } catch (e: any) {
       const errorMsg = e?.message || 'Order failed';
       setCustomResponse({ error: errorMsg });
@@ -1468,7 +1470,7 @@ export function TradingPageComponent() {
    */
   const placePresetOrder = useCallback(
     async (preset: OrderPresetConfig) => {
-      if (!sdkAdapter && !finatic) {
+      if (!finatic) {
         addLog('error', 'SDK not initialized');
         return;
       }
@@ -1593,21 +1595,15 @@ export function TradingPageComponent() {
       setPresetResponseById((previous) => ({ ...previous, [preset.id]: null }));
 
       try {
-        let response;
-        if (sdkAdapter?.placeOrder) {
-          response = await sdkAdapter.placeOrder(orderParams);
-        } else if (finatic) {
-          response = await finatic.placeOrder(orderParams);
-        } else {
-          throw new Error('SDK not available');
-        }
+        // Use SDK's placeOrder method
+        const response = await finatic.placeOrder(orderParams);
 
         setPresetResponseById((previous) => ({ ...previous, [preset.id]: response }));
         setExpandedResponsePresetIds((previous) => new Set(previous).add(preset.id));
         setCustomResponse(response);
         addLog(
           'success',
-          `Preset "${preset.label}" placed successfully - ${response?.message || 'ok'}`
+          `Preset "${preset.label}" placed successfully - ${response?.success?.data?.message || 'ok'}`
         );
       } catch (error: any) {
         const errorMessage = error?.message || 'Preset order failed';
@@ -1620,7 +1616,6 @@ export function TradingPageComponent() {
       }
     },
     [
-      sdkAdapter,
       finatic,
       addLog,
       selectedBroker,
@@ -1635,7 +1630,7 @@ export function TradingPageComponent() {
 
   // Cancel order
   const cancelOrder = async () => {
-    if (!sdkAdapter && !finatic) {
+    if (!finatic) {
       addLog('error', 'SDK not initialized');
       return;
     }
@@ -1648,17 +1643,12 @@ export function TradingPageComponent() {
     setCancelResponse(null);
 
     try {
-      // New endpoint only requires order_id as path parameter
-      // Backend infers broker, account, and connection from the order record
-      let response;
-      if (sdkAdapter?.cancelOrder) {
-        response = await sdkAdapter.cancelOrder(cancelOrderId);
-      } else {
-        throw new Error('Cancel order not available');
-      }
+      // Cancel order using FinaticConnect
+      const response = await finatic.cancelOrder({ orderId: cancelOrderId });
+      const result = response?.success?.data || response;
 
-      setCancelResponse(response);
-      addLog('success', `Order cancelled successfully - ${response?.message || 'ok'}`);
+      setCancelResponse(result);
+      addLog('success', `Order cancelled successfully - ${result?.message || 'ok'}`);
     } catch (e: any) {
       const errorMsg = e?.message || 'Cancel failed';
       setCancelResponse({ error: errorMsg });
@@ -1751,7 +1741,7 @@ export function TradingPageComponent() {
 
   // Modify order
   const modifyExistingOrder = async () => {
-    if (!sdkAdapter && !finatic) {
+    if (!finatic) {
       addLog('error', 'SDK not initialized');
       return;
     }
@@ -1830,17 +1820,12 @@ export function TradingPageComponent() {
         order: orderObject,
       };
 
-      let response;
-      if (sdkAdapter?.modifyOrder) {
-        response = await sdkAdapter.modifyOrder(modifyParams);
-      } else if (finatic) {
-        response = await finatic.modifyOrder(modifyParams);
-      } else {
-        throw new Error('Modify order not available');
-      }
+      // Use FinaticConnect modifyOrder - expects { orderId, ...modifications }
+      const response = await finatic.modifyOrder({ orderId: modifyOrderId, ...orderObject });
+      const result = response?.success?.data || response;
 
-      setModifyResponse(response);
-      addLog('success', `Order modified successfully - ${response?.message || 'ok'}`);
+      setModifyResponse(result);
+      addLog('success', `Order modified successfully - ${result?.message || 'ok'}`);
     } catch (e: any) {
       const errorMsg = e?.message || 'Modify failed';
       setModifyResponse({ error: errorMsg });

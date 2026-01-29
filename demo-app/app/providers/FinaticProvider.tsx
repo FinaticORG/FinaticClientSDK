@@ -10,10 +10,7 @@ import React, {
   useState,
 } from 'react';
 import { FinaticConnect } from '@finatic/client';
-import { SdkType, SdkAdapter, createSdkAdapter } from '@/lib/sdk-adapter';
 import { useEnvironmentConfig } from '@/app/providers/EnvironmentConfigProvider';
-
-export type { SdkType };
 
 type LogEntry = {
   type: 'info' | 'error' | 'success';
@@ -57,8 +54,6 @@ const USAGE_STORAGE_KEY = 'finatic_usage_v1';
 
 interface FinaticContextValue {
   finatic: FinaticConnect | null;
-  // SDK adapter - this is the new way to interact with the SDK
-  sdkAdapter: SdkAdapter | null;
   isLoading: boolean;
   error: string | null;
   sessionInfo: string;
@@ -76,9 +71,6 @@ interface FinaticContextValue {
   currentUserId: string | null;
   checkAuth: () => Promise<void>;
   setAuthState: (isAuthenticated: boolean, userId: string | null) => void;
-  // SDK adapter state
-  sdkType: SdkType;
-  setSdkType: (sdkType: SdkType) => void;
 }
 
 const FinaticContext = createContext<FinaticContextValue | undefined>(undefined);
@@ -97,8 +89,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   const apiBaseUrlRef = useRef<string | null>(null);
   const lastCheckedAuthRef = useRef<{
     finatic: FinaticConnect | null;
-    sdkAdapter: SdkAdapter | null;
-    sdkType: SdkType;
   } | null>(null);
   const isInitializingRef = useRef<boolean>(false);
   const [usage, setUsage] = useState<UsageStats>(() => {
@@ -134,99 +124,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     };
   });
 
-  // SDK type state management with localStorage persistence
-  const [sdkType, setSdkTypeState] = useState<SdkType>(() => {
-    if (typeof window === 'undefined') return 'client';
-    try {
-      return (localStorage.getItem('finatic_sdk_type') as SdkType) || 'client';
-    } catch {
-      return 'client';
-    }
-  });
-
-  const setSdkType = useCallback((newSdkType: SdkType) => {
-    console.log('🔄 Setting SDK type to:', newSdkType);
-    setSdkTypeState(newSdkType);
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem('finatic_sdk_type', newSdkType);
-        console.log('✅ SDK type saved to localStorage:', newSdkType);
-      } catch (e) {
-        console.warn('Failed to save SDK type to localStorage:', e);
-      }
-    }
-  }, []);
-
-  // SDK adapter state
-  const [sdkAdapter, setSdkAdapterState] = useState<SdkAdapter | null>(null);
-
-  // Track last finatic instance we created adapter for
-  const lastFinaticForAdapterRef = useRef<FinaticConnect | null>(null);
-  const lastSdkTypeForAdapterRef = useRef<SdkType | null>(null);
-
-  // Initialize adapter based on SDK type and client instance
-  // This will re-run when finatic instance changes (after reinitialization)
-  useEffect(() => {
-    // Check if we need to recreate the adapter
-    // Use instance ID comparison for more reliable change detection
-    const currentInstanceId = finatic ? (finatic as any).__instanceId : null;
-    const previousInstanceId = lastFinaticForAdapterRef.current
-      ? (lastFinaticForAdapterRef.current as any).__instanceId
-      : null;
-    const finaticChanged = currentInstanceId !== previousInstanceId;
-    const sdkTypeChanged = lastSdkTypeForAdapterRef.current !== sdkType;
-    const needsRecreate = finaticChanged || sdkTypeChanged;
-
-    if (!needsRecreate && sdkAdapter) {
-      // Adapter is still valid, no need to recreate
-      console.log('⏭️ Skipping adapter recreation - instance unchanged', {
-        currentInstanceId,
-        previousInstanceId,
-      });
-      return;
-    }
-
-    try {
-      if (sdkType === 'client' && finatic) {
-        const adapter = createSdkAdapter('client', finatic);
-        setSdkAdapterState(adapter);
-        // CRITICAL: Store the finatic reference BEFORE setting the adapter state
-        // This ensures the ref is updated synchronously
-        lastFinaticForAdapterRef.current = finatic;
-        lastSdkTypeForAdapterRef.current = sdkType;
-      } else if (sdkType === 'python') {
-        const adapter = createSdkAdapter('python');
-        setSdkAdapterState(adapter);
-        lastFinaticForAdapterRef.current = null; // Not applicable for server SDKs
-        lastSdkTypeForAdapterRef.current = sdkType;
-      } else if (sdkType === 'node') {
-        const adapter = createSdkAdapter('node');
-        setSdkAdapterState(adapter);
-        lastFinaticForAdapterRef.current = null; // Not applicable for server SDKs
-        lastSdkTypeForAdapterRef.current = sdkType;
-      } else if (sdkType === 'client' && !finatic) {
-        // Clear adapter if client SDK is selected but finatic instance is not ready
-        if (sdkAdapter) {
-          setSdkAdapterState(null);
-          lastFinaticForAdapterRef.current = null;
-          lastSdkTypeForAdapterRef.current = null;
-        }
-      } else {
-        // Clear adapter if no valid configuration
-        if (sdkAdapter) {
-          setSdkAdapterState(null);
-          lastFinaticForAdapterRef.current = null;
-          lastSdkTypeForAdapterRef.current = null;
-        }
-      }
-    } catch (error) {
-      console.error('❌ Failed to initialize SDK adapter:', error);
-      setSdkAdapterState(null);
-      lastFinaticForAdapterRef.current = null;
-      lastSdkTypeForAdapterRef.current = null;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sdkType, finatic]); // Only reinitialize when SDK type or finatic instance changes, not mode/environment
 
   const addLog = useCallback((type: LogEntry['type'], message: string) => {
     setLogs((prev) => [...prev, { type, message, timestamp: new Date().toLocaleTimeString() }]);
@@ -395,63 +292,15 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const checkAuth = useCallback(async () => {
-    // For server SDKs, use sdkAdapter. For client SDK, prefer adapter but fallback to finatic
-    let authSource: any = null;
-    let authMethod: 'adapter' | 'direct' = 'direct';
-
-    if (sdkType === 'python' || sdkType === 'node') {
-      // Server SDKs must use adapter
-      authSource = sdkAdapter;
-      authMethod = 'adapter';
-    } else if (sdkType === 'client') {
-      // Client SDK: prefer adapter if available, otherwise use finatic directly
-      if (sdkAdapter) {
-        authSource = sdkAdapter;
-        authMethod = 'adapter';
-      } else if (finatic) {
-        authSource = finatic;
-        authMethod = 'direct';
-      }
-    }
-
-    if (!authSource) {
+    if (!finatic) {
       setIsAuthed(false);
       setCurrentUserId(null);
       return;
     }
 
     try {
-      let authed = false;
-      let uid: string | null = null;
-
-      if (authMethod === 'adapter') {
-        // Use adapter's isAuthenticated() method (which handles conversion internally)
-        authed =
-          typeof authSource.isAuthenticated === 'function'
-            ? await authSource.isAuthenticated()
-            : false;
-        uid =
-          typeof authSource.getUserId === 'function'
-            ? await authSource.getUserId()
-            : null;
-      } else {
-        // Direct finatic access: use isAuthed() method (not isAuthenticated)
-        if (typeof (authSource as any).isAuthed === 'function') {
-          authed = (authSource as any).isAuthed();
-        } else if (typeof authSource.isAuthenticated === 'function') {
-          authed = await authSource.isAuthenticated();
-        }
-        
-        if (typeof (authSource as any).getUserId === 'function') {
-          uid = (authSource as any).getUserId() ?? null;
-        } else if (typeof authSource.getUserId === 'function') {
-          uid = await authSource.getUserId();
-        }
-      }
-
-      console.log('🔍 checkAuth() - authed:', authed, 'typeof:', typeof authed);
-      console.log('🔍 checkAuth() - uid:', uid, 'typeof:', typeof uid);
-      console.log('🔍 checkAuth() - method:', authMethod);
+      const authed = finatic.isAuthed();
+      const uid = finatic.getUserId() ?? null;
 
       setIsAuthed(authed);
       setCurrentUserId(uid);
@@ -460,7 +309,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       setIsAuthed(false);
       setCurrentUserId(null);
     }
-  }, [finatic, sdkAdapter, sdkType]);
+  }, [finatic]);
 
   // Method to directly set authentication state after portal confirmation
   const setAuthState = useCallback(
@@ -481,20 +330,17 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     addLog('info', '🔄 Clearing old SDK instance and all related state...');
 
     // Store the old instance ID for logging before clearing
-    const oldInstanceId = lastFinaticForAdapterRef.current
-      ? (lastFinaticForAdapterRef.current as any).__instanceId
-      : null;
+    const oldInstanceId = finatic ? (finatic as any).__instanceId : null;
     if (oldInstanceId) {
       addLog('info', `🗑️ Clearing old instance ID: ${oldInstanceId}`);
     }
 
     // CRITICAL: Close any existing portal before clearing the instance
     // This ensures the portal doesn't hold references to the old instance
-    const oldFinatic = lastFinaticForAdapterRef.current;
-    if (oldFinatic && typeof (oldFinatic as any).closePortal === 'function') {
+    if (finatic && typeof (finatic as any).closePortal === 'function') {
       try {
         addLog('info', '🔍 Closing existing portal before clearing instance...');
-        await (oldFinatic as any).closePortal();
+        await (finatic as any).closePortal();
         // Small delay to ensure portal is fully closed
         await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (err) {
@@ -509,13 +355,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     // This is critical - the old FinaticConnect instance must be nulled before creating new one
     setFinatic(null);
 
-    // Clear SDK adapter (which may hold references to the old SDK)
-    setSdkAdapterState(null);
-
-    // Clear adapter tracking refs to ensure new adapter is created with new finatic instance
-    lastFinaticForAdapterRef.current = null;
-    lastSdkTypeForAdapterRef.current = null;
-
     // Clear auth check tracking ref
     lastCheckedAuthRef.current = null;
 
@@ -529,7 +368,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     apiBaseUrlRef.current = null;
 
     addLog('success', '✅ SDK state fully cleared - old instance removed');
-  }, [addLog]);
+  }, [addLog, finatic]);
 
   const initializeSDK = useCallback(async () => {
     // Prevent concurrent initialization
@@ -557,78 +396,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       const existingUserId = getStoredUserId();
       if (existingUserId) {
         addLog('info', `Found stored userId: ${existingUserId}`);
-      }
-
-      // Handle server SDK initialization
-      if (sdkType === 'python' || sdkType === 'node') {
-        const baseUrl = sdkType === 'python' ? 'http://localhost:8002' : 'http://localhost:8003';
-        addLog('info', `Initializing ${sdkType} server SDK`);
-        apiBaseUrlRef.current = baseUrl;
-
-        try {
-          // Initialize server SDK by starting a session
-          // Pass stored user ID if available for auto-attachment
-          // Get stored user ID directly from localStorage like the auth page does
-          const directStoredUserId = localStorage.getItem('finatic_user_id');
-          console.log('🔍 storedUserId from state:', storedUserId);
-          console.log('🔍 directStoredUserId from localStorage:', directStoredUserId);
-          const requestBody = directStoredUserId ? { user_id: directStoredUserId } : {};
-          console.log('🔍 Request body being sent:', requestBody);
-          const response = await fetch(`${baseUrl}/api/session/start`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestBody),
-          });
-
-          if (!response.ok) {
-            throw new Error(
-              `Server SDK initialization failed: ${response.status} ${response.statusText}`
-            );
-          }
-
-          const sessionData = await response.json();
-          if (!sessionData.success) {
-            throw new Error(
-              `Server SDK initialization failed: ${sessionData.error || 'Unknown error'}`
-            );
-          }
-
-          addLog('success', `${sdkType} server SDK session started`);
-          setSessionInfo(
-            `${sdkType.charAt(0).toUpperCase() + sdkType.slice(1)} Server SDK - Session started`
-          );
-
-          // If we started with a user ID, check authentication status
-          if (directStoredUserId) {
-            addLog(
-              'info',
-              `Session started with user ID: ${directStoredUserId}, checking authentication...`
-            );
-            // Trigger authentication check
-            setTimeout(() => {
-              checkAuth();
-            }, 100);
-          }
-
-          // Client SDK instance already cleared in clearSDKState() at start of initializeSDK
-          // Server SDK doesn't use finatic instance, so it remains null
-
-          setIsLoading(false);
-          return; // Early return for server SDKs
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : 'Failed to initialize server SDK';
-          addLog('error', `Failed to initialize ${sdkType} server SDK: ${msg}`);
-          setError(msg);
-          setSessionInfo(`Failed to initialize ${sdkType} server SDK`);
-
-          // Client SDK instance already cleared in clearSDKState() at start of initializeSDK
-          // Error state already managed above
-
-          setIsLoading(false);
-          return;
-        }
       }
 
       addLog('info', 'Initializing SDK');
@@ -737,8 +504,8 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       // Verify the instance was created with the new token by checking a property
       // This ensures we're using the new instance, not the old one
       try {
-        const testAuth = await (wrapped as unknown as FinaticConnect).isAuthenticated();
-        addLog('info', `🔍 Verified new instance (${instanceId}) isAuthenticated() = ${testAuth}`);
+        const testAuth = (wrapped as unknown as FinaticConnect).isAuthed();
+        addLog('info', `🔍 Verified new instance (${instanceId}) isAuthed() = ${testAuth}`);
 
         const sessionId = (wrapped as any).sessionId;
         addLog('info', `🔍 Instance sessionId: ${sessionId}`);
@@ -796,7 +563,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       recordMethodCall('FinaticConnect.init', initDuration, 0, false);
       addLog('success', `✅ SDK fully reinitialized in REAL mode`);
       addLog('info', `New SDK instance created using API URL: ${apiUrl}`);
-      addLog('info', `🔄 State updated - adapter should reinitialize with new instance`);
     } catch (err) {
       try {
         const initDuration = 0; // keep zero if error before timing start
@@ -815,7 +581,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     getStoredUserId,
     estimateBytes,
     recordMethodCall,
-    sdkType,
     clearSDKState,
     setAuthState,
     setStoredUserId,
@@ -825,10 +590,19 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   ]);
 
   // Load storedUserId from localStorage after mount to prevent hydration mismatch
+  // Also clean up old SDK type preference since we only use client SDK now
   useEffect(() => {
     const userId = getStoredUserId();
     if (userId) {
       setStoredUserIdState(userId);
+    }
+    // Clean up old SDK type preference
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('finatic_sdk_type');
+      } catch {
+        // Ignore errors
+      }
     }
   }, []);
 
@@ -838,13 +612,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
-  // Re-initialize when SDK type changes
-  useEffect(() => {
-    if (isInitializingRef.current) return; // Skip if already initializing
-    void initializeSDK();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sdkType]); // Only depend on sdkType, not initializeSDK function
-
   // Re-initialize when mode or environment changes
   useEffect(() => {
     if (isInitializingRef.current) return;
@@ -852,28 +619,23 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, environment]);
 
-  // Check authentication when SDK is ready (finatic or sdkAdapter changes)
+  // Check authentication when SDK is ready (finatic changes)
   // Only check when the SDK instance actually changes, not when checkAuth function reference changes
   useEffect(() => {
     // Check if we've already checked auth for this exact SDK instance
-    const currentInstance = { finatic, sdkAdapter, sdkType };
+    const currentInstance = { finatic };
     const lastInstance = lastCheckedAuthRef.current;
 
     // Only check if the instance actually changed
     if (
       lastInstance &&
-      lastInstance.finatic === currentInstance.finatic &&
-      lastInstance.sdkAdapter === currentInstance.sdkAdapter &&
-      lastInstance.sdkType === currentInstance.sdkType
+      lastInstance.finatic === currentInstance.finatic
     ) {
       return; // Already checked auth for this instance
     }
 
     // Only check auth if we have a valid SDK instance
-    if (sdkType === 'client' && finatic) {
-      lastCheckedAuthRef.current = currentInstance;
-      void checkAuth();
-    } else if ((sdkType === 'python' || sdkType === 'node') && sdkAdapter) {
+    if (finatic) {
       lastCheckedAuthRef.current = currentInstance;
       void checkAuth();
     } else {
@@ -883,7 +645,7 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       lastCheckedAuthRef.current = currentInstance;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [finatic, sdkAdapter, sdkType]); // Intentionally exclude checkAuth to prevent loops
+  }, [finatic]); // Intentionally exclude checkAuth to prevent loops
 
   // Persist usage and emit event AFTER state updates to avoid re-entrant updates during render
   useEffect(() => {
@@ -975,7 +737,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<FinaticContextValue>(
     () => ({
       finatic,
-      sdkAdapter,
       isLoading,
       error,
       sessionInfo,
@@ -992,12 +753,9 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       currentUserId,
       checkAuth,
       setAuthState,
-      sdkType,
-      setSdkType,
     }),
     [
       finatic,
-      sdkAdapter,
       isLoading,
       error,
       sessionInfo,
@@ -1014,8 +772,6 @@ export function FinaticProvider({ children }: { children: React.ReactNode }) {
       currentUserId,
       checkAuth,
       setAuthState,
-      sdkType,
-      setSdkType,
     ]
   );
 

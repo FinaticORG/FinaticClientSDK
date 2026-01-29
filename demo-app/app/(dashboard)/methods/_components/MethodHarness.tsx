@@ -110,7 +110,7 @@ function isFieldsInput(
 }
 
 export function MethodHarness({ title, description, methodGroups }: MethodHarnessProps) {
-  const { finatic, sdkAdapter, addLog, isLoading, error, isAuthed, sdkType, checkAuth } =
+  const { finatic, addLog, isLoading, error, isAuthed, checkAuth } =
     useFinatic();
 
   const initialFieldState = useMemo(() => {
@@ -291,17 +291,17 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
     [sdkMethodNames, testedMethodNames]
   );
 
-  const sdkReady = Boolean(sdkAdapter) && !isLoading;
+  const sdkReady = Boolean(finatic) && !isLoading;
   const allReady = sdkReady && isAuthed === true;
 
   const handlePrimaryAction = async () => {
-    if (!sdkAdapter) return;
+    if (!finatic) return;
     if (allReady) {
       await runAllMethods();
       return;
     }
     try {
-      await sdkAdapter.openPortal({ path: '/', mode: 'modal' });
+      await finatic.openPortal();
       // Re-check auth shortly after opening portal
       setTimeout(async () => {
         await checkAuth();
@@ -312,8 +312,8 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
   };
 
   const runMethod = async (definition: MethodDefinition): Promise<MethodExecutionRecord> => {
-    if (!sdkAdapter) {
-      addLog('error', 'SDK adapter is not ready yet');
+    if (!finatic) {
+      addLog('error', 'SDK is not ready yet');
       return { status: 'error', error: 'SDK not ready' };
     }
 
@@ -348,7 +348,7 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
       if (definition.run) {
         result = await Promise.resolve(
           definition.run({
-            finatic: sdkAdapter, // Pass adapter as finatic for backward compatibility
+            finatic: finatic,
             inputValue,
             fieldValues: currentFieldValues,
             context,
@@ -357,13 +357,49 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
         );
       } else {
         const methodName = definition.methodName ?? definition.key;
-        const target = (sdkAdapter as unknown as Record<string, unknown>)[methodName];
+        // Map adapter method names to FinaticConnect method names
+        const methodMap: Record<string, string> = {
+          'isAuthenticated': 'isAuthed',
+          'getBrokerList': 'getBrokers',
+          'getBrokerConnections': 'getBrokerConnections',
+          'getActiveAccounts': 'getAllAccounts', // Will filter after
+        };
+        const actualMethodName = methodMap[methodName] || methodName;
+        const target = (finatic as unknown as Record<string, unknown>)[actualMethodName];
         if (typeof target !== 'function') {
-          throw new Error(`Method ${methodName} is not available on the SDK adapter`);
+          throw new Error(`Method ${actualMethodName} is not available on FinaticConnect`);
         }
-        result = await Promise.resolve(
-          (target as (...args: any[]) => unknown).apply(sdkAdapter, args)
+        let methodResult = await Promise.resolve(
+          (target as (...args: any[]) => unknown).apply(finatic, args)
         );
+        
+        // Handle response extraction for methods that return FinaticResponse
+        if (methodResult && typeof methodResult === 'object' && 'success' in methodResult) {
+          const response = methodResult as { success?: { data?: unknown } };
+          if (response.success?.data !== undefined) {
+            methodResult = response.success.data;
+          }
+        }
+        
+        // Handle special cases
+        if (methodName === 'isAuthenticated') {
+          methodResult = Boolean(methodResult);
+        } else if (methodName === 'getUserId') {
+          methodResult = methodResult ?? null;
+        } else if (methodName === 'getActiveAccounts' && Array.isArray(methodResult)) {
+          methodResult = methodResult.filter(
+            (account: any) =>
+              account.accountStatus === 'ACTIVE' ||
+              account.status === 'ACTIVE' ||
+              account.status === 'active' ||
+              account.active === true
+          );
+        } else if (methodName === 'getBrokerList' && methodResult && typeof methodResult === 'object' && !Array.isArray(methodResult)) {
+          // getBrokers might return an object, convert to array
+          methodResult = Array.isArray(methodResult) ? methodResult : Object.values(methodResult);
+        }
+        
+        result = methodResult;
       }
       const durationMs = performance.now() - startTime;
 
@@ -519,7 +555,7 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
               <Button
                 className={`ml-2 ${allReady ? 'bg-green-600 hover:bg-green-600/90' : 'bg-red-600 hover:bg-red-600/90'} text-primary-foreground`}
                 onClick={() => void handlePrimaryAction()}
-                disabled={!sdkAdapter || isRunningAll}
+                disabled={!finatic || isRunningAll}
                 title={
                   allReady
                     ? 'SDK is authenticated. Run all methods.'
@@ -787,7 +823,7 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
                                 className="bg-primary text-primary-foreground hover:bg-primary/90"
                                 onClick={() => void runMethod(method)}
                                 disabled={
-                                  !sdkAdapter ||
+                                  !finatic ||
                                   record?.status === 'loading' ||
                                   Boolean(dependencyMessage)
                                 }
@@ -838,13 +874,11 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
                                                 typeof record.result === 'object' &&
                                                 'previousPage' in record.result
                                               ) {
-                                                const prevResult = await (
-                                                  record.result as any
-                                                ).previousPage();
+                                                const prevResult = await (record.result as any).previousPage();
                                                 setRecords(prev => ({
                                                   ...prev,
-                                                  [record.key]: {
-                                                    ...prev[record.key],
+                                                  [method.key]: {
+                                                    ...prev[method.key],
                                                     result: prevResult,
                                                   },
                                                 }));
@@ -866,13 +900,11 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
                                                 typeof record.result === 'object' &&
                                                 'nextPage' in record.result
                                               ) {
-                                                const nextResult = await (
-                                                  record.result as any
-                                                ).nextPage();
+                                                const nextResult = await (record.result as any).nextPage();
                                                 setRecords(prev => ({
                                                   ...prev,
-                                                  [record.key]: {
-                                                    ...prev[record.key],
+                                                  [method.key]: {
+                                                    ...prev[method.key],
                                                     result: nextResult,
                                                   },
                                                 }));

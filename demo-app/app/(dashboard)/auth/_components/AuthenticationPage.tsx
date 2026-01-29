@@ -13,7 +13,6 @@ import { useEnvironmentConfig } from '@/app/providers/EnvironmentConfigProvider'
 export function AuthenticationPageComponent() {
   const {
     finatic,
-    sdkAdapter,
     isLoading,
     error,
     sessionInfo,
@@ -24,7 +23,6 @@ export function AuthenticationPageComponent() {
     setStoredUserId,
     clearStoredUserId,
     clearLogs,
-    sdkType,
     isAuthed,
     currentUserId: contextUserId,
     checkAuth,
@@ -35,13 +33,8 @@ export function AuthenticationPageComponent() {
 
   // Helper to determine if SDK is ready for auth checks
   const isSdkReady = useMemo(() => {
-    if (sdkType === 'client') {
-      return !!finatic;
-    } else if (sdkType === 'python' || sdkType === 'node') {
-      return !!sdkAdapter;
-    }
-    return false;
-  }, [sdkType, finatic, sdkAdapter]);
+    return !!finatic;
+  }, [finatic]);
 
   // Automatically sync local state with context values
   useEffect(() => {

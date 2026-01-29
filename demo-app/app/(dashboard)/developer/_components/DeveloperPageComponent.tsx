@@ -13,7 +13,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { EnvironmentSettings } from '@/app/(dashboard)/developer/_components/EnvironmentSettingsComponent';
-import { useFinatic, type SdkType } from '@/app/providers/FinaticProvider';
+import { useFinatic } from '@/app/providers/FinaticProvider';
 import { useEnvironmentConfig } from '@/app/providers/EnvironmentConfigProvider';
 import type { EnvironmentMode, EnvironmentType } from '@/lib/utils';
 import {
@@ -21,69 +21,19 @@ import {
   Monitor,
   Server,
   Globe,
-  CheckCircle,
-  XCircle,
   AlertCircle,
+  CheckCircle,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export function DeveloperPageComponent() {
-  const { sdkType, setSdkType, sessionInfo } = useFinatic();
+  const { sessionInfo } = useFinatic();
   const { mode, environment, setRuntime, getPublicApiUrl } = useEnvironmentConfig();
   const [mounted, setMounted] = useState(false);
-
-  const [localSdkType, setLocalSdkType] = useState<SdkType>(sdkType);
-
-  useEffect(() => {
-    setLocalSdkType(sdkType);
-  }, [sdkType]);
-
-  const [serverStatus, setServerStatus] = useState<{ python: boolean; node: boolean }>({
-    python: false,
-    node: false,
-  });
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-
-    const checkServerStatus = async () => {
-      try {
-        const [pythonResponse, nodeResponse] = await Promise.allSettled([
-          fetch('http://localhost:8002/api/health', {
-            method: 'GET',
-            mode: 'cors',
-            cache: 'no-cache',
-            headers: { 'Content-Type': 'application/json' },
-          })
-            .then(r => r.ok)
-            .catch(() => false),
-          fetch('http://localhost:8003/api/health', {
-            method: 'GET',
-            mode: 'cors',
-            cache: 'no-cache',
-            headers: { 'Content-Type': 'application/json' },
-          })
-            .then(r => r.ok)
-            .catch(() => false),
-        ]);
-
-        setServerStatus({
-          python: pythonResponse.status === 'fulfilled' && pythonResponse.value,
-          node: nodeResponse.status === 'fulfilled' && nodeResponse.value,
-        });
-      } catch {
-        setServerStatus({ python: false, node: false });
-      }
-    };
-
-    checkServerStatus();
-    const interval = setInterval(checkServerStatus, 5000);
-    return () => clearInterval(interval);
-  }, [mounted]);
 
   if (!mounted) {
     return null;
@@ -301,115 +251,26 @@ export function DeveloperPageComponent() {
         </TabsContent>
 
         <TabsContent value="advanced" className="space-y-4">
-          <div className="grid gap-4 xl:grid-cols-[320px_1fr]">
+          <div className="grid gap-4">
             <Card className="bg-card border-border">
               <CardHeader>
                 <CardTitle className="text-foreground flex items-center gap-2">
-                  <Code className="w-5 h-5" />
-                  SDK Configuration
+                  <Monitor className="w-5 h-5" />
+                  SDK Status
                 </CardTitle>
                 <CardDescription className="text-muted-foreground">
-                  Choose which SDK implementation to use for API calls
+                  Current SDK initialization status
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-foreground">SDK Type</Label>
-                  <Select
-                    value={localSdkType}
-                    onValueChange={(value: SdkType) => {
-                      setLocalSdkType(value);
-                      setSdkType(value);
-                    }}
-                  >
-                    <SelectTrigger className="bg-input border-border text-foreground">
-                      <SelectValue placeholder="Select SDK type..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="client">
-                        <div className="flex items-center gap-2">
-                          <Code className="w-4 h-4" />
-                          <div>
-                            <div className="font-medium">Client SDK</div>
-                            <div className="text-xs text-muted-foreground">
-                              Direct SDK usage (default)
-                            </div>
-                          </div>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="python">
-                        <div className="flex items-center gap-2">
-                          <Server className="w-4 h-4" />
-                          <div>
-                            <div className="font-medium">Python Server SDK</div>
-                            <div className="text-xs text-muted-foreground">
-                              Via API server (port 8002)
-                            </div>
-                          </div>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="node">
-                        <div className="flex items-center gap-2">
-                          <Globe className="w-4 h-4" />
-                          <div>
-                            <div className="font-medium">Node Server SDK</div>
-                            <div className="text-xs text-muted-foreground">
-                              Via API server (port 8003)
-                            </div>
-                          </div>
-                        </div>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <div className="p-4 bg-muted/20 rounded-lg border border-border">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Monitor className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm font-medium text-foreground">
-                      Current Configuration
-                    </span>
-                  </div>
                   <div className="space-y-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">SDK Type:</span>
-                      <span className="text-foreground font-medium capitalize">{sdkType} SDK</span>
-                    </div>
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Status:</span>
                       <span className="text-foreground text-xs">{sessionInfo}</span>
                     </div>
-                    {sdkType !== 'client' && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Server:</span>
-                        <div className="flex items-center gap-1">
-                          {serverStatus[sdkType] ? (
-                            <>
-                              <CheckCircle className="w-3 h-3 text-green-500" />
-                              <span className="text-green-600 text-xs">Online</span>
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="w-3 h-3 text-red-500" />
-                              <span className="text-red-600 text-xs">Offline</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
-
-                {sdkType !== 'client' && !serverStatus[sdkType as 'python' | 'node'] && (
-                  <Alert>
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      {sdkType.charAt(0).toUpperCase() + sdkType.slice(1)}
-                      API server is not running. Please start the server on port{' '}
-                      {sdkType === 'python' ? '8002' : '8003'} to use this SDK.
-                    </AlertDescription>
-                  </Alert>
-                )}
               </CardContent>
             </Card>
 
