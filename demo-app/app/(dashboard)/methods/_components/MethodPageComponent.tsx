@@ -153,7 +153,7 @@ export function MethodPageComponent() {
           if (!value) {
             throw new Error('Enter a company id.');
           }
-          return [value];
+          return [{ companyId: value }];
         },
       },
     ];
