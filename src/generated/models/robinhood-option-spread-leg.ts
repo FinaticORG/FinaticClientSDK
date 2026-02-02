@@ -25,14 +25,14 @@ import type { BrokerDataOrderSideEnum } from './broker-data-order-side-enum';
  */
 export interface RobinhoodOptionSpreadLeg {
     'expirationDate': string;
-    'strikePrice': number;
+    'strike': number;
     'optionType': BrokerDataOptionTypeEnum;
-    'positionEffect': RobinhoodOptionSpreadLegPositionEffectEnum;
+    'effect': RobinhoodOptionSpreadLegEffectEnum;
     'action': BrokerDataOrderSideEnum;
     'ratioQuantity'?: number;
 }
 
-export enum RobinhoodOptionSpreadLegPositionEffectEnum {
+export enum RobinhoodOptionSpreadLegEffectEnum {
     Open = 'open',
     Close = 'close'
 }

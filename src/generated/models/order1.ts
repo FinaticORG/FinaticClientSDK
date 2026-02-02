@@ -18,87 +18,23 @@
 import type { Accountnumber } from './accountnumber';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order1AnyOf } from './order1-any-of';
+import type { NinjaTraderLimitOrderPlaceQueryParams } from './ninja-trader-limit-order-place-query-params';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order1AnyOf1 } from './order1-any-of1';
+import type { NinjaTraderMarketOrderPlaceQueryParams } from './ninja-trader-market-order-place-query-params';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order1AnyOf2 } from './order1-any-of2';
+import type { NinjaTraderStopOrderPlaceQueryParams } from './ninja-trader-stop-order-place-query-params';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { RobinhoodOptionSpreadLeg } from './robinhood-option-spread-leg';
+import type { NinjaTraderTrailingStopOrderPlaceQueryParams } from './ninja-trader-trailing-stop-order-place-query-params';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Timeinforce1 } from './timeinforce1';
 
-export interface Order1 {
-    'accountNumber': Accountnumber;
-    'orderType': Order1OrderTypeEnum;
-    'assetType'?: Order1AssetTypeEnum;
-    'action': Order1ActionEnum;
-    'timeInForce': Timeinforce1;
-    'symbol': string;
-    'orderQty': number;
-    /**
-     * Allow trading during extended hours (premium users only)
-     */
-    'extendedHours'?: boolean;
-    /**
-     * Market hours to trade in
-     */
-    'marketHours'?: Order1MarketHoursEnum;
-    'price': number;
-    'stopPrice': number;
-    'limitPrice': number;
-    'direction'?: Order1DirectionEnum;
-    'spread'?: Array<RobinhoodOptionSpreadLeg>;
-    'positionEffect'?: Order1PositionEffectEnum;
-    'creditOrDebit'?: Order1CreditOrDebitEnum;
-    'expirationDate'?: string;
-    'strikePrice'?: number;
-    'optionType'?: Order1OptionTypeEnum;
-    /**
-     * Whether quantityOrPrice represents quantity or price
-     */
-    'amountIn'?: Order1AmountInEnum;
-}
-
-export enum Order1OrderTypeEnum {
-    TrailingStop = 'trailing_stop'
-}
-export enum Order1AssetTypeEnum {
-    Crypto = 'crypto'
-}
-export enum Order1ActionEnum {
-    Buy = 'buy',
-    Sell = 'sell'
-}
-export enum Order1MarketHoursEnum {
-    RegularHours = 'regular_hours',
-    AllDayHours = 'all_day_hours',
-    ExtendedHours = 'extended_hours'
-}
-export enum Order1DirectionEnum {
-    Debit = 'debit',
-    Credit = 'credit'
-}
-export enum Order1PositionEffectEnum {
-    Open = 'open',
-    Close = 'close'
-}
-export enum Order1CreditOrDebitEnum {
-    Debit = 'debit',
-    Credit = 'credit'
-}
-export enum Order1OptionTypeEnum {
-    Call = 'call',
-    Put = 'put',
-    Both = 'both'
-}
-export enum Order1AmountInEnum {
-    Quantity = 'quantity',
-    Price = 'price'
-}
+/**
+ * @type Order1
+ */
+export type Order1 = { orderType: 'limit' } & NinjaTraderLimitOrderPlaceQueryParams | { orderType: 'market' } & NinjaTraderMarketOrderPlaceQueryParams | { orderType: 'stop' } & NinjaTraderStopOrderPlaceQueryParams | { orderType: 'trailing_stop' } & NinjaTraderTrailingStopOrderPlaceQueryParams;
 
 

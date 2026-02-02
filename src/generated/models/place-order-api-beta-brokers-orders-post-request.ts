@@ -15,21 +15,24 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { NinjaTraderOrderPlaceRequest } from './ninja-trader-order-place-request';
+import type { AccountNumber } from './account-number';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Order2 } from './order2';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { RobinhoodOrderPlaceRequest } from './robinhood-order-place-request';
+import type { PlaceOrderRequestNinjaTrader } from './place-order-request-ninja-trader';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { TastyTradeOrderPlaceRequest } from './tasty-trade-order-place-request';
+import type { PlaceOrderRequestRobinhood } from './place-order-request-robinhood';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { PlaceOrderRequestTastyTrade } from './place-order-request-tasty-trade';
 
 /**
  * @type PlaceOrderApiBetaBrokersOrdersPostRequest
- * Broker-specific parameters object (varies by broker)
+ * Place order request with top-level broker, account_number, and order.
  */
-export type PlaceOrderApiBetaBrokersOrdersPostRequest = { broker: 'ninja_trader' } & NinjaTraderOrderPlaceRequest | { broker: 'robinhood' } & RobinhoodOrderPlaceRequest | { broker: 'tasty_trade' } & TastyTradeOrderPlaceRequest;
+export type PlaceOrderApiBetaBrokersOrdersPostRequest = { broker: 'ninja_trader' } & PlaceOrderRequestNinjaTrader | { broker: 'robinhood' } & PlaceOrderRequestRobinhood | { broker: 'tasty_trade' } & PlaceOrderRequestTastyTrade;
 
 

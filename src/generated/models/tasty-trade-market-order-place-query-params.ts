@@ -34,7 +34,7 @@ export interface TastyTradeMarketOrderPlaceQueryParams {
     'source'?: string | null;
     'value-effect'?: TastyTradeMarketOrderPlaceQueryParamsValueEffectEnum | null;
     'legs'?: Array<object> | null;
-    'accountNumber': Accountnumber;
+    'accountNumber'?: Accountnumber | null;
     'orderType': TastyTradeMarketOrderPlaceQueryParamsOrderTypeEnum;
     'assetType': TastyTradeMarketOrderPlaceQueryParamsAssetTypeEnum;
     'action': TastyTradeMarketOrderPlaceQueryParamsActionEnum;

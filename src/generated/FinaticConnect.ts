@@ -1632,13 +1632,9 @@ export class FinaticConnect extends EventEmitter {
    * Place a new order through the specified broker.
    * 
    * Creates an order using the broker connection associated with your account.
-   * The order structure includes common fields (symbol, quantity, order type, etc.)
-   * shared across all brokers, plus broker-specific fields that vary by broker.
-   * 
-   * Common order fields include: broker, accountNumber, orderType, assetType,
-   * action, timeInForce, symbol, and orderQty. Additional broker-specific fields
-   * can be included in the order object - see the broker-specific tabs in the
-   * parameters section for details.
+   * Request uses top-level broker, account_number, and order. The order object
+   * includes common fields (symbol, quantity, order type, etc.) shared across
+   * brokers plus broker-specific fields—see the broker-specific tabs for details.
    * @methodId place_order_api_beta_brokers_orders_post
    * @category brokers
    * @example

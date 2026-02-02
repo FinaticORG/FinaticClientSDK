@@ -6,6 +6,7 @@
  */
 
 import { CompanyApi } from '../api/company-api';
+
 import type { Configuration } from '../configuration';
 import type { SdkConfig } from '../config';
 import { generateRequestId } from '../utils/request-id';

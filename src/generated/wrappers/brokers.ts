@@ -6,6 +6,8 @@
  */
 
 import { BrokersApi } from '../api/brokers-api';
+import type { BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest, BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest } from '../api/brokers-api';
+
 import type { Configuration } from '../configuration';
 import type { SdkConfig } from '../config';
 import { generateRequestId } from '../utils/request-id';
@@ -270,56 +272,14 @@ export interface GetPositionLotFillsParams {
   offset?: number;
 }
 
-export interface PlaceOrderParams {
-  /** Broker identifier (robinhood, tasty_trade, ninja_trader) */
-  broker: string;
-  /** Account number for the order */
-  accountNumber: number;
-  /** Order details including required and optional fields */
-  order: {
-    /** Type of order (market, limit, etc.) */
-    orderType: string;
-    /** Type of asset (equity, equity_option, crypto, forex) */
-    assetType: string;
-    /** Order action (buy, sell) */
-    action: string;
-    /** Time in force for the order */
-    timeInForce: string;
-    /** Trading symbol */
-    symbol: string;
-    /** Order quantity */
-    orderQty: number;
-  };
-}
+export type PlaceOrderParams = BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest;
 
 export interface CancelOrderParams {
   /** Order ID */
   orderId: string;
 }
 
-export interface ModifyOrderParams {
-  /** Order ID */
-  orderId: string;
-  /** Broker identifier (robinhood, tasty_trade, ninja_trader) */
-  broker: string;
-  /** Account number for the order */
-  accountNumber: number;
-  /** Order details including required and optional fields */
-  order: {
-    /** Type of order (market, limit, etc.) */
-    orderType: string;
-    /** Type of asset (equity, equity_option, crypto, forex) */
-    assetType: string;
-    /** Order action (buy, sell) */
-    action: string;
-    /** Time in force for the order */
-    timeInForce: string;
-    /** Trading symbol */
-    symbol: string;
-    /** Order quantity */
-    orderQty: number;
-  };
-}
+export type ModifyOrderParams = BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest;
 
 
 /**
@@ -3152,13 +3112,9 @@ export class BrokersWrapper {
    * Place a new order through the specified broker.
    *
    * Creates an order using the broker connection associated with your account.
-   * The order structure includes common fields (symbol, quantity, order type, etc.)
-   * shared across all brokers, plus broker-specific fields that vary by broker.
-   *
-   * Common order fields include: broker, accountNumber, orderType, assetType,
-   * action, timeInForce, symbol, and orderQty. Additional broker-specific fields
-   * can be included in the order object - see the broker-specific tabs in the
-   * parameters section for details.
+   * Request uses top-level broker, account_number, and order. The order object
+   * includes common fields (symbol, quantity, order type, etc.) shared across
+   * brokers plus broker-specific fields—see the broker-specific tabs for details.
    * @param params.broker {string} Broker identifier (robinhood, tasty_trade, ninja_trader)
    * @param params.accountNumber {number} Account number for the order
    * @param params.order.orderType {string} Type of order (market, limit, etc.)
@@ -3236,7 +3192,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.placeOrderApiBetaBrokersOrdersPost({ placeOrderApiBetaBrokersOrdersPostRequest: { broker: resolvedParams.broker, order: { accountNumber: resolvedParams.accountNumber, ...resolvedParams.order, ...(resolvedParams.order.timeInForce !== undefined && typeof resolvedParams.order.timeInForce === 'string' ? { timeInForce: { timeInForce: resolvedParams.order.timeInForce } } : resolvedParams.order.timeInForce !== undefined ? { timeInForce: resolvedParams.order.timeInForce } : {}) } } }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.placeOrderApiBetaBrokersOrdersPost({ placeOrderApiBetaBrokersOrdersPostRequest: resolvedParams }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -3633,7 +3589,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.modifyOrderApiBetaBrokersOrdersOrderIdPatch({ placeOrderApiBetaBrokersOrdersPostRequest: { broker: resolvedParams.broker, order: { accountNumber: resolvedParams.accountNumber, ...resolvedParams.order, ...(resolvedParams.order.timeInForce !== undefined && typeof resolvedParams.order.timeInForce === 'string' ? { timeInForce: { timeInForce: resolvedParams.order.timeInForce } } : resolvedParams.order.timeInForce !== undefined ? { timeInForce: resolvedParams.order.timeInForce } : {}) } } }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.modifyOrderApiBetaBrokersOrdersOrderIdPatch(resolvedParams, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},

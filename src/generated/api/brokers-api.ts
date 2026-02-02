@@ -942,7 +942,7 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
             };
         },
         /**
-         * Place a new order through the specified broker.  Creates an order using the broker connection associated with your account. The order structure includes common fields (symbol, quantity, order type, etc.) shared across all brokers, plus broker-specific fields that vary by broker.  Common order fields include: broker, accountNumber, orderType, assetType, action, timeInForce, symbol, and orderQty. Additional broker-specific fields can be included in the order object - see the broker-specific tabs in the parameters section for details.
+         * Place a new order through the specified broker.  Creates an order using the broker connection associated with your account. Request uses top-level broker, account_number, and order. The order object includes common fields (symbol, quantity, order type, etc.) shared across brokers plus broker-specific fields—see the broker-specific tabs for details.
          * @summary Place Order
          * @param {string | null} [connectionId] Temporary bypass for testing: specify connection ID directly
          * @param {PlaceOrderApiBetaBrokersOrdersPostRequest | null} [placeOrderApiBetaBrokersOrdersPostRequest] 
@@ -1252,7 +1252,7 @@ export const BrokersApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Place a new order through the specified broker.  Creates an order using the broker connection associated with your account. The order structure includes common fields (symbol, quantity, order type, etc.) shared across all brokers, plus broker-specific fields that vary by broker.  Common order fields include: broker, accountNumber, orderType, assetType, action, timeInForce, symbol, and orderQty. Additional broker-specific fields can be included in the order object - see the broker-specific tabs in the parameters section for details.
+         * Place a new order through the specified broker.  Creates an order using the broker connection associated with your account. Request uses top-level broker, account_number, and order. The order object includes common fields (symbol, quantity, order type, etc.) shared across brokers plus broker-specific fields—see the broker-specific tabs for details.
          * @summary Place Order
          * @param {string | null} [connectionId] Temporary bypass for testing: specify connection ID directly
          * @param {PlaceOrderApiBetaBrokersOrdersPostRequest | null} [placeOrderApiBetaBrokersOrdersPostRequest] 
@@ -1423,7 +1423,7 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
             return localVarFp.modifyOrderApiBetaBrokersOrdersOrderIdPatch(requestParameters.orderId, requestParameters.accountNumber, requestParameters.connectionId, requestParameters.modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest, options).then((request) => request(axios, basePath));
         },
         /**
-         * Place a new order through the specified broker.  Creates an order using the broker connection associated with your account. The order structure includes common fields (symbol, quantity, order type, etc.) shared across all brokers, plus broker-specific fields that vary by broker.  Common order fields include: broker, accountNumber, orderType, assetType, action, timeInForce, symbol, and orderQty. Additional broker-specific fields can be included in the order object - see the broker-specific tabs in the parameters section for details.
+         * Place a new order through the specified broker.  Creates an order using the broker connection associated with your account. Request uses top-level broker, account_number, and order. The order object includes common fields (symbol, quantity, order type, etc.) shared across brokers plus broker-specific fields—see the broker-specific tabs for details.
          * @summary Place Order
          * @param {BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest} requestParameters Request parameters.
          * @param {*} [options] Override http request option.
@@ -1573,7 +1573,7 @@ export interface BrokersApiInterface {
     modifyOrderApiBetaBrokersOrdersOrderIdPatch(requestParameters: BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult>;
 
     /**
-     * Place a new order through the specified broker.  Creates an order using the broker connection associated with your account. The order structure includes common fields (symbol, quantity, order type, etc.) shared across all brokers, plus broker-specific fields that vary by broker.  Common order fields include: broker, accountNumber, orderType, assetType, action, timeInForce, symbol, and orderQty. Additional broker-specific fields can be included in the order object - see the broker-specific tabs in the parameters section for details.
+     * Place a new order through the specified broker.  Creates an order using the broker connection associated with your account. Request uses top-level broker, account_number, and order. The order object includes common fields (symbol, quantity, order type, etc.) shared across brokers plus broker-specific fields—see the broker-specific tabs for details.
      * @summary Place Order
      * @param {BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -2240,7 +2240,7 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
     }
 
     /**
-     * Place a new order through the specified broker.  Creates an order using the broker connection associated with your account. The order structure includes common fields (symbol, quantity, order type, etc.) shared across all brokers, plus broker-specific fields that vary by broker.  Common order fields include: broker, accountNumber, orderType, assetType, action, timeInForce, symbol, and orderQty. Additional broker-specific fields can be included in the order object - see the broker-specific tabs in the parameters section for details.
+     * Place a new order through the specified broker.  Creates an order using the broker connection associated with your account. Request uses top-level broker, account_number, and order. The order object includes common fields (symbol, quantity, order type, etc.) shared across brokers plus broker-specific fields—see the broker-specific tabs for details.
      * @summary Place Order
      * @param {BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.

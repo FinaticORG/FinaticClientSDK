@@ -18,7 +18,7 @@
 import type { Accountnumber } from './accountnumber';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { RobinhoodOptionSpreadLeg } from './robinhood-option-spread-leg';
+import type { FinaticBrokerFactoryBrokersRobinhoodExecutorsConsumerRobinhoodOrderPlaceQueryParamsRobinhoodOptionSpreadLeg } from './finatic-broker-factory-brokers-robinhood-executors-consumer-robinhood-order-place-query-params-robinhood-option-spread-leg';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Timeinforce1 } from './timeinforce1';
@@ -29,7 +29,7 @@ import type { Timeinforce1 } from './timeinforce1';
 export interface RobinhoodOptionStopOrderPlaceQueryParams {
     [key: string]: any;
 
-    'accountNumber': Accountnumber;
+    'accountNumber'?: Accountnumber | null;
     'orderType': RobinhoodOptionStopOrderPlaceQueryParamsOrderTypeEnum;
     'assetType'?: RobinhoodOptionStopOrderPlaceQueryParamsAssetTypeEnum;
     'action': RobinhoodOptionStopOrderPlaceQueryParamsActionEnum;
@@ -38,7 +38,7 @@ export interface RobinhoodOptionStopOrderPlaceQueryParams {
     'orderQty': number;
     'stopPrice': number;
     'direction'?: RobinhoodOptionStopOrderPlaceQueryParamsDirectionEnum | null;
-    'spread'?: Array<RobinhoodOptionSpreadLeg> | null;
+    'spread'?: Array<FinaticBrokerFactoryBrokersRobinhoodExecutorsConsumerRobinhoodOrderPlaceQueryParamsRobinhoodOptionSpreadLeg> | null;
     'positionEffect'?: RobinhoodOptionStopOrderPlaceQueryParamsPositionEffectEnum | null;
     'creditOrDebit'?: RobinhoodOptionStopOrderPlaceQueryParamsCreditOrDebitEnum | null;
     'expirationDate'?: string | null;

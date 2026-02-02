@@ -181,9 +181,9 @@ function App() {
         {authStatus.isAuthenticated && (
           <div className="data-section">
             <div className="actions">
-              <button 
-                onClick={handlePlaceOrder} 
-                className="btn btn-primary" 
+              <button
+                onClick={handlePlaceOrder}
+                className="btn btn-primary"
                 disabled={placingOrder}
               >
                 {placingOrder ? 'Placing Order...' : 'Place Order (Test)'}
@@ -199,13 +199,15 @@ function App() {
             {orderResult && (
               <div className="data-card" style={{ marginTop: '1rem' }}>
                 <h3>Order Result</h3>
-                <pre style={{ 
-                  background: '#f5f5f5', 
-                  padding: '1rem', 
-                  borderRadius: '4px',
-                  overflow: 'auto',
-                  maxHeight: '400px'
-                }}>
+                <pre
+                  style={{
+                    background: '#f5f5f5',
+                    padding: '1rem',
+                    borderRadius: '4px',
+                    overflow: 'auto',
+                    maxHeight: '400px',
+                  }}
+                >
                   {JSON.stringify(orderResult, null, 2)}
                 </pre>
               </div>

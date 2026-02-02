@@ -26,7 +26,7 @@ import type { Timeinforce1 } from './timeinforce1';
 export interface RobinhoodEquityLimitOrderPlaceQueryParams {
     [key: string]: any;
 
-    'accountNumber': Accountnumber;
+    'accountNumber'?: Accountnumber | null;
     'orderType': RobinhoodEquityLimitOrderPlaceQueryParamsOrderTypeEnum;
     'assetType'?: RobinhoodEquityLimitOrderPlaceQueryParamsAssetTypeEnum;
     'action': RobinhoodEquityLimitOrderPlaceQueryParamsActionEnum;

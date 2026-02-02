@@ -31,7 +31,7 @@ export interface NinjaTraderTrailingStopOrderPlaceQueryParams {
     'activationTime'?: string | null;
     'text'?: string | null;
     'pegDifference'?: number | null;
-    'accountNumber': Accountnumber;
+    'accountNumber'?: Accountnumber | null;
     'orderType': NinjaTraderTrailingStopOrderPlaceQueryParamsOrderTypeEnum;
     'assetType': NinjaTraderTrailingStopOrderPlaceQueryParamsAssetTypeEnum;
     'action': NinjaTraderTrailingStopOrderPlaceQueryParamsActionEnum;

@@ -39,8 +39,8 @@ import type { RobinhoodOptionTrailingStopOrderPlaceQueryParams } from './robinho
 import type { Timeinforce1 } from './timeinforce1';
 
 /**
- * @type Order1AnyOf1
+ * @type OrderAnyOf1
  */
-export type Order1AnyOf1 = { orderType: 'limit' } & RobinhoodOptionLimitOrderPlaceQueryParams | { orderType: 'market' } & RobinhoodOptionMarketOrderPlaceQueryParams | { orderType: 'stop' } & RobinhoodOptionStopOrderPlaceQueryParams | { orderType: 'stop_limit' } & RobinhoodOptionStopLimitOrderPlaceQueryParams | { orderType: 'trailing_stop' } & RobinhoodOptionTrailingStopOrderPlaceQueryParams;
+export type OrderAnyOf1 = { orderType: 'limit' } & RobinhoodOptionLimitOrderPlaceQueryParams | { orderType: 'market' } & RobinhoodOptionMarketOrderPlaceQueryParams | { orderType: 'stop' } & RobinhoodOptionStopOrderPlaceQueryParams | { orderType: 'stop_limit' } & RobinhoodOptionStopLimitOrderPlaceQueryParams | { orderType: 'trailing_stop' } & RobinhoodOptionTrailingStopOrderPlaceQueryParams;
 
 

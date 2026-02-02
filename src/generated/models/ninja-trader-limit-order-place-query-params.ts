@@ -31,7 +31,7 @@ export interface NinjaTraderLimitOrderPlaceQueryParams {
     'activationTime'?: string | null;
     'text'?: string | null;
     'pegDifference'?: number | null;
-    'accountNumber': Accountnumber;
+    'accountNumber'?: Accountnumber | null;
     'orderType': NinjaTraderLimitOrderPlaceQueryParamsOrderTypeEnum;
     'assetType': NinjaTraderLimitOrderPlaceQueryParamsAssetTypeEnum;
     'action': NinjaTraderLimitOrderPlaceQueryParamsActionEnum;

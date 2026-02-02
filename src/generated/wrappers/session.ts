@@ -6,6 +6,7 @@
  */
 
 import { SessionApi } from '../api/session-api';
+
 import type { Configuration } from '../configuration';
 import type { SdkConfig } from '../config';
 import { generateRequestId } from '../utils/request-id';
@@ -18,9 +19,9 @@ import { unwrapAxiosResponse } from '../utils/response-utils';
 import { coerceEnumValue } from '../utils/enum-coercion';
 import { convertToPlainObject } from '../utils/plain-object';
 
-import type { FinaticResponseSessionResponseData } from '../models';
 import type { FinaticResponseSessionUserResponse } from '../models';
 import type { FinaticapiCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2 } from '../models';
+import type { FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2 } from '../models';
 import type { FinaticapiCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2 } from '../models';
 import type { PortalUrlResponse } from '../models';
 import type { SessionResponseData } from '../models';
