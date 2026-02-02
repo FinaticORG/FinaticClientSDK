@@ -6,7 +6,7 @@
  */
 
 import { BrokersApi } from '../api/brokers-api';
-import type { BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest, BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest } from '../api/brokers-api';
+import type { BrokersApiCancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest, BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest, BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest } from '../api/brokers-api';
 
 import type { Configuration } from '../configuration';
 import type { SdkConfig } from '../config';
@@ -277,6 +277,10 @@ export type PlaceOrderParams = BrokersApiPlaceOrderApiBetaBrokersOrdersPostReque
 export interface CancelOrderParams {
   /** Order ID */
   orderId: string;
+  /** Broker identifier (robinhood, tasty_trade, ninja_trader) */
+  broker: string;
+  /** Account number for the order */
+  accountNumber: number;
 }
 
 export type ModifyOrderParams = BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest;
@@ -3192,7 +3196,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.placeOrderApiBetaBrokersOrdersPost({ placeOrderApiBetaBrokersOrdersPostRequest: resolvedParams }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.placeOrderApiBetaBrokersOrdersPost(resolvedParams, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -3325,6 +3329,8 @@ export class BrokersWrapper {
    * Cancels an order by its order ID. The broker connection is automatically
    * resolved from the order record.
    * @param params.orderId {string} Order ID
+   * @param params.broker {string} Broker identifier (robinhood, tasty_trade, ninja_trader)
+   * @param params.accountNumber {number} Account number for the order
    * @returns {Promise<FinaticResponse<OrderActionResult>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: DELETE /api/beta/brokers/orders/{order_id}
@@ -3332,9 +3338,10 @@ export class BrokersWrapper {
    * @category brokers
    * @example
    * ```typescript-client
-   * // Minimal example with required parameters only
    * const result = await finatic.cancelOrder({
-    orderId: 'example-id'
+   *   broker: 'robinhood',
+   *   accountNumber: 12345678,
+   *   orderId: 'example-id'
    * });
    * 
    * // Access the response data
@@ -3386,7 +3393,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.cancelOrderApiBetaBrokersOrdersOrderIdDelete({ orderId: resolvedParams.orderId ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.cancelOrderApiBetaBrokersOrdersOrderIdDelete(resolvedParams.orderId, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) }, data: { broker: resolvedParams.broker, account_number: resolvedParams.accountNumber, order: { order_id: resolvedParams.orderId } } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
