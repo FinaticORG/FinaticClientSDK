@@ -15,9 +15,6 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { FinaticBrokerFactoryBrokersRobinhoodExecutorsConsumerRobinhoodOrderPlaceQueryParamsRobinhoodOptionSpreadLeg } from './finatic-broker-factory-brokers-robinhood-executors-consumer-robinhood-order-place-query-params-robinhood-option-spread-leg';
-// May contain unused imports in some cases
-// @ts-ignore
 import type { Order1AnyOf } from './order1-any-of';
 // May contain unused imports in some cases
 // @ts-ignore
@@ -25,6 +22,9 @@ import type { Order1AnyOf1 } from './order1-any-of1';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Order1AnyOf2 } from './order1-any-of2';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { RobinhoodOptionSpreadLeg } from './robinhood-option-spread-leg';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Timeinforce1 } from './timeinforce1';
@@ -48,7 +48,7 @@ export interface Order1 {
     'stopPrice': number;
     'limitPrice': number;
     'direction'?: Order1DirectionEnum;
-    'spread'?: Array<FinaticBrokerFactoryBrokersRobinhoodExecutorsConsumerRobinhoodOrderPlaceQueryParamsRobinhoodOptionSpreadLeg>;
+    'spread'?: Array<RobinhoodOptionSpreadLeg>;
     'positionEffect'?: Order1PositionEffectEnum;
     'creditOrDebit'?: Order1CreditOrDebitEnum;
     'expirationDate'?: string;

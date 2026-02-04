@@ -18,15 +18,15 @@
 import type { Accountnumber } from './accountnumber';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order4 } from './order4';
+import type { OrderModifyQueryParamsBase } from './order-modify-query-params-base';
 
 /**
- * TastyTrade modify-order request body (partial update).  Attributes ---------- broker : Literal[\"tasty_trade\"]     Discriminator; must be ``\"tasty_trade\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : TastyTradeOrderModifyQueryParamsUnion     TastyTrade-specific modify parameters.  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``.
+ * TastyTrade modify-order request body (partial update).  Attributes ---------- broker : Literal[\"tasty_trade\"]     Discriminator; must be ``\"tasty_trade\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : OrderModifyQueryParamsBase     Delta of fields to change; backend merges with existing order.  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``.
  */
 export interface TastyTradeOrderModifyRequest {
     'broker': TastyTradeOrderModifyRequestBrokerEnum;
     'accountNumber': Accountnumber;
-    'order': Order4;
+    'order': OrderModifyQueryParamsBase;
 }
 
 export enum TastyTradeOrderModifyRequestBrokerEnum {

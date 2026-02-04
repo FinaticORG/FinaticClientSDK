@@ -50,7 +50,6 @@ import type { FinaticResponseListUserBrokerConnectionWithPermissions } from '../
 import type { FinaticResponseOrderActionResult } from '../models';
 import type { LegacyBrokerAccount } from '../models';
 import type { LegacyBrokerBalance } from '../models';
-import type { NinjaTraderOrderCancelRequest } from '../models';
 import type { NinjaTraderOrderModifyRequest } from '../models';
 import type { OrderActionResult } from '../models';
 import type { UserBrokerConnectionWithPermissions } from '../models';
@@ -3460,7 +3459,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.cancelOrderApiBetaBrokersOrdersOrderIdDelete({ orderId: resolvedParams.orderId }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) }, data: { broker: resolvedParams.broker, account_number: resolvedParams.accountNumber, order: { order_id: resolvedParams.orderId } } });
+          const apiResponse = await this.api.cancelOrderApiBetaBrokersOrdersOrderIdDelete({ orderId: resolvedParams.orderId, cancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest: { broker: resolvedParams.broker, accountNumber: resolvedParams.accountNumber, order: { order_id: resolvedParams.orderId } } }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -3682,7 +3681,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.modifyOrderApiBetaBrokersOrdersOrderIdPatch({ orderId: resolvedParams.orderId, connectionId: resolvedParams.connectionId ?? null, accountNumber: resolvedParams.accountNumber != null ? String(resolvedParams.accountNumber) : null, modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest: { broker: resolvedParams.broker, accountNumber: resolvedParams.accountNumber != null ? String(resolvedParams.accountNumber) : null, order: resolvedParams.order } as NonNullable<BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest['modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest']> }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.modifyOrderApiBetaBrokersOrdersOrderIdPatch({ orderId: resolvedParams.orderId, orderRequest: { broker: resolvedParams.broker, accountNumber: resolvedParams.accountNumber != null ? String(resolvedParams.accountNumber) : null, order: resolvedParams.order }, connectionId: resolvedParams.connectionId ?? undefined }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},

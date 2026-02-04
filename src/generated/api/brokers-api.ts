@@ -30,6 +30,8 @@ import type { BrokerDataOrderSideEnum } from '../models';
 // @ts-ignore
 import type { BrokerDataPositionStatusEnum } from '../models';
 // @ts-ignore
+import type { CancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest } from '../models';
+// @ts-ignore
 import type { FinaticAPIErrorResponse } from '../models';
 // @ts-ignore
 import type { FinaticResponseDisconnectCompanyFromBrokerConnectionResult } from '../models';
@@ -62,8 +64,6 @@ import type { FinaticResponseOrderActionResult } from '../models';
 // @ts-ignore
 import type { OrderRequest } from '../models';
 // @ts-ignore
-import type { OrderRequest1 } from '../models';
-// @ts-ignore
 import type { PlaceOrderApiBetaBrokersOrdersPostRequest } from '../models';
 /**
  * BrokersApi - axios parameter creator
@@ -74,15 +74,13 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * Cancel an existing order.  Request must include broker and account_number in the body; order_id is in the path. Connection is resolved by broker and account_number.
          * @summary Cancel Order
          * @param {string} orderId Broker-provided order ID to cancel
-         * @param {OrderRequest} orderRequest 
+         * @param {CancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest | null} [cancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        cancelOrderApiBetaBrokersOrdersOrderIdDelete: async (orderId: string, orderRequest: OrderRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        cancelOrderApiBetaBrokersOrdersOrderIdDelete: async (orderId: string, cancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest?: CancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'orderId' is not null or undefined
             assertParamExists('cancelOrderApiBetaBrokersOrdersOrderIdDelete', 'orderId', orderId)
-            // verify required parameter 'orderRequest' is not null or undefined
-            assertParamExists('cancelOrderApiBetaBrokersOrdersOrderIdDelete', 'orderRequest', orderRequest)
             const localVarPath = `/api/beta/brokers/orders/{order_id}`
                 .replace(`{${"order_id"}}`, encodeURIComponent(String(orderId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -102,7 +100,7 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(orderRequest, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(cancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -905,16 +903,16 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
          * Modify an existing order.  Request must include broker and account_number in the body; order_id is in the path. Connection is resolved by broker and account_number. The order object is a partial update.
          * @summary Modify Order
          * @param {string} orderId Broker-provided order ID to modify
-         * @param {OrderRequest1} orderRequest1 
+         * @param {OrderRequest} orderRequest 
          * @param {string | null} [connectionId] Temporary bypass for testing: specify connection ID directly
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        modifyOrderApiBetaBrokersOrdersOrderIdPatch: async (orderId: string, orderRequest1: OrderRequest1, connectionId?: string | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        modifyOrderApiBetaBrokersOrdersOrderIdPatch: async (orderId: string, orderRequest: OrderRequest, connectionId?: string | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'orderId' is not null or undefined
             assertParamExists('modifyOrderApiBetaBrokersOrdersOrderIdPatch', 'orderId', orderId)
-            // verify required parameter 'orderRequest1' is not null or undefined
-            assertParamExists('modifyOrderApiBetaBrokersOrdersOrderIdPatch', 'orderRequest1', orderRequest1)
+            // verify required parameter 'orderRequest' is not null or undefined
+            assertParamExists('modifyOrderApiBetaBrokersOrdersOrderIdPatch', 'orderRequest', orderRequest)
             const localVarPath = `/api/beta/brokers/orders/{order_id}`
                 .replace(`{${"order_id"}}`, encodeURIComponent(String(orderId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -938,7 +936,7 @@ export const BrokersApiAxiosParamCreator = function (configuration?: Configurati
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(orderRequest1, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(orderRequest, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -996,12 +994,12 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * Cancel an existing order.  Request must include broker and account_number in the body; order_id is in the path. Connection is resolved by broker and account_number.
          * @summary Cancel Order
          * @param {string} orderId Broker-provided order ID to cancel
-         * @param {OrderRequest} orderRequest 
+         * @param {CancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest | null} [cancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async cancelOrderApiBetaBrokersOrdersOrderIdDelete(orderId: string, orderRequest: OrderRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseOrderActionResult>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.cancelOrderApiBetaBrokersOrdersOrderIdDelete(orderId, orderRequest, options);
+        async cancelOrderApiBetaBrokersOrdersOrderIdDelete(orderId: string, cancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest?: CancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseOrderActionResult>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.cancelOrderApiBetaBrokersOrdersOrderIdDelete(orderId, cancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.cancelOrderApiBetaBrokersOrdersOrderIdDelete']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -1244,13 +1242,13 @@ export const BrokersApiFp = function(configuration?: Configuration) {
          * Modify an existing order.  Request must include broker and account_number in the body; order_id is in the path. Connection is resolved by broker and account_number. The order object is a partial update.
          * @summary Modify Order
          * @param {string} orderId Broker-provided order ID to modify
-         * @param {OrderRequest1} orderRequest1 
+         * @param {OrderRequest} orderRequest 
          * @param {string | null} [connectionId] Temporary bypass for testing: specify connection ID directly
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async modifyOrderApiBetaBrokersOrdersOrderIdPatch(orderId: string, orderRequest1: OrderRequest1, connectionId?: string | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseOrderActionResult>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.modifyOrderApiBetaBrokersOrdersOrderIdPatch(orderId, orderRequest1, connectionId, options);
+        async modifyOrderApiBetaBrokersOrdersOrderIdPatch(orderId: string, orderRequest: OrderRequest, connectionId?: string | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseOrderActionResult>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.modifyOrderApiBetaBrokersOrdersOrderIdPatch(orderId, orderRequest, connectionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BrokersApi.modifyOrderApiBetaBrokersOrdersOrderIdPatch']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -1286,7 +1284,7 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
          * @throws {RequiredError}
          */
         cancelOrderApiBetaBrokersOrdersOrderIdDelete(requestParameters: BrokersApiCancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult> {
-            return localVarFp.cancelOrderApiBetaBrokersOrdersOrderIdDelete(requestParameters.orderId, requestParameters.orderRequest, options).then((request) => request(axios, basePath));
+            return localVarFp.cancelOrderApiBetaBrokersOrdersOrderIdDelete(requestParameters.orderId, requestParameters.cancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest, options).then((request) => request(axios, basePath));
         },
         /**
          * Remove a company\'s access to a broker connection.  If the company is the only one with access, the entire connection is deleted. If other companies have access, only the company\'s access is removed.
@@ -1424,7 +1422,7 @@ export const BrokersApiFactory = function (configuration?: Configuration, basePa
          * @throws {RequiredError}
          */
         modifyOrderApiBetaBrokersOrdersOrderIdPatch(requestParameters: BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseOrderActionResult> {
-            return localVarFp.modifyOrderApiBetaBrokersOrdersOrderIdPatch(requestParameters.orderId, requestParameters.orderRequest1, requestParameters.connectionId, options).then((request) => request(axios, basePath));
+            return localVarFp.modifyOrderApiBetaBrokersOrdersOrderIdPatch(requestParameters.orderId, requestParameters.orderRequest, requestParameters.connectionId, options).then((request) => request(axios, basePath));
         },
         /**
          * Place a new order through the specified broker.  Creates an order using the broker connection associated with your account. Request uses top-level broker, account_number, and order. The order object includes common fields (symbol, quantity, order type, etc.) shared across brokers plus broker-specific fields—see the broker-specific tabs for details.
@@ -1596,7 +1594,7 @@ export interface BrokersApiCancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest {
      */
     readonly orderId: string
 
-    readonly orderRequest: OrderRequest
+    readonly cancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest?: CancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest | null
 }
 
 /**
@@ -2053,7 +2051,7 @@ export interface BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest {
      */
     readonly orderId: string
 
-    readonly orderRequest1: OrderRequest1
+    readonly orderRequest: OrderRequest
 
     /**
      * Temporary bypass for testing: specify connection ID directly
@@ -2085,7 +2083,7 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
      * @throws {RequiredError}
      */
     public cancelOrderApiBetaBrokersOrdersOrderIdDelete(requestParameters: BrokersApiCancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).cancelOrderApiBetaBrokersOrdersOrderIdDelete(requestParameters.orderId, requestParameters.orderRequest, options).then((request) => request(this.axios, this.basePath));
+        return BrokersApiFp(this.configuration).cancelOrderApiBetaBrokersOrdersOrderIdDelete(requestParameters.orderId, requestParameters.cancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2237,7 +2235,7 @@ export class BrokersApi extends BaseAPI implements BrokersApiInterface {
      * @throws {RequiredError}
      */
     public modifyOrderApiBetaBrokersOrdersOrderIdPatch(requestParameters: BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest, options?: RawAxiosRequestConfig) {
-        return BrokersApiFp(this.configuration).modifyOrderApiBetaBrokersOrdersOrderIdPatch(requestParameters.orderId, requestParameters.orderRequest1, requestParameters.connectionId, options).then((request) => request(this.axios, this.basePath));
+        return BrokersApiFp(this.configuration).modifyOrderApiBetaBrokersOrdersOrderIdPatch(requestParameters.orderId, requestParameters.orderRequest, requestParameters.connectionId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

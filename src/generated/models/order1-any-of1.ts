@@ -15,13 +15,13 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { FinaticBrokerFactoryBrokersRobinhoodExecutorsConsumerRobinhoodOrderPlaceQueryParamsRobinhoodOptionSpreadLeg } from './finatic-broker-factory-brokers-robinhood-executors-consumer-robinhood-order-place-query-params-robinhood-option-spread-leg';
-// May contain unused imports in some cases
-// @ts-ignore
 import type { RobinhoodOptionLimitOrderPlaceQueryParams } from './robinhood-option-limit-order-place-query-params';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { RobinhoodOptionMarketOrderPlaceQueryParams } from './robinhood-option-market-order-place-query-params';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { RobinhoodOptionSpreadLeg } from './robinhood-option-spread-leg';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { RobinhoodOptionStopLimitOrderPlaceQueryParams } from './robinhood-option-stop-limit-order-place-query-params';

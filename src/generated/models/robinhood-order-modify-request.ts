@@ -18,15 +18,15 @@
 import type { Accountnumber } from './accountnumber';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order5 } from './order5';
+import type { OrderModifyQueryParamsBase } from './order-modify-query-params-base';
 
 /**
- * Robinhood modify-order request body (partial update).  Attributes ---------- broker : Literal[\"robinhood\"]     Discriminator; must be ``\"robinhood\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : RobinhoodOrderModifyQueryParamsUnion     Robinhood-specific modify parameters (e.g. order id, quantity, price).  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``.
+ * Robinhood modify-order request body (partial update).  Attributes ---------- broker : Literal[\"robinhood\"]     Discriminator; must be ``\"robinhood\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : OrderModifyQueryParamsBase     Delta of fields to change; backend merges with existing order.  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``.
  */
 export interface RobinhoodOrderModifyRequest {
     'broker': RobinhoodOrderModifyRequestBrokerEnum;
     'accountNumber': Accountnumber;
-    'order': Order5;
+    'order': OrderModifyQueryParamsBase;
 }
 
 export enum RobinhoodOrderModifyRequestBrokerEnum {

@@ -18,15 +18,15 @@
 import type { Accountnumber } from './accountnumber';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order3 } from './order3';
+import type { OrderModifyQueryParamsBase } from './order-modify-query-params-base';
 
 /**
- * NinjaTrader modify-order request body (partial update).  Attributes ---------- broker : Literal[\"ninja_trader\"]     Discriminator; must be ``\"ninja_trader\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : NinjaTraderOrderModifyQueryParamsUnion     NinjaTrader-specific modify parameters.  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``.
+ * NinjaTrader modify-order request body (partial update).  Attributes ---------- broker : Literal[\"ninja_trader\"]     Discriminator; must be ``\"ninja_trader\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : OrderModifyQueryParamsBase     Delta of fields to change; backend merges with existing order.  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``.
  */
 export interface NinjaTraderOrderModifyRequest {
     'broker': NinjaTraderOrderModifyRequestBrokerEnum;
     'accountNumber': Accountnumber;
-    'order': Order3;
+    'order': OrderModifyQueryParamsBase;
 }
 
 export enum NinjaTraderOrderModifyRequestBrokerEnum {

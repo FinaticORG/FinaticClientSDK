@@ -18,24 +18,24 @@
 import type { Accountnumber } from './accountnumber';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { NinjaTraderOrderCancelRequest } from './ninja-trader-order-cancel-request';
+import type { NinjaTraderOrderModifyRequest } from './ninja-trader-order-modify-request';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { RobinhoodOrderCancelQueryParams } from './robinhood-order-cancel-query-params';
+import type { OrderModifyQueryParamsBase } from './order-modify-query-params-base';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { RobinhoodOrderCancelRequest } from './robinhood-order-cancel-request';
+import type { RobinhoodOrderModifyRequest } from './robinhood-order-modify-request';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { TastyTradeOrderCancelRequest } from './tasty-trade-order-cancel-request';
+import type { TastyTradeOrderModifyRequest } from './tasty-trade-order-modify-request';
 
 /**
- * Cancel request with top-level broker and account_number
+ * Modify request with top-level broker, account_number, and partial order.
  */
 export interface OrderRequest {
     'broker': OrderRequestBrokerEnum;
     'accountNumber': Accountnumber;
-    'order': RobinhoodOrderCancelQueryParams;
+    'order': OrderModifyQueryParamsBase;
 }
 
 export enum OrderRequestBrokerEnum {
