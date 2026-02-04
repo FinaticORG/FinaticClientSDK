@@ -15,9 +15,6 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Accountnumber } from './accountnumber';
-// May contain unused imports in some cases
-// @ts-ignore
 import type { RobinhoodEquityLimitOrderPlaceQueryParams } from './robinhood-equity-limit-order-place-query-params';
 // May contain unused imports in some cases
 // @ts-ignore

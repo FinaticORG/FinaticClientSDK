@@ -15,10 +15,17 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
+import type { Accountnumber } from './accountnumber';
+// May contain unused imports in some cases
+// @ts-ignore
 import type { Order4 } from './order4';
 
+/**
+ * TastyTrade modify-order request body (partial update).  Attributes ---------- broker : Literal[\"tasty_trade\"]     Discriminator; must be ``\"tasty_trade\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : TastyTradeOrderModifyQueryParamsUnion     TastyTrade-specific modify parameters.  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``.
+ */
 export interface TastyTradeOrderModifyRequest {
     'broker': TastyTradeOrderModifyRequestBrokerEnum;
+    'accountNumber': Accountnumber;
     'order': Order4;
 }
 

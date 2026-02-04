@@ -15,9 +15,6 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Accountnumber } from './accountnumber';
-// May contain unused imports in some cases
-// @ts-ignore
 import type { FinaticBrokerFactoryBrokersRobinhoodExecutorsConsumerRobinhoodOrderPlaceQueryParamsRobinhoodOptionSpreadLeg } from './finatic-broker-factory-brokers-robinhood-executors-consumer-robinhood-order-place-query-params-robinhood-option-spread-leg';
 // May contain unused imports in some cases
 // @ts-ignore
@@ -29,7 +26,6 @@ import type { Timeinforce1 } from './timeinforce1';
 export interface RobinhoodOptionLimitOrderPlaceQueryParams {
     [key: string]: any;
 
-    'accountNumber'?: Accountnumber | null;
     'orderType': RobinhoodOptionLimitOrderPlaceQueryParamsOrderTypeEnum;
     'assetType'?: RobinhoodOptionLimitOrderPlaceQueryParamsAssetTypeEnum;
     'action': RobinhoodOptionLimitOrderPlaceQueryParamsActionEnum;

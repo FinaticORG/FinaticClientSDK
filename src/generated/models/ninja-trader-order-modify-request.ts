@@ -15,10 +15,17 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
+import type { Accountnumber } from './accountnumber';
+// May contain unused imports in some cases
+// @ts-ignore
 import type { Order3 } from './order3';
 
+/**
+ * NinjaTrader modify-order request body (partial update).  Attributes ---------- broker : Literal[\"ninja_trader\"]     Discriminator; must be ``\"ninja_trader\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : NinjaTraderOrderModifyQueryParamsUnion     NinjaTrader-specific modify parameters.  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``.
+ */
 export interface NinjaTraderOrderModifyRequest {
     'broker': NinjaTraderOrderModifyRequestBrokerEnum;
+    'accountNumber': Accountnumber;
     'order': Order3;
 }
 

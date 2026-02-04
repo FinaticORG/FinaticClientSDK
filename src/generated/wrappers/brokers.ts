@@ -50,6 +50,8 @@ import type { FinaticResponseListUserBrokerConnectionWithPermissions } from '../
 import type { FinaticResponseOrderActionResult } from '../models';
 import type { LegacyBrokerAccount } from '../models';
 import type { LegacyBrokerBalance } from '../models';
+import type { NinjaTraderOrderCancelRequest } from '../models';
+import type { NinjaTraderOrderModifyRequest } from '../models';
 import type { OrderActionResult } from '../models';
 import type { UserBrokerConnectionWithPermissions } from '../models';
 
@@ -272,10 +274,32 @@ export interface GetPositionLotFillsParams {
   offset?: number;
 }
 
-export type PlaceOrderParams = BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest;
+export interface PlaceOrderParams {
+  /** Broker identifier (robinhood, tasty_trade, ninja_trader) */
+  broker: string;
+  /** Account number for the order */
+  accountNumber: number;
+  /** Order details including required and optional fields */
+  order: {
+    /** Type of order (market, limit, etc.) */
+    orderType: string;
+    /** Type of asset (equity, equity_option, crypto, forex) */
+    assetType: string;
+    /** Order action (buy, sell) */
+    action: string;
+    /** Time in force for the order */
+    timeInForce: string;
+    /** Trading symbol */
+    symbol: string;
+    /** Order quantity */
+    orderQty: number;
+  };
+  /** Temporary bypass for testing: specify connection ID directly */
+  connectionId?: string;
+}
 
 export interface CancelOrderParams {
-  /** Order ID */
+  /** Broker-provided order ID to cancel */
   orderId: string;
   /** Broker identifier (robinhood, tasty_trade, ninja_trader) */
   broker: string;
@@ -283,7 +307,33 @@ export interface CancelOrderParams {
   accountNumber: number;
 }
 
-export type ModifyOrderParams = BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest;
+export interface ModifyOrderParams {
+  /** Broker-provided order ID to modify */
+  orderId: string;
+  /** Broker identifier (robinhood, tasty_trade, ninja_trader) */
+  broker: string;
+  /** Account number for the order */
+  accountNumber: number;
+  /** Delta: only include fields you want to change (at least one required) */
+  order: {
+    /** Order quantity (optional) */
+    orderQty?: number;
+    /** Limit price (optional) */
+    price?: number;
+    /** Stop price (optional) */
+    stopPrice?: number;
+    /** Time in force (optional) */
+    time_in_force?: string;
+    /** Order type (optional) */
+    orderType?: string;
+    /** Asset type (optional) */
+    assetType?: string;
+    /** Expire time ISO 8601 (optional) */
+    expireTime?: string;
+  };
+  /** Temporary bypass for testing: specify connection ID directly */
+  connectionId?: string;
+}
 
 
 /**
@@ -3127,6 +3177,7 @@ export class BrokersWrapper {
    * @param params.order.timeInForce {string} Time in force for the order
    * @param params.order.symbol {string} Trading symbol
    * @param params.order.orderQty {number} Order quantity
+   * @param params.connectionId {string} (optional) Temporary bypass for testing: specify connection ID directly
    * @returns {Promise<FinaticResponse<OrderActionResult>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: POST /api/beta/brokers/orders
@@ -3152,6 +3203,23 @@ export class BrokersWrapper {
    *   console.log('Data:', result.success.data);
    * } else if (result.error) {
    *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.placeOrder({
+    connectionId: 'example-id'
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
    * }
    * ```
    */
@@ -3196,7 +3264,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.placeOrderApiBetaBrokersOrdersPost(resolvedParams, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.placeOrderApiBetaBrokersOrdersPost({ connectionId: resolvedParams.connectionId ?? null, placeOrderApiBetaBrokersOrdersPostRequest: { broker: resolvedParams.broker, accountNumber: resolvedParams.accountNumber != null ? String(resolvedParams.accountNumber) : null, order: resolvedParams.order } as NonNullable<BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest['placeOrderApiBetaBrokersOrdersPostRequest']> }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -3326,9 +3394,9 @@ export class BrokersWrapper {
    * 
    * Cancel an existing order.
    *
-   * Cancels an order by its order ID. The broker connection is automatically
-   * resolved from the order record.
-   * @param params.orderId {string} Order ID
+   * Request must include broker and account_number in the body; order_id is in the path.
+   * Connection is resolved by broker and account_number.
+   * @param params.orderId {string} Broker-provided order ID to cancel
    * @param params.broker {string} Broker identifier (robinhood, tasty_trade, ninja_trader)
    * @param params.accountNumber {number} Account number for the order
    * @returns {Promise<FinaticResponse<OrderActionResult>>} Standard response with success/Error/Warning structure
@@ -3338,10 +3406,9 @@ export class BrokersWrapper {
    * @category brokers
    * @example
    * ```typescript-client
+   * // Minimal example with required parameters only
    * const result = await finatic.cancelOrder({
-   *   broker: 'robinhood',
-   *   accountNumber: 12345678,
-   *   orderId: 'example-id'
+    orderId: 'example-id'
    * });
    * 
    * // Access the response data
@@ -3393,7 +3460,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.cancelOrderApiBetaBrokersOrdersOrderIdDelete(resolvedParams.orderId, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) }, data: { broker: resolvedParams.broker, account_number: resolvedParams.accountNumber, order: { order_id: resolvedParams.orderId } } });
+          const apiResponse = await this.api.cancelOrderApiBetaBrokersOrdersOrderIdDelete({ orderId: resolvedParams.orderId }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) }, data: { broker: resolvedParams.broker, account_number: resolvedParams.accountNumber, order: { order_id: resolvedParams.orderId } } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
@@ -3523,18 +3590,19 @@ export class BrokersWrapper {
    * 
    * Modify an existing order.
    *
-   * Updates an order's parameters (price, quantity, etc.) by order ID.
-   * The order structure follows the same pattern as placing orders, with common
-   * fields shared across brokers and broker-specific fields available per broker.
-   * @param params.orderId {string} Order ID
+   * Request must include broker and account_number in the body; order_id is in the path.
+   * Connection is resolved by broker and account_number. The order object is a partial update.
+   * @param params.orderId {string} Broker-provided order ID to modify
    * @param params.broker {string} Broker identifier (robinhood, tasty_trade, ninja_trader)
    * @param params.accountNumber {number} Account number for the order
-   * @param params.order.orderType {string} Type of order (market, limit, etc.)
-   * @param params.order.assetType {string} Type of asset (equity, equity_option, crypto, forex)
-   * @param params.order.action {string} Order action (buy, sell)
-   * @param params.order.timeInForce {string} Time in force for the order
-   * @param params.order.symbol {string} Trading symbol
-   * @param params.order.orderQty {number} Order quantity
+   * @param params.order.orderQty {number} (optional) Order quantity (optional)
+   * @param params.order.price {number} (optional) Limit price (optional)
+   * @param params.order.stopPrice {number} (optional) Stop price (optional)
+   * @param params.order.time_in_force {string} (optional) Time in force (optional)
+   * @param params.order.orderType {string} (optional) Order type (optional)
+   * @param params.order.assetType {string} (optional) Asset type (optional)
+   * @param params.order.expireTime {string} (optional) Expire time ISO 8601 (optional)
+   * @param params.connectionId {string} (optional) Temporary bypass for testing: specify connection ID directly
    * @returns {Promise<FinaticResponse<OrderActionResult>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: PATCH /api/beta/brokers/orders/{order_id}
@@ -3552,6 +3620,24 @@ export class BrokersWrapper {
    *   console.log('Data:', result.success.data);
    * } else if (result.error) {
    *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.modifyOrder({
+    orderId: 'example-id',
+    connectionId: 'example-id'
+   * });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
    * }
    * ```
    */
@@ -3596,7 +3682,7 @@ export class BrokersWrapper {
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.modifyOrderApiBetaBrokersOrdersOrderIdPatch(resolvedParams, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.modifyOrderApiBetaBrokersOrdersOrderIdPatch({ orderId: resolvedParams.orderId, connectionId: resolvedParams.connectionId ?? null, accountNumber: resolvedParams.accountNumber != null ? String(resolvedParams.accountNumber) : null, modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest: { broker: resolvedParams.broker, accountNumber: resolvedParams.accountNumber != null ? String(resolvedParams.accountNumber) : null, order: resolvedParams.order } as NonNullable<BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest['modifyOrderApiBetaBrokersOrdersOrderIdPatchRequest']> }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},

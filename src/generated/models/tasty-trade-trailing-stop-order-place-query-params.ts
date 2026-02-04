@@ -15,9 +15,6 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Accountnumber } from './accountnumber';
-// May contain unused imports in some cases
-// @ts-ignore
 import type { Timeinforce1 } from './timeinforce1';
 
 /**
@@ -34,7 +31,6 @@ export interface TastyTradeTrailingStopOrderPlaceQueryParams {
     'source'?: string | null;
     'value-effect'?: TastyTradeTrailingStopOrderPlaceQueryParamsValueEffectEnum | null;
     'legs'?: Array<object> | null;
-    'accountNumber'?: Accountnumber | null;
     'orderType': TastyTradeTrailingStopOrderPlaceQueryParamsOrderTypeEnum;
     'assetType': TastyTradeTrailingStopOrderPlaceQueryParamsAssetTypeEnum;
     'action': TastyTradeTrailingStopOrderPlaceQueryParamsActionEnum;

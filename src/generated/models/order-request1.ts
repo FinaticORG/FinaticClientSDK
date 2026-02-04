@@ -18,21 +18,28 @@
 import type { Accountnumber } from './accountnumber';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { NinjaTraderOrderPlaceRequest } from './ninja-trader-order-place-request';
+import type { NinjaTraderOrderModifyRequest } from './ninja-trader-order-modify-request';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order2 } from './order2';
+import type { Order5 } from './order5';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { RobinhoodOrderPlaceRequest } from './robinhood-order-place-request';
+import type { RobinhoodOrderModifyRequest } from './robinhood-order-modify-request';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { TastyTradeOrderPlaceRequest } from './tasty-trade-order-place-request';
+import type { TastyTradeOrderModifyRequest } from './tasty-trade-order-modify-request';
 
 /**
- * @type PlaceOrderApiBetaBrokersOrdersPostRequest
- * Broker-specific parameters object (varies by broker)
+ * Modify request with top-level broker, account_number, and partial order.
  */
-export type PlaceOrderApiBetaBrokersOrdersPostRequest = { broker: 'ninja_trader' } & NinjaTraderOrderPlaceRequest | { broker: 'robinhood' } & RobinhoodOrderPlaceRequest | { broker: 'tasty_trade' } & TastyTradeOrderPlaceRequest;
+export interface OrderRequest1 {
+    'broker': OrderRequest1BrokerEnum;
+    'accountNumber': Accountnumber;
+    'order': Order5;
+}
+
+export enum OrderRequest1BrokerEnum {
+    Robinhood = 'robinhood'
+}
 
 

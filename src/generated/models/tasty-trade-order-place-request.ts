@@ -15,13 +15,17 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
+import type { Accountnumber } from './accountnumber';
+// May contain unused imports in some cases
+// @ts-ignore
 import type { Order2 } from './order2';
 
 /**
- * Wrapper model for TastyTrade **place order** requests (generic payload).
+ * TastyTrade place-order request body.  Attributes ---------- broker : Literal[\"tasty_trade\"]     Discriminator; must be ``\"tasty_trade\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : TastyTradeOrderPlaceQueryParamsUnion     TastyTrade-specific order parameters (equity, options, etc.).  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``.
  */
 export interface TastyTradeOrderPlaceRequest {
     'broker': TastyTradeOrderPlaceRequestBrokerEnum;
+    'accountNumber': Accountnumber;
     'order': Order2;
 }
 

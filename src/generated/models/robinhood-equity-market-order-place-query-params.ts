@@ -15,9 +15,6 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Accountnumber } from './accountnumber';
-// May contain unused imports in some cases
-// @ts-ignore
 import type { Timeinforce1 } from './timeinforce1';
 
 /**
@@ -26,7 +23,6 @@ import type { Timeinforce1 } from './timeinforce1';
 export interface RobinhoodEquityMarketOrderPlaceQueryParams {
     [key: string]: any;
 
-    'accountNumber'?: Accountnumber | null;
     'orderType': RobinhoodEquityMarketOrderPlaceQueryParamsOrderTypeEnum;
     'assetType'?: RobinhoodEquityMarketOrderPlaceQueryParamsAssetTypeEnum;
     'action': RobinhoodEquityMarketOrderPlaceQueryParamsActionEnum;

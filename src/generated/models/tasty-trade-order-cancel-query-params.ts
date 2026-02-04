@@ -15,8 +15,16 @@
 
 
 /**
- * Broker-provided account number (top-level).
+ * Cancel-order payload enriched with TastyTrade-specific *account_number*.
  */
-export interface Accountnumber {
+export interface TastyTradeOrderCancelQueryParams {
+    /**
+     * Broker-assigned order identifier
+     */
+    'orderId': string;
+    /**
+     * TastyTrade account number owning the order.
+     */
+    'accountNumber': number;
 }
 

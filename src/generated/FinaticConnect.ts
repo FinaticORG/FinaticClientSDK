@@ -1660,6 +1660,21 @@ export class FinaticConnect extends EventEmitter {
    * }
    * ```
    * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.placeOrder({ connectionId: 'example-id' });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
+   * }
+   * ```
+   * @example
    * ```typescript-server
    * // Example with no parameters
    * const result = await finatic.placeOrder();
@@ -1703,8 +1718,8 @@ export class FinaticConnect extends EventEmitter {
    * 
    * Cancel an existing order.
    * 
-   * Cancels an order by its order ID. The broker connection is automatically
-   * resolved from the order record.
+   * Request must include broker and account_number in the body; order_id is in the path.
+   * Connection is resolved by broker and account_number.
    * @methodId cancel_order_api_beta_brokers_orders__order_id__delete
    * @category brokers
    * @example
@@ -1754,9 +1769,8 @@ export class FinaticConnect extends EventEmitter {
    * 
    * Modify an existing order.
    * 
-   * Updates an order's parameters (price, quantity, etc.) by order ID.
-   * The order structure follows the same pattern as placing orders, with common
-   * fields shared across brokers and broker-specific fields available per broker.
+   * Request must include broker and account_number in the body; order_id is in the path.
+   * Connection is resolved by broker and account_number. The order object is a partial update.
    * @methodId modify_order_api_beta_brokers_orders__order_id__patch
    * @category brokers
    * @example
@@ -1769,6 +1783,21 @@ export class FinaticConnect extends EventEmitter {
    *   console.log('Data:', result.success.data);
    * } else if (result.error) {
    *   console.error('Error:', result.error.message);
+   * }
+   * ```
+   * @example
+   * ```typescript-client
+   * // Full example with optional parameters
+   * const result = await finatic.modifyOrder({ orderId: 'example-id', connectionId: 'example-id' });
+   * 
+   * // Handle response with warnings
+   * if (result.success) {
+   *   console.log('Data:', result.success.data);
+   *   if (result.warning && result.warning.length > 0) {
+   *     console.warn('Warnings:', result.warning);
+   *   }
+   * } else if (result.error) {
+   *   console.error('Error:', result.error.message, result.error.code);
    * }
    * ```
    * @example
@@ -1801,7 +1830,6 @@ export class FinaticConnect extends EventEmitter {
    * # Full example with optional parameters
    * result = await finatic.modify_order(
    *            order_id='example',
-            account_number='example',
             connection_id='example'
    * )
    * 

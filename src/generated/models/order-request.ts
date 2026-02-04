@@ -18,21 +18,28 @@
 import type { Accountnumber } from './accountnumber';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { NinjaTraderOrderPlaceRequest } from './ninja-trader-order-place-request';
+import type { NinjaTraderOrderCancelRequest } from './ninja-trader-order-cancel-request';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order2 } from './order2';
+import type { RobinhoodOrderCancelQueryParams } from './robinhood-order-cancel-query-params';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { RobinhoodOrderPlaceRequest } from './robinhood-order-place-request';
+import type { RobinhoodOrderCancelRequest } from './robinhood-order-cancel-request';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { TastyTradeOrderPlaceRequest } from './tasty-trade-order-place-request';
+import type { TastyTradeOrderCancelRequest } from './tasty-trade-order-cancel-request';
 
 /**
- * @type PlaceOrderApiBetaBrokersOrdersPostRequest
- * Broker-specific parameters object (varies by broker)
+ * Cancel request with top-level broker and account_number
  */
-export type PlaceOrderApiBetaBrokersOrdersPostRequest = { broker: 'ninja_trader' } & NinjaTraderOrderPlaceRequest | { broker: 'robinhood' } & RobinhoodOrderPlaceRequest | { broker: 'tasty_trade' } & TastyTradeOrderPlaceRequest;
+export interface OrderRequest {
+    'broker': OrderRequestBrokerEnum;
+    'accountNumber': Accountnumber;
+    'order': RobinhoodOrderCancelQueryParams;
+}
+
+export enum OrderRequestBrokerEnum {
+    Robinhood = 'robinhood'
+}
 
 

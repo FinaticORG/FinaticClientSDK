@@ -971,26 +971,17 @@ export function TradingPageComponent() {
   const [cancellingOrder, setCancellingOrder] = useState<boolean>(false);
   const [cancelResponse, setCancelResponse] = useState<any>(null);
 
-  // Modify order state
+  // Modify order state — all optional; only fields the user sets are sent in the delta
   const [modifyOrderId, setModifyOrderId] = useState<string>('');
   const [modifyOrder, setModifyOrder] = useState<{
-    symbol: string;
-    orderQty: number;
-    action: 'buy' | 'sell';
-    orderType: 'market' | 'limit' | 'stop' | 'stop_limit';
-    assetType: 'equity' | 'equity_option' | 'crypto' | 'forex' | 'future' | 'future_option';
-    timeInForce: 'day' | 'gtc' | 'gtd' | 'ioc' | 'fok';
+    orderQty?: number;
+    orderType?: 'market' | 'limit' | 'stop' | 'stop_limit';
+    assetType?: 'equity' | 'equity_option' | 'crypto' | 'forex' | 'future' | 'future_option';
+    timeInForce?: 'day' | 'gtc' | 'gtd' | 'ioc' | 'fok';
     price?: number;
     stopPrice?: number;
     expireTime?: string;
-  }>({
-    symbol: '',
-    orderQty: 1,
-    action: 'buy',
-    orderType: 'market',
-    assetType: 'equity',
-    timeInForce: 'day',
-  });
+  }>({});
   const [modifyExtrasText, setModifyExtrasText] = useState<string>('{}');
   const [modifyingOrder, setModifyingOrder] = useState<boolean>(false);
   const [modifyResponse, setModifyResponse] = useState<any>(null);
@@ -1058,6 +1049,8 @@ export function TradingPageComponent() {
       });
     }
   }, [modifyOrder.assetType]);
+  // Sentinel for "empty / don't change" in modify selects
+  const MODIFY_NONE = '__none__';
 
   // Load supported brokers (exclude aliases and brokers that don't support trading)
   useEffect(() => {
@@ -1631,25 +1624,54 @@ export function TradingPageComponent() {
   const cancelOrder = async () => {
     if (!finatic) {
       addLog('error', 'SDK not initialized');
+      setCancelResponse({ error: 'SDK not initialized' });
       return;
     }
-    if (!cancelOrderId) {
+    if (!selectedBroker) {
+      addLog('error', 'Select a broker first');
+      setCancelResponse({ error: 'Select a broker first' });
+      return;
+    }
+    if (!selectedAccountId) {
+      addLog('error', 'Select an account first');
+      setCancelResponse({ error: 'Select an account first' });
+      return;
+    }
+    if (!cancelOrderId?.trim()) {
       addLog('error', 'Enter an order ID to cancel');
+      setCancelResponse({ error: 'Enter an order ID to cancel' });
       return;
     }
+
+    if (!isSandboxMode && !isBrokerConnected) {
+      addLog('error', 'Broker must be connected to cancel orders in live mode');
+      setCancelResponse({ error: 'Broker must be connected to cancel orders in live mode' });
+      return;
+    }
+
+    const accountNumber =
+      selectedAccount?.broker_provided_account_id ||
+      selectedAccount?.account_id ||
+      selectedAccountId;
+    // API accepts account_number as string | number; SDK types say number — pass number when numeric, else string (assertion for non-numeric IDs e.g. UUID)
+    const num = Number(accountNumber);
+    const accountNumberParam = (!Number.isNaN(num) ? num : String(accountNumber)) as number;
 
     setCancellingOrder(true);
     setCancelResponse(null);
 
     try {
-      // Cancel order using FinaticConnect
-      const response = await finatic.cancelOrder({ orderId: cancelOrderId });
+      const response = await finatic.cancelOrder({
+        orderId: cancelOrderId.trim(),
+        broker: selectedBroker.trim().toLowerCase(),
+        accountNumber: accountNumberParam,
+      });
       const result = response?.success?.data || response;
 
-      setCancelResponse(result);
-      addLog('success', `Order cancelled successfully - ${result?.message || 'ok'}`);
+      setCancelResponse(result ?? response);
+      addLog('success', `Order cancelled successfully - ${result?.message ?? 'ok'}`);
     } catch (e: any) {
-      const errorMsg = e?.message || 'Cancel failed';
+      const errorMsg = e?.message ?? 'Cancel failed';
       setCancelResponse({ error: errorMsg });
       addLog('error', errorMsg);
     } finally {
@@ -1657,21 +1679,28 @@ export function TradingPageComponent() {
     }
   };
 
-  // Build the URL preview for cancel order
+  // Build the URL and body preview for cancel order (SDK sends broker + account_number + order in body)
   const cancelOrderUrlPreview = useMemo(() => {
-    if (!cancelOrderId) return null;
+    if (!cancelOrderId || !selectedBroker || !selectedAccountId) return null;
 
-    // New endpoint only requires order_id as path parameter
-    // Backend infers broker, account, and connection from the order record
+    const accountNumber =
+      selectedAccount?.broker_provided_account_id ||
+      selectedAccount?.account_id ||
+      selectedAccountId;
+
     return {
       method: 'DELETE',
       url: `/api/beta/brokers/orders/${cancelOrderId}`,
-      body: null,
+      body: {
+        broker: selectedBroker.trim().toLowerCase(),
+        account_number: Number(accountNumber) || accountNumber,
+        order: { order_id: cancelOrderId },
+      },
       queryParams: null,
     };
-  }, [cancelOrderId]);
+  }, [cancelOrderId, selectedBroker, selectedAccountId, selectedAccount]);
 
-  // Build the payload for modify order (for preview)
+  // Build the payload for modify order (delta only: only include fields the user has set)
   const modifyOrderPayloadPreview = useMemo(() => {
     if (!selectedBroker || !selectedAccountId || !modifyOrderId) return null;
 
@@ -1684,50 +1713,52 @@ export function TradingPageComponent() {
     try {
       extras = modifyExtrasText ? JSON.parse(modifyExtrasText) : {};
     } catch {
-      // Invalid JSON, return null to indicate error
       return null;
     }
 
-    // Build nested structure: { orderId, broker, accountNumber, order: {...}, connectionId? }
-    const orderObject: any = {
-      orderType: modifyOrder.orderType,
-      assetType: modifyOrder.assetType,
-      action: modifyOrder.action,
-      timeInForce: modifyOrder.timeInForce,
-      symbol: modifyOrder.symbol,
-      orderQty: modifyOrder.orderQty,
-    };
+    const orderObject: Record<string, unknown> = {};
 
-    // Add optional fields to order object
-    if (modifyOrder.price !== undefined) {
+    if (
+      modifyOrder.orderQty !== undefined &&
+      Number.isFinite(modifyOrder.orderQty) &&
+      modifyOrder.orderQty > 0
+    ) {
+      orderObject.orderQty = modifyOrder.orderQty;
+    }
+    if (modifyOrder.price !== undefined && modifyOrder.price !== '' && Number.isFinite(Number(modifyOrder.price))) {
       orderObject.price = modifyOrder.price;
     }
-    if (modifyOrder.stopPrice !== undefined) {
+    if (modifyOrder.stopPrice !== undefined && modifyOrder.stopPrice !== '' && Number.isFinite(Number(modifyOrder.stopPrice))) {
       orderObject.stopPrice = modifyOrder.stopPrice;
     }
     if (modifyOrder.expireTime) {
       orderObject.expireTime = modifyOrder.expireTime;
     }
+    if (modifyOrder.timeInForce) {
+      orderObject.time_in_force =
+        typeof modifyOrder.timeInForce === 'string'
+          ? modifyOrder.timeInForce
+          : (modifyOrder.timeInForce as any)?.time_in_force ?? modifyOrder.timeInForce;
+    }
+    if (modifyOrder.orderType) orderObject.orderType = modifyOrder.orderType;
+    if (modifyOrder.assetType) orderObject.assetType = modifyOrder.assetType;
 
-    // Merge broker-specific extras into order object
     if (extras && Object.keys(extras).length > 0) {
       Object.assign(orderObject, extras);
     }
 
-    // Add option fields if assetType is equity_option
     if (modifyOrder.assetType === 'equity_option' && optionFieldsComplete(modifyOptionFields)) {
       Object.assign(orderObject, buildOptionPayload(modifyOptionFields));
     }
 
-    // Build final params with nested structure (accountNumber at top level)
-    const orderParams: any = {
+    if (Object.keys(orderObject).length === 0) return null;
+
+    return {
       orderId: modifyOrderId,
       broker: selectedBroker.trim().toLowerCase(),
-      accountNumber: accountNumber, // Account number at top level
+      accountNumber,
       order: orderObject,
     };
-
-    return orderParams;
   }, [
     selectedBroker,
     selectedAccountId,
@@ -1780,47 +1811,48 @@ export function TradingPageComponent() {
         selectedAccount?.account_id ||
         selectedAccountId;
 
-      // Build nested structure: { orderId, broker, accountNumber, order: {...}, connectionId? }
-      const orderObject: any = {
-        orderType: modifyOrder.orderType,
-        assetType: modifyOrder.assetType,
-        action: modifyOrder.action,
-        timeInForce: modifyOrder.timeInForce,
-        symbol: modifyOrder.symbol,
-        orderQty: modifyOrder.orderQty,
-      };
-
-      // Add optional fields to order object
-      if (modifyOrder.price !== undefined) {
+      const orderObject: Record<string, unknown> = {};
+      if (
+        modifyOrder.orderQty !== undefined &&
+        Number.isFinite(modifyOrder.orderQty) &&
+        modifyOrder.orderQty > 0
+      ) {
+        orderObject.orderQty = modifyOrder.orderQty;
+      }
+      if (modifyOrder.price !== undefined && modifyOrder.price !== '' && Number.isFinite(Number(modifyOrder.price))) {
         orderObject.price = modifyOrder.price;
       }
-      if (modifyOrder.stopPrice !== undefined) {
+      if (modifyOrder.stopPrice !== undefined && modifyOrder.stopPrice !== '' && Number.isFinite(Number(modifyOrder.stopPrice))) {
         orderObject.stopPrice = modifyOrder.stopPrice;
       }
-      if (modifyOrder.expireTime) {
-        orderObject.expireTime = modifyOrder.expireTime;
+      if (modifyOrder.expireTime) orderObject.expireTime = modifyOrder.expireTime;
+      if (modifyOrder.timeInForce) {
+        orderObject.time_in_force =
+          typeof modifyOrder.timeInForce === 'string'
+            ? modifyOrder.timeInForce
+            : (modifyOrder.timeInForce as any)?.time_in_force ?? modifyOrder.timeInForce;
       }
-
-      // Merge broker-specific extras into order object
-      if (extras && Object.keys(extras).length > 0) {
-        Object.assign(orderObject, extras);
-      }
-
-      // Add option fields if assetType is equity_option
+      if (modifyOrder.orderType) orderObject.orderType = modifyOrder.orderType;
+      if (modifyOrder.assetType) orderObject.assetType = modifyOrder.assetType;
+      if (extras && Object.keys(extras).length > 0) Object.assign(orderObject, extras);
       if (modifyOrder.assetType === 'equity_option' && optionFieldsComplete(modifyOptionFields)) {
         Object.assign(orderObject, buildOptionPayload(modifyOptionFields));
       }
 
-      // Build final params with nested structure (accountNumber at top level)
+      if (Object.keys(orderObject).length === 0) {
+        addLog('error', 'Set at least one field to change (e.g. Quantity, Price, Stop Price)');
+        setModifyingOrder(false);
+        return;
+      }
+
       const modifyParams: any = {
         orderId: modifyOrderId,
         broker: selectedBroker.trim().toLowerCase(),
-        accountNumber: accountNumber, // Account number at top level
+        accountNumber,
         order: orderObject,
       };
 
-      // Use FinaticConnect modifyOrder - expects { orderId, ...modifications }
-      const response = await finatic.modifyOrder({ orderId: modifyOrderId, ...orderObject });
+      const response = await finatic.modifyOrder(modifyParams);
       const result = response?.success?.data || response;
 
       setModifyResponse(result);
@@ -2325,6 +2357,81 @@ export function TradingPageComponent() {
 
               {/* Cancel Order Tab */}
               <TabsContent value="cancel" className="space-y-4 sm:space-y-6">
+                {/* Broker and Account Selection (required by SDK cancelOrder) */}
+                <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-xs sm:text-sm">Broker</Label>
+                    <Select value={selectedBroker} onValueChange={setSelectedBroker}>
+                      <SelectTrigger className="bg-input border-border text-foreground">
+                        <SelectValue placeholder="Select a broker" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {brokers.map((b: any) => (
+                          <SelectItem key={b.id} value={b.id}>
+                            {b.display_name || b.name || b.id}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedBroker && (
+                      <div className="flex items-center gap-2">
+                        {!isSandboxMode && isBrokerConnected && (
+                          <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                            Connected
+                          </span>
+                        )}
+                        {!isSandboxMode && !isBrokerConnected && (
+                          <span className="text-xs text-yellow-600 dark:text-yellow-400">
+                            Not connected. Connect it first to cancel orders in live mode.
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-xs sm:text-sm">Account</Label>
+                    <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+                      <SelectTrigger className="bg-input border-border text-foreground">
+                        <SelectValue
+                          placeholder={
+                            availableAccounts.length
+                              ? 'Select an account'
+                              : selectedBroker
+                                ? 'No accounts available'
+                                : 'Select broker first'
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableAccounts.map((a: any) => {
+                          const uniqueKey =
+                            a.id ||
+                            a.accountId ||
+                            a.broker_provided_account_id ||
+                            a.account_id ||
+                            '';
+                          const accountId = String(
+                            a.broker_provided_account_id || a.account_id || a.accountId || ''
+                          );
+                          const accountName =
+                            a.account_name ||
+                            a.accountName ||
+                            a.broker_provided_account_id ||
+                            a.account_id ||
+                            a.accountId ||
+                            'Unknown Account';
+                          return (
+                            <SelectItem key={uniqueKey} value={accountId}>
+                              {accountName}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
                   <div className="space-y-3">
                     <div className="space-y-2">
@@ -2336,9 +2443,8 @@ export function TradingPageComponent() {
                         placeholder="Enter order ID to cancel"
                       />
                       <p className="text-xs text-muted-foreground">
-                        Enter the broker-provided order ID that you want to cancel. The backend will
-                        automatically infer the broker, account, and connection from the order
-                        record.
+                        Enter the broker-provided order ID to cancel. The SDK requires broker,
+                        account, and order ID.
                       </p>
                     </div>
 
@@ -2366,7 +2472,11 @@ export function TradingPageComponent() {
                             </div>
                             <div>
                               <span className="text-xs font-semibold text-foreground">Body: </span>
-                              <span className="text-xs text-muted-foreground font-mono">null</span>
+                              <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-xs text-muted-foreground">
+                                {cancelOrderUrlPreview.body != null
+                                  ? JSON.stringify(cancelOrderUrlPreview.body, null, 2)
+                                  : 'null'}
+                              </pre>
                             </div>
                             <div>
                               <span className="text-xs font-semibold text-foreground">
@@ -2381,8 +2491,14 @@ export function TradingPageComponent() {
 
                     <div className="flex gap-2 pt-4">
                       <Button
+                        type="button"
                         onClick={cancelOrder}
-                        disabled={!cancelOrderId || cancellingOrder}
+                        disabled={
+                          !selectedBroker ||
+                          !selectedAccountId ||
+                          !cancelOrderId?.trim() ||
+                          cancellingOrder
+                        }
                         variant="destructive"
                         className="h-9 px-4"
                       >
@@ -2522,59 +2638,45 @@ export function TradingPageComponent() {
                         </p>
                       </div>
 
+                      <p className="text-xs text-muted-foreground">
+                        Set only the fields you want to change. The API sends a delta; the rest is
+                        filled from the existing order.
+                      </p>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <Label className="text-foreground">Symbol</Label>
-                          <Input
-                            className="bg-input border-border text-foreground w-full"
-                            value={modifyOrder.symbol}
-                            onChange={(e) =>
-                              setModifyOrder((p) => ({ ...p, symbol: e.target.value }))
-                            }
-                            placeholder="AAPL"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-foreground">Quantity</Label>
+                          <Label className="text-foreground">Quantity (optional)</Label>
                           <Input
                             type="number"
                             className="bg-input border-border text-foreground w-full"
-                            value={modifyOrder.orderQty}
-                            onChange={(e) =>
-                              setModifyOrder((p) => ({ ...p, orderQty: Number(e.target.value) }))
-                            }
-                            min="1"
+                            value={modifyOrder.orderQty ?? ''}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              const num = raw === '' ? undefined : Number(raw);
+                              setModifyOrder((p) => ({
+                                ...p,
+                                orderQty: num !== undefined && Number.isFinite(num) ? num : undefined,
+                              }));
+                            }}
+                            min={1}
+                            placeholder="e.g. 2"
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-foreground">Side</Label>
+                          <Label className="text-foreground">Order Type (optional)</Label>
                           <Select
-                            value={modifyOrder.action}
+                            value={modifyOrder.orderType ?? MODIFY_NONE}
                             onValueChange={(v) =>
-                              setModifyOrder((p) => ({ ...p, action: v as any }))
+                              setModifyOrder((p) => ({
+                                ...p,
+                                orderType: v === MODIFY_NONE ? undefined : (v as any),
+                              }))
                             }
                           >
                             <SelectTrigger className="bg-input border-border text-foreground w-full">
-                              <SelectValue />
+                              <SelectValue placeholder="Don't change" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="buy">Buy</SelectItem>
-                              <SelectItem value="sell">Sell</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-foreground">Order Type</Label>
-                          <Select
-                            value={modifyOrder.orderType}
-                            onValueChange={(v) =>
-                              setModifyOrder((p) => ({ ...p, orderType: v as any }))
-                            }
-                          >
-                            <SelectTrigger className="bg-input border-border text-foreground w-full">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
+                              <SelectItem value={MODIFY_NONE}>Don't change</SelectItem>
                               <SelectItem value="market">Market</SelectItem>
                               <SelectItem value="limit">Limit</SelectItem>
                               <SelectItem value="stop">Stop</SelectItem>
@@ -2583,17 +2685,21 @@ export function TradingPageComponent() {
                           </Select>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-foreground">Asset Type</Label>
+                          <Label className="text-foreground">Asset Type (optional)</Label>
                           <Select
-                            value={modifyOrder.assetType}
+                            value={modifyOrder.assetType ?? MODIFY_NONE}
                             onValueChange={(v) =>
-                              setModifyOrder((p) => ({ ...p, assetType: v as any }))
+                              setModifyOrder((p) => ({
+                                ...p,
+                                assetType: v === MODIFY_NONE ? undefined : (v as any),
+                              }))
                             }
                           >
                             <SelectTrigger className="bg-input border-border text-foreground w-full">
-                              <SelectValue />
+                              <SelectValue placeholder="Don't change" />
                             </SelectTrigger>
                             <SelectContent>
+                              <SelectItem value={MODIFY_NONE}>Don't change</SelectItem>
                               <SelectItem value="equity">Equity</SelectItem>
                               <SelectItem value="equity_option">Equity Option</SelectItem>
                               <SelectItem value="crypto">Crypto</SelectItem>
@@ -2604,17 +2710,21 @@ export function TradingPageComponent() {
                           </Select>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-foreground">Time In Force</Label>
+                          <Label className="text-foreground">Time In Force (optional)</Label>
                           <Select
-                            value={modifyOrder.timeInForce}
+                            value={modifyOrder.timeInForce ?? MODIFY_NONE}
                             onValueChange={(v) =>
-                              setModifyOrder((p) => ({ ...p, timeInForce: v as any }))
+                              setModifyOrder((p) => ({
+                                ...p,
+                                timeInForce: v === MODIFY_NONE ? undefined : (v as any),
+                              }))
                             }
                           >
                             <SelectTrigger className="bg-input border-border text-foreground w-full">
-                              <SelectValue />
+                              <SelectValue placeholder="Don't change" />
                             </SelectTrigger>
                             <SelectContent>
+                              <SelectItem value={MODIFY_NONE}>Don't change</SelectItem>
                               <SelectItem value="day">Day</SelectItem>
                               <SelectItem value="gtc">GTC (Good Till Cancel)</SelectItem>
                               <SelectItem value="gtd">GTD (Good Till Date)</SelectItem>
@@ -2623,44 +2733,38 @@ export function TradingPageComponent() {
                             </SelectContent>
                           </Select>
                         </div>
-                        {(modifyOrder.orderType === 'limit' ||
-                          modifyOrder.orderType === 'stop_limit') && (
-                          <div className="space-y-1">
-                            <Label className="text-foreground">Price</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              className="bg-input border-border text-foreground w-full"
-                              value={modifyOrder.price ?? ''}
-                              onChange={(e) =>
-                                setModifyOrder((p) => ({
-                                  ...p,
-                                  price: e.target.value ? Number(e.target.value) : undefined,
-                                }))
-                              }
-                              placeholder="0.00"
-                            />
-                          </div>
-                        )}
-                        {(modifyOrder.orderType === 'stop' ||
-                          modifyOrder.orderType === 'stop_limit') && (
-                          <div className="space-y-1">
-                            <Label className="text-foreground">Stop Price</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              className="bg-input border-border text-foreground w-full"
-                              value={modifyOrder.stopPrice ?? ''}
-                              onChange={(e) =>
-                                setModifyOrder((p) => ({
-                                  ...p,
-                                  stopPrice: e.target.value ? Number(e.target.value) : undefined,
-                                }))
-                              }
-                              placeholder="0.00"
-                            />
-                          </div>
-                        )}
+                        <div className="space-y-1">
+                          <Label className="text-foreground">Price (optional)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            className="bg-input border-border text-foreground w-full"
+                            value={modifyOrder.price ?? ''}
+                            onChange={(e) =>
+                              setModifyOrder((p) => ({
+                                ...p,
+                                price: e.target.value ? Number(e.target.value) : undefined,
+                              }))
+                            }
+                            placeholder="Leave empty to keep current"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-foreground">Stop Price (optional)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            className="bg-input border-border text-foreground w-full"
+                            value={modifyOrder.stopPrice ?? ''}
+                            onChange={(e) =>
+                              setModifyOrder((p) => ({
+                                ...p,
+                                stopPrice: e.target.value ? Number(e.target.value) : undefined,
+                              }))
+                            }
+                            placeholder="Leave empty to keep current"
+                          />
+                        </div>
                         {modifyOrder.timeInForce === 'gtd' && (
                           <div className="space-y-1">
                             <Label className="text-foreground">Expire Time (ISO 8601)</Label>
@@ -2806,7 +2910,6 @@ export function TradingPageComponent() {
                             !selectedBroker ||
                             !selectedAccountId ||
                             !modifyOrderId ||
-                            !modifyOrder.symbol ||
                             modifyingOrder ||
                             (!isSandboxMode && !isBrokerConnected) ||
                             modifyOrderPayloadPreview === null
@@ -2844,7 +2947,8 @@ export function TradingPageComponent() {
         )}
       </Card>
 
-      {/* Order Presets */}
+      {/* Order Presets - only show on Place Order tab */}
+      {activeTab === 'place' && (
       <Card className="bg-card border-border">
         <CardHeader>
           <Button
@@ -3094,6 +3198,7 @@ export function TradingPageComponent() {
           </CardContent>
         )}
       </Card>
+      )}
     </div>
   );
 }
