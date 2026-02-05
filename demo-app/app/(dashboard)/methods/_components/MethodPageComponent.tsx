@@ -345,7 +345,14 @@ export function MethodPageComponent() {
             throw new Error('Enter an order ID.');
           }
           const filter = parseOptionalJson(fieldValues?.filter, 'filter');
-          return [orderId, filter];
+          const params: { orderId: string; connectionId?: string; limit?: number; offset?: number; includeMetadata?: boolean } = { orderId };
+          if (filter && typeof filter === 'object' && !Array.isArray(filter)) {
+            if (filter.connectionId != null) params.connectionId = String(filter.connectionId);
+            if (filter.limit != null) params.limit = Number(filter.limit);
+            if (filter.offset != null) params.offset = Number(filter.offset);
+            if (filter.includeMetadata != null) params.includeMetadata = Boolean(filter.includeMetadata);
+          }
+          return [params];
         },
       },
       {
@@ -375,7 +382,14 @@ export function MethodPageComponent() {
             throw new Error('Enter an order ID.');
           }
           const filter = parseOptionalJson(fieldValues?.filter, 'filter');
-          return [orderId, filter];
+          const params: { orderId: string; connectionId?: string; limit?: number; offset?: number; includeMetadata?: boolean } = { orderId };
+          if (filter && typeof filter === 'object' && !Array.isArray(filter)) {
+            if (filter.connectionId != null) params.connectionId = String(filter.connectionId);
+            if (filter.limit != null) params.limit = Number(filter.limit);
+            if (filter.offset != null) params.offset = Number(filter.offset);
+            if (filter.includeMetadata != null) params.includeMetadata = Boolean(filter.includeMetadata);
+          }
+          return [params];
         },
       },
       {
