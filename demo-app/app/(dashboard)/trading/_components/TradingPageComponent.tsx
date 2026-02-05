@@ -877,14 +877,14 @@ const buildPresetPayloadForContext = (
   preset: OrderPresetConfig,
   equityOptionExpirationDate?: string
 ) => {
+  // Order object must not contain accountNumber; it is a top-level property only
+  const { accountNumber: _omit, ...orderFields } = preset.defaultOrder as Record<string, unknown>;
   const payload: any = {
     broker: brokerId,
-    order: {
-      ...preset.defaultOrder,
-    },
+    order: { ...orderFields },
   };
 
-  // Account number goes at top level, not in order object
+  // Account number at top level only (same structure as API request)
   if (accountNumber) {
     payload.accountNumber = accountNumber;
   }
@@ -1262,20 +1262,13 @@ export function TradingPageComponent() {
         '';
 
       for (const preset of presetsForBroker) {
-        const existing = previous[preset.id];
-        // Rebuild payload if it's an equity_option preset (to update expiration date)
-        // or if it doesn't exist yet
-        if (existing && preset.assetType !== 'equity_option') {
-          next[preset.id] = existing;
-        } else {
-          const payload = buildPresetPayloadForContext(
-            selectedBroker,
-            accountNumber || undefined,
-            preset,
-            equityOptionExpirationDate
-          );
-          next[preset.id] = JSON.stringify(payload, null, 2);
-        }
+        const payload = buildPresetPayloadForContext(
+          selectedBroker,
+          accountNumber || undefined,
+          preset,
+          equityOptionExpirationDate
+        );
+        next[preset.id] = JSON.stringify(payload, null, 2);
       }
 
       return next;
@@ -1306,11 +1299,15 @@ export function TradingPageComponent() {
         assetType: customOrder.assetType,
         action: customOrder.action,
         timeInForce: customOrder.timeInForce,
-        accountNumber: accountNumber,
         symbol: customOrder.symbol,
         orderQty: customOrder.orderQty,
       },
     };
+
+    // Account number at top level (same structure as sent payload)
+    if (accountNumber) {
+      payload.accountNumber = accountNumber;
+    }
 
     // Add optional fields to order object
     if (customOrder.price !== undefined) {
