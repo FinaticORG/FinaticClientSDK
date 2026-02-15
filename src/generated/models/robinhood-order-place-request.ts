@@ -18,7 +18,7 @@
 import type { Accountnumber } from './accountnumber';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order1 } from './order1';
+import type { Order2 } from './order2';
 
 /**
  * Robinhood place-order request body.  Attributes ---------- broker : Literal[\"robinhood\"]     Discriminator; must be ``\"robinhood\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : RobinhoodOrderPlaceQueryParamsUnion     Robinhood-specific order parameters (equity, equity_option, or crypto wire schema).  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``. JSON schema examples are attached in model_config for OpenAPI docs.
@@ -26,7 +26,7 @@ import type { Order1 } from './order1';
 export interface RobinhoodOrderPlaceRequest {
     'broker': RobinhoodOrderPlaceRequestBrokerEnum;
     'accountNumber': Accountnumber;
-    'order': Order1;
+    'order': Order2;
 }
 
 export enum RobinhoodOrderPlaceRequestBrokerEnum {

@@ -21,13 +21,16 @@ import type { Accountnumber } from './accountnumber';
 import type { NinjaTraderOrderModifyRequest } from './ninja-trader-order-modify-request';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { OrderModifyQueryParamsBase } from './order-modify-query-params-base';
+import type { Order6 } from './order6';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { RobinhoodOrderModifyRequest } from './robinhood-order-modify-request';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { TastyTradeOrderModifyRequest } from './tasty-trade-order-modify-request';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { WebullOrderModifyRequest } from './webull-order-modify-request';
 
 /**
  * Modify request with top-level broker, account_number, and partial order.
@@ -35,11 +38,11 @@ import type { TastyTradeOrderModifyRequest } from './tasty-trade-order-modify-re
 export interface OrderRequest {
     'broker': OrderRequestBrokerEnum;
     'accountNumber': Accountnumber;
-    'order': OrderModifyQueryParamsBase;
+    'order': Order6;
 }
 
 export enum OrderRequestBrokerEnum {
-    Robinhood = 'robinhood'
+    Webull = 'webull'
 }
 
 

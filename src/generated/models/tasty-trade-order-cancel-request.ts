@@ -21,7 +21,7 @@ import type { Accountnumber } from './accountnumber';
 import type { TastyTradeOrderCancelQueryParams } from './tasty-trade-order-cancel-query-params';
 
 /**
- * TastyTrade cancel-order request body.  Attributes ---------- broker : Literal[\"tasty_trade\"]     Discriminator; must be ``\"tasty_trade\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : TastyTradeOrderCancelQueryParams     TastyTrade-specific cancel parameters.  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``.
+ * TastyTrade cancel-order request body.  Attributes ---------- broker : Literal[\"tasty_trade\"]     Discriminator; must be ``\"tasty_trade\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : TastyTradeOrderCancelQueryParams     TastyTrade-specific cancel parameters.  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``.  The top-level ``accountNumber`` is passed through the call chain to the executor and does not need to be included in the nested ``order`` object.
  */
 export interface TastyTradeOrderCancelRequest {
     'broker': TastyTradeOrderCancelRequestBrokerEnum;

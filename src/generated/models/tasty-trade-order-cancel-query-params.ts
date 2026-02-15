@@ -13,18 +13,18 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { Accountnumber1 } from './accountnumber1';
 
 /**
- * Cancel-order payload enriched with TastyTrade-specific *account_number*.
+ * Cancel-order payload enriched with TastyTrade-specific *account_number*.  Notes ----- *account_number* is optional in the request body. The top-level *accountNumber* from the request is passed through the call chain (broker_service → broker → executor) and used by the executor to build the DELETE URL ``/accounts/{account_number}/orders/{order_id}``. This field remains for backward compatibility but is typically not needed in the nested ``order`` object.
  */
 export interface TastyTradeOrderCancelQueryParams {
     /**
      * Broker-assigned order identifier
      */
     'orderId': string;
-    /**
-     * TastyTrade account number owning the order.
-     */
-    'accountNumber': number;
+    'accountNumber'?: Accountnumber1 | null;
 }
 

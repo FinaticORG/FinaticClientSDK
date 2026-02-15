@@ -30,6 +30,8 @@ export interface RobinhoodCryptoTrailingStopOrderPlaceQueryParams {
     'symbol': string;
     'orderQty': number;
     'stopPrice': number;
+    'trailPercent'?: number | null;
+    'trailPrice'?: number | null;
     /**
      * Whether quantityOrPrice represents quantity or price
      */

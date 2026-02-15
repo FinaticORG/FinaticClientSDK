@@ -18,6 +18,8 @@
  * Cancel-order payload enriched with NinjaTrader-specific extras.
  */
 export interface NinjaTraderOrderCancelQueryParams {
+    [key: string]: any;
+
     /**
      * Broker-assigned order identifier
      */

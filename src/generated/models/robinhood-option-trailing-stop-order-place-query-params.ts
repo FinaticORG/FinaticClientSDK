@@ -33,6 +33,8 @@ export interface RobinhoodOptionTrailingStopOrderPlaceQueryParams {
     'symbol': string;
     'orderQty': number;
     'stopPrice': number;
+    'trailPercent'?: number | null;
+    'trailPrice'?: number | null;
     'direction'?: RobinhoodOptionTrailingStopOrderPlaceQueryParamsDirectionEnum | null;
     'spread'?: Array<RobinhoodOptionSpreadLeg> | null;
     'positionEffect'?: RobinhoodOptionTrailingStopOrderPlaceQueryParamsPositionEffectEnum | null;

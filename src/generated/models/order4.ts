@@ -15,16 +15,13 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { TastyTradeLimitOrderModifyQueryParams } from './tasty-trade-limit-order-modify-query-params';
+import type { Order4OneOf } from './order4-one-of';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { TastyTradeMarketOrderModifyQueryParams } from './tasty-trade-market-order-modify-query-params';
+import type { Order4OneOf1 } from './order4-one-of1';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { TastyTradeStopOrderModifyQueryParams } from './tasty-trade-stop-order-modify-query-params';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { TastyTradeTrailingStopOrderModifyQueryParams } from './tasty-trade-trailing-stop-order-modify-query-params';
+import type { Order4OneOf2 } from './order4-one-of2';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Timeinforce1 } from './timeinforce1';
@@ -32,6 +29,6 @@ import type { Timeinforce1 } from './timeinforce1';
 /**
  * @type Order4
  */
-export type Order4 = { orderType: 'limit' } & TastyTradeLimitOrderModifyQueryParams | { orderType: 'market' } & TastyTradeMarketOrderModifyQueryParams | { orderType: 'stop' } & TastyTradeStopOrderModifyQueryParams | { orderType: 'trailing_stop' } & TastyTradeTrailingStopOrderModifyQueryParams;
+export type Order4 = Order4OneOf | Order4OneOf1 | Order4OneOf2;
 
 

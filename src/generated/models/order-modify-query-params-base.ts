@@ -15,7 +15,7 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Timeinforce2 } from './timeinforce2';
+import type { OrderModifyQueryParamsBaseTimeInForce } from './order-modify-query-params-base-time-in-force';
 
 /**
  * Core fields shared by every *modify order* operation.  When used as the API request body (delta), all fields are optional and at least one must be present. Subclasses override with required discriminators for the full params union passed to the broker after merge.
@@ -26,7 +26,7 @@ export interface OrderModifyQueryParamsBase {
     'orderId'?: string | null;
     'orderType'?: OrderModifyQueryParamsBaseOrderTypeEnum | null;
     'assetType'?: OrderModifyQueryParamsBaseAssetTypeEnum | null;
-    'timeInForce'?: Timeinforce2 | null;
+    'timeInForce'?: OrderModifyQueryParamsBaseTimeInForce | null;
     'isAutomated'?: boolean | null;
     'price'?: number | null;
     'stopPrice'?: number | null;
@@ -43,7 +43,10 @@ export enum OrderModifyQueryParamsBaseAssetTypeEnum {
     Equity = 'equity',
     EquityOption = 'equity_option',
     Crypto = 'crypto',
-    Forex = 'forex'
+    Forex = 'forex',
+    Future = 'future',
+    FutureOption = 'future_option',
+    Bond = 'bond'
 }
 
 

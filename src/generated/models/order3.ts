@@ -15,23 +15,75 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { NinjaTraderLimitOrderModifyQueryParams } from './ninja-trader-limit-order-modify-query-params';
+import type { Order3AnyOf } from './order3-any-of';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { NinjaTraderMarketOrderModifyQueryParams } from './ninja-trader-market-order-modify-query-params';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { NinjaTraderStopOrderModifyQueryParams } from './ninja-trader-stop-order-modify-query-params';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { NinjaTraderTrailingStopOrderModifyQueryParams } from './ninja-trader-trailing-stop-order-modify-query-params';
+import type { Order3AnyOf1 } from './order3-any-of1';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Timeinforce1 } from './timeinforce1';
 
-/**
- * @type Order3
- */
-export type Order3 = { orderType: 'limit' } & NinjaTraderLimitOrderModifyQueryParams | { orderType: 'market' } & NinjaTraderMarketOrderModifyQueryParams | { orderType: 'stop' } & NinjaTraderStopOrderModifyQueryParams | { orderType: 'trailing_stop' } & NinjaTraderTrailingStopOrderModifyQueryParams;
+export interface Order3 {
+    'orderType': Order3OrderTypeEnum;
+    'assetType'?: Order3AssetTypeEnum;
+    'action': Order3ActionEnum;
+    'timeInForce': Timeinforce1;
+    'symbol': string;
+    'orderQty': number;
+    'automated-source'?: boolean;
+    'price-effect'?: Order3PriceEffectEnum;
+    'external-identifier'?: string;
+    'partition-key'?: string;
+    'preflight-id'?: string;
+    'source'?: string;
+    'value-effect'?: Order3ValueEffectEnum;
+    'price': number;
+    'stopPrice': number;
+    'trailPercent'?: number;
+    'trailPrice'?: number;
+    /**
+     * Option expiration date (YYYY-MM-DD format).
+     */
+    'expirationDate': string;
+    /**
+     * Option strike price.
+     */
+    'strikePrice': number;
+    /**
+     * Option type (call or put).
+     */
+    'optionType': Order3OptionTypeEnum;
+    /**
+     * Position effect for the option leg.
+     */
+    'positionEffect'?: Order3PositionEffectEnum;
+}
+
+export enum Order3OrderTypeEnum {
+    TrailingStop = 'trailing_stop'
+}
+export enum Order3AssetTypeEnum {
+    EquityOption = 'equity_option'
+}
+export enum Order3ActionEnum {
+    Buy = 'buy',
+    Sell = 'sell'
+}
+export enum Order3PriceEffectEnum {
+    Debit = 'Debit',
+    Credit = 'Credit'
+}
+export enum Order3ValueEffectEnum {
+    Debit = 'Debit',
+    Credit = 'Credit'
+}
+export enum Order3OptionTypeEnum {
+    Call = 'call',
+    Put = 'put'
+}
+export enum Order3PositionEffectEnum {
+    Open = 'open',
+    Close = 'close'
+}
 
 

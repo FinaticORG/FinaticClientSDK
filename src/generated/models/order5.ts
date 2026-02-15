@@ -15,19 +15,16 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { RobinhoodLimitOrderModifyQueryParams } from './robinhood-limit-order-modify-query-params';
+import type { BrokerDataOptionTypeEnum } from './broker-data-option-type-enum';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { RobinhoodMarketOrderModifyQueryParams } from './robinhood-market-order-modify-query-params';
+import type { Order5OneOf } from './order5-one-of';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { RobinhoodOptionSpreadLeg } from './robinhood-option-spread-leg';
+import type { Order5OneOf1 } from './order5-one-of1';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { RobinhoodStopOrderModifyQueryParams } from './robinhood-stop-order-modify-query-params';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { RobinhoodTrailingStopOrderModifyQueryParams } from './robinhood-trailing-stop-order-modify-query-params';
+import type { Strikeprice1 } from './strikeprice1';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Timeinforce1 } from './timeinforce1';
@@ -35,6 +32,6 @@ import type { Timeinforce1 } from './timeinforce1';
 /**
  * @type Order5
  */
-export type Order5 = { orderType: 'limit' } & RobinhoodLimitOrderModifyQueryParams | { orderType: 'market' } & RobinhoodMarketOrderModifyQueryParams | { orderType: 'stop' } & RobinhoodStopOrderModifyQueryParams | { orderType: 'trailing_stop' } & RobinhoodTrailingStopOrderModifyQueryParams;
+export type Order5 = Order5OneOf | Order5OneOf1;
 
 

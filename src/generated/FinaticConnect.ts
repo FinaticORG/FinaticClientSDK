@@ -7,7 +7,7 @@
 
 import { Configuration } from './configuration';
 import { SdkConfig, defaultConfig } from './config';
-import { appendThemeToURL, appendBrokerFilterToURL } from './utils/url-utils';
+import { appendThemeToURL, appendBrokerFilterToURL, appendKindToURL, appendAssetTypesToURL } from './utils/url-utils';
 import { EventEmitter } from './utils/events';
 import { PortalUI } from './portal/PortalUI';
 import type { Logger } from './utils/logger';
@@ -290,25 +290,29 @@ export class FinaticConnect extends EventEmitter {
    * @param params - Optional parameters object
    * @param params.theme - Optional theme preset or custom theme object
    * @param params.brokers - Optional array of broker IDs to filter
+   * @param params.kind - Optional filter by provider type ('broker' or 'exchange')
+   * @param params.asset_types - Optional asset types/capabilities to filter (AND logic)
    * @param params.email - Optional email address
    * @param params.mode - Optional mode ('light' or 'dark')
    * @returns Portal URL string
    * @example
    * ```typescript-client
-   * const url = await finatic.getPortalUrl({ theme: 'default', brokers: ['broker-1'], email: 'user@example.com', mode: 'dark' });
+   * const url = await finatic.getPortalUrl({ theme: 'default', brokers: ['broker-1'], kind: 'exchange', asset_types: ['crypto'], email: 'user@example.com', mode: 'dark' });
    * ```
    * @example
    * ```typescript-server
-   * const url = await finatic.getPortalUrl({ theme: 'default', brokers: ['broker-1'], email: 'user@example.com', mode: 'dark' });
+   * const url = await finatic.getPortalUrl({ theme: 'default', brokers: ['broker-1'], kind: 'exchange', asset_types: ['crypto'], email: 'user@example.com', mode: 'dark' });
    * ```
    * @example
    * ```python
-   * url = await finatic.get_portal_url(theme='default', brokers=['broker-1'], email='user@example.com', mode='dark')
+   * url = await finatic.get_portal_url(theme='default', brokers=['broker-1'], kind='exchange', asset_types=['crypto'], email='user@example.com', mode='dark')
    * ```
    */
   async getPortalUrl(params?: { 
     theme?: string | { preset?: string; custom?: Record<string, unknown> };
     brokers?: string[];
+    kind?: 'broker' | 'exchange';
+    asset_types?: string[];
     email?: string;
     mode?: 'light' | 'dark';
   }): Promise<string> {
@@ -316,7 +320,7 @@ export class FinaticConnect extends EventEmitter {
       throw new Error('Session not initialized. Call startSession() first.');
     }
 
-    const { theme, brokers, email, mode } = params || {};
+    const { theme, brokers, kind, asset_types, email, mode } = params || {};
 
     // Get raw portal URL from SessionApi directly (not a wrapper)
     const axiosResponse = await this.sessionApi.getPortalUrlApiBetaSessionPortalGet({
@@ -375,6 +379,16 @@ export class FinaticConnect extends EventEmitter {
       portalUrl = appendBrokerFilterToURL(portalUrl, brokers);
     }
 
+    // Append kind (type) filter if provided
+    if (kind) {
+      portalUrl = appendKindToURL(portalUrl, kind);
+    }
+
+    // Append asset types (capabilities) filter if provided
+    if (asset_types && asset_types.length > 0) {
+      portalUrl = appendAssetTypesToURL(portalUrl, asset_types);
+    }
+
     // Append email if provided
     if (email) {
       const url = new URL(portalUrl);
@@ -422,6 +436,8 @@ export class FinaticConnect extends EventEmitter {
   async openPortal(options?: {
     theme?: string | { preset?: string; custom?: Record<string, unknown> };
     brokers?: string[];
+    kind?: 'broker' | 'exchange';
+    asset_types?: string[];
     email?: string;
     mode?: 'light' | 'dark';
     onSuccess?: (userId: string) => void;
@@ -429,7 +445,7 @@ export class FinaticConnect extends EventEmitter {
     onClose?: () => void;
   }): Promise<void>;
   /**
-   * @deprecated Use the single options object pattern instead: openPortal({ theme, brokers, email, mode, onSuccess, onError, onClose })
+   * @deprecated Use the single options object pattern instead: openPortal({ theme, brokers, kind, asset_types, email, mode, onSuccess, onError, onClose })
    * This overload will be removed in a future version.
    */
   // Legacy signature: separate params and callbacks (deprecated)
@@ -437,6 +453,8 @@ export class FinaticConnect extends EventEmitter {
     params?: { 
       theme?: string | { preset?: string; custom?: Record<string, unknown> };
       brokers?: string[];
+      kind?: 'broker' | 'exchange';
+      asset_types?: string[];
       email?: string;
       mode?: 'light' | 'dark';
     },
@@ -449,6 +467,8 @@ export class FinaticConnect extends EventEmitter {
     optionsOrParams?: {
       theme?: string | { preset?: string; custom?: Record<string, unknown> };
       brokers?: string[];
+      kind?: 'broker' | 'exchange';
+      asset_types?: string[];
       email?: string;
       mode?: 'light' | 'dark';
       onSuccess?: (userId: string) => void;
@@ -457,6 +477,8 @@ export class FinaticConnect extends EventEmitter {
     } | {
       theme?: string | { preset?: string; custom?: Record<string, unknown> };
       brokers?: string[];
+      kind?: 'broker' | 'exchange';
+      asset_types?: string[];
       email?: string;
       mode?: 'light' | 'dark';
     },
@@ -474,7 +496,7 @@ export class FinaticConnect extends EventEmitter {
     //   In new pattern, callbacks are inside the first parameter object
     const isNewPattern = typeof onSuccess !== 'function';
 
-    let params: { theme?: string | { preset?: string; custom?: Record<string, unknown> }; brokers?: string[]; email?: string; mode?: 'light' | 'dark' } | undefined;
+    let params: { theme?: string | { preset?: string; custom?: Record<string, unknown> }; brokers?: string[]; kind?: 'broker' | 'exchange'; asset_types?: string[]; email?: string; mode?: 'light' | 'dark' } | undefined;
     let successCallback: ((userId: string) => void) | undefined;
     let errorCallback: ((error: Error) => void) | undefined;
     let closeCallback: (() => void) | undefined;
@@ -484,6 +506,8 @@ export class FinaticConnect extends EventEmitter {
       const options = (optionsOrParams || {}) as {
         theme?: string | { preset?: string; custom?: Record<string, unknown> };
         brokers?: string[];
+        kind?: 'broker' | 'exchange';
+        asset_types?: string[];
         email?: string;
         mode?: 'light' | 'dark';
         onSuccess?: (userId: string) => void;
@@ -497,7 +521,7 @@ export class FinaticConnect extends EventEmitter {
       closeCallback = optOnClose;
     } else {
       // Old pattern: params and callbacks are separate
-      params = optionsOrParams as { theme?: string | { preset?: string; custom?: Record<string, unknown> }; brokers?: string[]; email?: string; mode?: 'light' | 'dark' } | undefined;
+      params = optionsOrParams as { theme?: string | { preset?: string; custom?: Record<string, unknown> }; brokers?: string[]; kind?: 'broker' | 'exchange'; asset_types?: string[]; email?: string; mode?: 'light' | 'dark' } | undefined;
       successCallback = onSuccess;
       errorCallback = onError;
       closeCallback = onClose;

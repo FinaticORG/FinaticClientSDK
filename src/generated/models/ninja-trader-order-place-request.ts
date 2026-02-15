@@ -18,15 +18,15 @@
 import type { Accountnumber } from './accountnumber';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order } from './order';
+import type { Order1 } from './order1';
 
 /**
- * NinjaTrader place-order request body.  Attributes ---------- broker : Literal[\"ninja_trader\"]     Discriminator; must be ``\"ninja_trader\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : NinjaTraderOrderPlaceQueryParamsUnion     NinjaTrader-specific order parameters (equity, etc.; may include accountSpec, isAutomated).  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``. JSON schema examples are attached in model_config for OpenAPI docs.
+ * NinjaTrader place-order request body.  Attributes ---------- broker : Literal[\"ninja_trader\"]     Discriminator; must be ``\"ninja_trader\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : NinjaTraderOrderPlaceQueryParamsUnion     NinjaTrader-specific order parameters (futures; may include accountSpec, isAutomated).  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``. JSON schema examples are attached in model_config for OpenAPI docs.
  */
 export interface NinjaTraderOrderPlaceRequest {
     'broker': NinjaTraderOrderPlaceRequestBrokerEnum;
     'accountNumber': Accountnumber;
-    'order': Order;
+    'order': Order1;
 }
 
 export enum NinjaTraderOrderPlaceRequestBrokerEnum {

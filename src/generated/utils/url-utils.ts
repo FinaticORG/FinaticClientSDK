@@ -59,3 +59,44 @@ export function appendBrokerFilterToURL(baseUrl: string, brokerNames?: string[])
     return baseUrl;
   }
 }
+
+/**
+ * Append broker/exchange type filter to a portal URL.
+ * @param baseUrl The base portal URL (may already have query parameters)
+ * @param kind Filter by provider type: 'broker' or 'exchange'
+ * @returns The portal URL with type parameter appended
+ */
+export function appendKindToURL(baseUrl: string, kind?: 'broker' | 'exchange'): string {
+  if (!kind) {
+    return baseUrl;
+  }
+
+  try {
+    const url = new URL(baseUrl);
+    url.searchParams.set('type', kind);
+    return url.toString();
+  } catch (error) {
+    return baseUrl;
+  }
+}
+
+/**
+ * Append asset types (capabilities) filter to a portal URL.
+ * Multiple values are AND-filtered (brokers that support all listed asset types).
+ * @param baseUrl The base portal URL (may already have query parameters)
+ * @param assetTypes Array of capability names (e.g. ['equity', 'crypto', 'options'])
+ * @returns The portal URL with capabilities parameter appended
+ */
+export function appendAssetTypesToURL(baseUrl: string, assetTypes?: string[]): string {
+  if (!assetTypes || assetTypes.length === 0) {
+    return baseUrl;
+  }
+
+  try {
+    const url = new URL(baseUrl);
+    url.searchParams.set('capabilities', assetTypes.join(','));
+    return url.toString();
+  } catch (error) {
+    return baseUrl;
+  }
+}

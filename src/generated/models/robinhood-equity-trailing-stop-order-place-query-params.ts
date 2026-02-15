@@ -30,6 +30,8 @@ export interface RobinhoodEquityTrailingStopOrderPlaceQueryParams {
     'symbol': string;
     'orderQty': number;
     'stopPrice': number;
+    'trailPercent'?: number | null;
+    'trailPrice'?: number | null;
     /**
      * Allow trading during extended hours (premium users only)
      */

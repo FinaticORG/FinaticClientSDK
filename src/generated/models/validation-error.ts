@@ -21,5 +21,7 @@ export interface ValidationError {
     'loc': Array<LocationInner>;
     'msg': string;
     'type': string;
+    'input'?: any;
+    'ctx'?: object;
 }
 

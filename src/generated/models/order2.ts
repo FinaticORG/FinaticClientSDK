@@ -15,23 +15,88 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { TastyTradeLimitOrderPlaceQueryParams } from './tasty-trade-limit-order-place-query-params';
+import type { Order2AnyOf } from './order2-any-of';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { TastyTradeMarketOrderPlaceQueryParams } from './tasty-trade-market-order-place-query-params';
+import type { Order2AnyOf1 } from './order2-any-of1';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { TastyTradeStopOrderPlaceQueryParams } from './tasty-trade-stop-order-place-query-params';
+import type { Order2AnyOf2 } from './order2-any-of2';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { TastyTradeTrailingStopOrderPlaceQueryParams } from './tasty-trade-trailing-stop-order-place-query-params';
+import type { RobinhoodOptionSpreadLeg } from './robinhood-option-spread-leg';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Timeinforce1 } from './timeinforce1';
 
-/**
- * @type Order2
- */
-export type Order2 = { orderType: 'limit' } & TastyTradeLimitOrderPlaceQueryParams | { orderType: 'market' } & TastyTradeMarketOrderPlaceQueryParams | { orderType: 'stop' } & TastyTradeStopOrderPlaceQueryParams | { orderType: 'trailing_stop' } & TastyTradeTrailingStopOrderPlaceQueryParams;
+export interface Order2 {
+    'orderType': Order2OrderTypeEnum;
+    'assetType'?: Order2AssetTypeEnum;
+    'action': Order2ActionEnum;
+    'timeInForce': Timeinforce1;
+    'symbol': string;
+    'orderQty': number;
+    /**
+     * Allow trading during extended hours (premium users only)
+     */
+    'extendedHours'?: boolean;
+    /**
+     * Market hours to trade in
+     */
+    'marketHours'?: Order2MarketHoursEnum;
+    'price': number;
+    'stopPrice': number;
+    'limitPrice': number;
+    'trailPercent'?: number;
+    'trailPrice'?: number;
+    'direction'?: Order2DirectionEnum;
+    'spread'?: Array<RobinhoodOptionSpreadLeg>;
+    'positionEffect'?: Order2PositionEffectEnum;
+    'creditOrDebit'?: Order2CreditOrDebitEnum;
+    'expirationDate'?: string;
+    'strikePrice'?: number;
+    'optionType'?: Order2OptionTypeEnum;
+    /**
+     * Whether quantityOrPrice represents quantity or price
+     */
+    'amountIn'?: Order2AmountInEnum;
+}
+
+export enum Order2OrderTypeEnum {
+    TrailingStop = 'trailing_stop'
+}
+export enum Order2AssetTypeEnum {
+    Crypto = 'crypto'
+}
+export enum Order2ActionEnum {
+    Buy = 'buy',
+    Sell = 'sell'
+}
+export enum Order2MarketHoursEnum {
+    RegularHours = 'regular_hours',
+    AllDayHours = 'all_day_hours',
+    ExtendedHours = 'extended_hours'
+}
+export enum Order2DirectionEnum {
+    Debit = 'debit',
+    Credit = 'credit'
+}
+export enum Order2PositionEffectEnum {
+    Open = 'open',
+    Close = 'close'
+}
+export enum Order2CreditOrDebitEnum {
+    Debit = 'debit',
+    Credit = 'credit'
+}
+export enum Order2OptionTypeEnum {
+    Call = 'call',
+    Put = 'put',
+    Both = 'both'
+}
+export enum Order2AmountInEnum {
+    Quantity = 'quantity',
+    Price = 'price'
+}
 
 

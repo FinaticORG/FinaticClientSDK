@@ -18,7 +18,7 @@
 import type { Accountnumber } from './accountnumber';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order2 } from './order2';
+import type { Order3 } from './order3';
 
 /**
  * TastyTrade place-order request body.  Attributes ---------- broker : Literal[\"tasty_trade\"]     Discriminator; must be ``\"tasty_trade\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : TastyTradeOrderPlaceQueryParamsUnion     TastyTrade-specific order parameters (equity, options, etc.).  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``.
@@ -26,7 +26,7 @@ import type { Order2 } from './order2';
 export interface TastyTradeOrderPlaceRequest {
     'broker': TastyTradeOrderPlaceRequestBrokerEnum;
     'accountNumber': Accountnumber;
-    'order': Order2;
+    'order': Order3;
 }
 
 export enum TastyTradeOrderPlaceRequestBrokerEnum {

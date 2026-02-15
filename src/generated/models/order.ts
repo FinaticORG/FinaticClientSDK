@@ -15,23 +15,29 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { NinjaTraderLimitOrderPlaceQueryParams } from './ninja-trader-limit-order-place-query-params';
+import type { Notional2 } from './notional2';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { NinjaTraderMarketOrderPlaceQueryParams } from './ninja-trader-market-order-place-query-params';
+import type { OrderOneOf } from './order-one-of';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { NinjaTraderStopOrderPlaceQueryParams } from './ninja-trader-stop-order-place-query-params';
+import type { OrderOneOf1 } from './order-one-of1';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { NinjaTraderTrailingStopOrderPlaceQueryParams } from './ninja-trader-trailing-stop-order-place-query-params';
+import type { OrderOneOf2 } from './order-one-of2';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Timeinforce1 } from './timeinforce1';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { TrailPercent } from './trail-percent';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { TrailPrice } from './trail-price';
 
 /**
  * @type Order
  */
-export type Order = { orderType: 'limit' } & NinjaTraderLimitOrderPlaceQueryParams | { orderType: 'market' } & NinjaTraderMarketOrderPlaceQueryParams | { orderType: 'stop' } & NinjaTraderStopOrderPlaceQueryParams | { orderType: 'trailing_stop' } & NinjaTraderTrailingStopOrderPlaceQueryParams;
+export type Order = OrderOneOf | OrderOneOf1 | OrderOneOf2;
 
 

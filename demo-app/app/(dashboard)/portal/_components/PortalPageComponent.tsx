@@ -29,6 +29,14 @@ import type { BrokerInfo } from '@finatic/client';
 
 type PortalEvent = { type: string; data: unknown; timestamp: string };
 
+const PORTAL_ASSET_TYPE_OPTIONS = [
+  { value: 'equity', label: 'Equity' },
+  { value: 'equity_option', label: 'Equity option' },
+  { value: 'crypto', label: 'Crypto' },
+  { value: 'future', label: 'Future' },
+  { value: 'future_option', label: 'Future option' },
+] as const;
+
 // Removed hard-coded brokers. We'll load from SDK.
 
 export default function PortalPageComponent(): JSX.Element {
@@ -51,6 +59,8 @@ export default function PortalPageComponent(): JSX.Element {
   const [emailParam, setEmailParam] = useState<string>('');
   const [themePreset, setThemePreset] = useState<string>('');
   const [themeMode, setThemeMode] = useState<'light' | 'dark' | 'system'>('system');
+  const [portalKind, setPortalKind] = useState<string>('');
+  const [portalAssetTypes, setPortalAssetTypes] = useState<string[]>([]);
   const [availableBrokers, setAvailableBrokers] = useState<BrokerInfo[] | null>(null);
   const [brokersError, setBrokersError] = useState<string>('');
   const [brokersLoading, setBrokersLoading] = useState<boolean>(false);
@@ -204,6 +214,14 @@ export default function PortalPageComponent(): JSX.Element {
         options.mode = themeMode;
         addLog('info', `Opening portal with mode: ${themeMode}`);
       }
+      if (portalKind === 'broker' || portalKind === 'exchange') {
+        options.kind = portalKind;
+        addLog('info', `Opening portal with kind: ${portalKind}`);
+      }
+      if (portalAssetTypes.length > 0) {
+        options.asset_types = portalAssetTypes;
+        addLog('info', `Opening portal with asset_types: ${portalAssetTypes.join(', ')}`);
+      }
 
       await finatic.openPortal({
         ...options,
@@ -257,6 +275,8 @@ export default function PortalPageComponent(): JSX.Element {
     emailParam,
     themePreset,
     themeMode,
+    portalKind,
+    portalAssetTypes,
     setStoredUserId,
     checkAuth,
     setAuthState,
@@ -409,6 +429,58 @@ export default function PortalPageComponent(): JSX.Element {
                     <Trash2 className="size-4" />
                   </Button>
                 </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="kind">Kind (optional)</Label>
+                <Select
+                  value={portalKind || 'none'}
+                  onValueChange={v => setPortalKind(v === 'none' ? '' : v)}
+                >
+                  <SelectTrigger id="kind" className="flex-1" aria-label="Filter by provider type">
+                    <SelectValue placeholder="No filter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No filter</SelectItem>
+                    <SelectItem value="broker">Broker</SelectItem>
+                    <SelectItem value="exchange">Exchange</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-muted-foreground text-xs">
+                  Show only brokers or only exchanges (e.g. crypto) in the portal.
+                </p>
+              </div>
+
+              <div className="grid gap-2 lg:col-span-2">
+                <Label>Asset types (optional)</Label>
+                <div className="flex flex-wrap gap-2">
+                  {PORTAL_ASSET_TYPE_OPTIONS.map(opt => {
+                    const checked = portalAssetTypes.includes(opt.value);
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() =>
+                          setPortalAssetTypes(prev =>
+                            prev.includes(opt.value) ? prev.filter(a => a !== opt.value) : [...prev, opt.value]
+                          )
+                        }
+                        className={`text-sm border rounded-md px-3 py-2 transition-colors ${
+                          checked ? 'bg-accent border-primary' : 'hover:bg-accent'
+                        }`}
+                        aria-pressed={checked}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span>{opt.label}</span>
+                          {checked ? <Badge>On</Badge> : <Badge variant="outline">Off</Badge>}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-muted-foreground text-xs">
+                  Filter providers by capability (AND logic). Leave empty for no filter.
+                </p>
               </div>
 
               <div className="grid gap-2">
