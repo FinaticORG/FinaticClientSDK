@@ -33,6 +33,9 @@ import type { TastyTradeOrderCancelRequest } from './tasty-trade-order-cancel-re
 import type { TradestationOrderCancelRequest } from './tradestation-order-cancel-request';
 // May contain unused imports in some cases
 // @ts-ignore
+import type { Trading212OrderCancelRequest } from './trading212-order-cancel-request';
+// May contain unused imports in some cases
+// @ts-ignore
 import type { WebullOrderCancelQueryParams } from './webull-order-cancel-query-params';
 // May contain unused imports in some cases
 // @ts-ignore
@@ -42,6 +45,6 @@ import type { WebullOrderCancelRequest } from './webull-order-cancel-request';
  * @type CancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest
  * Broker-specific parameters object for *cancel order* operations
  */
-export type CancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest = { broker: 'alpaca' } & AlpacaOrderCancelRequest | { broker: 'ninja_trader' } & NinjaTraderOrderCancelRequest | { broker: 'robinhood' } & RobinhoodOrderCancelRequest | { broker: 'tasty_trade' } & TastyTradeOrderCancelRequest | { broker: 'tradestation' } & TradestationOrderCancelRequest | { broker: 'webull' } & WebullOrderCancelRequest;
+export type CancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest = { broker: 'alpaca' } & AlpacaOrderCancelRequest | { broker: 'ninja_trader' } & NinjaTraderOrderCancelRequest | { broker: 'robinhood' } & RobinhoodOrderCancelRequest | { broker: 'tasty_trade' } & TastyTradeOrderCancelRequest | { broker: 'tradestation' } & TradestationOrderCancelRequest | { broker: 'trading212' } & Trading212OrderCancelRequest | { broker: 'webull' } & WebullOrderCancelRequest;
 
 

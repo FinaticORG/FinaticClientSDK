@@ -18,7 +18,7 @@
 import type { Accountnumber } from './accountnumber';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order6 } from './order6';
+import type { Order7 } from './order7';
 
 /**
  * Webull modify-order request body (partial update).  Attributes ---------- broker : Literal[\"webull\"]     Discriminator; must be ``\"webull\"``. account_number : str | int     Broker-provided account number (top-level). Serialized as ``accountNumber``. order : WebullOrderModifyQueryParamsUnion     Delta of fields to change; backend merges with existing order.  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``.
@@ -26,7 +26,7 @@ import type { Order6 } from './order6';
 export interface WebullOrderModifyRequest {
     'broker': WebullOrderModifyRequestBrokerEnum;
     'accountNumber': Accountnumber;
-    'order': Order6;
+    'order': Order7;
 }
 
 export enum WebullOrderModifyRequestBrokerEnum {

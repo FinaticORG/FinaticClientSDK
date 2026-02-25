@@ -18,7 +18,7 @@
 import type { Accountnumber } from './accountnumber';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order5 } from './order5';
+import type { Order6 } from './order6';
 
 /**
  * Webull place-order request body.  Attributes ---------- broker : Literal[\"webull\"]     Discriminator; must be ``\"webull\"``. account_number : str | int     Broker-provided account ID (top-level). Serialized as ``accountNumber``. order : WebullOrderPlaceQueryParamsUnion     Webull equity order (market, limit, stop, stop_limit, trailing_stop).  Notes ----- Uses ``extra=\"forbid\"`` and ``populate_by_name=True``.
@@ -26,7 +26,7 @@ import type { Order5 } from './order5';
 export interface WebullOrderPlaceRequest {
     'broker': WebullOrderPlaceRequestBrokerEnum;
     'accountNumber': Accountnumber;
-    'order': Order5;
+    'order': Order6;
 }
 
 export enum WebullOrderPlaceRequestBrokerEnum {

@@ -22,10 +22,7 @@ export interface FinaticResponseOrderActionResult {
      * Request trace identifier for tracking and debugging. Auto-generated if not provided.
      */
     'trace_id'?: string;
-    /**
-     * Success payload containing data and optional meta
-     */
-    'success': SuccessPayloadOrderActionResult;
+    'success'?: SuccessPayloadOrderActionResult | null;
     'error'?: { [key: string]: any; } | null;
     'warning'?: Array<{ [key: string]: any; }> | null;
 }

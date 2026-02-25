@@ -15,13 +15,13 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order2AnyOf } from './order2-any-of';
+import type { Order2OneOf } from './order2-one-of';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order2AnyOf1 } from './order2-any-of1';
+import type { Order2OneOf1 } from './order2-one-of1';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order2AnyOf2 } from './order2-any-of2';
+import type { Order2OneOf2 } from './order2-one-of2';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { RobinhoodOptionSpreadLeg } from './robinhood-option-spread-leg';
@@ -29,74 +29,9 @@ import type { RobinhoodOptionSpreadLeg } from './robinhood-option-spread-leg';
 // @ts-ignore
 import type { Timeinforce1 } from './timeinforce1';
 
-export interface Order2 {
-    'orderType': Order2OrderTypeEnum;
-    'assetType'?: Order2AssetTypeEnum;
-    'action': Order2ActionEnum;
-    'timeInForce': Timeinforce1;
-    'symbol': string;
-    'orderQty': number;
-    /**
-     * Allow trading during extended hours (premium users only)
-     */
-    'extendedHours'?: boolean;
-    /**
-     * Market hours to trade in
-     */
-    'marketHours'?: Order2MarketHoursEnum;
-    'price': number;
-    'stopPrice': number;
-    'limitPrice': number;
-    'trailPercent'?: number;
-    'trailPrice'?: number;
-    'direction'?: Order2DirectionEnum;
-    'spread'?: Array<RobinhoodOptionSpreadLeg>;
-    'positionEffect'?: Order2PositionEffectEnum;
-    'creditOrDebit'?: Order2CreditOrDebitEnum;
-    'expirationDate'?: string;
-    'strikePrice'?: number;
-    'optionType'?: Order2OptionTypeEnum;
-    /**
-     * Whether quantityOrPrice represents quantity or price
-     */
-    'amountIn'?: Order2AmountInEnum;
-}
-
-export enum Order2OrderTypeEnum {
-    TrailingStop = 'trailing_stop'
-}
-export enum Order2AssetTypeEnum {
-    Crypto = 'crypto'
-}
-export enum Order2ActionEnum {
-    Buy = 'buy',
-    Sell = 'sell'
-}
-export enum Order2MarketHoursEnum {
-    RegularHours = 'regular_hours',
-    AllDayHours = 'all_day_hours',
-    ExtendedHours = 'extended_hours'
-}
-export enum Order2DirectionEnum {
-    Debit = 'debit',
-    Credit = 'credit'
-}
-export enum Order2PositionEffectEnum {
-    Open = 'open',
-    Close = 'close'
-}
-export enum Order2CreditOrDebitEnum {
-    Debit = 'debit',
-    Credit = 'credit'
-}
-export enum Order2OptionTypeEnum {
-    Call = 'call',
-    Put = 'put',
-    Both = 'both'
-}
-export enum Order2AmountInEnum {
-    Quantity = 'quantity',
-    Price = 'price'
-}
+/**
+ * @type Order2
+ */
+export type Order2 = Order2OneOf | Order2OneOf1 | Order2OneOf2;
 
 

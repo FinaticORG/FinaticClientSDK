@@ -15,23 +15,23 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { OrderModifyQueryParamsBaseTimeInForce } from './order-modify-query-params-base-time-in-force';
+import type { BrokerDataOptionTypeEnum } from './broker-data-option-type-enum';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { WebullLimitOrderModifyQueryParams } from './webull-limit-order-modify-query-params';
+import type { Order6OneOf } from './order6-one-of';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { WebullMarketOrderModifyQueryParams } from './webull-market-order-modify-query-params';
+import type { Order6OneOf1 } from './order6-one-of1';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { WebullStopOrderModifyQueryParams } from './webull-stop-order-modify-query-params';
+import type { Strikeprice1 } from './strikeprice1';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { WebullTrailingStopOrderModifyQueryParams } from './webull-trailing-stop-order-modify-query-params';
+import type { Timeinforce1 } from './timeinforce1';
 
 /**
  * @type Order6
  */
-export type Order6 = { orderType: 'limit' } & WebullLimitOrderModifyQueryParams | { orderType: 'market' } & WebullMarketOrderModifyQueryParams | { orderType: 'stop' } & WebullStopOrderModifyQueryParams | { orderType: 'trailing_stop' } & WebullTrailingStopOrderModifyQueryParams;
+export type Order6 = Order6OneOf | Order6OneOf1;
 
 

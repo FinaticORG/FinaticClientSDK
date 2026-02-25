@@ -15,23 +15,23 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { BrokerDataOptionTypeEnum } from './broker-data-option-type-enum';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { Order5OneOf } from './order5-one-of';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { Order5OneOf1 } from './order5-one-of1';
-// May contain unused imports in some cases
-// @ts-ignore
-import type { Strikeprice1 } from './strikeprice1';
-// May contain unused imports in some cases
-// @ts-ignore
 import type { Timeinforce1 } from './timeinforce1';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { Trading212LimitOrderPlaceQueryParams } from './trading212-limit-order-place-query-params';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { Trading212MarketOrderPlaceQueryParams } from './trading212-market-order-place-query-params';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { Trading212StopLimitOrderPlaceQueryParams } from './trading212-stop-limit-order-place-query-params';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { Trading212StopOrderPlaceQueryParams } from './trading212-stop-order-place-query-params';
 
 /**
  * @type Order5
  */
-export type Order5 = Order5OneOf | Order5OneOf1;
+export type Order5 = { orderType: 'limit' } & Trading212LimitOrderPlaceQueryParams | { orderType: 'market' } & Trading212MarketOrderPlaceQueryParams | { orderType: 'stop' } & Trading212StopOrderPlaceQueryParams | { orderType: 'stop_limit' } & Trading212StopLimitOrderPlaceQueryParams;
 
 

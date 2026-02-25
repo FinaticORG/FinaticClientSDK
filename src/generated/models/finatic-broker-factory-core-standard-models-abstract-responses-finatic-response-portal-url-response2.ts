@@ -15,14 +15,14 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { SuccessPayloadListFDXBrokerPosition } from './success-payload-list-fdxbroker-position';
+import type { SuccessPayloadPortalUrlResponse } from './success-payload-portal-url-response';
 
-export interface FinaticResponseListFDXBrokerPosition {
+export interface FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2 {
     /**
      * Request trace identifier for tracking and debugging. Auto-generated if not provided.
      */
     'trace_id'?: string;
-    'success'?: SuccessPayloadListFDXBrokerPosition | null;
+    'success'?: SuccessPayloadPortalUrlResponse | null;
     'error'?: { [key: string]: any; } | null;
     'warning'?: Array<{ [key: string]: any; }> | null;
 }

@@ -24,7 +24,7 @@ import type { AlpacaOrderPlaceRequest } from './alpaca-order-place-request';
 import type { NinjaTraderOrderPlaceRequest } from './ninja-trader-order-place-request';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Order5 } from './order5';
+import type { Order6 } from './order6';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { RobinhoodOrderPlaceRequest } from './robinhood-order-place-request';
@@ -36,12 +36,15 @@ import type { TastyTradeOrderPlaceRequest } from './tasty-trade-order-place-requ
 import type { TradestationOrderPlaceRequest } from './tradestation-order-place-request';
 // May contain unused imports in some cases
 // @ts-ignore
+import type { Trading212OrderPlaceRequest } from './trading212-order-place-request';
+// May contain unused imports in some cases
+// @ts-ignore
 import type { WebullOrderPlaceRequest } from './webull-order-place-request';
 
 /**
  * @type PlaceOrderApiBetaBrokersOrdersPostRequest
  * Broker-specific parameters object (varies by broker)
  */
-export type PlaceOrderApiBetaBrokersOrdersPostRequest = { broker: 'alpaca' } & AlpacaOrderPlaceRequest | { broker: 'ninja_trader' } & NinjaTraderOrderPlaceRequest | { broker: 'robinhood' } & RobinhoodOrderPlaceRequest | { broker: 'tasty_trade' } & TastyTradeOrderPlaceRequest | { broker: 'tradestation' } & TradestationOrderPlaceRequest | { broker: 'webull' } & WebullOrderPlaceRequest;
+export type PlaceOrderApiBetaBrokersOrdersPostRequest = { broker: 'alpaca' } & AlpacaOrderPlaceRequest | { broker: 'ninja_trader' } & NinjaTraderOrderPlaceRequest | { broker: 'robinhood' } & RobinhoodOrderPlaceRequest | { broker: 'tasty_trade' } & TastyTradeOrderPlaceRequest | { broker: 'tradestation' } & TradestationOrderPlaceRequest | { broker: 'trading212' } & Trading212OrderPlaceRequest | { broker: 'webull' } & WebullOrderPlaceRequest;
 
 
