@@ -7,7 +7,7 @@
 
 import { Configuration } from './configuration';
 import { SdkConfig, defaultConfig } from './config';
-import { appendThemeToURL, appendBrokerFilterToURL, appendKindToURL, appendAssetTypesToURL } from './utils/url-utils';
+import { appendThemeToURL, appendBrokerFilterToURL, appendKindToURL, appendAssetTypesToURL, appendStageToURL } from './utils/url-utils';
 import { EventEmitter } from './utils/events';
 import { PortalUI } from './portal/PortalUI';
 import type { Logger } from './utils/logger';
@@ -292,6 +292,7 @@ export class FinaticConnect extends EventEmitter {
    * @param params.brokers - Optional array of broker IDs to filter
    * @param params.kind - Optional filter by provider type ('broker' or 'exchange')
    * @param params.asset_types - Optional asset types/capabilities to filter (AND logic)
+   * @param params.stage - Optional broker stage filter: array of 'production' | 'beta' | 'alpha' (OR logic; omit = show all)
    * @param params.email - Optional email address
    * @param params.mode - Optional mode ('light' or 'dark')
    * @returns Portal URL string
@@ -313,6 +314,7 @@ export class FinaticConnect extends EventEmitter {
     brokers?: string[];
     kind?: 'broker' | 'exchange';
     asset_types?: string[];
+    stage?: ('production' | 'beta' | 'alpha')[];
     email?: string;
     mode?: 'light' | 'dark';
   }): Promise<string> {
@@ -320,7 +322,7 @@ export class FinaticConnect extends EventEmitter {
       throw new Error('Session not initialized. Call startSession() first.');
     }
 
-    const { theme, brokers, kind, asset_types, email, mode } = params || {};
+    const { theme, brokers, kind, asset_types, stage, email, mode } = params || {};
 
     // Get raw portal URL from SessionApi directly (not a wrapper)
     const axiosResponse = await this.sessionApi.getPortalUrlApiBetaSessionPortalGet({
@@ -389,6 +391,11 @@ export class FinaticConnect extends EventEmitter {
       portalUrl = appendAssetTypesToURL(portalUrl, asset_types);
     }
 
+    // Append stage filter if provided
+    if (stage && stage.length > 0) {
+      portalUrl = appendStageToURL(portalUrl, stage);
+    }
+
     // Append email if provided
     if (email) {
       const url = new URL(portalUrl);
@@ -438,6 +445,7 @@ export class FinaticConnect extends EventEmitter {
     brokers?: string[];
     kind?: 'broker' | 'exchange';
     asset_types?: string[];
+    stage?: ('production' | 'beta' | 'alpha')[];
     email?: string;
     mode?: 'light' | 'dark';
     onSuccess?: (userId: string) => void;
@@ -455,6 +463,7 @@ export class FinaticConnect extends EventEmitter {
       brokers?: string[];
       kind?: 'broker' | 'exchange';
       asset_types?: string[];
+      stage?: ('production' | 'beta' | 'alpha')[];
       email?: string;
       mode?: 'light' | 'dark';
     },
@@ -469,6 +478,7 @@ export class FinaticConnect extends EventEmitter {
       brokers?: string[];
       kind?: 'broker' | 'exchange';
       asset_types?: string[];
+      stage?: ('production' | 'beta' | 'alpha')[];
       email?: string;
       mode?: 'light' | 'dark';
       onSuccess?: (userId: string) => void;
@@ -479,6 +489,7 @@ export class FinaticConnect extends EventEmitter {
       brokers?: string[];
       kind?: 'broker' | 'exchange';
       asset_types?: string[];
+      stage?: ('production' | 'beta' | 'alpha')[];
       email?: string;
       mode?: 'light' | 'dark';
     },
@@ -496,7 +507,7 @@ export class FinaticConnect extends EventEmitter {
     //   In new pattern, callbacks are inside the first parameter object
     const isNewPattern = typeof onSuccess !== 'function';
 
-    let params: { theme?: string | { preset?: string; custom?: Record<string, unknown> }; brokers?: string[]; kind?: 'broker' | 'exchange'; asset_types?: string[]; email?: string; mode?: 'light' | 'dark' } | undefined;
+    let params: { theme?: string | { preset?: string; custom?: Record<string, unknown> }; brokers?: string[]; kind?: 'broker' | 'exchange'; asset_types?: string[]; stage?: ('production' | 'beta' | 'alpha')[]; email?: string; mode?: 'light' | 'dark' } | undefined;
     let successCallback: ((userId: string) => void) | undefined;
     let errorCallback: ((error: Error) => void) | undefined;
     let closeCallback: (() => void) | undefined;
@@ -508,6 +519,7 @@ export class FinaticConnect extends EventEmitter {
         brokers?: string[];
         kind?: 'broker' | 'exchange';
         asset_types?: string[];
+        stage?: ('production' | 'beta' | 'alpha')[];
         email?: string;
         mode?: 'light' | 'dark';
         onSuccess?: (userId: string) => void;
@@ -521,7 +533,7 @@ export class FinaticConnect extends EventEmitter {
       closeCallback = optOnClose;
     } else {
       // Old pattern: params and callbacks are separate
-      params = optionsOrParams as { theme?: string | { preset?: string; custom?: Record<string, unknown> }; brokers?: string[]; kind?: 'broker' | 'exchange'; asset_types?: string[]; email?: string; mode?: 'light' | 'dark' } | undefined;
+      params = optionsOrParams as { theme?: string | { preset?: string; custom?: Record<string, unknown> }; brokers?: string[]; kind?: 'broker' | 'exchange'; asset_types?: string[]; stage?: ('production' | 'beta' | 'alpha')[]; email?: string; mode?: 'light' | 'dark' } | undefined;
       successCallback = onSuccess;
       errorCallback = onError;
       closeCallback = onClose;

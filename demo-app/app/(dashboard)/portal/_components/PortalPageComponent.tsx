@@ -28,6 +28,7 @@ import {
 import type { BrokerInfo } from '@finatic/client';
 
 type PortalEvent = { type: string; data: unknown; timestamp: string };
+type PortalStage = 'production' | 'beta' | 'alpha';
 
 const PORTAL_ASSET_TYPE_OPTIONS = [
   { value: 'equity', label: 'Equity' },
@@ -35,6 +36,12 @@ const PORTAL_ASSET_TYPE_OPTIONS = [
   { value: 'crypto', label: 'Crypto' },
   { value: 'future', label: 'Future' },
   { value: 'future_option', label: 'Future option' },
+] as const;
+
+const PORTAL_STAGE_OPTIONS = [
+  { value: 'production' as PortalStage, label: 'Production' },
+  { value: 'beta' as PortalStage, label: 'Beta' },
+  { value: 'alpha' as PortalStage, label: 'Alpha' },
 ] as const;
 
 // Removed hard-coded brokers. We'll load from SDK.
@@ -61,6 +68,7 @@ export default function PortalPageComponent(): JSX.Element {
   const [themeMode, setThemeMode] = useState<'light' | 'dark' | 'system'>('system');
   const [portalKind, setPortalKind] = useState<string>('');
   const [portalAssetTypes, setPortalAssetTypes] = useState<string[]>([]);
+  const [portalStages, setPortalStages] = useState<PortalStage[]>([]);
   const [availableBrokers, setAvailableBrokers] = useState<BrokerInfo[] | null>(null);
   const [brokersError, setBrokersError] = useState<string>('');
   const [brokersLoading, setBrokersLoading] = useState<boolean>(false);
@@ -222,6 +230,10 @@ export default function PortalPageComponent(): JSX.Element {
         options.asset_types = portalAssetTypes;
         addLog('info', `Opening portal with asset_types: ${portalAssetTypes.join(', ')}`);
       }
+      if (portalStages.length > 0) {
+        options.stage = portalStages;
+        addLog('info', `Opening portal with stages: ${portalStages.join(', ')}`);
+      }
 
       await finatic.openPortal({
         ...options,
@@ -277,6 +289,7 @@ export default function PortalPageComponent(): JSX.Element {
     themeMode,
     portalKind,
     portalAssetTypes,
+    portalStages,
     setStoredUserId,
     checkAuth,
     setAuthState,
@@ -480,6 +493,41 @@ export default function PortalPageComponent(): JSX.Element {
                 </div>
                 <p className="text-muted-foreground text-xs">
                   Filter providers by capability (AND logic). Leave empty for no filter.
+                </p>
+              </div>
+
+              <div className="grid gap-2 lg:col-span-2">
+                <Label>Stages (optional)</Label>
+                <div className="flex flex-wrap gap-2">
+                  {PORTAL_STAGE_OPTIONS.map(opt => {
+                    const checked = portalStages.includes(opt.value);
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() =>
+                          setPortalStages(prev =>
+                            prev.includes(opt.value)
+                              ? prev.filter(s => s !== opt.value)
+                              : [...prev, opt.value]
+                          )
+                        }
+                        className={`text-sm border rounded-md px-3 py-2 transition-colors ${
+                          checked ? 'bg-accent border-primary' : 'hover:bg-accent'
+                        }`}
+                        aria-pressed={checked}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span>{opt.label}</span>
+                          {checked ? <Badge>On</Badge> : <Badge variant="outline">Off</Badge>}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-muted-foreground text-xs">
+                  Filter providers by stage: production (no alpha/beta flags), beta, or alpha. Leave
+                  empty for no stage filter.
                 </p>
               </div>
 
