@@ -284,6 +284,58 @@ export function MethodPageComponent() {
       methods: balanceMethods,
     });
 
+    const transactionMethods: MethodDefinition[] = [
+      {
+        key: 'getTransactions',
+        label: 'Get transactions',
+        description:
+          'Retrieves paginated transactions (deposits, withdrawals, dividends, transfers, etc.).',
+        input: {
+          type: 'fields',
+          fields: [
+            {
+              name: 'filter',
+              label: 'Filter JSON',
+              placeholder:
+                '{"accountId":"","transactionType":"DIVIDEND","startDate":"","endDate":"","limit":50,"offset":0}',
+              description:
+                'Optional GetTransactionsParams (brokerId, connectionId, accountId, transactionType, dates, limit, offset, …).',
+            },
+          ],
+        },
+        prepareArgs: ({ fieldValues }) => {
+          const filter = parseOptionalJson(fieldValues?.filter, 'filter');
+          return filter ? [filter] : [];
+        },
+      },
+      {
+        key: 'getAllTransactions',
+        label: 'Get all transactions',
+        description: 'Aggregates transactions by iterating across every page.',
+        input: {
+          type: 'fields',
+          fields: [
+            {
+              name: 'filter',
+              label: 'Filter JSON',
+              placeholder: '{"connectionId":"","accountId":""}',
+            },
+          ],
+        },
+        prepareArgs: ({ fieldValues }) => {
+          const filter = parseOptionalJson(fieldValues?.filter, 'filter');
+          return filter ? [filter] : [];
+        },
+      },
+    ];
+
+    groups.push({
+      key: 'transactions',
+      title: 'Transaction data',
+      description: 'Cash movements and other non-order activity from broker connections.',
+      methods: transactionMethods,
+    });
+
     const orderMethods: MethodDefinition[] = [
       {
         key: 'getOrders',

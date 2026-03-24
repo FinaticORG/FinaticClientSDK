@@ -270,6 +270,8 @@ export function MethodHarness({ title, description, methodGroups }: MethodHarnes
       'getAllBalances',
       'getOrders',
       'getAllOrders',
+      'getTransactions',
+      'getAllTransactions',
       'getPositions',
       'getAllPositions',
     ],
