@@ -1,31 +1,15 @@
-/**
- * Tests for CompanyWrapper.
- * 
- * This file is protected and will not be overwritten during regeneration.
- * Add your test cases here.
- */
+import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 
-import { CompanyWrapper } from '../../src/generated/wrappers/company';
-import { CompanyApi } from '../../src/generated/api/company-api';
-import type { Configuration } from '../../src/generated/configuration';
-
-describe('CompanyWrapper', () => {
-  let wrapper: CompanyWrapper;
-  let mockApi: jest.Mocked<CompanyApi>;
-  let config: Configuration;
-
-  beforeEach(() => {
-    // TODO: Setup mock API and configuration
-    // mockApi = createMockCompanyApi();
-    // config = createMockConfiguration();
-    // wrapper = new CompanyWrapper(mockApi, config);
+describe('CompanyWrapper contract', () => {
+  it('generated company wrapper file exists', () => {
+    const file = path.resolve(__dirname, '../../src/generated/wrappers/company.ts');
+    expect(existsSync(file)).toBe(true);
   });
 
-  // TODO: Add test cases
-  // Example:
-  // describe('companyMethod', () => {
-  //   it('should call API correctly', async () => {
-  //     // Test implementation
-  //   });
-  // });
+  it('generated company api exports class signature', () => {
+    const file = path.resolve(__dirname, '../../src/generated/api/company-api.ts');
+    const body = readFileSync(file, 'utf8');
+    expect(body).toContain('export class CompanyApi');
+  });
 });

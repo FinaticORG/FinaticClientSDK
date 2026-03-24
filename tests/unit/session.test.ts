@@ -1,31 +1,15 @@
-/**
- * Tests for SessionWrapper.
- * 
- * This file is protected and will not be overwritten during regeneration.
- * Add your test cases here.
- */
+import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 
-import { SessionWrapper } from '../../src/generated/wrappers/session';
-import { SessionApi } from '../../src/generated/api/session-api';
-import type { Configuration } from '../../src/generated/configuration';
-
-describe('SessionWrapper', () => {
-  let wrapper: SessionWrapper;
-  let mockApi: jest.Mocked<SessionApi>;
-  let config: Configuration;
-
-  beforeEach(() => {
-    // TODO: Setup mock API and configuration
-    // mockApi = createMockSessionApi();
-    // config = createMockConfiguration();
-    // wrapper = new SessionWrapper(mockApi, config);
+describe('SessionWrapper contract', () => {
+  it('generated session wrapper file exists', () => {
+    const file = path.resolve(__dirname, '../../src/generated/wrappers/session.ts');
+    expect(existsSync(file)).toBe(true);
   });
 
-  // TODO: Add test cases
-  // Example:
-  // describe('sessionMethod', () => {
-  //   it('should call API correctly', async () => {
-  //     // Test implementation
-  //   });
-  // });
+  it('generated session api exports class signature', () => {
+    const file = path.resolve(__dirname, '../../src/generated/api/session-api.ts');
+    const body = readFileSync(file, 'utf8');
+    expect(body).toContain('export class SessionApi');
+  });
 });

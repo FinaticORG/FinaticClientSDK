@@ -1,31 +1,15 @@
-/**
- * Tests for BrokersWrapper.
- * 
- * This file is protected and will not be overwritten during regeneration.
- * Add your test cases here.
- */
+import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 
-import { BrokersWrapper } from '../../src/generated/wrappers/brokers';
-import { BrokersApi } from '../../src/generated/api/brokers-api';
-import type { Configuration } from '../../src/generated/configuration';
-
-describe('BrokersWrapper', () => {
-  let wrapper: BrokersWrapper;
-  let mockApi: jest.Mocked<BrokersApi>;
-  let config: Configuration;
-
-  beforeEach(() => {
-    // TODO: Setup mock API and configuration
-    // mockApi = createMockBrokersApi();
-    // config = createMockConfiguration();
-    // wrapper = new BrokersWrapper(mockApi, config);
+describe('BrokersWrapper contract', () => {
+  it('generated brokers wrapper file exists', () => {
+    const file = path.resolve(__dirname, '../../src/generated/wrappers/brokers.ts');
+    expect(existsSync(file)).toBe(true);
   });
 
-  // TODO: Add test cases
-  // Example:
-  // describe('brokersMethod', () => {
-  //   it('should call API correctly', async () => {
-  //     // Test implementation
-  //   });
-  // });
+  it('generated brokers api exports class signature', () => {
+    const file = path.resolve(__dirname, '../../src/generated/api/brokers-api.ts');
+    const body = readFileSync(file, 'utf8');
+    expect(body).toContain('export class BrokersApi');
+  });
 });
