@@ -10,6 +10,9 @@ function createParamsProxy(): Record<string, any> {
     {
       get(_target, property) {
         const propertyName = String(property).toLowerCase();
+        if (propertyName === 'headers') {
+          return { 'content-type': 'application/json' };
+        }
         if (propertyName.includes('id')) {
           return 'test-id';
         }
@@ -39,23 +42,48 @@ function createAxiosLikeClient(): any {
 async function invokeApiMethods(apiCtor: ApiCtor): Promise<number> {
   const api = new apiCtor(undefined, 'http://localhost', createAxiosLikeClient());
   const prototype = Object.getPrototypeOf(api) as Record<string, unknown>;
-  const methodNames = Object.getOwnPropertyNames(prototype).filter(
-    (name) => name !== 'constructor' && typeof (api as Record<string, unknown>)[name] === 'function',
+  const prototypeMethodNames = Object.getOwnPropertyNames(prototype).filter(
+    (name) =>
+      name !== 'constructor' &&
+      typeof (api as Record<string, unknown>)[name] === 'function',
   );
+  const ownMethodNames = Object.getOwnPropertyNames(api).filter(
+    (name) => !name.startsWith('_') && typeof (api as Record<string, unknown>)[name] === 'function',
+  );
+  const methodNames = [...new Set([...prototypeMethodNames, ...ownMethodNames])];
 
   let invokedMethodCount = 0;
+  let errorCount = 0;
+  let firstErrorMethodName: string | null = null;
+  let firstError: unknown = null;
   for (const methodName of methodNames) {
-    try {
-      const method = (api as Record<string, ((...args: any[]) => any) | undefined>)[methodName];
-      if (typeof method !== 'function') {
-        continue;
-      }
-      const params = createParamsProxy();
-      await method(params as any, params as any, params as any);
-      invokedMethodCount += 1;
-    } catch {
-      invokedMethodCount += 1;
+    const method = (api as Record<string, ((...args: any[]) => any) | undefined>)[methodName];
+    if (typeof method !== 'function') {
+      continue;
     }
+    const params = createParamsProxy();
+    try {
+      // Most generated methods treat the first arg as "requestParameters" and the second as "options".
+      // Passing the same proxy for both exercises as much code as possible.
+      await method.call(api, params as any, params as any);
+      invokedMethodCount += 1;
+    } catch (e) {
+      errorCount += 1;
+      if (!firstErrorMethodName) {
+        firstErrorMethodName = methodName;
+        firstError = e;
+      }
+    }
+  }
+
+  // If generated API calls throw, we won't exercise the target code paths.
+  // Failing here will help us align mocks with the generated client's expectations.
+  if (errorCount > 0) {
+    const firstErrorDetails =
+      firstError instanceof Error ? firstError.stack || firstError.message : String(firstError);
+    throw new Error(
+      `Generated API smoke: ${errorCount} methods threw. First failing method: ${firstErrorMethodName}\n${firstErrorDetails}`,
+    );
   }
   return invokedMethodCount;
 }

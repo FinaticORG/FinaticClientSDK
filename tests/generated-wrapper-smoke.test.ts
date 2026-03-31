@@ -50,12 +50,18 @@ async function invokeWrapperMethods(wrapperCtor: WrapperCtor): Promise<number> {
   }
 
   const prototype = Object.getPrototypeOf(wrapper) as Record<string, unknown>;
-  const methodNames = Object.getOwnPropertyNames(prototype).filter(
+  const prototypeMethodNames = Object.getOwnPropertyNames(prototype).filter(
     (name) =>
       name !== 'constructor' &&
       !name.startsWith('_') &&
       typeof (wrapper as Record<string, unknown>)[name] === 'function',
   );
+  const ownMethodNames = Object.getOwnPropertyNames(wrapper).filter(
+    (name) =>
+      !name.startsWith('_') &&
+      typeof (wrapper as Record<string, unknown>)[name] === 'function',
+  );
+  const methodNames = [...new Set([...prototypeMethodNames, ...ownMethodNames])];
 
   let invokedMethodCount = 0;
   for (const methodName of methodNames) {
@@ -67,7 +73,7 @@ async function invokeWrapperMethods(wrapperCtor: WrapperCtor): Promise<number> {
         continue;
       }
       const params = createParamsProxy();
-      await method(params as any, params as any, params as any);
+      await method(params as any);
       invokedMethodCount += 1;
     } catch {
       invokedMethodCount += 1;
@@ -91,12 +97,16 @@ describe('Generated wrapper smoke coverage', () => {
     const sdk = new FinaticConnect({ basePath: 'http://localhost' } as any);
     const sdkRecord = sdk as unknown as Record<string, unknown>;
     const prototype = Object.getPrototypeOf(sdk) as Record<string, unknown>;
-    const methodNames = Object.getOwnPropertyNames(prototype).filter(
+    const prototypeMethodNames = Object.getOwnPropertyNames(prototype).filter(
       (name) =>
         name !== 'constructor' &&
         !name.startsWith('_') &&
         typeof sdkRecord[name] === 'function',
     );
+    const ownMethodNames = Object.getOwnPropertyNames(sdk).filter(
+      (name) => !name.startsWith('_') && typeof sdkRecord[name] === 'function',
+    );
+    const methodNames = [...new Set([...prototypeMethodNames, ...ownMethodNames])];
 
     let invokedMethodCount = 0;
     for (const methodName of methodNames) {
@@ -108,7 +118,7 @@ describe('Generated wrapper smoke coverage', () => {
           continue;
         }
         const params = createParamsProxy();
-        await method(params as any, params as any, params as any);
+        await method(params as any);
         invokedMethodCount += 1;
       } catch {
         invokedMethodCount += 1;
