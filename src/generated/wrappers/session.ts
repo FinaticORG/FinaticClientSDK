@@ -1,6 +1,6 @@
 /**
  * Generated wrapper functions for session operations (Phase 2A).
- * 
+ *
  * This file is regenerated on each run - do not edit directly.
  * For custom logic, edit src/custom/wrappers/session.ts instead.
  */
@@ -14,7 +14,11 @@ import { retryApiCall } from '../utils/retry';
 import { getLogger, type Logger } from '../utils/logger';
 import { handleError } from '../utils/error-handling';
 import { getCache, generateCacheKey } from '../utils/cache';
-import { applyRequestInterceptors, applyResponseInterceptors, applyErrorInterceptors } from '../utils/interceptors';
+import {
+  applyRequestInterceptors,
+  applyResponseInterceptors,
+  applyErrorInterceptors,
+} from '../utils/interceptors';
 import { unwrapAxiosResponse } from '../utils/response-utils';
 import { coerceEnumValue } from '../utils/enum-coercion';
 import { convertToPlainObject } from '../utils/plain-object';
@@ -30,20 +34,20 @@ import { PaginatedData } from '../utils/pagination';
 
 /**
  * Standard FinaticResponse type for all API responses.
- * 
+ *
  * Generic response structure with success, error, and warning fields.
  */
 export interface FinaticResponse<T> {
-  '_id'?: string;
+  _id?: string;
   /**
    * Success payload containing data and optional meta
    */
-  'success': {
-    'data': T;
-    'meta'?: { [key: string]: any; } | null;
+  success: {
+    data: T;
+    meta?: { [key: string]: any } | null;
   };
-  'error'?: { [key: string]: any; } | null;
-  'warning'?: Array<{ [key: string]: any; }> | null;
+  error?: { [key: string]: any } | null;
+  warning?: Array<{ [key: string]: any }> | null;
 }
 
 // Phase 2C: Input type definitions (output types use FinaticResponse<DataType> pattern - no interfaces needed)
@@ -67,7 +71,6 @@ export interface GetSessionUserParams {
   /** Session ID */
   sessionId: string;
 }
-
 
 /**
  * Session wrapper functions.
@@ -115,11 +118,11 @@ export class SessionWrapper {
 
   /**
    * Init Session
-   * 
+   *
    * Initialize a new session with company API key.
    * @param params.xApiKey {string} Company API key
    * @returns {Promise<FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2>>} Standard response with success/Error/Warning structure
-   * 
+   *
    * Generated from: POST /api/beta/session/init
    * @methodId init_session_api_beta_session_init_post
    * @category session
@@ -127,16 +130,20 @@ export class SessionWrapper {
    * ```typescript-client
    * // Example with no parameters
    * const result = await finatic.initSession({});
-   * 
+   *
    * // Access the response data
    * if (result.success) {
    *   console.log('Data:', result.success.data);
    * }
    * ```
    */
-  async initSession(params: InitSessionParams): Promise<FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2>> {
+  async initSession(
+    params: InitSessionParams
+  ): Promise<
+    FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2>
+  > {
     // Use params object (required parameters present)
-    const resolvedParams: InitSessionParams = params;    // Generate request ID
+    const resolvedParams: InitSessionParams = params; // Generate request ID
     const requestId = this._generateRequestId();
 
     // Input validation (Phase 2B: zod)
@@ -150,7 +157,12 @@ export class SessionWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('POST', '/api/beta/session/init', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'POST',
+        '/api/beta/session/init',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -164,83 +176,95 @@ export class SessionWrapper {
       method: 'POST',
       path: '/api/beta/session/init',
       params: resolvedParams,
-      action: 'initSession'
+      action: 'initSession',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.initSessionApiBetaSessionInitPost({ xApiKey: resolvedParams.xApiKey ?? null }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.initSessionApiBetaSessionInitPost(
+            { xApiKey: resolvedParams.xApiKey ?? null },
+            { headers: { 'x-request-id': requestId } }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = false;
       const hasOffset = false;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.initSession.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.initSession.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('POST', '/api/beta/session/init', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'POST',
+          '/api/beta/session/init',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Init Session completed', {
         request_id: requestId,
-        action: 'initSession'
+        action: 'initSession',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Init Session failed', error, {
         request_id: requestId,
-        action: 'initSession'
+        action: 'initSession',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -248,14 +272,16 @@ export class SessionWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -273,20 +299,21 @@ export class SessionWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2> = {
-        success: {
-          data: null as any,
-        },
-        error: {
-          message: errorMessage,
-          code: errorCode,
-          status: errorStatus,
-          details: errorDetails,
-        },
-      };
-      
+      const errorResponse: FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2> =
+        {
+          success: {
+            data: null as any,
+          },
+          error: {
+            message: errorMessage,
+            code: errorCode,
+            status: errorStatus,
+            details: errorDetails,
+          },
+        };
+
       return errorResponse;
     }
 
@@ -308,9 +335,13 @@ export class SessionWrapper {
    * @category session
 
    */
-  async startSession(params: StartSessionParams): Promise<FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2>> {
+  async startSession(
+    params: StartSessionParams
+  ): Promise<
+    FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2>
+  > {
     // Use params object (required parameters present)
-    const resolvedParams: StartSessionParams = params;    // Generate request ID
+    const resolvedParams: StartSessionParams = params; // Generate request ID
     const requestId = this._generateRequestId();
 
     // Input validation (Phase 2B: zod)
@@ -324,7 +355,12 @@ export class SessionWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('POST', '/api/beta/session/start', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'POST',
+        '/api/beta/session/start',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -338,83 +374,98 @@ export class SessionWrapper {
       method: 'POST',
       path: '/api/beta/session/start',
       params: resolvedParams,
-      action: 'startSession'
+      action: 'startSession',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.startSessionApiBetaSessionStartPost({ oneTimeToken: resolvedParams.OneTimeToken ?? null, sessionStartRequest: resolvedParams.body ?? null }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.startSessionApiBetaSessionStartPost(
+            {
+              oneTimeToken: resolvedParams.OneTimeToken ?? null,
+              sessionStartRequest: resolvedParams.body ?? null,
+            },
+            { headers: { 'x-request-id': requestId } }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = false;
       const hasOffset = false;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.startSession.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.startSession.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('POST', '/api/beta/session/start', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'POST',
+          '/api/beta/session/start',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Start Session completed', {
         request_id: requestId,
-        action: 'startSession'
+        action: 'startSession',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Start Session failed', error, {
         request_id: requestId,
-        action: 'startSession'
+        action: 'startSession',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -422,14 +473,16 @@ export class SessionWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -447,20 +500,21 @@ export class SessionWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2> = {
-        success: {
-          data: null as any,
-        },
-        error: {
-          message: errorMessage,
-          code: errorCode,
-          status: errorStatus,
-          details: errorDetails,
-        },
-      };
-      
+      const errorResponse: FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2> =
+        {
+          success: {
+            data: null as any,
+          },
+          error: {
+            message: errorMessage,
+            code: errorCode,
+            status: errorStatus,
+            details: errorDetails,
+          },
+        };
+
       return errorResponse;
     }
 
@@ -471,14 +525,14 @@ export class SessionWrapper {
 
   /**
    * Get Portal Url
-   * 
+   *
    * Get a portal URL with token for a session.
    *
    * The session must be in ACTIVE or AUTHENTICATING state and the request must come from the same device
    * that initiated the session. Device info is automatically validated from the request.
    * @param params No parameters required for this method
    * @returns {Promise<FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2>>} Standard response with success/Error/Warning structure
-   * 
+   *
    * Generated from: GET /api/beta/session/portal
    * @methodId get_portal_url_api_beta_session_portal_get
    * @category session
@@ -486,16 +540,18 @@ export class SessionWrapper {
    * ```typescript-client
    * // Example with no parameters
    * const result = await finatic.getPortalUrl({});
-   * 
+   *
    * // Access the response data
    * if (result.success) {
    *   console.log('Data:', result.success.data);
    * }
    * ```
    */
-  async getPortalUrl(params?: {}): Promise<FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2>> {
+  async getPortalUrl(params?: {}): Promise<
+    FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2>
+  > {
     // No parameters - use empty params object
-    const resolvedParams: GetPortalUrlParams = params || {};    // Authentication check
+    const resolvedParams: GetPortalUrlParams = params || {}; // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -514,7 +570,12 @@ export class SessionWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/beta/session/portal', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'GET',
+        '/api/beta/session/portal',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -528,83 +589,106 @@ export class SessionWrapper {
       method: 'GET',
       path: '/api/beta/session/portal',
       params: resolvedParams,
-      action: 'getPortalUrl'
+      action: 'getPortalUrl',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getPortalUrlApiBetaSessionPortalGet({ sessionId: this.sessionId! }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getPortalUrlApiBetaSessionPortalGet(
+            { sessionId: this.sessionId! },
+            {
+              headers: {
+                'x-request-id': requestId,
+                ...(this.sessionId && this.companyId
+                  ? {
+                      'x-session-id': this.sessionId,
+                      'x-company-id': this.companyId,
+                      ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                    }
+                  : {}),
+              },
+            }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = false;
       const hasOffset = false;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getPortalUrl.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.getPortalUrl.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/beta/session/portal', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'GET',
+          '/api/beta/session/portal',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Get Portal Url completed', {
         request_id: requestId,
-        action: 'getPortalUrl'
+        action: 'getPortalUrl',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Get Portal Url failed', error, {
         request_id: requestId,
-        action: 'getPortalUrl'
+        action: 'getPortalUrl',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -612,14 +696,16 @@ export class SessionWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -637,20 +723,21 @@ export class SessionWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2> = {
-        success: {
-          data: null as any,
-        },
-        error: {
-          message: errorMessage,
-          code: errorCode,
-          status: errorStatus,
-          details: errorDetails,
-        },
-      };
-      
+      const errorResponse: FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2> =
+        {
+          success: {
+            data: null as any,
+          },
+          error: {
+            message: errorMessage,
+            code: errorCode,
+            status: errorStatus,
+            details: errorDetails,
+          },
+        };
+
       return errorResponse;
     }
 
@@ -694,9 +781,13 @@ export class SessionWrapper {
    * }
    * ```
    */
-  async getSessionUser(params: GetSessionUserParams): Promise<FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2>> {
+  async getSessionUser(
+    params: GetSessionUserParams
+  ): Promise<
+    FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2>
+  > {
     // Use params object (required parameters present)
-    const resolvedParams: GetSessionUserParams = params;    // Authentication check
+    const resolvedParams: GetSessionUserParams = params; // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -715,7 +806,12 @@ export class SessionWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/beta/session/{session_id}/user', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'GET',
+        '/api/beta/session/{session_id}/user',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -729,83 +825,98 @@ export class SessionWrapper {
       method: 'GET',
       path: '/api/beta/session/{session_id}/user',
       params: resolvedParams,
-      action: 'getSessionUser'
+      action: 'getSessionUser',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getSessionUserApiBetaSessionSessionIdUserGet({ sessionId: resolvedParams.sessionId ?? null, xSessionId: resolvedParams.sessionId ?? null }, { headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getSessionUserApiBetaSessionSessionIdUserGet(
+            {
+              sessionId: resolvedParams.sessionId ?? null,
+              xSessionId: resolvedParams.sessionId ?? null,
+            },
+            { headers: { 'x-request-id': requestId } }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = false;
       const hasOffset = false;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getSessionUser.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.getSessionUser.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/beta/session/{session_id}/user', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'GET',
+          '/api/beta/session/{session_id}/user',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Get Session User completed', {
         request_id: requestId,
-        action: 'getSessionUser'
+        action: 'getSessionUser',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Get Session User failed', error, {
         request_id: requestId,
-        action: 'getSessionUser'
+        action: 'getSessionUser',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -813,14 +924,16 @@ export class SessionWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -838,20 +951,21 @@ export class SessionWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2> = {
-        success: {
-          data: null as any,
-        },
-        error: {
-          message: errorMessage,
-          code: errorCode,
-          status: errorStatus,
-          details: errorDetails,
-        },
-      };
-      
+      const errorResponse: FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2> =
+        {
+          success: {
+            data: null as any,
+          },
+          error: {
+            message: errorMessage,
+            code: errorCode,
+            status: errorStatus,
+            details: errorDetails,
+          },
+        };
+
       return errorResponse;
     }
 
@@ -859,5 +973,4 @@ export class SessionWrapper {
     // TODO Phase 2D: Add orphaned method detection
     // TODO Phase 2D: Add advanced convenience methods
   }
-
 }

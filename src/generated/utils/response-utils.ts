@@ -1,15 +1,15 @@
 /**
  * Response utility functions for unwrapping axios responses.
- * 
+ *
  * Generated - do not edit directly.
  */
 
 /**
  * Unwrap axios response to get the actual response data.
- * 
+ *
  * OpenAPI-generated typescript-axios client returns AxiosPromise<T>, which resolves to AxiosResponse.
  * The actual response body (FinaticResponse structure) is in response.data.
- * 
+ *
  * @param axiosResponse - The response from an axios API call (may be AxiosResponse or already unwrapped)
  * @returns The unwrapped response data (FinaticResponse structure)
  */

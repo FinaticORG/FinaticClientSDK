@@ -1,25 +1,25 @@
 /**
  * Pagination utilities for TypeScript SDK.
- * 
+ *
  * Provides PaginatedData class for wrapping paginated responses with helper methods.
  */
 
 /**
  * Standard FinaticResponse type for all API responses.
- * 
+ *
  * This matches the FinaticResponse interface defined in wrapper files.
  */
 export interface FinaticResponse<T> {
-  '_id'?: string;
+  _id?: string;
   /**
    * Success payload containing data and optional meta
    */
-  'success': {
-    'data': T;
-    'meta'?: { [key: string]: any; } | null;
+  success: {
+    data: T;
+    meta?: { [key: string]: any } | null;
   };
-  'error'?: { [key: string]: any; } | null;
-  'warning'?: Array<{ [key: string]: any; }> | null;
+  error?: { [key: string]: any } | null;
+  warning?: Array<{ [key: string]: any }> | null;
 }
 
 export interface PaginationMeta {
@@ -31,22 +31,22 @@ export interface PaginationMeta {
 
 /**
  * PaginatedData wraps a data array with pagination metadata and helper methods.
- * 
+ *
  * This class behaves like an array, so you can use it directly:
  * - paginatedData.length returns the number of items
  * - paginatedData[0] returns the first item
  * - paginatedData.forEach(...) works directly
  * - paginatedData.map(...) works directly
- * 
+ *
  * It also provides pagination methods:
  * - hasMore: Check if there are more pages
  * - nextPage(): Get the next page
  * - prevPage(): Get the previous page
  * - firstPage(): Get the first page
  * - lastPage(): Get the last page
- * 
+ *
  * @template T - The element type (e.g., FDXBrokerAccount)
- * 
+ *
  * Usage:
  * ```typescript
  * const response = await sdk.getAccounts();
@@ -54,7 +54,7 @@ export interface PaginationMeta {
  * console.log(accounts.length);  // Works directly
  * console.log(accounts[0]);  // Works directly
  * accounts.forEach(account => console.log(account));  // Works directly
- * 
+ *
  * if (accounts.hasMore) {
  *   const nextPage = await accounts.nextPage();  // Returns PaginatedData<FDXBrokerAccount>
  *   const nextAccounts = nextPage;  // Can use directly as array too!
@@ -204,9 +204,9 @@ export class PaginatedData<T> {
   /**
    * Convert to JSON - returns just the items array for serialization.
    * This allows clean serialization without exposing internal methods.
-   * 
+   *
    * @returns The items array
-   * 
+   *
    * @example
    * ```typescript
    * const orders = await sdk.getOrders();
@@ -235,14 +235,9 @@ export class PaginatedData<T> {
       ...this.currentParams,
       offset: this.meta.next_offset,
     };
-    const response = await this.originalMethod.call(
-      this.wrapperInstance,
-      newParams
-    );
+    const response = await this.originalMethod.call(this.wrapperInstance, newParams);
     if (!response.success) {
-      throw new Error(
-        (response.error as any)?.message || 'Failed to fetch next page'
-      );
+      throw new Error((response.error as any)?.message || 'Failed to fetch next page');
     }
     return response.success.data as PaginatedData<T>; // Return PaginatedData directly
   }
@@ -258,14 +253,9 @@ export class PaginatedData<T> {
       ...this.currentParams,
       offset: prevOffset,
     };
-    const response = await this.originalMethod.call(
-      this.wrapperInstance,
-      newParams
-    );
+    const response = await this.originalMethod.call(this.wrapperInstance, newParams);
     if (!response.success) {
-      throw new Error(
-        (response.error as any)?.message || 'Failed to fetch previous page'
-      );
+      throw new Error((response.error as any)?.message || 'Failed to fetch previous page');
     }
     return response.success.data as PaginatedData<T>; // Return PaginatedData directly
   }
@@ -280,14 +270,9 @@ export class PaginatedData<T> {
       ...this.currentParams,
       offset: 0,
     };
-    const response = await this.originalMethod.call(
-      this.wrapperInstance,
-      newParams
-    );
+    const response = await this.originalMethod.call(this.wrapperInstance, newParams);
     if (!response.success) {
-      throw new Error(
-        (response.error as any)?.message || 'Failed to fetch first page'
-      );
+      throw new Error((response.error as any)?.message || 'Failed to fetch first page');
     }
     return response.success.data as PaginatedData<T>; // Return PaginatedData directly
   }
@@ -305,10 +290,7 @@ export class PaginatedData<T> {
 
     while (true) {
       const testParams = { ...this.currentParams, offset: currentOffset };
-      const response = await this.originalMethod.call(
-        this.wrapperInstance,
-        testParams
-      );
+      const response = await this.originalMethod.call(this.wrapperInstance, testParams);
       if (!response.success) {
         break;
       }
@@ -326,4 +308,3 @@ export class PaginatedData<T> {
     return lastValidData; // Return PaginatedData directly
   }
 }
-

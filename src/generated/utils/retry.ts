@@ -1,6 +1,6 @@
 /**
  * Retry utility with p-retry package (Phase 2B).
- * 
+ *
  * Generated - do not edit directly.
  */
 
@@ -35,7 +35,7 @@ export async function retryApiCall<T>(
     retryOnNetworkError: config?.retryOnNetworkError ?? options.retryOnNetworkError ?? true,
     onFailedAttempt: options.onFailedAttempt,
   };
-  
+
   const pRetryOptions: Parameters<typeof pRetry>[1] = {
     retries: opts.maxRetries,
     minTimeout: opts.retryDelay,
@@ -43,29 +43,26 @@ export async function retryApiCall<T>(
     factor: opts.retryMultiplier,
     ...(opts.onFailedAttempt && { onFailedAttempt: opts.onFailedAttempt }),
   };
-  
-  return await pRetry(
-    async () => {
-      try {
-        return await fn();
-      } catch (error: any) {
-        // Check if we should retry based on status code
-        const statusCode = error?.response?.status || error?.statusCode || error?.status;
-        
-        // Don't retry if status code doesn't match retry list
-        if (statusCode && !opts.retryOnStatus.includes(statusCode)) {
-          throw new AbortError(error);
-        }
-        
-        // Check for network errors
-        if (!statusCode && !opts.retryOnNetworkError) {
-          throw new AbortError(error);
-        }
-        
-        // Re-throw to trigger retry
-        throw error;
+
+  return await pRetry(async () => {
+    try {
+      return await fn();
+    } catch (error: any) {
+      // Check if we should retry based on status code
+      const statusCode = error?.response?.status || error?.statusCode || error?.status;
+
+      // Don't retry if status code doesn't match retry list
+      if (statusCode && !opts.retryOnStatus.includes(statusCode)) {
+        throw new AbortError(error);
       }
-    },
-    pRetryOptions
-  );
+
+      // Check for network errors
+      if (!statusCode && !opts.retryOnNetworkError) {
+        throw new AbortError(error);
+      }
+
+      // Re-throw to trigger retry
+      throw error;
+    }
+  }, pRetryOptions);
 }

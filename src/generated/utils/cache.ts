@@ -1,6 +1,6 @@
 /**
  * Response caching utility with browser-compatible Map-based cache (Phase 2B).
- * 
+ *
  * Generated - do not edit directly.
  */
 
@@ -45,21 +45,21 @@ class MapBasedCache implements BrowserCache {
   private cleanup(): void {
     const now = Date.now();
     const keysToDelete: string[] = [];
-    
+
     for (const [key, entry] of this.cache.entries()) {
       if (entry.expires < now) {
         keysToDelete.push(key);
       }
     }
-    
-    keysToDelete.forEach(key => this.cache.delete(key));
+
+    keysToDelete.forEach((key) => this.cache.delete(key));
   }
 
   private evictLRU(): void {
     if (this.cache.size < this.maxSize) {
       return;
     }
-    
+
     // Simple LRU: remove oldest entry (first in Map)
     const firstKey = this.cache.keys().next().value;
     if (firstKey) {
@@ -72,13 +72,13 @@ class MapBasedCache implements BrowserCache {
     if (!entry) {
       return undefined;
     }
-    
+
     // Check if expired
     if (entry.expires < Date.now()) {
       this.cache.delete(key);
       return undefined;
     }
-    
+
     return entry.value;
   }
 
@@ -87,7 +87,7 @@ class MapBasedCache implements BrowserCache {
     if (this.cache.size >= this.maxSize && !this.cache.has(key)) {
       this.evictLRU();
     }
-    
+
     const expires = Date.now() + (ttl || this.defaultTtl) * 1000;
     this.cache.set(key, { value, expires });
     return true;
@@ -110,13 +110,13 @@ class MapBasedCache implements BrowserCache {
     if (!entry) {
       return false;
     }
-    
+
     // Check if expired
     if (entry.expires < Date.now()) {
       this.cache.delete(key);
       return false;
     }
-    
+
     return true;
   }
 
@@ -138,16 +138,13 @@ export function getCache(config?: SdkConfig): BrowserCache | null {
   if (!config?.cacheEnabled) {
     return null;
   }
-  
+
   if (_cacheInstance) {
     return _cacheInstance;
   }
-  
-  _cacheInstance = new MapBasedCache(
-    config.cacheMaxSize || 1000,
-    config.cacheTtl || 300
-  );
-  
+
+  _cacheInstance = new MapBasedCache(config.cacheMaxSize || 1000, config.cacheTtl || 300);
+
   return _cacheInstance;
 }
 
@@ -162,20 +159,20 @@ export function generateCacheKey(
 ): string {
   const include = config?.cacheKeyInclude || ['method', 'path', 'query', 'body'];
   const parts: string[] = [];
-  
+
   if (include.includes('method')) parts.push(`method:${method}`);
   if (include.includes('path')) parts.push(`path:${path}`);
   if (include.includes('query')) {
     const query = params['query'] || params;
     const queryStr = Object.keys(query)
       .sort()
-      .map(k => `${k}=${JSON.stringify(query[k])}`)
+      .map((k) => `${k}=${JSON.stringify(query[k])}`)
       .join('&');
     parts.push(`query:${queryStr}`);
   }
   if (include.includes('body')) {
     parts.push(`body:${JSON.stringify(params['body'] || {})}`);
   }
-  
+
   return `finatic:${parts.join('|')}`;
 }

@@ -1,12 +1,16 @@
 /**
  * Generated wrapper functions for brokers operations (Phase 2A).
- * 
+ *
  * This file is regenerated on each run - do not edit directly.
  * For custom logic, edit src/custom/wrappers/brokers.ts instead.
  */
 
 import { BrokersApi } from '../api/brokers-api';
-import type { BrokersApiCancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest, BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest, BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest } from '../api/brokers-api';
+import type {
+  BrokersApiCancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest,
+  BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest,
+  BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest,
+} from '../api/brokers-api';
 
 import type { Configuration } from '../configuration';
 import type { SdkConfig } from '../config';
@@ -15,7 +19,11 @@ import { retryApiCall } from '../utils/retry';
 import { getLogger, type Logger } from '../utils/logger';
 import { handleError } from '../utils/error-handling';
 import { getCache, generateCacheKey } from '../utils/cache';
-import { applyRequestInterceptors, applyResponseInterceptors, applyErrorInterceptors } from '../utils/interceptors';
+import {
+  applyRequestInterceptors,
+  applyResponseInterceptors,
+  applyErrorInterceptors,
+} from '../utils/interceptors';
 import { unwrapAxiosResponse } from '../utils/response-utils';
 import { coerceEnumValue } from '../utils/enum-coercion';
 import { convertToPlainObject } from '../utils/plain-object';
@@ -59,20 +67,20 @@ import { PaginatedData } from '../utils/pagination';
 
 /**
  * Standard FinaticResponse type for all API responses.
- * 
+ *
  * Generic response structure with success, error, and warning fields.
  */
 export interface FinaticResponse<T> {
-  '_id'?: string;
+  _id?: string;
   /**
    * Success payload containing data and optional meta
    */
-  'success': {
-    'data': T;
-    'meta'?: { [key: string]: any; } | null;
+  success: {
+    data: T;
+    meta?: { [key: string]: any } | null;
   };
-  'error'?: { [key: string]: any; } | null;
-  'warning'?: Array<{ [key: string]: any; }> | null;
+  error?: { [key: string]: any } | null;
+  warning?: Array<{ [key: string]: any }> | null;
 }
 
 // Phase 2C: Input type definitions (output types use FinaticResponse<DataType> pattern - no interfaces needed)
@@ -334,7 +342,6 @@ export interface ModifyOrderParams {
   connectionId?: string;
 }
 
-
 /**
  * Brokers wrapper functions.
  * Provides simplified method names and response unwrapping.
@@ -430,9 +437,11 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getBalances(params?: GetBalancesParams): Promise<FinaticResponse<PaginatedData<LegacyBrokerBalance>>> {
+  async getBalances(
+    params?: GetBalancesParams
+  ): Promise<FinaticResponse<PaginatedData<LegacyBrokerBalance>>> {
     // Use params object (with default empty object)
-    const resolvedParams: GetBalancesParams = params || {};    // Authentication check
+    const resolvedParams: GetBalancesParams = params || {}; // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -451,7 +460,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/balances', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'GET',
+        '/api/beta/brokers/data/balances',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -465,83 +479,127 @@ export class BrokersWrapper {
       method: 'GET',
       path: '/api/beta/brokers/data/balances',
       params: resolvedParams,
-      action: 'getBalances'
+      action: 'getBalances',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getBalancesApiBetaBrokersDataBalancesGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.unitCode !== undefined ? { unitCode: resolvedParams.unitCode } : {}), ...(resolvedParams.currency !== undefined ? { currency: resolvedParams.currency } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getBalancesApiBetaBrokersDataBalancesGet(
+            {
+              ...(resolvedParams.brokerId !== undefined
+                ? { brokerId: resolvedParams.brokerId }
+                : {}),
+              ...(resolvedParams.connectionId !== undefined
+                ? { connectionId: resolvedParams.connectionId }
+                : {}),
+              ...(resolvedParams.accountId !== undefined
+                ? { accountId: resolvedParams.accountId }
+                : {}),
+              ...(resolvedParams.unitCode !== undefined
+                ? { unitCode: resolvedParams.unitCode }
+                : {}),
+              ...(resolvedParams.currency !== undefined
+                ? { currency: resolvedParams.currency }
+                : {}),
+              ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}),
+              ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}),
+              ...(resolvedParams.includeMetadata !== undefined
+                ? { includeMetadata: resolvedParams.includeMetadata }
+                : {}),
+            },
+            {
+              headers: {
+                'x-request-id': requestId,
+                ...(this.sessionId && this.companyId
+                  ? {
+                      'x-session-id': this.sessionId,
+                      'x-company-id': this.companyId,
+                      ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                    }
+                  : {}),
+              },
+            }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = true;
       const hasOffset = true;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getBalances.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.getBalances.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/balances', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'GET',
+          '/api/beta/brokers/data/balances',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Get Balances completed', {
         request_id: requestId,
-        action: 'getBalances'
+        action: 'getBalances',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<PaginatedData<LegacyBrokerBalance>>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Get Balances failed', error, {
         request_id: requestId,
-        action: 'getBalances'
+        action: 'getBalances',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -549,14 +607,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -574,7 +634,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<PaginatedData<LegacyBrokerBalance>> = {
         success: {
@@ -587,7 +647,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -645,7 +705,9 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getAccounts(params?: GetAccountsParams): Promise<FinaticResponse<PaginatedData<LegacyBrokerAccount>>> {
+  async getAccounts(
+    params?: GetAccountsParams
+  ): Promise<FinaticResponse<PaginatedData<LegacyBrokerAccount>>> {
     // Use params object (with default empty object)
     const resolvedParams: GetAccountsParams = params || {};
     if (params?.accountType !== undefined) {
@@ -653,7 +715,7 @@ export class BrokersWrapper {
       if (coerced !== undefined) {
         params.accountType = coerced;
       }
-    }    // Authentication check
+    } // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -672,7 +734,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/accounts', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'GET',
+        '/api/beta/brokers/data/accounts',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -686,83 +753,124 @@ export class BrokersWrapper {
       method: 'GET',
       path: '/api/beta/brokers/data/accounts',
       params: resolvedParams,
-      action: 'getAccounts'
+      action: 'getAccounts',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getAccountsApiBetaBrokersDataAccountsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountType !== undefined ? { accountType: resolvedParams.accountType } : {}), ...(resolvedParams.currency !== undefined ? { currency: resolvedParams.currency } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getAccountsApiBetaBrokersDataAccountsGet(
+            {
+              ...(resolvedParams.brokerId !== undefined
+                ? { brokerId: resolvedParams.brokerId }
+                : {}),
+              ...(resolvedParams.connectionId !== undefined
+                ? { connectionId: resolvedParams.connectionId }
+                : {}),
+              ...(resolvedParams.accountType !== undefined
+                ? { accountType: resolvedParams.accountType }
+                : {}),
+              ...(resolvedParams.currency !== undefined
+                ? { currency: resolvedParams.currency }
+                : {}),
+              ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}),
+              ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}),
+              ...(resolvedParams.includeMetadata !== undefined
+                ? { includeMetadata: resolvedParams.includeMetadata }
+                : {}),
+            },
+            {
+              headers: {
+                'x-request-id': requestId,
+                ...(this.sessionId && this.companyId
+                  ? {
+                      'x-session-id': this.sessionId,
+                      'x-company-id': this.companyId,
+                      ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                    }
+                  : {}),
+              },
+            }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = true;
       const hasOffset = true;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getAccounts.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.getAccounts.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/accounts', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'GET',
+          '/api/beta/brokers/data/accounts',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Get Accounts completed', {
         request_id: requestId,
-        action: 'getAccounts'
+        action: 'getAccounts',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<PaginatedData<LegacyBrokerAccount>>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Get Accounts failed', error, {
         request_id: requestId,
-        action: 'getAccounts'
+        action: 'getAccounts',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -770,14 +878,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -795,7 +905,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<PaginatedData<LegacyBrokerAccount>> = {
         success: {
@@ -808,7 +918,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -819,7 +929,7 @@ export class BrokersWrapper {
 
   /**
    * Get Brokers
-   * 
+   *
    * Get all available brokers.
    *
    * This is a fast operation that returns a cached list of available brokers.
@@ -831,7 +941,7 @@ export class BrokersWrapper {
    *     list of available brokers with their metadata.
    * @param params No parameters required for this method
    * @returns {Promise<FinaticResponse<BrokerInfo[]>>} Standard response with success/Error/Warning structure
-   * 
+   *
    * Generated from: GET /api/beta/brokers/
    * @methodId get_brokers_api_beta_brokers__get
    * @category brokers
@@ -839,7 +949,7 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Example with no parameters
    * const result = await finatic.getBrokers({});
-   * 
+   *
    * // Access the response data
    * if (result.success) {
    *   console.log('Data:', result.success.data);
@@ -848,7 +958,7 @@ export class BrokersWrapper {
    */
   async getBrokers(params?: {}): Promise<FinaticResponse<BrokerInfo[]>> {
     // No parameters - use empty params object
-    const resolvedParams: GetBrokersParams = params || {};    // Generate request ID
+    const resolvedParams: GetBrokersParams = params || {}; // Generate request ID
     const requestId = this._generateRequestId();
 
     // Input validation (Phase 2B: zod)
@@ -862,7 +972,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'GET',
+        '/api/beta/brokers/',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -876,83 +991,94 @@ export class BrokersWrapper {
       method: 'GET',
       path: '/api/beta/brokers/',
       params: resolvedParams,
-      action: 'getBrokers'
+      action: 'getBrokers',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getBrokersApiBetaBrokersGet({ headers: { 'x-request-id': requestId } });
+          const apiResponse = await this.api.getBrokersApiBetaBrokersGet({
+            headers: { 'x-request-id': requestId },
+          });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = false;
       const hasOffset = false;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getBrokers.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.getBrokers.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'GET',
+          '/api/beta/brokers/',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Get Brokers completed', {
         request_id: requestId,
-        action: 'getBrokers'
+        action: 'getBrokers',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<BrokerInfo[]>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Get Brokers failed', error, {
         request_id: requestId,
-        action: 'getBrokers'
+        action: 'getBrokers',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -960,14 +1086,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -985,7 +1113,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<BrokerInfo[]> = {
         success: {
@@ -998,7 +1126,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -1009,7 +1137,7 @@ export class BrokersWrapper {
 
   /**
    * List Broker Connections
-   * 
+   *
    * List all broker connections for the current user with permissions.
    *
    * This endpoint is accessible from the portal and uses session-only authentication.
@@ -1017,7 +1145,7 @@ export class BrokersWrapper {
    * company's permissions (read/write) for each connection.
    * @param params No parameters required for this method
    * @returns {Promise<FinaticResponse<UserBrokerConnectionWithPermissions[]>>} Standard response with success/Error/Warning structure
-   * 
+   *
    * Generated from: GET /api/beta/brokers/connections
    * @methodId list_broker_connections_api_beta_brokers_connections_get
    * @category brokers
@@ -1025,16 +1153,18 @@ export class BrokersWrapper {
    * ```typescript-client
    * // Example with no parameters
    * const result = await finatic.getBrokerConnections({});
-   * 
+   *
    * // Access the response data
    * if (result.success) {
    *   console.log('Data:', result.success.data);
    * }
    * ```
    */
-  async getBrokerConnections(params?: {}): Promise<FinaticResponse<UserBrokerConnectionWithPermissions[]>> {
+  async getBrokerConnections(params?: {}): Promise<
+    FinaticResponse<UserBrokerConnectionWithPermissions[]>
+  > {
     // No parameters - use empty params object
-    const resolvedParams: GetBrokerConnectionsParams = params || {};    // Authentication check
+    const resolvedParams: GetBrokerConnectionsParams = params || {}; // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -1053,7 +1183,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/connections', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'GET',
+        '/api/beta/brokers/connections',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -1067,83 +1202,103 @@ export class BrokersWrapper {
       method: 'GET',
       path: '/api/beta/brokers/connections',
       params: resolvedParams,
-      action: 'getBrokerConnections'
+      action: 'getBrokerConnections',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.listBrokerConnectionsApiBetaBrokersConnectionsGet({ headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.listBrokerConnectionsApiBetaBrokersConnectionsGet({
+            headers: {
+              'x-request-id': requestId,
+              ...(this.sessionId && this.companyId
+                ? {
+                    'x-session-id': this.sessionId,
+                    'x-company-id': this.companyId,
+                    ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                  }
+                : {}),
+            },
+          });
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = false;
       const hasOffset = false;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getBrokerConnections.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.getBrokerConnections.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/connections', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'GET',
+          '/api/beta/brokers/connections',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('List Broker Connections completed', {
         request_id: requestId,
-        action: 'getBrokerConnections'
+        action: 'getBrokerConnections',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<UserBrokerConnectionWithPermissions[]>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('List Broker Connections failed', error, {
         request_id: requestId,
-        action: 'getBrokerConnections'
+        action: 'getBrokerConnections',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -1151,14 +1306,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -1176,7 +1333,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<UserBrokerConnectionWithPermissions[]> = {
         success: {
@@ -1189,7 +1346,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -1226,9 +1383,11 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async disconnectCompanyFromBroker(params: DisconnectCompanyFromBrokerParams): Promise<FinaticResponse<DisconnectCompanyFromBrokerConnectionResult>> {
+  async disconnectCompanyFromBroker(
+    params: DisconnectCompanyFromBrokerParams
+  ): Promise<FinaticResponse<DisconnectCompanyFromBrokerConnectionResult>> {
     // Use params object (required parameters present)
-    const resolvedParams: DisconnectCompanyFromBrokerParams = params;    // Authentication check
+    const resolvedParams: DisconnectCompanyFromBrokerParams = params; // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -1247,7 +1406,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('DELETE', '/api/beta/brokers/disconnect-company/{connection_id}', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'DELETE',
+        '/api/beta/brokers/disconnect-company/{connection_id}',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -1261,83 +1425,107 @@ export class BrokersWrapper {
       method: 'DELETE',
       path: '/api/beta/brokers/disconnect-company/{connection_id}',
       params: resolvedParams,
-      action: 'disconnectCompanyFromBroker'
+      action: 'disconnectCompanyFromBroker',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.disconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDelete({ connectionId: resolvedParams.connectionId ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse =
+            await this.api.disconnectCompanyFromBrokerApiBetaBrokersDisconnectCompanyConnectionIdDelete(
+              { connectionId: resolvedParams.connectionId ?? null },
+              {
+                headers: {
+                  'x-request-id': requestId,
+                  ...(this.sessionId && this.companyId
+                    ? {
+                        'x-session-id': this.sessionId,
+                        'x-company-id': this.companyId,
+                        ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                      }
+                    : {}),
+                },
+              }
+            );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = false;
       const hasOffset = false;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.disconnectCompanyFromBroker.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.disconnectCompanyFromBroker.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('DELETE', '/api/beta/brokers/disconnect-company/{connection_id}', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'DELETE',
+          '/api/beta/brokers/disconnect-company/{connection_id}',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Disconnect Company From Broker completed', {
         request_id: requestId,
-        action: 'disconnectCompanyFromBroker'
+        action: 'disconnectCompanyFromBroker',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<DisconnectCompanyFromBrokerConnectionResult>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Disconnect Company From Broker failed', error, {
         request_id: requestId,
-        action: 'disconnectCompanyFromBroker'
+        action: 'disconnectCompanyFromBroker',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -1345,14 +1533,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -1370,7 +1560,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<DisconnectCompanyFromBrokerConnectionResult> = {
         success: {
@@ -1383,7 +1573,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -1446,7 +1636,9 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getOrders(params?: GetOrdersParams): Promise<FinaticResponse<PaginatedData<FDXBrokerOrder>>> {
+  async getOrders(
+    params?: GetOrdersParams
+  ): Promise<FinaticResponse<PaginatedData<FDXBrokerOrder>>> {
     // Use params object (with default empty object)
     const resolvedParams: GetOrdersParams = params || {};
     if (params?.side !== undefined) {
@@ -1460,7 +1652,7 @@ export class BrokersWrapper {
       if (coerced !== undefined) {
         params.assetType = coerced;
       }
-    }    // Authentication check
+    } // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -1479,7 +1671,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'GET',
+        '/api/beta/brokers/data/orders',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -1493,83 +1690,135 @@ export class BrokersWrapper {
       method: 'GET',
       path: '/api/beta/brokers/data/orders',
       params: resolvedParams,
-      action: 'getOrders'
+      action: 'getOrders',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrdersApiBetaBrokersDataOrdersGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.symbol !== undefined ? { symbol: resolvedParams.symbol } : {}), ...(resolvedParams.orderStatus !== undefined ? { orderStatus: resolvedParams.orderStatus } : {}), ...(resolvedParams.side !== undefined ? { side: resolvedParams.side } : {}), ...(resolvedParams.assetType !== undefined ? { assetType: resolvedParams.assetType } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.createdAfter !== undefined ? { createdAfter: resolvedParams.createdAfter } : {}), ...(resolvedParams.createdBefore !== undefined ? { createdBefore: resolvedParams.createdBefore } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getOrdersApiBetaBrokersDataOrdersGet(
+            {
+              ...(resolvedParams.brokerId !== undefined
+                ? { brokerId: resolvedParams.brokerId }
+                : {}),
+              ...(resolvedParams.connectionId !== undefined
+                ? { connectionId: resolvedParams.connectionId }
+                : {}),
+              ...(resolvedParams.accountId !== undefined
+                ? { accountId: resolvedParams.accountId }
+                : {}),
+              ...(resolvedParams.symbol !== undefined ? { symbol: resolvedParams.symbol } : {}),
+              ...(resolvedParams.orderStatus !== undefined
+                ? { orderStatus: resolvedParams.orderStatus }
+                : {}),
+              ...(resolvedParams.side !== undefined ? { side: resolvedParams.side } : {}),
+              ...(resolvedParams.assetType !== undefined
+                ? { assetType: resolvedParams.assetType }
+                : {}),
+              ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}),
+              ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}),
+              ...(resolvedParams.createdAfter !== undefined
+                ? { createdAfter: resolvedParams.createdAfter }
+                : {}),
+              ...(resolvedParams.createdBefore !== undefined
+                ? { createdBefore: resolvedParams.createdBefore }
+                : {}),
+              ...(resolvedParams.includeMetadata !== undefined
+                ? { includeMetadata: resolvedParams.includeMetadata }
+                : {}),
+            },
+            {
+              headers: {
+                'x-request-id': requestId,
+                ...(this.sessionId && this.companyId
+                  ? {
+                      'x-session-id': this.sessionId,
+                      'x-company-id': this.companyId,
+                      ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                    }
+                  : {}),
+              },
+            }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = true;
       const hasOffset = true;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getOrders.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.getOrders.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'GET',
+          '/api/beta/brokers/data/orders',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Get Orders completed', {
         request_id: requestId,
-        action: 'getOrders'
+        action: 'getOrders',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<PaginatedData<FDXBrokerOrder>>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Get Orders failed', error, {
         request_id: requestId,
-        action: 'getOrders'
+        action: 'getOrders',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -1577,14 +1826,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -1602,7 +1853,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<PaginatedData<FDXBrokerOrder>> = {
         success: {
@@ -1615,7 +1866,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -1678,7 +1929,9 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getPositions(params?: GetPositionsParams): Promise<FinaticResponse<PaginatedData<FDXBrokerPosition>>> {
+  async getPositions(
+    params?: GetPositionsParams
+  ): Promise<FinaticResponse<PaginatedData<FDXBrokerPosition>>> {
     // Use params object (with default empty object)
     const resolvedParams: GetPositionsParams = params || {};
     if (params?.side !== undefined) {
@@ -1694,11 +1947,15 @@ export class BrokersWrapper {
       }
     }
     if (params?.positionStatus !== undefined) {
-      const coerced = coerceEnumValue(params.positionStatus, BrokerDataPositionStatusEnum, 'positionStatus');
+      const coerced = coerceEnumValue(
+        params.positionStatus,
+        BrokerDataPositionStatusEnum,
+        'positionStatus'
+      );
       if (coerced !== undefined) {
         params.positionStatus = coerced;
       }
-    }    // Authentication check
+    } // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -1717,7 +1974,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/positions', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'GET',
+        '/api/beta/brokers/data/positions',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -1731,83 +1993,135 @@ export class BrokersWrapper {
       method: 'GET',
       path: '/api/beta/brokers/data/positions',
       params: resolvedParams,
-      action: 'getPositions'
+      action: 'getPositions',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getPositionsApiBetaBrokersDataPositionsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.symbol !== undefined ? { symbol: resolvedParams.symbol } : {}), ...(resolvedParams.side !== undefined ? { side: resolvedParams.side } : {}), ...(resolvedParams.assetType !== undefined ? { assetType: resolvedParams.assetType } : {}), ...(resolvedParams.positionStatus !== undefined ? { positionStatus: resolvedParams.positionStatus } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.updatedAfter !== undefined ? { updatedAfter: resolvedParams.updatedAfter } : {}), ...(resolvedParams.updatedBefore !== undefined ? { updatedBefore: resolvedParams.updatedBefore } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getPositionsApiBetaBrokersDataPositionsGet(
+            {
+              ...(resolvedParams.brokerId !== undefined
+                ? { brokerId: resolvedParams.brokerId }
+                : {}),
+              ...(resolvedParams.connectionId !== undefined
+                ? { connectionId: resolvedParams.connectionId }
+                : {}),
+              ...(resolvedParams.accountId !== undefined
+                ? { accountId: resolvedParams.accountId }
+                : {}),
+              ...(resolvedParams.symbol !== undefined ? { symbol: resolvedParams.symbol } : {}),
+              ...(resolvedParams.side !== undefined ? { side: resolvedParams.side } : {}),
+              ...(resolvedParams.assetType !== undefined
+                ? { assetType: resolvedParams.assetType }
+                : {}),
+              ...(resolvedParams.positionStatus !== undefined
+                ? { positionStatus: resolvedParams.positionStatus }
+                : {}),
+              ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}),
+              ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}),
+              ...(resolvedParams.updatedAfter !== undefined
+                ? { updatedAfter: resolvedParams.updatedAfter }
+                : {}),
+              ...(resolvedParams.updatedBefore !== undefined
+                ? { updatedBefore: resolvedParams.updatedBefore }
+                : {}),
+              ...(resolvedParams.includeMetadata !== undefined
+                ? { includeMetadata: resolvedParams.includeMetadata }
+                : {}),
+            },
+            {
+              headers: {
+                'x-request-id': requestId,
+                ...(this.sessionId && this.companyId
+                  ? {
+                      'x-session-id': this.sessionId,
+                      'x-company-id': this.companyId,
+                      ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                    }
+                  : {}),
+              },
+            }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = true;
       const hasOffset = true;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getPositions.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.getPositions.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/positions', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'GET',
+          '/api/beta/brokers/data/positions',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Get Positions completed', {
         request_id: requestId,
-        action: 'getPositions'
+        action: 'getPositions',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<PaginatedData<FDXBrokerPosition>>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Get Positions failed', error, {
         request_id: requestId,
-        action: 'getPositions'
+        action: 'getPositions',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -1815,14 +2129,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -1840,7 +2156,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<PaginatedData<FDXBrokerPosition>> = {
         success: {
@@ -1853,7 +2169,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -1914,9 +2230,11 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getTransactions(params?: GetTransactionsParams): Promise<FinaticResponse<PaginatedData<FDXBrokerTransaction>>> {
+  async getTransactions(
+    params?: GetTransactionsParams
+  ): Promise<FinaticResponse<PaginatedData<FDXBrokerTransaction>>> {
     // Use params object (with default empty object)
-    const resolvedParams: GetTransactionsParams = params || {};    // Authentication check
+    const resolvedParams: GetTransactionsParams = params || {}; // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -1935,7 +2253,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/transactions', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'GET',
+        '/api/beta/brokers/data/transactions',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -1949,83 +2272,131 @@ export class BrokersWrapper {
       method: 'GET',
       path: '/api/beta/brokers/data/transactions',
       params: resolvedParams,
-      action: 'getTransactions'
+      action: 'getTransactions',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getTransactionsApiBetaBrokersDataTransactionsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.unitCode !== undefined ? { unitCode: resolvedParams.unitCode } : {}), ...(resolvedParams.currency !== undefined ? { currency: resolvedParams.currency } : {}), ...(resolvedParams.transactionType !== undefined ? { transactionType: resolvedParams.transactionType } : {}), ...(resolvedParams.startDate !== undefined ? { startDate: resolvedParams.startDate } : {}), ...(resolvedParams.endDate !== undefined ? { endDate: resolvedParams.endDate } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getTransactionsApiBetaBrokersDataTransactionsGet(
+            {
+              ...(resolvedParams.brokerId !== undefined
+                ? { brokerId: resolvedParams.brokerId }
+                : {}),
+              ...(resolvedParams.connectionId !== undefined
+                ? { connectionId: resolvedParams.connectionId }
+                : {}),
+              ...(resolvedParams.accountId !== undefined
+                ? { accountId: resolvedParams.accountId }
+                : {}),
+              ...(resolvedParams.unitCode !== undefined
+                ? { unitCode: resolvedParams.unitCode }
+                : {}),
+              ...(resolvedParams.currency !== undefined
+                ? { currency: resolvedParams.currency }
+                : {}),
+              ...(resolvedParams.transactionType !== undefined
+                ? { transactionType: resolvedParams.transactionType }
+                : {}),
+              ...(resolvedParams.startDate !== undefined
+                ? { startDate: resolvedParams.startDate }
+                : {}),
+              ...(resolvedParams.endDate !== undefined ? { endDate: resolvedParams.endDate } : {}),
+              ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}),
+              ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}),
+            },
+            {
+              headers: {
+                'x-request-id': requestId,
+                ...(this.sessionId && this.companyId
+                  ? {
+                      'x-session-id': this.sessionId,
+                      'x-company-id': this.companyId,
+                      ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                    }
+                  : {}),
+              },
+            }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = true;
       const hasOffset = true;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getTransactions.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.getTransactions.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/transactions', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'GET',
+          '/api/beta/brokers/data/transactions',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Get Transactions completed', {
         request_id: requestId,
-        action: 'getTransactions'
+        action: 'getTransactions',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<PaginatedData<FDXBrokerTransaction>>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Get Transactions failed', error, {
         request_id: requestId,
-        action: 'getTransactions'
+        action: 'getTransactions',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -2033,14 +2404,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -2058,7 +2431,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<PaginatedData<FDXBrokerTransaction>> = {
         success: {
@@ -2071,7 +2444,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -2131,9 +2504,11 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getOrderFills(params: GetOrderFillsParams): Promise<FinaticResponse<PaginatedData<FDXBrokerOrderFill>>> {
+  async getOrderFills(
+    params: GetOrderFillsParams
+  ): Promise<FinaticResponse<PaginatedData<FDXBrokerOrderFill>>> {
     // Use params object (required parameters present)
-    const resolvedParams: GetOrderFillsParams = params;    // Authentication check
+    const resolvedParams: GetOrderFillsParams = params; // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -2152,7 +2527,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders/{order_id}/fills', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'GET',
+        '/api/beta/brokers/data/orders/{order_id}/fills',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -2166,83 +2546,116 @@ export class BrokersWrapper {
       method: 'GET',
       path: '/api/beta/brokers/data/orders/{order_id}/fills',
       params: resolvedParams,
-      action: 'getOrderFills'
+      action: 'getOrderFills',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGet({ orderId: resolvedParams.orderId ?? null, ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getOrderFillsApiBetaBrokersDataOrdersOrderIdFillsGet(
+            {
+              orderId: resolvedParams.orderId ?? null,
+              ...(resolvedParams.connectionId !== undefined
+                ? { connectionId: resolvedParams.connectionId }
+                : {}),
+              ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}),
+              ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}),
+              ...(resolvedParams.includeMetadata !== undefined
+                ? { includeMetadata: resolvedParams.includeMetadata }
+                : {}),
+            },
+            {
+              headers: {
+                'x-request-id': requestId,
+                ...(this.sessionId && this.companyId
+                  ? {
+                      'x-session-id': this.sessionId,
+                      'x-company-id': this.companyId,
+                      ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                    }
+                  : {}),
+              },
+            }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = true;
       const hasOffset = true;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getOrderFills.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.getOrderFills.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders/{order_id}/fills', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'GET',
+          '/api/beta/brokers/data/orders/{order_id}/fills',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Get Order Fills completed', {
         request_id: requestId,
-        action: 'getOrderFills'
+        action: 'getOrderFills',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<PaginatedData<FDXBrokerOrderFill>>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Get Order Fills failed', error, {
         request_id: requestId,
-        action: 'getOrderFills'
+        action: 'getOrderFills',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -2250,14 +2663,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -2275,7 +2690,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<PaginatedData<FDXBrokerOrderFill>> = {
         success: {
@@ -2288,7 +2703,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -2348,9 +2763,11 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getOrderEvents(params: GetOrderEventsParams): Promise<FinaticResponse<PaginatedData<FDXBrokerOrderEvent>>> {
+  async getOrderEvents(
+    params: GetOrderEventsParams
+  ): Promise<FinaticResponse<PaginatedData<FDXBrokerOrderEvent>>> {
     // Use params object (required parameters present)
-    const resolvedParams: GetOrderEventsParams = params;    // Authentication check
+    const resolvedParams: GetOrderEventsParams = params; // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -2369,7 +2786,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders/{order_id}/events', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'GET',
+        '/api/beta/brokers/data/orders/{order_id}/events',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -2383,83 +2805,116 @@ export class BrokersWrapper {
       method: 'GET',
       path: '/api/beta/brokers/data/orders/{order_id}/events',
       params: resolvedParams,
-      action: 'getOrderEvents'
+      action: 'getOrderEvents',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGet({ orderId: resolvedParams.orderId ?? null, ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getOrderEventsApiBetaBrokersDataOrdersOrderIdEventsGet(
+            {
+              orderId: resolvedParams.orderId ?? null,
+              ...(resolvedParams.connectionId !== undefined
+                ? { connectionId: resolvedParams.connectionId }
+                : {}),
+              ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}),
+              ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}),
+              ...(resolvedParams.includeMetadata !== undefined
+                ? { includeMetadata: resolvedParams.includeMetadata }
+                : {}),
+            },
+            {
+              headers: {
+                'x-request-id': requestId,
+                ...(this.sessionId && this.companyId
+                  ? {
+                      'x-session-id': this.sessionId,
+                      'x-company-id': this.companyId,
+                      ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                    }
+                  : {}),
+              },
+            }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = true;
       const hasOffset = true;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getOrderEvents.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.getOrderEvents.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders/{order_id}/events', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'GET',
+          '/api/beta/brokers/data/orders/{order_id}/events',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Get Order Events completed', {
         request_id: requestId,
-        action: 'getOrderEvents'
+        action: 'getOrderEvents',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<PaginatedData<FDXBrokerOrderEvent>>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Get Order Events failed', error, {
         request_id: requestId,
-        action: 'getOrderEvents'
+        action: 'getOrderEvents',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -2467,14 +2922,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -2492,7 +2949,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<PaginatedData<FDXBrokerOrderEvent>> = {
         success: {
@@ -2505,7 +2962,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -2562,9 +3019,11 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getOrderGroups(params?: GetOrderGroupsParams): Promise<FinaticResponse<PaginatedData<FDXBrokerOrderGroup>>> {
+  async getOrderGroups(
+    params?: GetOrderGroupsParams
+  ): Promise<FinaticResponse<PaginatedData<FDXBrokerOrderGroup>>> {
     // Use params object (with default empty object)
-    const resolvedParams: GetOrderGroupsParams = params || {};    // Authentication check
+    const resolvedParams: GetOrderGroupsParams = params || {}; // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -2583,7 +3042,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders/groups', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'GET',
+        '/api/beta/brokers/data/orders/groups',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -2597,83 +3061,124 @@ export class BrokersWrapper {
       method: 'GET',
       path: '/api/beta/brokers/data/orders/groups',
       params: resolvedParams,
-      action: 'getOrderGroups'
+      action: 'getOrderGroups',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getOrderGroupsApiBetaBrokersDataOrdersGroupsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}), ...(resolvedParams.createdAfter !== undefined ? { createdAfter: resolvedParams.createdAfter } : {}), ...(resolvedParams.createdBefore !== undefined ? { createdBefore: resolvedParams.createdBefore } : {}), ...(resolvedParams.includeMetadata !== undefined ? { includeMetadata: resolvedParams.includeMetadata } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getOrderGroupsApiBetaBrokersDataOrdersGroupsGet(
+            {
+              ...(resolvedParams.brokerId !== undefined
+                ? { brokerId: resolvedParams.brokerId }
+                : {}),
+              ...(resolvedParams.connectionId !== undefined
+                ? { connectionId: resolvedParams.connectionId }
+                : {}),
+              ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}),
+              ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}),
+              ...(resolvedParams.createdAfter !== undefined
+                ? { createdAfter: resolvedParams.createdAfter }
+                : {}),
+              ...(resolvedParams.createdBefore !== undefined
+                ? { createdBefore: resolvedParams.createdBefore }
+                : {}),
+              ...(resolvedParams.includeMetadata !== undefined
+                ? { includeMetadata: resolvedParams.includeMetadata }
+                : {}),
+            },
+            {
+              headers: {
+                'x-request-id': requestId,
+                ...(this.sessionId && this.companyId
+                  ? {
+                      'x-session-id': this.sessionId,
+                      'x-company-id': this.companyId,
+                      ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                    }
+                  : {}),
+              },
+            }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = true;
       const hasOffset = true;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getOrderGroups.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.getOrderGroups.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/orders/groups', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'GET',
+          '/api/beta/brokers/data/orders/groups',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Get Order Groups completed', {
         request_id: requestId,
-        action: 'getOrderGroups'
+        action: 'getOrderGroups',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<PaginatedData<FDXBrokerOrderGroup>>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Get Order Groups failed', error, {
         request_id: requestId,
-        action: 'getOrderGroups'
+        action: 'getOrderGroups',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -2681,14 +3186,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -2706,7 +3213,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<PaginatedData<FDXBrokerOrderGroup>> = {
         success: {
@@ -2719,7 +3226,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -2777,9 +3284,11 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getPositionLots(params?: GetPositionLotsParams): Promise<FinaticResponse<PaginatedData<FDXBrokerPositionLot>>> {
+  async getPositionLots(
+    params?: GetPositionLotsParams
+  ): Promise<FinaticResponse<PaginatedData<FDXBrokerPositionLot>>> {
     // Use params object (with default empty object)
-    const resolvedParams: GetPositionLotsParams = params || {};    // Authentication check
+    const resolvedParams: GetPositionLotsParams = params || {}; // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -2798,7 +3307,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/positions/lots', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'GET',
+        '/api/beta/brokers/data/positions/lots',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -2812,83 +3326,122 @@ export class BrokersWrapper {
       method: 'GET',
       path: '/api/beta/brokers/data/positions/lots',
       params: resolvedParams,
-      action: 'getPositionLots'
+      action: 'getPositionLots',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getPositionLotsApiBetaBrokersDataPositionsLotsGet({ ...(resolvedParams.brokerId !== undefined ? { brokerId: resolvedParams.brokerId } : {}), ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.accountId !== undefined ? { accountId: resolvedParams.accountId } : {}), ...(resolvedParams.symbol !== undefined ? { symbol: resolvedParams.symbol } : {}), ...(resolvedParams.positionId !== undefined ? { positionId: resolvedParams.positionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.getPositionLotsApiBetaBrokersDataPositionsLotsGet(
+            {
+              ...(resolvedParams.brokerId !== undefined
+                ? { brokerId: resolvedParams.brokerId }
+                : {}),
+              ...(resolvedParams.connectionId !== undefined
+                ? { connectionId: resolvedParams.connectionId }
+                : {}),
+              ...(resolvedParams.accountId !== undefined
+                ? { accountId: resolvedParams.accountId }
+                : {}),
+              ...(resolvedParams.symbol !== undefined ? { symbol: resolvedParams.symbol } : {}),
+              ...(resolvedParams.positionId !== undefined
+                ? { positionId: resolvedParams.positionId }
+                : {}),
+              ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}),
+              ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}),
+            },
+            {
+              headers: {
+                'x-request-id': requestId,
+                ...(this.sessionId && this.companyId
+                  ? {
+                      'x-session-id': this.sessionId,
+                      'x-company-id': this.companyId,
+                      ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                    }
+                  : {}),
+              },
+            }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = true;
       const hasOffset = true;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getPositionLots.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.getPositionLots.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/positions/lots', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'GET',
+          '/api/beta/brokers/data/positions/lots',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Get Position Lots completed', {
         request_id: requestId,
-        action: 'getPositionLots'
+        action: 'getPositionLots',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<PaginatedData<FDXBrokerPositionLot>>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Get Position Lots failed', error, {
         request_id: requestId,
-        action: 'getPositionLots'
+        action: 'getPositionLots',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -2896,14 +3449,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -2921,7 +3476,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<PaginatedData<FDXBrokerPositionLot>> = {
         success: {
@@ -2934,7 +3489,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -2993,9 +3548,11 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getPositionLotFills(params: GetPositionLotFillsParams): Promise<FinaticResponse<PaginatedData<FDXBrokerPositionLotFill>>> {
+  async getPositionLotFills(
+    params: GetPositionLotFillsParams
+  ): Promise<FinaticResponse<PaginatedData<FDXBrokerPositionLotFill>>> {
     // Use params object (required parameters present)
-    const resolvedParams: GetPositionLotFillsParams = params;    // Authentication check
+    const resolvedParams: GetPositionLotFillsParams = params; // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -3014,7 +3571,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/positions/lots/{lot_id}/fills', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'GET',
+        '/api/beta/brokers/data/positions/lots/{lot_id}/fills',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -3028,83 +3590,114 @@ export class BrokersWrapper {
       method: 'GET',
       path: '/api/beta/brokers/data/positions/lots/{lot_id}/fills',
       params: resolvedParams,
-      action: 'getPositionLotFills'
+      action: 'getPositionLotFills',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.getPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGet({ lotId: resolvedParams.lotId ?? null, ...(resolvedParams.connectionId !== undefined ? { connectionId: resolvedParams.connectionId } : {}), ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}), ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}) }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse =
+            await this.api.getPositionLotFillsApiBetaBrokersDataPositionsLotsLotIdFillsGet(
+              {
+                lotId: resolvedParams.lotId ?? null,
+                ...(resolvedParams.connectionId !== undefined
+                  ? { connectionId: resolvedParams.connectionId }
+                  : {}),
+                ...(resolvedParams.limit !== undefined ? { limit: resolvedParams.limit } : {}),
+                ...(resolvedParams.offset !== undefined ? { offset: resolvedParams.offset } : {}),
+              },
+              {
+                headers: {
+                  'x-request-id': requestId,
+                  ...(this.sessionId && this.companyId
+                    ? {
+                        'x-session-id': this.sessionId,
+                        'x-company-id': this.companyId,
+                        ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                      }
+                    : {}),
+                },
+              }
+            );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = true;
       const hasOffset = true;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.getPositionLotFills.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.getPositionLotFills.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('GET', '/api/beta/brokers/data/positions/lots/{lot_id}/fills', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'GET',
+          '/api/beta/brokers/data/positions/lots/{lot_id}/fills',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Get Position Lot Fills completed', {
         request_id: requestId,
-        action: 'getPositionLotFills'
+        action: 'getPositionLotFills',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<PaginatedData<FDXBrokerPositionLotFill>>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Get Position Lot Fills failed', error, {
         request_id: requestId,
-        action: 'getPositionLotFills'
+        action: 'getPositionLotFills',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -3112,14 +3705,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -3137,7 +3732,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<PaginatedData<FDXBrokerPositionLotFill>> = {
         success: {
@@ -3150,7 +3745,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -3224,7 +3819,7 @@ export class BrokersWrapper {
    */
   async placeOrder(params: PlaceOrderParams): Promise<FinaticResponse<OrderActionResult>> {
     // Use params object (required parameters present)
-    const resolvedParams: PlaceOrderParams = params;    // Authentication check
+    const resolvedParams: PlaceOrderParams = params; // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -3243,7 +3838,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('POST', '/api/beta/brokers/orders', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'POST',
+        '/api/beta/brokers/orders',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -3257,83 +3857,118 @@ export class BrokersWrapper {
       method: 'POST',
       path: '/api/beta/brokers/orders',
       params: resolvedParams,
-      action: 'placeOrder'
+      action: 'placeOrder',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.placeOrderApiBetaBrokersOrdersPost({ connectionId: resolvedParams.connectionId ?? null, placeOrderApiBetaBrokersOrdersPostRequest: { broker: resolvedParams.broker, accountNumber: resolvedParams.accountNumber != null ? String(resolvedParams.accountNumber) : null, order: resolvedParams.order } as NonNullable<BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest['placeOrderApiBetaBrokersOrdersPostRequest']> }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.placeOrderApiBetaBrokersOrdersPost(
+            {
+              connectionId: resolvedParams.connectionId ?? null,
+              placeOrderApiBetaBrokersOrdersPostRequest: {
+                broker: resolvedParams.broker,
+                accountNumber:
+                  resolvedParams.accountNumber != null
+                    ? String(resolvedParams.accountNumber)
+                    : null,
+                order: resolvedParams.order,
+              } as NonNullable<
+                BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest['placeOrderApiBetaBrokersOrdersPostRequest']
+              >,
+            },
+            {
+              headers: {
+                'x-request-id': requestId,
+                ...(this.sessionId && this.companyId
+                  ? {
+                      'x-session-id': this.sessionId,
+                      'x-company-id': this.companyId,
+                      ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                    }
+                  : {}),
+              },
+            }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = false;
       const hasOffset = false;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.placeOrder.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.placeOrder.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('POST', '/api/beta/brokers/orders', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'POST',
+          '/api/beta/brokers/orders',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Place Order completed', {
         request_id: requestId,
-        action: 'placeOrder'
+        action: 'placeOrder',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<OrderActionResult>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Place Order failed', error, {
         request_id: requestId,
-        action: 'placeOrder'
+        action: 'placeOrder',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -3341,14 +3976,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -3366,7 +4003,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<OrderActionResult> = {
         success: {
@@ -3379,7 +4016,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -3420,7 +4057,7 @@ export class BrokersWrapper {
    */
   async cancelOrder(params: CancelOrderParams): Promise<FinaticResponse<OrderActionResult>> {
     // Use params object (required parameters present)
-    const resolvedParams: CancelOrderParams = params;    // Authentication check
+    const resolvedParams: CancelOrderParams = params; // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -3439,7 +4076,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('DELETE', '/api/beta/brokers/orders/{order_id}', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'DELETE',
+        '/api/beta/brokers/orders/{order_id}',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -3453,83 +4095,113 @@ export class BrokersWrapper {
       method: 'DELETE',
       path: '/api/beta/brokers/orders/{order_id}',
       params: resolvedParams,
-      action: 'cancelOrder'
+      action: 'cancelOrder',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.cancelOrderApiBetaBrokersOrdersOrderIdDelete({ orderId: resolvedParams.orderId, cancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest: { broker: resolvedParams.broker, accountNumber: resolvedParams.accountNumber, order: { order_id: resolvedParams.orderId } } as any }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.cancelOrderApiBetaBrokersOrdersOrderIdDelete(
+            {
+              orderId: resolvedParams.orderId,
+              cancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest: {
+                broker: resolvedParams.broker,
+                accountNumber: resolvedParams.accountNumber,
+                order: { order_id: resolvedParams.orderId },
+              } as any,
+            },
+            {
+              headers: {
+                'x-request-id': requestId,
+                ...(this.sessionId && this.companyId
+                  ? {
+                      'x-session-id': this.sessionId,
+                      'x-company-id': this.companyId,
+                      ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                    }
+                  : {}),
+              },
+            }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = false;
       const hasOffset = false;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.cancelOrder.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.cancelOrder.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('DELETE', '/api/beta/brokers/orders/{order_id}', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'DELETE',
+          '/api/beta/brokers/orders/{order_id}',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Cancel Order completed', {
         request_id: requestId,
-        action: 'cancelOrder'
+        action: 'cancelOrder',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<OrderActionResult>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Cancel Order failed', error, {
         request_id: requestId,
-        action: 'cancelOrder'
+        action: 'cancelOrder',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -3537,14 +4209,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -3562,7 +4236,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<OrderActionResult> = {
         success: {
@@ -3575,7 +4249,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -3642,7 +4316,7 @@ export class BrokersWrapper {
    */
   async modifyOrder(params: ModifyOrderParams): Promise<FinaticResponse<OrderActionResult>> {
     // Use params object (required parameters present)
-    const resolvedParams: ModifyOrderParams = params;    // Authentication check
+    const resolvedParams: ModifyOrderParams = params; // Authentication check
     if (!this.sessionId || !this.companyId) {
       throw new Error('Session not initialized. Call startSession() first.');
     }
@@ -3661,7 +4335,12 @@ export class BrokersWrapper {
     const shouldCache = true;
     const cache = getCache(this.sdkConfig);
     if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-      const cacheKey = generateCacheKey('PATCH', '/api/beta/brokers/orders/{order_id}', resolvedParams, this.sdkConfig);
+      const cacheKey = generateCacheKey(
+        'PATCH',
+        '/api/beta/brokers/orders/{order_id}',
+        resolvedParams,
+        this.sdkConfig
+      );
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
@@ -3675,83 +4354,117 @@ export class BrokersWrapper {
       method: 'PATCH',
       path: '/api/beta/brokers/orders/{order_id}',
       params: resolvedParams,
-      action: 'modifyOrder'
+      action: 'modifyOrder',
     });
 
     try {
       const response = await retryApiCall(
         async () => {
-          const apiResponse = await this.api.modifyOrderApiBetaBrokersOrdersOrderIdPatch({ orderId: resolvedParams.orderId, orderRequest: { broker: resolvedParams.broker, accountNumber: resolvedParams.accountNumber != null ? String(resolvedParams.accountNumber) : null, order: resolvedParams.order } as any, connectionId: resolvedParams.connectionId ?? null }, { headers: { 'x-request-id': requestId, ...(this.sessionId && this.companyId ? { 'x-session-id': this.sessionId, 'x-company-id': this.companyId, ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}) } : {}) } });
+          const apiResponse = await this.api.modifyOrderApiBetaBrokersOrdersOrderIdPatch(
+            {
+              orderId: resolvedParams.orderId,
+              orderRequest: {
+                broker: resolvedParams.broker,
+                accountNumber:
+                  resolvedParams.accountNumber != null
+                    ? String(resolvedParams.accountNumber)
+                    : null,
+                order: resolvedParams.order,
+              } as any,
+              connectionId: resolvedParams.connectionId ?? null,
+            },
+            {
+              headers: {
+                'x-request-id': requestId,
+                ...(this.sessionId && this.companyId
+                  ? {
+                      'x-session-id': this.sessionId,
+                      'x-company-id': this.companyId,
+                      ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
+                    }
+                  : {}),
+              },
+            }
+          );
           return await applyResponseInterceptors(apiResponse, this.sdkConfig);
         },
         {},
         this.sdkConfig
       );
-      
+
       // Unwrap axios response immediately - get FinaticResponse object
       const responseData = unwrapAxiosResponse(response);
       if (!(responseData && typeof responseData === 'object' && 'success' in responseData)) {
         throw new Error('Unexpected response shape: missing success field');
       }
-      
+
       // Convert response to plain object, removing _id fields recursively
       // Use 'any' for initial type to allow PaginatedData assignment, then assert final type
       const standardResponse: any = convertToPlainObject(responseData);
-      
-        // Phase 2: Wrap paginated responses with PaginatedData
+
+      // Phase 2: Wrap paginated responses with PaginatedData
       const hasLimit = false;
       const hasOffset = false;
       const hasPagination = hasLimit && hasOffset;
-      if (hasPagination && standardResponse.success?.data && Array.isArray(standardResponse.success.data) && standardResponse.success.meta) {
+      if (
+        hasPagination &&
+        standardResponse.success?.data &&
+        Array.isArray(standardResponse.success.data) &&
+        standardResponse.success.meta
+      ) {
         // PaginatedData is already imported at top of file
         const paginationMeta = (standardResponse.success.meta as any)?.pagination;
         if (paginationMeta) {
-        const paginatedData = new PaginatedData(
-          standardResponse.success.data,
-          {
-            has_more: paginationMeta.has_more,
-            next_offset: paginationMeta.next_offset,
-            current_offset: paginationMeta.current_offset,
-            limit: paginationMeta.limit,
-          },
-          this.modifyOrder.bind(this),
-          resolvedParams,
-          this
-        );
-        standardResponse.success.data = paginatedData;
+          const paginatedData = new PaginatedData(
+            standardResponse.success.data,
+            {
+              has_more: paginationMeta.has_more,
+              next_offset: paginationMeta.next_offset,
+              current_offset: paginationMeta.current_offset,
+              limit: paginationMeta.limit,
+            },
+            this.modifyOrder.bind(this),
+            resolvedParams,
+            this
+          );
+          standardResponse.success.data = paginatedData;
         }
       }
-      
+
       if (cache && this.sdkConfig?.cacheEnabled && shouldCache) {
-        const cacheKey = generateCacheKey('PATCH', '/api/beta/brokers/orders/{order_id}', resolvedParams, this.sdkConfig);
+        const cacheKey = generateCacheKey(
+          'PATCH',
+          '/api/beta/brokers/orders/{order_id}',
+          resolvedParams,
+          this.sdkConfig
+        );
         cache.set(cacheKey, standardResponse, this.sdkConfig.cacheTtl || 300);
       }
-      
+
       this.logger.debug('Modify Order completed', {
         request_id: requestId,
-        action: 'modifyOrder'
+        action: 'modifyOrder',
       });
-      
+
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
       return standardResponse as FinaticResponse<OrderActionResult>;
-      
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
       } catch {}
-      
+
       this.logger.error('Modify Order failed', error, {
         request_id: requestId,
-        action: 'modifyOrder'
+        action: 'modifyOrder',
       });
-      
+
       // Phase 2C: Extract error details from Axios errors or generic errors
       let errorMessage = error instanceof Error ? error.message : String(error);
       let errorCode = 'UNKNOWN_ERROR';
       let errorStatus: number | undefined;
       let errorDetails: Record<string, any> = {};
-      
+
       // Handle Axios errors (from OpenAPI generator)
       if ((error as any)?.isAxiosError || (error as any)?.response) {
         const axiosError = error as any;
@@ -3759,14 +4472,16 @@ export class BrokersWrapper {
         errorCode = axiosError.code || `HTTP_${errorStatus || 'UNKNOWN'}`;
         // Extract error message from FinaticResponse Error field or fallback to statusText/message
         const errorResponseData = axiosError.response?.data;
-        if (errorResponseData && typeof errorResponseData === 'object' && 'error' in errorResponseData) {
+        if (
+          errorResponseData &&
+          typeof errorResponseData === 'object' &&
+          'error' in errorResponseData
+        ) {
           errorMessage = errorResponseData.error?.message || errorMessage;
           errorCode = errorResponseData.error?.code || errorCode;
           errorStatus = errorResponseData.error?.status || errorStatus;
         } else {
-          errorMessage = axiosError.response?.statusText || 
-                         axiosError.message || 
-                         errorMessage;
+          errorMessage = axiosError.response?.statusText || axiosError.message || errorMessage;
         }
         errorDetails = {
           status: errorStatus,
@@ -3784,7 +4499,7 @@ export class BrokersWrapper {
       } else {
         errorDetails = { error };
       }
-      
+
       // Phase 2C: Return standard error response structure
       const errorResponse: FinaticResponse<OrderActionResult> = {
         success: {
@@ -3797,7 +4512,7 @@ export class BrokersWrapper {
           details: errorDetails,
         },
       };
-      
+
       return errorResponse;
     }
 
@@ -3805,5 +4520,4 @@ export class BrokersWrapper {
     // TODO Phase 2D: Add orphaned method detection
     // TODO Phase 2D: Add advanced convenience methods
   }
-
 }

@@ -7,9 +7,6 @@
 
 // Import generated wrapper
 import { BrokersWrapper } from '../../generated/wrappers/brokers';
-import { BrokersApi } from '../../generated/api/brokers-api';
-import type { Configuration } from '../../generated/configuration';
-import type { SdkConfig } from '../../generated/config';
 /**
  * Custom wrapper for brokers operations.
  *

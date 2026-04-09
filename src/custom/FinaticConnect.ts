@@ -6,13 +6,6 @@
  */
 
 import { FinaticConnect as GeneratedFinaticConnect } from '../generated/FinaticConnect';
-import type { FinaticConnectOptions } from '../generated/FinaticConnect';
-import type { SdkConfig } from '../generated/config';
-import { getLogger, type Logger } from '../generated/utils/logger';
-import { CustomSessionWrapper } from './wrappers/session';
-import { CustomBrokersWrapper } from './wrappers/brokers';
-import { SessionApi } from '../generated/api/session-api';
-import { BrokersApi } from '../generated/api/brokers-api';
 
 /**
  * Custom FinaticConnect class that extends the generated class.

@@ -29,6 +29,7 @@ export default tseslint.config(
       'node_modules/',
       'coverage/',
       '*.js',
+      'src/generated/**',
       '**/*.d.ts',
       'src/generated/**/*.d.ts',
     ],

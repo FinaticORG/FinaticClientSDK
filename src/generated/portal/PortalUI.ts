@@ -1,6 +1,6 @@
 /**
  * Portal UI manager for Client SDK.
- * 
+ *
  * Handles iframe creation, postMessage events, and portal lifecycle.
  * Generated - do not edit directly.
  */
@@ -131,11 +131,14 @@ export class PortalUI {
     // Allow messages from the portal origin or if portalOrigin is not set (for development)
     if (this.portalOrigin && event.origin !== this.portalOrigin) {
       // Log ignored messages for debugging (only in development)
-      if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+      if (
+        typeof window !== 'undefined' &&
+        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ) {
         console.debug('[Finatic SDK] Ignoring message from different origin:', {
           expected: this.portalOrigin,
           received: event.origin,
-          messageType: event.data?.type
+          messageType: event.data?.type,
         });
       }
       return;

@@ -1,8 +1,8 @@
 /**
  * Structured logger utility with browser-safe console logging (Phase 2C).
- * 
+ *
  * Generated - do not edit directly.
- * 
+ *
  * This logger uses browser console APIs for all logging in browser environments.
  */
 
@@ -34,7 +34,7 @@ function getEnvVar(key: string): string | undefined {
   } catch {
     // Ignore if process is not available
   }
-  
+
   // Check for Vite env vars in browser
   if (typeof window !== 'undefined') {
     const importMeta = (globalThis as any).import?.meta;
@@ -52,15 +52,15 @@ function isProduction(): boolean {
   // Check Vite mode
   const viteMode = getEnvVar('MODE');
   if (viteMode === 'production') return true;
-  
+
   // Check Vite PROD flag
   const viteProd = getEnvVar('PROD');
   if (viteProd === 'true') return true;
-  
+
   // Check NODE_ENV
   const nodeEnv = getEnvVar('NODE_ENV');
   if (nodeEnv === 'production') return true;
-  
+
   return false;
 }
 
@@ -72,7 +72,7 @@ function isBrowser(): boolean {
   if (typeof window !== 'undefined') {
     return true;
   }
-  
+
   // Check for globalThis in browser-like environments
   if (typeof globalThis !== 'undefined') {
     // In browsers, process might be polyfilled but process.stdout won't exist
@@ -86,7 +86,7 @@ function isBrowser(): boolean {
       return typeof window !== 'undefined';
     }
   }
-  
+
   return false;
 }
 
@@ -97,7 +97,7 @@ export function getLogger(config?: SdkConfig): Logger {
   if (_loggerInstance) {
     return _loggerInstance;
   }
-  
+
   // Client SDK always uses browser-safe logger (no pino)
   return getBrowserSafeLogger(config);
 }
@@ -123,18 +123,18 @@ function getBrowserSafeLogger(config?: SdkConfig): Logger {
     if (config?.logLevel) {
       return config.logLevel as LogLevel;
     }
-    
+
     // Check environment variable
     const envLevel = getEnvVar('FINATIC_LOG_LEVEL');
     if (envLevel && ['debug', 'info', 'warn', 'error', 'silent'].includes(envLevel)) {
       return envLevel as LogLevel;
     }
-    
+
     // In production, default to error-only (unless explicitly overridden above)
     if (isProduction()) {
       return 'error';
     }
-    
+
     // Development default
     return 'error'; // Even in dev, default to error for safety
   };
@@ -203,15 +203,15 @@ function getBrowserSafeLogger(config?: SdkConfig): Logger {
     error?: Error | any
   ): any[] => {
     const parts: any[] = [`[${levelLabel.toUpperCase()}] ${message}`];
-    
+
     if (data && typeof data === 'object' && Object.keys(data).length > 0) {
       parts.push(data);
     }
-    
+
     if (error) {
       parts.push(error);
     }
-    
+
     return parts;
   };
 
@@ -234,10 +234,10 @@ function getBrowserSafeLogger(config?: SdkConfig): Logger {
   const fallbackLogger: Logger = {
     debug: (message: string, data?: Record<string, any>) => {
       if (!shouldLog('debug')) return;
-      
+
       const debugLevel = LOG_LEVELS['debug'];
       if (debugLevel === undefined) return;
-      
+
       if (structuredLogging) {
         const logStr = formatStructuredLog(debugLevel, 'debug', message, data);
         console.debug(logStr);
@@ -246,13 +246,13 @@ function getBrowserSafeLogger(config?: SdkConfig): Logger {
         console.debug(...logArgs);
       }
     },
-    
+
     info: (message: string, data?: Record<string, any>) => {
       if (!shouldLog('info')) return;
-      
+
       const infoLevel = LOG_LEVELS['info'];
       if (infoLevel === undefined) return;
-      
+
       if (structuredLogging) {
         const logStr = formatStructuredLog(infoLevel, 'info', message, data);
         console.info(logStr);
@@ -261,13 +261,13 @@ function getBrowserSafeLogger(config?: SdkConfig): Logger {
         console.info(...logArgs);
       }
     },
-    
+
     warn: (message: string, data?: Record<string, any>) => {
       if (!shouldLog('warn')) return;
-      
+
       const warnLevel = LOG_LEVELS['warn'];
       if (warnLevel === undefined) return;
-      
+
       if (structuredLogging) {
         const logStr = formatStructuredLog(warnLevel, 'warn', message, data);
         console.warn(logStr);
@@ -276,13 +276,13 @@ function getBrowserSafeLogger(config?: SdkConfig): Logger {
         console.warn(...logArgs);
       }
     },
-    
+
     error: (message: string, error?: Error | any, data?: Record<string, any>) => {
       if (!shouldLog('error')) return;
-      
+
       const errorLevel = LOG_LEVELS['error'];
       if (errorLevel === undefined) return;
-      
+
       if (structuredLogging) {
         const logStr = formatStructuredLog(errorLevel, 'error', message, data, error);
         console.error(logStr);

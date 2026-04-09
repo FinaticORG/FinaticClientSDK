@@ -1,8 +1,8 @@
 /**
  * Main SDK entry point.
- * 
+ *
  * This file is protected - customize exports as needed.
- * 
+ *
  * Note: The OpenAPI generator creates its own index.ts that exports from api/models.
  * This file re-exports from our generated wrappers and custom code.
  */

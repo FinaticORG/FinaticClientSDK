@@ -7,9 +7,6 @@
 
 // Import generated wrapper
 import { SessionWrapper } from '../../generated/wrappers/session';
-import { SessionApi } from '../../generated/api/session-api';
-import type { Configuration } from '../../generated/configuration';
-import type { SdkConfig } from '../../generated/config';
 /**
  * Custom wrapper for session operations.
  *
