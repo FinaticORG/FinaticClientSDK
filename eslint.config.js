@@ -29,7 +29,7 @@ export default tseslint.config(
       'node_modules/',
       'coverage/',
       '*.js',
-      'src/generated/**',
+      'src/openapi/**',
     ],
   }
 );

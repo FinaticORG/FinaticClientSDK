@@ -5,8 +5,8 @@ import {
   appendKindToURL,
   appendStageToURL,
   appendThemeToURL,
-} from "../src/generated/utils/url-utils";
-import { generateRequestId } from "../src/generated/utils/request-id";
+} from "../src/utils/url-utils";
+import { generateRequestId } from "../src/utils/request-id";
 import {
   applyErrorInterceptors,
   applyRequestInterceptors,
@@ -14,17 +14,17 @@ import {
   addErrorInterceptor,
   addRequestInterceptor,
   addResponseInterceptor,
-} from "../src/generated/utils/interceptors";
-import { unwrapAxiosResponse } from "../src/generated/utils/response-utils";
-import { handleError, ApiError, ValidationError, FinaticError } from "../src/generated/utils/error-handling";
-import { retryApiCall } from "../src/generated/utils/retry";
-import { getCache, generateCacheKey } from "../src/generated/utils/cache";
-import { PaginatedData } from "../src/generated/utils/pagination";
-import { EventEmitter } from "../src/generated/utils/events";
-import { convertToPlainObject } from "../src/generated/utils/plain-object";
-import { coerceEnumValue } from "../src/generated/utils/enum-coercion";
+} from "../src/utils/interceptors";
+import { unwrapAxiosResponse } from "../src/utils/response-utils";
+import { handleError, ApiError, ValidationError, FinaticError } from "../src/utils/error-handling";
+import { retryApiCall } from "../src/utils/retry";
+import { getCache, generateCacheKey } from "../src/utils/cache";
+import { PaginatedData } from "../src/utils/pagination";
+import { EventEmitter } from "../src/utils/events";
+import { convertToPlainObject } from "../src/utils/plain-object";
+import { coerceEnumValue } from "../src/utils/enum-coercion";
 import * as z from "zod";
-import { validateParams, numberSchema, stringSchema } from "../src/generated/utils/validation";
+import { validateParams, numberSchema, stringSchema } from "../src/utils/validation";
 
 jest.mock("p-retry", () => {
   class AbortError extends Error {}

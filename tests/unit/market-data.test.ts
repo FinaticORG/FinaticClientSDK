@@ -3,21 +3,21 @@ import path from 'node:path';
 
 describe('MarketDataWrapper contract', () => {
   it('market data wrapper is not currently generated', () => {
-    const file = path.resolve(__dirname, '../../src/generated/wrappers/market-data.ts');
+    const file = path.resolve(__dirname, '../../src/wrappers/market-data.ts');
     expect(existsSync(file)).toBe(false);
   });
 
   it('current public api modules still include session/company/brokers', () => {
     const sessionApi = readFileSync(
-      path.resolve(__dirname, '../../src/generated/api/session-api.ts'),
+      path.resolve(__dirname, '../../src/openapi/api/session-api.ts'),
       'utf8',
     );
     const companyApi = readFileSync(
-      path.resolve(__dirname, '../../src/generated/api/company-api.ts'),
+      path.resolve(__dirname, '../../src/openapi/api/company-api.ts'),
       'utf8',
     );
     const brokersApi = readFileSync(
-      path.resolve(__dirname, '../../src/generated/api/brokers-api.ts'),
+      path.resolve(__dirname, '../../src/openapi/api/brokers-api.ts'),
       'utf8',
     );
     expect(sessionApi).toContain('export class SessionApi');

@@ -1,6 +1,6 @@
-import { BrokersApi } from '../src/generated/api/brokers-api';
-import { CompanyApi } from '../src/generated/api/company-api';
-import { SessionApi } from '../src/generated/api/session-api';
+import { BrokersApi } from '../src/openapi/api/brokers-api';
+import { CompanyApi } from '../src/openapi/api/company-api';
+import { SessionApi } from '../src/openapi/api/session-api';
 
 type ApiCtor = new (...args: any[]) => any;
 

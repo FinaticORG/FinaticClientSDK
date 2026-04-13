@@ -1,4 +1,4 @@
-import { PortalUI } from '../src/generated/portal/PortalUI';
+import { PortalUI } from '../src/portal/PortalUI';
 
 function createElement(tag: string): any {
   return {

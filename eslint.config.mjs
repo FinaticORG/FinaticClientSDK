@@ -29,9 +29,9 @@ export default tseslint.config(
       'node_modules/',
       'coverage/',
       '*.js',
-      'src/generated/**',
+      'src/openapi/**',
       '**/*.d.ts',
-      'src/generated/**/*.d.ts',
+      'src/openapi/**/*.d.ts',
     ],
   }
 );
