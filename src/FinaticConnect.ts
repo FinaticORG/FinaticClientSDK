@@ -5,7 +5,7 @@
  * without relying on the old src/custom folder structure.
  */
 
-import { FinaticConnect as GeneratedFinaticConnect } from "./FinaticConnectCore";
+import { FinaticConnect as GeneratedFinaticConnect } from './FinaticConnectCore';
 
 export class FinaticConnect extends GeneratedFinaticConnect {
   // Marker to verify hand-authored class is being used
