@@ -63,9 +63,6 @@ pids/
 # Yarn Integrity file
 .yarn-integrity
 
-# Yarn lock file
-yarn.lock
-
 # parcel-bundler cache
 .cache
 .parcel-cache
