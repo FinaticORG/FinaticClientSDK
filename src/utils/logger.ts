@@ -65,32 +65,6 @@ function isProduction(): boolean {
 }
 
 /**
- * Detect if we're in a browser environment.
- */
-function isBrowser(): boolean {
-  // Check for window object (browser)
-  if (typeof window !== 'undefined') {
-    return true;
-  }
-
-  // Check for globalThis in browser-like environments
-  if (typeof globalThis !== 'undefined') {
-    // In browsers, process might be polyfilled but process.stdout won't exist
-    try {
-      const proc = (globalThis as any).process;
-      if (proc && typeof proc.stdout === 'undefined') {
-        return true;
-      }
-    } catch {
-      // If we can't check, assume browser if window exists
-      return typeof window !== 'undefined';
-    }
-  }
-
-  return false;
-}
-
-/**
  * Get or create a logger instance with browser-safe fallback.
  */
 export function getLogger(config?: SdkConfig): Logger {
@@ -141,7 +115,6 @@ function getBrowserSafeLogger(config?: SdkConfig): Logger {
 
   const logLevel = getEffectiveLogLevel();
   const structuredLogging = config?.structuredLogging ?? false;
-  const isProd = isProduction();
 
   /**
    * Check if we should log at this level.

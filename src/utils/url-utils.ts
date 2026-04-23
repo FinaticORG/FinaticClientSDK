@@ -35,7 +35,7 @@ export function appendThemeToURL(
     }
 
     return url.toString();
-  } catch (error) {
+  } catch {
     // If URL parsing fails, return original URL
     return baseUrl;
   }
@@ -57,7 +57,7 @@ export function appendBrokerFilterToURL(baseUrl: string, brokerNames?: string[])
     const encodedBrokers = btoa(JSON.stringify(brokerNames));
     url.searchParams.set('brokers', encodedBrokers);
     return url.toString();
-  } catch (error) {
+  } catch {
     // If URL parsing fails, return original URL
     return baseUrl;
   }
@@ -78,7 +78,7 @@ export function appendKindToURL(baseUrl: string, kind?: 'broker' | 'exchange'): 
     const url = new URL(baseUrl);
     url.searchParams.set('type', kind);
     return url.toString();
-  } catch (error) {
+  } catch {
     return baseUrl;
   }
 }
@@ -99,7 +99,7 @@ export function appendAssetTypesToURL(baseUrl: string, assetTypes?: string[]): s
     const url = new URL(baseUrl);
     url.searchParams.set('capabilities', assetTypes.join(','));
     return url.toString();
-  } catch (error) {
+  } catch {
     return baseUrl;
   }
 }
@@ -123,7 +123,7 @@ export function appendStageToURL(baseUrl: string, stages?: PortalStage[]): strin
     const url = new URL(baseUrl);
     url.searchParams.set('stage', stages.join(','));
     return url.toString();
-  } catch (error) {
+  } catch {
     return baseUrl;
   }
 }

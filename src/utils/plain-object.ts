@@ -42,7 +42,7 @@ export function convertToPlainObject(data: any): any {
     // Recursively convert nested objects, excluding _id fields and null metadata
     const result: any = {};
     for (const key in data) {
-      if (data.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
         // Skip _id fields (internal model identifiers that should not be exposed)
         if (key === '_id') {
           continue;

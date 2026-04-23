@@ -4,7 +4,6 @@
  * Generated - do not edit directly.
  */
 
-// @ts-ignore - p-retry provides its own types but TypeScript may not resolve them
 import pRetry, { AbortError, type RetryContext } from 'p-retry';
 import type { SdkConfig } from '../config';
 

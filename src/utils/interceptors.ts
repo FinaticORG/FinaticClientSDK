@@ -21,7 +21,7 @@ export interface InterceptorChain {
   error: ErrorInterceptor[];
 }
 
-let _interceptors: InterceptorChain = {
+const _interceptors: InterceptorChain = {
   request: [],
   response: [],
   error: [],

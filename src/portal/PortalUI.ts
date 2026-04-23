@@ -20,7 +20,7 @@ export class PortalUI {
   private options?: PortalUIOptions;
   private originalBodyStyle: string | null = null;
 
-  constructor(portalUrl: string) {
+  constructor(_portalUrl: string) {
     this.createContainer();
   }
 
@@ -92,7 +92,7 @@ export class PortalUI {
     // Set portalOrigin to the actual portal URL's origin
     try {
       this.portalOrigin = new URL(url).origin;
-    } catch (e) {
+    } catch {
       this.portalOrigin = null;
     }
 
@@ -173,15 +173,16 @@ export class PortalUI {
         this.hide();
         break;
 
-      case 'portal-resize':
+      case 'portal-resize': {
         // Handle resize messages (optional - can be used to adjust iframe height)
         // Portal sends: { type: 'portal-resize', height: number }
-        const resizeHeight = (event.data as any).height;
+        const resizeHeight = (event.data as { height?: unknown }).height;
         if (typeof resizeHeight === 'number' && this.iframe) {
           // Optionally adjust iframe height based on portal content
           this.iframe.style.height = `${resizeHeight}px`;
         }
         break;
+      }
 
       default:
         // Ignore unknown message types
