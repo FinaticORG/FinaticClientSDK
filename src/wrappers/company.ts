@@ -1,8 +1,5 @@
 /**
- * Generated wrapper functions for company operations (Phase 2A).
- *
- * This file is regenerated on each run - do not edit directly.
- * For custom logic, edit src/custom/wrappers/company.ts instead.
+ * Hand-maintained company wrapper over the OpenAPI-generated client in ``src/openapi/``.
  */
 
 import { CompanyApi } from '../openapi/api/company-api';

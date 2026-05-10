@@ -24,22 +24,6 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/wrappers/**/*.ts', 'src/FinaticConnectCore.ts'],
-    rules: {
-      '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-empty-object-type': 'off',
-      '@typescript-eslint/no-require-imports': 'off',
-      'no-empty': 'off',
-      'prefer-const': 'off',
-    },
-  },
-  {
-    ignores: [
-      'dist/',
-      'node_modules/',
-      'coverage/',
-      '*.js',
-      'src/openapi/**',
-    ],
+    ignores: ['dist/', 'node_modules/', 'coverage/', '*.js'],
   }
 );

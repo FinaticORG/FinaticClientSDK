@@ -1,8 +1,7 @@
 /**
  * Main client class for Finatic Client SDK.
  *
- * This file is regenerated on each run - do not edit directly.
- * For custom logic, extend this class or use custom wrappers.
+ * Hand-maintained façade over ``src/openapi/`` and wrappers.
  */
 
 import { Configuration } from './openapi/configuration';
@@ -44,18 +43,16 @@ import type {
   PlaceOrderParams,
 } from './wrappers/brokers';
 import type { GetCompanyParams } from './wrappers/company';
-import type {
-  FDXBrokerOrder,
-  FDXBrokerOrderEvent,
-  FDXBrokerOrderFill,
-  FDXBrokerOrderGroup,
-  FDXBrokerPosition,
-  FDXBrokerPositionLot,
-  FDXBrokerPositionLotFill,
-  FDXBrokerTransaction,
-  LegacyBrokerAccount,
-  LegacyBrokerBalance,
-} from './openapi/models';
+import type { FDXBrokerOrder } from './openapi/models/fdxbroker-order';
+import type { FDXBrokerOrderEvent } from './openapi/models/fdxbroker-order-event';
+import type { FDXBrokerOrderFill } from './openapi/models/fdxbroker-order-fill';
+import type { FDXBrokerOrderGroup } from './openapi/models/fdxbroker-order-group';
+import type { FDXBrokerPosition } from './openapi/models/fdxbroker-position';
+import type { FDXBrokerPositionLot } from './openapi/models/fdxbroker-position-lot';
+import type { FDXBrokerPositionLotFill } from './openapi/models/fdxbroker-position-lot-fill';
+import type { FDXBrokerTransaction } from './openapi/models/fdxbroker-transaction';
+import type { LegacyBrokerAccount } from './openapi/models/legacy-broker-account';
+import type { LegacyBrokerBalance } from './openapi/models/legacy-broker-balance';
 
 export interface FinaticConnectOptions {
   token: string;

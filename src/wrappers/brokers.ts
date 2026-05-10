@@ -1,8 +1,5 @@
 /**
- * Generated wrapper functions for brokers operations (Phase 2A).
- *
- * This file is regenerated on each run - do not edit directly.
- * For custom logic, edit src/custom/wrappers/brokers.ts instead.
+ * Hand-maintained brokers wrapper over the OpenAPI-generated client in ``src/openapi/``.
  */
 
 import { BrokersApi } from '../openapi/api/brokers-api';
@@ -34,14 +31,14 @@ import { BrokerDataPositionStatusEnum } from '../openapi/models';
 
 import type { BrokerInfo } from '../openapi/models';
 import type { DisconnectCompanyFromBrokerConnectionResult } from '../openapi/models';
-import type { FDXBrokerOrder } from '../openapi/models';
-import type { FDXBrokerOrderEvent } from '../openapi/models';
-import type { FDXBrokerOrderFill } from '../openapi/models';
-import type { FDXBrokerOrderGroup } from '../openapi/models';
-import type { FDXBrokerPosition } from '../openapi/models';
-import type { FDXBrokerPositionLot } from '../openapi/models';
-import type { FDXBrokerPositionLotFill } from '../openapi/models';
-import type { FDXBrokerTransaction } from '../openapi/models';
+import type { FDXBrokerOrder } from '../openapi/models/fdxbroker-order';
+import type { FDXBrokerOrderEvent } from '../openapi/models/fdxbroker-order-event';
+import type { FDXBrokerOrderFill } from '../openapi/models/fdxbroker-order-fill';
+import type { FDXBrokerOrderGroup } from '../openapi/models/fdxbroker-order-group';
+import type { FDXBrokerPosition } from '../openapi/models/fdxbroker-position';
+import type { FDXBrokerPositionLot } from '../openapi/models/fdxbroker-position-lot';
+import type { FDXBrokerPositionLotFill } from '../openapi/models/fdxbroker-position-lot-fill';
+import type { FDXBrokerTransaction } from '../openapi/models/fdxbroker-transaction';
 import type { FinaticResponseDisconnectCompanyFromBrokerConnectionResult } from '../openapi/models';
 import type { FinaticResponseListBrokerInfo } from '../openapi/models';
 import type { FinaticResponseListFDXBrokerOrder } from '../openapi/models';

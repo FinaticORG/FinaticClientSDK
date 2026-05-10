@@ -1,8 +1,5 @@
 /**
- * Generated wrapper functions for session operations (Phase 2A).
- *
- * This file is regenerated on each run - do not edit directly.
- * For custom logic, edit src/custom/wrappers/session.ts instead.
+ * Hand-maintained session wrapper over the OpenAPI-generated client in ``src/openapi/``.
  */
 
 import { SessionApi } from '../openapi/api/session-api';

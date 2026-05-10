@@ -9,7 +9,7 @@
  * Modify values here to customize SDK behavior.
  *
  * Generated - do not edit directly.
- * For custom configuration, extend this class in src/custom/config.ts
+ * For configuration overrides, subclass or wrap ``SdkConfig`` in application code.
  */
 
 export interface SdkConfig {
