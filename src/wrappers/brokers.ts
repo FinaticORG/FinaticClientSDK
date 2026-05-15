@@ -930,7 +930,10 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getBrokers(params?: GetBrokersParams): Promise<FinaticResponse<BrokerInfo[]>> {
+  async getBrokers(
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    params?: {}
+  ): Promise<FinaticResponse<BrokerInfo[]>> {
     // No parameters - use empty params object
     const resolvedParams: GetBrokersParams = params || {}; // Generate request ID
     const requestId = this._generateRequestId();
@@ -1137,7 +1140,8 @@ export class BrokersWrapper {
    * ```
    */
   async getBrokerConnections(
-    params?: GetBrokerConnectionsParams
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    params?: {}
   ): Promise<FinaticResponse<UserBrokerConnectionWithPermissions[]>> {
     // No parameters - use empty params object
     const resolvedParams: GetBrokerConnectionsParams = params || {}; // Authentication check

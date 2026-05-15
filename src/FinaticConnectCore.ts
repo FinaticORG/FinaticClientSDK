@@ -1020,8 +1020,11 @@ export class FinaticConnect extends EventEmitter {
    *     print('Data:', result.success['data'])
    * ```
    */
-  async getBrokers(): Promise<Awaited<ReturnType<typeof this.brokers.getBrokers>>> {
-    return await this.brokers.getBrokers();
+  async getBrokers(
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    params?: {}
+  ): Promise<Awaited<ReturnType<typeof this.brokers.getBrokers>>> {
+    return await this.brokers.getBrokers(params);
   }
 
   /**
@@ -1064,10 +1067,13 @@ export class FinaticConnect extends EventEmitter {
    *     print('Data:', result.success['data'])
    * ```
    */
-  async getBrokerConnections(): Promise<
+  async getBrokerConnections(
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    params?: {}
+  ): Promise<
     Awaited<ReturnType<typeof this.brokers.getBrokerConnections>>
   > {
-    return await this.brokers.getBrokerConnections();
+    return await this.brokers.getBrokerConnections(params);
   }
 
   /**
