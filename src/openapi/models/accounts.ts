@@ -42,6 +42,6 @@ export interface Accounts {
     'trading_usage_description'?: string | null;
     'updated_at': string | null;
     'updated_by'?: string | null;
-    'use_case_features'?:  | null;
+    'use_case_features'?: { [key: string]: any; } | null;
 }
 

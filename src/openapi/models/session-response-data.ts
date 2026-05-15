@@ -41,6 +41,14 @@ export interface SessionResponseData {
      * User ID if authenticated
      */
     'user_id'?: string | null;
+    /**
+     * True when a provisional user_id was supplied on start but was not applied (invalid UUID or no active broker connection for this company).
+     */
+    'provided_user_id_rejected'?: boolean;
+    /**
+     * True when a valid provisional user_id was applied: trading/data may proceed, but portal connection-management still requires link-user / OTP step-up.
+     */
+    'portal_connection_management_pending'?: boolean;
 }
 
 

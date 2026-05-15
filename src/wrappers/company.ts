@@ -11,17 +11,11 @@ import { retryApiCall } from '../utils/retry';
 import { getLogger, type Logger } from '../utils/logger';
 import { handleError } from '../utils/error-handling';
 import { getCache, generateCacheKey } from '../utils/cache';
-import {
-  applyRequestInterceptors,
-  applyResponseInterceptors,
-  applyErrorInterceptors,
-} from '../utils/interceptors';
+import { applyResponseInterceptors, applyErrorInterceptors } from '../utils/interceptors';
 import { unwrapAxiosResponse } from '../utils/response-utils';
-import { coerceEnumValue } from '../utils/enum-coercion';
 import { convertToPlainObject } from '../utils/plain-object';
 
 import type { Accounts } from '../openapi/models';
-import type { FinaticResponseAccounts } from '../openapi/models';
 
 // Always import PaginatedData since method bodies may reference it (even if unreachable)
 import { PaginatedData } from '../utils/pagination';
@@ -230,7 +224,9 @@ export class CompanyWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Get Company failed', error, {
         request_id: requestId,

@@ -24,6 +24,14 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ['dist/', 'node_modules/', 'coverage/', '*.js'],
+    ignores: [
+      'dist/',
+      'node_modules/',
+      'coverage/',
+      '*.js',
+      'src/openapi/**',
+      '**/*.d.ts',
+      'src/openapi/**/*.d.ts',
+    ],
   }
 );
