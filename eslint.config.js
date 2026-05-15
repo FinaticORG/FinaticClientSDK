@@ -23,7 +23,26 @@ export default tseslint.config(
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },
+  // OpenAPI/codegen output: strict lint rules fight generated patterns.
   {
-    ignores: ['dist/', 'node_modules/', 'coverage/', '*.js'],
+    files: ['src/wrappers/**/*.ts', 'src/FinaticConnectCore.ts'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      'no-empty': 'off',
+      'prefer-const': 'off',
+    },
+  },
+  {
+    ignores: [
+      'dist/',
+      'node_modules/',
+      'coverage/',
+      '*.js',
+      'src/openapi/**',
+      '**/*.d.ts',
+      'src/openapi/**/*.d.ts',
+    ],
   }
 );

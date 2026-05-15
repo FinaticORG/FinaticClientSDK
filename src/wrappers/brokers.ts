@@ -3,11 +3,7 @@
  */
 
 import { BrokersApi } from '../openapi/api/brokers-api';
-import type {
-  BrokersApiCancelOrderApiBetaBrokersOrdersOrderIdDeleteRequest,
-  BrokersApiModifyOrderApiBetaBrokersOrdersOrderIdPatchRequest,
-  BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest,
-} from '../openapi/api/brokers-api';
+import type { BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest } from '../openapi/api/brokers-api';
 
 import type { Configuration } from '../openapi/configuration';
 import type { SdkConfig } from '../config';
@@ -16,11 +12,7 @@ import { retryApiCall } from '../utils/retry';
 import { getLogger, type Logger } from '../utils/logger';
 import { handleError } from '../utils/error-handling';
 import { getCache, generateCacheKey } from '../utils/cache';
-import {
-  applyRequestInterceptors,
-  applyResponseInterceptors,
-  applyErrorInterceptors,
-} from '../utils/interceptors';
+import { applyResponseInterceptors, applyErrorInterceptors } from '../utils/interceptors';
 import { unwrapAxiosResponse } from '../utils/response-utils';
 import { coerceEnumValue } from '../utils/enum-coercion';
 import { convertToPlainObject } from '../utils/plain-object';
@@ -39,23 +31,8 @@ import type { FDXBrokerPosition } from '../openapi/models/fdxbroker-position';
 import type { FDXBrokerPositionLot } from '../openapi/models/fdxbroker-position-lot';
 import type { FDXBrokerPositionLotFill } from '../openapi/models/fdxbroker-position-lot-fill';
 import type { FDXBrokerTransaction } from '../openapi/models/fdxbroker-transaction';
-import type { FinaticResponseDisconnectCompanyFromBrokerConnectionResult } from '../openapi/models';
-import type { FinaticResponseListBrokerInfo } from '../openapi/models';
-import type { FinaticResponseListFDXBrokerOrder } from '../openapi/models';
-import type { FinaticResponseListFDXBrokerOrderEvent } from '../openapi/models';
-import type { FinaticResponseListFDXBrokerOrderFill } from '../openapi/models';
-import type { FinaticResponseListFDXBrokerOrderGroup } from '../openapi/models';
-import type { FinaticResponseListFDXBrokerPosition } from '../openapi/models';
-import type { FinaticResponseListFDXBrokerPositionLot } from '../openapi/models';
-import type { FinaticResponseListFDXBrokerPositionLotFill } from '../openapi/models';
-import type { FinaticResponseListFDXBrokerTransaction } from '../openapi/models';
-import type { FinaticResponseListLegacyBrokerAccount } from '../openapi/models';
-import type { FinaticResponseListLegacyBrokerBalance } from '../openapi/models';
-import type { FinaticResponseListUserBrokerConnectionWithPermissions } from '../openapi/models';
-import type { FinaticResponseOrderActionResult } from '../openapi/models';
 import type { LegacyBrokerAccount } from '../openapi/models';
 import type { LegacyBrokerBalance } from '../openapi/models';
-import type { NinjaTraderOrderModifyRequest } from '../openapi/models';
 import type { OrderActionResult } from '../openapi/models';
 import type { UserBrokerConnectionWithPermissions } from '../openapi/models';
 
@@ -117,13 +94,9 @@ export interface GetAccountsParams {
   includeMetadata?: boolean;
 }
 
-export interface GetBrokersParams {
-  // No parameters
-}
+export type GetBrokersParams = Record<string, never>;
 
-export interface GetBrokerConnectionsParams {
-  // No parameters
-}
+export type GetBrokerConnectionsParams = Record<string, never>;
 
 export interface DisconnectCompanyFromBrokerParams {
   /** Connection ID */
@@ -584,7 +557,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Get Balances failed', error, {
         request_id: requestId,
@@ -855,7 +830,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Get Accounts failed', error, {
         request_id: requestId,
@@ -953,7 +930,7 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getBrokers(params?: {}): Promise<FinaticResponse<BrokerInfo[]>> {
+  async getBrokers(params?: GetBrokersParams): Promise<FinaticResponse<BrokerInfo[]>> {
     // No parameters - use empty params object
     const resolvedParams: GetBrokersParams = params || {}; // Generate request ID
     const requestId = this._generateRequestId();
@@ -1063,7 +1040,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Get Brokers failed', error, {
         request_id: requestId,
@@ -1157,9 +1136,9 @@ export class BrokersWrapper {
    * }
    * ```
    */
-  async getBrokerConnections(params?: {}): Promise<
-    FinaticResponse<UserBrokerConnectionWithPermissions[]>
-  > {
+  async getBrokerConnections(
+    params?: GetBrokerConnectionsParams
+  ): Promise<FinaticResponse<UserBrokerConnectionWithPermissions[]>> {
     // No parameters - use empty params object
     const resolvedParams: GetBrokerConnectionsParams = params || {}; // Authentication check
     if (!this.sessionId || !this.companyId) {
@@ -1283,7 +1262,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('List Broker Connections failed', error, {
         request_id: requestId,
@@ -1510,7 +1491,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Disconnect Company From Broker failed', error, {
         request_id: requestId,
@@ -1803,7 +1786,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Get Orders failed', error, {
         request_id: requestId,
@@ -2106,7 +2091,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Get Positions failed', error, {
         request_id: requestId,
@@ -2381,7 +2368,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Get Transactions failed', error, {
         request_id: requestId,
@@ -2640,7 +2629,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Get Order Fills failed', error, {
         request_id: requestId,
@@ -2899,7 +2890,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Get Order Events failed', error, {
         request_id: requestId,
@@ -3163,7 +3156,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Get Order Groups failed', error, {
         request_id: requestId,
@@ -3426,7 +3421,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Get Position Lots failed', error, {
         request_id: requestId,
@@ -3682,7 +3679,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Get Position Lot Fills failed', error, {
         request_id: requestId,
@@ -3953,7 +3952,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Place Order failed', error, {
         request_id: requestId,
@@ -4186,7 +4187,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Cancel Order failed', error, {
         request_id: requestId,
@@ -4449,7 +4452,9 @@ export class BrokersWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Modify Order failed', error, {
         request_id: requestId,

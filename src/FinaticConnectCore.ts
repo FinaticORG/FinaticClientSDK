@@ -15,7 +15,7 @@ import {
 } from './utils/url-utils';
 import { EventEmitter } from './utils/events';
 import { PortalUI } from './portal/PortalUI';
-import type { Logger } from './utils/logger';
+import { getLogger, type Logger } from './utils/logger';
 import { unwrapAxiosResponse } from './utils/response-utils';
 import { SessionApi } from './openapi/api/session-api';
 import { BrokersApi } from './openapi/api/brokers-api';
@@ -29,8 +29,6 @@ import type {
   FinaticResponse,
   GetAccountsParams,
   GetBalancesParams,
-  GetBrokerConnectionsParams,
-  GetBrokersParams,
   GetOrderEventsParams,
   GetOrderFillsParams,
   GetOrderGroupsParams,
@@ -88,7 +86,6 @@ export class FinaticConnect extends EventEmitter {
 
     // Initialize logger
     try {
-      const { getLogger } = require('./utils/logger');
       this.logger = getLogger(this.sdkConfig);
     } catch {
       // Fallback logger for browser environments where pino might not work correctly
@@ -1023,7 +1020,7 @@ export class FinaticConnect extends EventEmitter {
    *     print('Data:', result.success['data'])
    * ```
    */
-  async getBrokers(params?: {}): Promise<Awaited<ReturnType<typeof this.brokers.getBrokers>>> {
+  async getBrokers(): Promise<Awaited<ReturnType<typeof this.brokers.getBrokers>>> {
     return await this.brokers.getBrokers();
   }
 
@@ -1067,7 +1064,7 @@ export class FinaticConnect extends EventEmitter {
    *     print('Data:', result.success['data'])
    * ```
    */
-  async getBrokerConnections(params?: {}): Promise<
+  async getBrokerConnections(): Promise<
     Awaited<ReturnType<typeof this.brokers.getBrokerConnections>>
   > {
     return await this.brokers.getBrokerConnections();
@@ -2060,7 +2057,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getBalances({ ...filterParams, limit, offset });
@@ -2182,7 +2179,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getAccounts({ ...filterParams, limit, offset });
@@ -2304,7 +2301,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getOrders({ ...filterParams, limit, offset });
@@ -2426,7 +2423,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getPositions({ ...filterParams, limit, offset });
@@ -2548,7 +2545,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getTransactions({ ...filterParams, limit, offset });
@@ -2669,7 +2666,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getOrderFills({ ...filterParams, limit, offset });
@@ -2790,7 +2787,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getOrderEvents({ ...filterParams, limit, offset });
@@ -2912,7 +2909,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getOrderGroups({ ...filterParams, limit, offset });
@@ -3034,7 +3031,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getPositionLots({ ...filterParams, limit, offset });
@@ -3154,7 +3151,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getPositionLotFills({ ...filterParams, limit, offset });

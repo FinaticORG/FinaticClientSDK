@@ -11,13 +11,8 @@ import { retryApiCall } from '../utils/retry';
 import { getLogger, type Logger } from '../utils/logger';
 import { handleError } from '../utils/error-handling';
 import { getCache, generateCacheKey } from '../utils/cache';
-import {
-  applyRequestInterceptors,
-  applyResponseInterceptors,
-  applyErrorInterceptors,
-} from '../utils/interceptors';
+import { applyResponseInterceptors, applyErrorInterceptors } from '../utils/interceptors';
 import { unwrapAxiosResponse } from '../utils/response-utils';
-import { coerceEnumValue } from '../utils/enum-coercion';
 import { convertToPlainObject } from '../utils/plain-object';
 
 import type { FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2 } from '../openapi/models';
@@ -60,9 +55,7 @@ export interface StartSessionParams {
   body: SessionStartRequest;
 }
 
-export interface GetPortalUrlParams {
-  // No parameters
-}
+export type GetPortalUrlParams = Record<string, never>;
 
 export interface GetSessionUserParams {
   /** Session ID */
@@ -249,7 +242,9 @@ export class SessionWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Init Session failed', error, {
         request_id: requestId,
@@ -450,7 +445,9 @@ export class SessionWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Start Session failed', error, {
         request_id: requestId,
@@ -544,7 +541,9 @@ export class SessionWrapper {
    * }
    * ```
    */
-  async getPortalUrl(params?: {}): Promise<
+  async getPortalUrl(
+    params?: GetPortalUrlParams
+  ): Promise<
     FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2>
   > {
     // No parameters - use empty params object
@@ -673,7 +672,9 @@ export class SessionWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Get Portal Url failed', error, {
         request_id: requestId,
@@ -901,7 +902,9 @@ export class SessionWrapper {
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
-      } catch {}
+      } catch {
+        void 0;
+      }
 
       this.logger.error('Get Session User failed', error, {
         request_id: requestId,
