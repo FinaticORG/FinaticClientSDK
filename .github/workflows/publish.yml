@@ -1,7 +1,4 @@
-# 📦 Client SDK Publish Workflow
-# This file goes in: FinaticClientSDK/.github/workflows/publish.yml
-
-name: Publish Client SDK to NPM
+name: Release Client SDK
 
 on:
   push:
@@ -11,15 +8,92 @@ on:
       - '**/*.ts'
       - '**/*.js'
       - 'package.json'
+      - 'CHANGELOG.md'
+      - 'release-please-config.json'
+      - '.release-please-manifest.json'
       - '.github/workflows/publish.yml'
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 jobs:
-  publish:
+  release-please:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      sha: ${{ steps.release.outputs.sha }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      html_url: ${{ steps.release.outputs.html_url }}
+
+    steps:
+      - name: Create or publish release
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  publish:
+    if: github.event_name == 'push' && needs.release-please.outputs.release_created == 'true'
+    needs: release-please
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
       contents: read
-      id-token: write
+
+    steps:
+      - name: Checkout code at release commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release-please.outputs.sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Build package
+        run: npm run build
+
+      - name: Test
+        run: npm test -- --runInBand
+
+      - name: Verify package contents
+        run: npm pack --dry-run
+
+      - name: Publish to NPM
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+      - name: Output release trace
+        run: |
+          echo "Published $(node -p 'require("./package.json").name + "@" + require("./package.json").version')"
+          echo "Source commit: ${{ needs.release-please.outputs.sha }}"
+          echo "Source tag: ${{ needs.release-please.outputs.tag_name }}"
+          echo "Release URL: ${{ needs.release-please.outputs.html_url }}"
+          echo "Changelog excerpt:"
+          sed -n '1,80p' CHANGELOG.md
+
+  dry-run:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
@@ -30,18 +104,25 @@ jobs:
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
 
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
       - name: Build package
         run: npm run build
 
-      - name: Publish to NPM
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
+      - name: Test
+        run: npm test -- --runInBand
 
-      - name: Output success
-        run: |
-          echo "✅ Successfully published Client SDK to NPM"
+      - name: Verify package contents
+        run: npm pack --dry-run
+
+      - name: Verify publish configuration
+        run: npm publish --dry-run --access public
