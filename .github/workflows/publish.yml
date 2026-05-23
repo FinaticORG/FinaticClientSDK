@@ -23,6 +23,9 @@ jobs:
       pull-requests: write
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
+      sha: ${{ steps.release.outputs.sha }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      html_url: ${{ steps.release.outputs.html_url }}
 
     steps:
       - name: Create or publish release
@@ -43,6 +46,8 @@ jobs:
     steps:
       - name: Checkout code at release commit
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release-please.outputs.sha }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -77,7 +82,11 @@ jobs:
       - name: Output release trace
         run: |
           echo "Published $(node -p 'require("./package.json").name + "@" + require("./package.json").version')"
-          echo "Source commit: $GITHUB_SHA"
+          echo "Source commit: ${{ needs.release-please.outputs.sha }}"
+          echo "Source tag: ${{ needs.release-please.outputs.tag_name }}"
+          echo "Release URL: ${{ needs.release-please.outputs.html_url }}"
+          echo "Changelog excerpt:"
+          sed -n '1,80p' CHANGELOG.md
 
   dry-run:
     if: github.event_name == 'workflow_dispatch'
