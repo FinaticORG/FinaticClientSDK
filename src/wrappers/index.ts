@@ -1,7 +1,5 @@
 /**
- * Generated wrapper functions.
- *
- * This file is regenerated on each run - do not edit directly.
+ * Re-exports hand-maintained API wrappers.
  */
 
 export { BrokersWrapper } from './brokers';

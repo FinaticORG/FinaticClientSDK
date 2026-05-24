@@ -1,12 +1,11 @@
 /**
  * Main client class for Finatic Client SDK.
  *
- * This file is regenerated on each run - do not edit directly.
- * For custom logic, extend this class or use custom wrappers.
+ * Hand-maintained façade over ``src/openapi/`` and wrappers.
  */
 
 import { Configuration } from './openapi/configuration';
-import { SdkConfig, defaultConfig } from './config';
+import { SdkConfig, SdkConfigOverrides, getConfig } from './config';
 import {
   appendThemeToURL,
   appendBrokerFilterToURL,
@@ -16,7 +15,7 @@ import {
 } from './utils/url-utils';
 import { EventEmitter } from './utils/events';
 import { PortalUI } from './portal/PortalUI';
-import type { Logger } from './utils/logger';
+import { getLogger, type Logger } from './utils/logger';
 import { unwrapAxiosResponse } from './utils/response-utils';
 import { SessionApi } from './openapi/api/session-api';
 import { BrokersApi } from './openapi/api/brokers-api';
@@ -30,8 +29,6 @@ import type {
   FinaticResponse,
   GetAccountsParams,
   GetBalancesParams,
-  GetBrokerConnectionsParams,
-  GetBrokersParams,
   GetOrderEventsParams,
   GetOrderFillsParams,
   GetOrderGroupsParams,
@@ -44,22 +41,20 @@ import type {
   PlaceOrderParams,
 } from './wrappers/brokers';
 import type { GetCompanyParams } from './wrappers/company';
-import type {
-  FDXBrokerOrder,
-  FDXBrokerOrderEvent,
-  FDXBrokerOrderFill,
-  FDXBrokerOrderGroup,
-  FDXBrokerPosition,
-  FDXBrokerPositionLot,
-  FDXBrokerPositionLotFill,
-  FDXBrokerTransaction,
-  LegacyBrokerAccount,
-  LegacyBrokerBalance,
-} from './openapi/models';
+import type { FDXBrokerOrder } from './openapi/models/fdxbroker-order';
+import type { FDXBrokerOrderEvent } from './openapi/models/fdxbroker-order-event';
+import type { FDXBrokerOrderFill } from './openapi/models/fdxbroker-order-fill';
+import type { FDXBrokerOrderGroup } from './openapi/models/fdxbroker-order-group';
+import type { FDXBrokerPosition } from './openapi/models/fdxbroker-position';
+import type { FDXBrokerPositionLot } from './openapi/models/fdxbroker-position-lot';
+import type { FDXBrokerPositionLotFill } from './openapi/models/fdxbroker-position-lot-fill';
+import type { FDXBrokerTransaction } from './openapi/models/fdxbroker-transaction';
+import type { LegacyBrokerAccount } from './openapi/models/legacy-broker-account';
+import type { LegacyBrokerBalance } from './openapi/models/legacy-broker-balance';
 
 export interface FinaticConnectOptions {
   token: string;
-  sdkConfig?: Partial<SdkConfig>;
+  sdkConfig?: SdkConfigOverrides;
 }
 
 // PortalOptions removed - portal methods now use individual parameters
@@ -77,33 +72,21 @@ export class FinaticConnect extends EventEmitter {
   private logger: Logger;
   private sessionApi: SessionApi;
 
-  private readonly brokers: BrokersWrapper;
-  private readonly company: CompanyWrapper;
-  private readonly session: SessionWrapper;
+  private brokers: BrokersWrapper;
+  private company: CompanyWrapper;
+  private session: SessionWrapper;
 
   constructor(options: FinaticConnectOptions) {
     super(); // Initialize EventEmitter
     this.options = options;
-    this.sdkConfig = { ...defaultConfig, ...options.sdkConfig };
-    this.config = new Configuration({
-      basePath: this.sdkConfig.baseUrl || 'https://api.finatic.dev',
-    });
-
-    // Initialize logger
-    try {
-      const { getLogger } = require('./utils/logger');
-      this.logger = getLogger(this.sdkConfig);
-    } catch {
-      // Fallback logger for browser environments where pino might not work correctly
-      this.logger = console;
-    }
-
-    // Initialize SessionApi for internal session management
+    this.sdkConfig = getConfig(options.sdkConfig);
+    this.config = new Configuration({ basePath: this.sdkConfig.baseUrl });
+    this.logger = console;
     this.sessionApi = new SessionApi(this.config);
-
     this.brokers = new BrokersWrapper(new BrokersApi(this.config), this.config, this.sdkConfig);
     this.company = new CompanyWrapper(new CompanyApi(this.config), this.config, this.sdkConfig);
     this.session = new SessionWrapper(new SessionApi(this.config), this.config, this.sdkConfig);
+    this.rebuildClients();
   }
 
   /**
@@ -129,7 +112,7 @@ export class FinaticConnect extends EventEmitter {
   static async init(
     token: string,
     userId?: string,
-    sdkConfig?: Partial<SdkConfig>
+    sdkConfig?: SdkConfigOverrides
   ): Promise<FinaticConnect> {
     // Use console for static method logging (instance logger will be initialized in constructor)
     const logger = console;
@@ -170,6 +153,9 @@ export class FinaticConnect extends EventEmitter {
       } else {
         logger.debug?.('Using existing FinaticConnect instance');
         instance = baseClass.instance as FinaticConnect;
+        if (sdkConfig) {
+          instance.configure(sdkConfig);
+        }
       }
 
       // Verify session was initialized correctly
@@ -203,6 +189,93 @@ export class FinaticConnect extends EventEmitter {
 
       // Re-throw other errors as-is
       throw error;
+    }
+  }
+
+  /**
+   * Clear the singleton instance so the next init call creates a fresh session.
+   */
+  static reset(): void {
+    (FinaticConnect as any).instance = null;
+  }
+
+  /**
+   * Get the active resolved SDK configuration.
+   */
+  getConfig(): SdkConfig {
+    return {
+      ...this.sdkConfig,
+      headers: { ...this.sdkConfig.headers },
+      retryOnStatus: [...this.sdkConfig.retryOnStatus],
+      cacheKeyInclude: [...this.sdkConfig.cacheKeyInclude],
+      portalConfig: {
+        ...this.sdkConfig.portalConfig,
+        iframeStyle: { ...this.sdkConfig.portalConfig.iframeStyle },
+      },
+    };
+  }
+
+  /**
+   * Apply SDK configuration updates at runtime and rebuild API clients/wrappers.
+   */
+  configure(sdkConfig: SdkConfigOverrides): SdkConfig {
+    const mergedConfig: SdkConfig = {
+      ...this.sdkConfig,
+      ...sdkConfig,
+      headers: {
+        ...this.sdkConfig.headers,
+        ...(sdkConfig.headers ?? {}),
+      },
+      portalConfig: {
+        ...this.sdkConfig.portalConfig,
+        ...(sdkConfig.portalConfig ?? {}),
+        iframeStyle: {
+          ...this.sdkConfig.portalConfig.iframeStyle,
+          ...(sdkConfig.portalConfig?.iframeStyle ?? {}),
+        },
+      },
+    };
+
+    if (sdkConfig.environment) {
+      const presetOverrides: SdkConfigOverrides = { ...mergedConfig };
+      if (!Object.prototype.hasOwnProperty.call(sdkConfig, 'baseUrl')) {
+        delete presetOverrides.baseUrl;
+      }
+      if (!sdkConfig.portalConfig?.baseUrl) {
+        presetOverrides.portalConfig = { ...mergedConfig.portalConfig };
+        delete presetOverrides.portalConfig.baseUrl;
+      }
+      this.sdkConfig = getConfig(presetOverrides);
+    } else {
+      this.sdkConfig = mergedConfig;
+    }
+    this.options = {
+      ...this.options,
+      sdkConfig: this.sdkConfig,
+    };
+    this.rebuildClients();
+    this.emit('config:changed', this.getConfig());
+    return this.getConfig();
+  }
+
+  private rebuildClients(): void {
+    this.config = new Configuration({
+      basePath: this.sdkConfig.baseUrl || 'https://api.finatic.dev',
+    });
+
+    try {
+      this.logger = getLogger(this.sdkConfig);
+    } catch {
+      this.logger = console;
+    }
+
+    this.sessionApi = new SessionApi(this.config);
+    this.brokers = new BrokersWrapper(new BrokersApi(this.config), this.config, this.sdkConfig);
+    this.company = new CompanyWrapper(new CompanyApi(this.config), this.config, this.sdkConfig);
+    this.session = new SessionWrapper(new SessionApi(this.config), this.config, this.sdkConfig);
+
+    if (this.sessionId && this.companyId) {
+      this.setSessionContext(this.sessionId, this.companyId, this.csrfToken || '');
     }
   }
 
@@ -1026,8 +1099,11 @@ export class FinaticConnect extends EventEmitter {
    *     print('Data:', result.success['data'])
    * ```
    */
-  async getBrokers(params?: {}): Promise<Awaited<ReturnType<typeof this.brokers.getBrokers>>> {
-    return await this.brokers.getBrokers();
+  async getBrokers(
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    params?: {}
+  ): Promise<Awaited<ReturnType<typeof this.brokers.getBrokers>>> {
+    return await this.brokers.getBrokers(params);
   }
 
   /**
@@ -1070,10 +1146,13 @@ export class FinaticConnect extends EventEmitter {
    *     print('Data:', result.success['data'])
    * ```
    */
-  async getBrokerConnections(params?: {}): Promise<
+  async getBrokerConnections(
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    params?: {}
+  ): Promise<
     Awaited<ReturnType<typeof this.brokers.getBrokerConnections>>
   > {
-    return await this.brokers.getBrokerConnections();
+    return await this.brokers.getBrokerConnections(params);
   }
 
   /**
@@ -2063,7 +2142,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getBalances({ ...filterParams, limit, offset });
@@ -2185,7 +2264,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getAccounts({ ...filterParams, limit, offset });
@@ -2307,7 +2386,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getOrders({ ...filterParams, limit, offset });
@@ -2429,7 +2508,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getPositions({ ...filterParams, limit, offset });
@@ -2551,7 +2630,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getTransactions({ ...filterParams, limit, offset });
@@ -2672,7 +2751,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getOrderFills({ ...filterParams, limit, offset });
@@ -2793,7 +2872,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getOrderEvents({ ...filterParams, limit, offset });
@@ -2915,7 +2994,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getOrderGroups({ ...filterParams, limit, offset });
@@ -3037,7 +3116,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getPositionLots({ ...filterParams, limit, offset });
@@ -3157,7 +3236,7 @@ export class FinaticConnect extends EventEmitter {
     let offset = 0;
     const limit = 1000;
     let lastError: { [key: string]: any } | null = null;
-    let warnings: Array<{ [key: string]: any }> = [];
+    const warnings: Array<{ [key: string]: any }> = [];
 
     while (true) {
       const response = await this.brokers.getPositionLotFills({ ...filterParams, limit, offset });

@@ -9,10 +9,13 @@
  * Modify values here to customize SDK behavior.
  *
  * Generated - do not edit directly.
- * For custom configuration, extend this class in src/custom/config.ts
+ * For configuration overrides, subclass or wrap ``SdkConfig`` in application code.
  */
 
 export interface SdkConfig {
+  /** Named Finatic environment preset */
+  environment: FinaticEnvironment;
+
   // ═══════════════════════════════════════════════════════════════════════
   // API Configuration
   // ═══════════════════════════════════════════════════════════════════════
@@ -138,11 +141,48 @@ export interface SdkConfig {
   };
 }
 
+export type FinaticEnvironment = 'production' | 'staging' | 'development' | 'sandbox' | 'custom';
+
+export type SdkConfigOverrides = Partial<Omit<SdkConfig, 'portalConfig'>> & {
+  portalConfig?: Partial<SdkConfig['portalConfig']> & {
+    iframeStyle?: Record<string, string>;
+  };
+};
+
+export interface FinaticEnvironmentPreset {
+  baseUrl: string;
+  portalBaseUrl: string;
+}
+
+export const environmentPresets: Record<
+  Exclude<FinaticEnvironment, 'custom'>,
+  FinaticEnvironmentPreset
+> = {
+  production: {
+    baseUrl: 'https://api.finatic.dev',
+    portalBaseUrl: 'https://portal.finatic.dev',
+  },
+  staging: {
+    baseUrl: 'https://staging-api.finatic.dev',
+    portalBaseUrl: 'https://staging-portal.finatic.dev',
+  },
+  development: {
+    baseUrl: 'http://localhost:8000',
+    portalBaseUrl: 'http://localhost:3000',
+  },
+  sandbox: {
+    baseUrl: 'https://sandbox-api.finatic.dev',
+    portalBaseUrl: 'https://sandbox-portal.finatic.dev',
+  },
+};
+
 /**
  * Default configuration values.
  * Override via environment variables or custom config.
  */
 export const defaultConfig: SdkConfig = {
+  environment: 'production',
+
   // API Configuration
   baseUrl: process.env['FINATIC_API_URL'] || 'https://api.finatic.dev',
   ...(process.env['FINATIC_API_KEY'] ? { apiKey: process.env['FINATIC_API_KEY'] } : {}),
@@ -196,19 +236,54 @@ export const defaultConfig: SdkConfig = {
   },
 };
 
+function applyEnvironmentPreset(config: SdkConfig, overrides?: SdkConfigOverrides): SdkConfig {
+  if (!overrides?.environment) {
+    return config;
+  }
+
+  const environment = overrides?.environment ?? config.environment;
+  const preset = environment !== 'custom' ? environmentPresets[environment] : undefined;
+
+  if (!preset) {
+    return {
+      ...config,
+      environment,
+    };
+  }
+
+  return {
+    ...config,
+    environment,
+    baseUrl: overrides?.baseUrl ?? preset.baseUrl,
+    portalConfig: {
+      ...config.portalConfig,
+      baseUrl: overrides?.portalConfig?.baseUrl ?? preset.portalBaseUrl,
+    },
+  };
+}
+
 /**
  * Get configuration with environment variable overrides.
  */
-export function getConfig(overrides?: Partial<SdkConfig>): SdkConfig {
-  const config: SdkConfig = {
-    ...defaultConfig,
-  };
+export function getConfig(overrides?: SdkConfigOverrides): SdkConfig {
+  const config: SdkConfig = applyEnvironmentPreset({ ...defaultConfig }, overrides);
 
   if (overrides) {
     // Only assign defined values (not undefined)
     for (const [key, value] of Object.entries(overrides)) {
       if (value !== undefined) {
-        (config as any)[key] = value;
+        if (key === 'portalConfig') {
+          config.portalConfig = {
+            ...config.portalConfig,
+            ...(value as Partial<SdkConfig['portalConfig']>),
+            iframeStyle: {
+              ...config.portalConfig.iframeStyle,
+              ...((value as Partial<SdkConfig['portalConfig']>).iframeStyle ?? {}),
+            },
+          };
+        } else {
+          (config as any)[key] = value;
+        }
       }
     }
   }

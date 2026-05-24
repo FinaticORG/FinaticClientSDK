@@ -1,4 +1,3 @@
-// @ts-nocheck - OpenAPI generator output, type errors expected
 /* tslint:disable */
 /**
  * Finatic FastAPI Backend
@@ -49,29 +48,31 @@ export class Configuration {
    * parameter for apiKey security
    * @param name security name
    */
-  apiKey?:
+  apiKey:
     | string
     | Promise<string>
     | ((name: string) => string)
-    | ((name: string) => Promise<string>);
+    | ((name: string) => Promise<string>)
+    | undefined;
   /**
    * parameter for basic security
    */
-  username?: string;
+  username: string | undefined;
   /**
    * parameter for basic security
    */
-  password?: string;
+  password: string | undefined;
   /**
    * parameter for oauth2 security
    * @param name security name
    * @param scopes oauth2 scope
    */
-  accessToken?:
+  accessToken:
     | string
     | Promise<string>
     | ((name?: string, scopes?: string[]) => string)
-    | ((name?: string, scopes?: string[]) => Promise<string>);
+    | ((name?: string, scopes?: string[]) => Promise<string>)
+    | undefined;
   /**
    * parameter for aws4 signature security
    * @param {Object} AWS4Signature - AWS4 Signature security
@@ -82,19 +83,19 @@ export class Configuration {
    * @param {string} credentials.sessionToken - aws session token
    * @memberof Configuration
    */
-  awsv4?: AWSv4Configuration;
+  awsv4: AWSv4Configuration | undefined;
   /**
    * override base path
    */
-  basePath?: string;
+  basePath: string | undefined;
   /**
    * override server index
    */
-  serverIndex?: number;
+  serverIndex: number | undefined;
   /**
    * base options for axios calls
    */
-  baseOptions?: any;
+  baseOptions: any;
   /**
    * The FormData constructor that will be used to create multipart form data
    * requests. You can inject this here so that execution environments that
@@ -102,7 +103,7 @@ export class Configuration {
    *
    * @type {new () => FormData}
    */
-  formDataCtor?: new () => any;
+  formDataCtor: (new () => any) | undefined;
 
   constructor(param: ConfigurationParameters = {}) {
     this.apiKey = param.apiKey;
@@ -132,12 +133,7 @@ export class Configuration {
    * @return True if the given MIME is JSON, false otherwise.
    */
   public isJsonMime(mime: string): boolean {
-    const jsonMime: RegExp = new RegExp(
-      '^(application\/json|[^;/ \t]+\/[^;/ \t]+[+]json)[ \t]*(;.*)?$',
-      'i'
-    );
-    return (
-      mime !== null && (jsonMime.test(mime) || mime.toLowerCase() === 'application/json-patch+json')
-    );
+    const jsonMime: RegExp = /^(application\/json|[^;/ \t]+\/[^;/ \t]+[+]json)[ \t]*(;.*)?$/i;
+    return mime !== null && jsonMime.test(mime);
   }
 }

@@ -1,13 +1,9 @@
 /**
  * Main SDK entry point.
  *
- * This file is protected - customize exports as needed.
+ * Hand-authored exports compose ``src/openapi/`` (OpenAPI Generator output) with wrappers and utilities.
  *
- * Note: The OpenAPI generator creates its own index.ts that exports from api/models.
- * This file re-exports from our generated wrappers and custom code.
- *
- * Raw CLI-only OpenAPI output (parallel tree): `src/openapi/` — see `src/openapi/README.md`.
- * Regenerate: `make openapi-generate-clients-only` from the Finatic workspace root.
+ * Regenerate: ``make openapi-generate`` from the Finatic workspace root.
  */
 
 // Re-export SDK wrappers/utilities/config
