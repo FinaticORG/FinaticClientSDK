@@ -15,10 +15,10 @@ import { applyResponseInterceptors, applyErrorInterceptors } from '../utils/inte
 import { unwrapAxiosResponse } from '../utils/response-utils';
 import { convertToPlainObject } from '../utils/plain-object';
 
-import type { FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2 } from '../openapi/models';
-import type { FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2 } from '../openapi/models';
-import type { FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2 } from '../openapi/models';
-import type { FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2 } from '../openapi/models';
+import type { FinaticResponsePortalUrlResponse } from '../openapi/models';
+import type { FinaticResponseSessionResponseData } from '../openapi/models';
+import type { FinaticResponseSessionUserResponse } from '../openapi/models';
+import type { FinaticResponseTokenResponseData } from '../openapi/models';
 import type { SessionStartRequest } from '../openapi/models';
 
 // Always import PaginatedData since method bodies may reference it (even if unreachable)
@@ -111,7 +111,7 @@ export class SessionWrapper {
    *
    * Initialize a new session with company API key.
    * @param params.xApiKey {string} Company API key
-   * @returns {Promise<FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2>>} Standard response with success/Error/Warning structure
+   * @returns {Promise<FinaticResponse<FinaticResponseTokenResponseData>>} Standard response with success/Error/Warning structure
    *
    * Generated from: POST /api/beta/session/init
    * @methodId init_session_api_beta_session_init_post
@@ -130,7 +130,7 @@ export class SessionWrapper {
   async initSession(
     params: InitSessionParams
   ): Promise<
-    FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2>
+    FinaticResponse<FinaticResponseTokenResponseData>
   > {
     // Use params object (required parameters present)
     const resolvedParams: InitSessionParams = params; // Generate request ID
@@ -156,7 +156,7 @@ export class SessionWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2>;
+        return cached as FinaticResponse<FinaticResponseTokenResponseData>;
       }
     }
 
@@ -238,7 +238,7 @@ export class SessionWrapper {
 
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
-      return standardResponse as FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2>;
+      return standardResponse as FinaticResponse<FinaticResponseTokenResponseData>;
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
@@ -293,7 +293,7 @@ export class SessionWrapper {
       }
 
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2> =
+      const errorResponse: FinaticResponse<FinaticResponseTokenResponseData> =
         {
           success: {
             data: null as any,
@@ -320,7 +320,7 @@ export class SessionWrapper {
    * Start a session with a one-time token.
    * @param params.OneTimeToken {string} One-time use token obtained from init_session endpoint to authenticate and start the session
    * @param params.body {SessionStartRequest} Session start request containing optional user ID to associate with the session
-   * @returns {Promise<FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2>>} Standard response with success/Error/Warning structure
+   * @returns {Promise<FinaticResponse<FinaticResponseSessionResponseData>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: POST /api/beta/session/start
    * @methodId start_session_api_beta_session_start_post
@@ -330,7 +330,7 @@ export class SessionWrapper {
   async startSession(
     params: StartSessionParams
   ): Promise<
-    FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2>
+    FinaticResponse<FinaticResponseSessionResponseData>
   > {
     // Use params object (required parameters present)
     const resolvedParams: StartSessionParams = params; // Generate request ID
@@ -356,7 +356,7 @@ export class SessionWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2>;
+        return cached as FinaticResponse<FinaticResponseSessionResponseData>;
       }
     }
 
@@ -441,7 +441,7 @@ export class SessionWrapper {
 
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
-      return standardResponse as FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2>;
+      return standardResponse as FinaticResponse<FinaticResponseSessionResponseData>;
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
@@ -496,7 +496,7 @@ export class SessionWrapper {
       }
 
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2> =
+      const errorResponse: FinaticResponse<FinaticResponseSessionResponseData> =
         {
           success: {
             data: null as any,
@@ -525,7 +525,7 @@ export class SessionWrapper {
    * The session must be in ACTIVE or AUTHENTICATING state and the request must come from the same device
    * that initiated the session. Device info is automatically validated from the request.
    * @param params No parameters required for this method
-   * @returns {Promise<FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2>>} Standard response with success/Error/Warning structure
+   * @returns {Promise<FinaticResponse<FinaticResponsePortalUrlResponse>>} Standard response with success/Error/Warning structure
    *
    * Generated from: GET /api/beta/session/portal
    * @methodId get_portal_url_api_beta_session_portal_get
@@ -544,7 +544,7 @@ export class SessionWrapper {
   async getPortalUrl(
     params?: GetPortalUrlParams
   ): Promise<
-    FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2>
+    FinaticResponse<FinaticResponsePortalUrlResponse>
   > {
     // No parameters - use empty params object
     const resolvedParams: GetPortalUrlParams = params || {}; // Authentication check
@@ -575,7 +575,7 @@ export class SessionWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2>;
+        return cached as FinaticResponse<FinaticResponsePortalUrlResponse>;
       }
     }
 
@@ -668,7 +668,7 @@ export class SessionWrapper {
 
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
-      return standardResponse as FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2>;
+      return standardResponse as FinaticResponse<FinaticResponsePortalUrlResponse>;
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
@@ -723,7 +723,7 @@ export class SessionWrapper {
       }
 
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2> =
+      const errorResponse: FinaticResponse<FinaticResponsePortalUrlResponse> =
         {
           success: {
             data: null as any,
@@ -759,7 +759,7 @@ export class SessionWrapper {
    * - Only accessible to authenticated sessions with user_id
    * - Validates that header session_id matches path session_id
    * @param params.sessionId {string} Session ID
-   * @returns {Promise<FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2>>} Standard response with success/Error/Warning structure
+   * @returns {Promise<FinaticResponse<FinaticResponseSessionUserResponse>>} Standard response with success/Error/Warning structure
    * 
    * Generated from: GET /api/beta/session/{session_id}/user
    * @methodId get_session_user_api_beta_session__session_id__user_get
@@ -782,7 +782,7 @@ export class SessionWrapper {
   async getSessionUser(
     params: GetSessionUserParams
   ): Promise<
-    FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2>
+    FinaticResponse<FinaticResponseSessionUserResponse>
   > {
     // Use params object (required parameters present)
     const resolvedParams: GetSessionUserParams = params; // Authentication check
@@ -813,7 +813,7 @@ export class SessionWrapper {
       const cached = cache.get(cacheKey);
       if (cached) {
         this.logger.debug('Cache hit', { request_id: requestId, cache_key: cacheKey });
-        return cached as FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2>;
+        return cached as FinaticResponse<FinaticResponseSessionUserResponse>;
       }
     }
 
@@ -898,7 +898,7 @@ export class SessionWrapper {
 
       // Phase 2C: Return standard response structure (plain objects with _id fields removed)
       // Type assertion to final return type (handles both paginated and non-paginated responses)
-      return standardResponse as FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2>;
+      return standardResponse as FinaticResponse<FinaticResponseSessionUserResponse>;
     } catch (error) {
       try {
         await applyErrorInterceptors(error, this.sdkConfig);
@@ -953,7 +953,7 @@ export class SessionWrapper {
       }
 
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2> =
+      const errorResponse: FinaticResponse<FinaticResponseSessionUserResponse> =
         {
           success: {
             data: null as any,

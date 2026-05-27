@@ -24,13 +24,13 @@ import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError
 // @ts-ignore
 import type { FinaticAPIErrorResponse } from '../models';
 // @ts-ignore
-import type { FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2 } from '../models';
+import type { FinaticResponsePortalUrlResponse } from '../models';
 // @ts-ignore
-import type { FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2 } from '../models';
+import type { FinaticResponseSessionResponseData } from '../models';
 // @ts-ignore
-import type { FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2 } from '../models';
+import type { FinaticResponseSessionUserResponse } from '../models';
 // @ts-ignore
-import type { FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2 } from '../models';
+import type { FinaticResponseTokenResponseData } from '../models';
 // @ts-ignore
 import type { SessionStartRequest } from '../models';
 /**
@@ -205,7 +205,7 @@ export const SessionApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getPortalUrlApiBetaSessionPortalGet(sessionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2>> {
+        async getPortalUrlApiBetaSessionPortalGet(sessionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponsePortalUrlResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getPortalUrlApiBetaSessionPortalGet(sessionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['SessionApi.getPortalUrlApiBetaSessionPortalGet']?.[localVarOperationServerIndex]?.url;
@@ -219,7 +219,7 @@ export const SessionApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getSessionUserApiBetaSessionSessionIdUserGet(sessionId: string, xSessionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2>> {
+        async getSessionUserApiBetaSessionSessionIdUserGet(sessionId: string, xSessionId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseSessionUserResponse>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getSessionUserApiBetaSessionSessionIdUserGet(sessionId, xSessionId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['SessionApi.getSessionUserApiBetaSessionSessionIdUserGet']?.[localVarOperationServerIndex]?.url;
@@ -232,7 +232,7 @@ export const SessionApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async initSessionApiBetaSessionInitPost(xApiKey: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2>> {
+        async initSessionApiBetaSessionInitPost(xApiKey: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseTokenResponseData>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.initSessionApiBetaSessionInitPost(xApiKey, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['SessionApi.initSessionApiBetaSessionInitPost']?.[localVarOperationServerIndex]?.url;
@@ -246,7 +246,7 @@ export const SessionApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async startSessionApiBetaSessionStartPost(oneTimeToken: string, sessionStartRequest?: SessionStartRequest | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2>> {
+        async startSessionApiBetaSessionStartPost(oneTimeToken: string, sessionStartRequest?: SessionStartRequest | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseSessionResponseData>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.startSessionApiBetaSessionStartPost(oneTimeToken, sessionStartRequest, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['SessionApi.startSessionApiBetaSessionStartPost']?.[localVarOperationServerIndex]?.url;
@@ -268,7 +268,7 @@ export const SessionApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getPortalUrlApiBetaSessionPortalGet(requestParameters: SessionApiGetPortalUrlApiBetaSessionPortalGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2> {
+        getPortalUrlApiBetaSessionPortalGet(requestParameters: SessionApiGetPortalUrlApiBetaSessionPortalGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponsePortalUrlResponse> {
             return localVarFp.getPortalUrlApiBetaSessionPortalGet(requestParameters.sessionId, options).then((request) => request(axios, basePath));
         },
         /**
@@ -278,7 +278,7 @@ export const SessionApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getSessionUserApiBetaSessionSessionIdUserGet(requestParameters: SessionApiGetSessionUserApiBetaSessionSessionIdUserGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2> {
+        getSessionUserApiBetaSessionSessionIdUserGet(requestParameters: SessionApiGetSessionUserApiBetaSessionSessionIdUserGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseSessionUserResponse> {
             return localVarFp.getSessionUserApiBetaSessionSessionIdUserGet(requestParameters.sessionId, requestParameters.xSessionId, options).then((request) => request(axios, basePath));
         },
         /**
@@ -288,7 +288,7 @@ export const SessionApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        initSessionApiBetaSessionInitPost(requestParameters: SessionApiInitSessionApiBetaSessionInitPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2> {
+        initSessionApiBetaSessionInitPost(requestParameters: SessionApiInitSessionApiBetaSessionInitPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseTokenResponseData> {
             return localVarFp.initSessionApiBetaSessionInitPost(requestParameters.xApiKey, options).then((request) => request(axios, basePath));
         },
         /**
@@ -298,7 +298,7 @@ export const SessionApiFactory = function (configuration?: Configuration, basePa
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        startSessionApiBetaSessionStartPost(requestParameters: SessionApiStartSessionApiBetaSessionStartPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2> {
+        startSessionApiBetaSessionStartPost(requestParameters: SessionApiStartSessionApiBetaSessionStartPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseSessionResponseData> {
             return localVarFp.startSessionApiBetaSessionStartPost(requestParameters.oneTimeToken, requestParameters.sessionStartRequest, options).then((request) => request(axios, basePath));
         },
     };
@@ -315,7 +315,7 @@ export interface SessionApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getPortalUrlApiBetaSessionPortalGet(requestParameters: SessionApiGetPortalUrlApiBetaSessionPortalGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponsePortalUrlResponse2>;
+    getPortalUrlApiBetaSessionPortalGet(requestParameters: SessionApiGetPortalUrlApiBetaSessionPortalGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponsePortalUrlResponse>;
 
     /**
      * Get user information for a completed session.  This endpoint is designed for server SDKs to retrieve user information after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
@@ -324,7 +324,7 @@ export interface SessionApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getSessionUserApiBetaSessionSessionIdUserGet(requestParameters: SessionApiGetSessionUserApiBetaSessionSessionIdUserGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionUserResponse2>;
+    getSessionUserApiBetaSessionSessionIdUserGet(requestParameters: SessionApiGetSessionUserApiBetaSessionSessionIdUserGetRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseSessionUserResponse>;
 
     /**
      * Initialize a new session with company API key.
@@ -333,7 +333,7 @@ export interface SessionApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    initSessionApiBetaSessionInitPost(requestParameters: SessionApiInitSessionApiBetaSessionInitPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseTokenResponseData2>;
+    initSessionApiBetaSessionInitPost(requestParameters: SessionApiInitSessionApiBetaSessionInitPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseTokenResponseData>;
 
     /**
      * Start a session with a one-time token.
@@ -342,7 +342,7 @@ export interface SessionApiInterface {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    startSessionApiBetaSessionStartPost(requestParameters: SessionApiStartSessionApiBetaSessionStartPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticBrokerFactoryCoreStandardModelsAbstractResponsesFinaticResponseSessionResponseData2>;
+    startSessionApiBetaSessionStartPost(requestParameters: SessionApiStartSessionApiBetaSessionStartPostRequest, options?: RawAxiosRequestConfig): AxiosPromise<FinaticResponseSessionResponseData>;
 
 }
 

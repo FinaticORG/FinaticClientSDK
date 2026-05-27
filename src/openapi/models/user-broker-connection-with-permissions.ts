@@ -30,5 +30,17 @@ export interface UserBrokerConnectionWithPermissions {
      * Permissions for the current company (read/write access)
      */
     'permissions'?: { [key: string]: boolean; };
+    /**
+     * True when connection uses a customer-hosted push agent (MT4/MT5).
+     */
+    'requires_customer_agent'?: boolean | null;
+    /**
+     * MT connector lifecycle state when requires_customer_agent is true.
+     */
+    'push_agent_connector_state'?: string | null;
+    /**
+     * Last EA heartbeat timestamp from mt_connectors.
+     */
+    'push_agent_last_heartbeat_at'?: string | null;
 }
 
