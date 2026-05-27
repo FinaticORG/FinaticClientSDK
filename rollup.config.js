@@ -6,12 +6,12 @@ import dts from 'rollup-plugin-dts';
 const external = [
   'react',
   'react-dom',
-  'axios',        // Keep external - consumers likely have their own axios instance
+  'axios', // Keep external - consumers likely have their own axios instance
+  'zod',
   // Bundle these smaller dependencies so consumers don't need to install them
   // 'crypto-js',  // Bundled - implementation detail
-  // 'p-retry',    // Bundled - implementation detail  
+  // 'p-retry',    // Bundled - implementation detail
   // 'uuid',       // Bundled - implementation detail
-  // 'zod',        // Bundled - implementation detail
 ];
 
 export default [

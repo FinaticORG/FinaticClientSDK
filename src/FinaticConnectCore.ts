@@ -1149,9 +1149,7 @@ export class FinaticConnect extends EventEmitter {
   async getBrokerConnections(
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     params?: {}
-  ): Promise<
-    Awaited<ReturnType<typeof this.brokers.getBrokerConnections>>
-  > {
+  ): Promise<Awaited<ReturnType<typeof this.brokers.getBrokerConnections>>> {
     return await this.brokers.getBrokerConnections(params);
   }
 

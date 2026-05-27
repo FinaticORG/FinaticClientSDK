@@ -129,9 +129,7 @@ export class SessionWrapper {
    */
   async initSession(
     params: InitSessionParams
-  ): Promise<
-    FinaticResponse<FinaticResponseTokenResponseData>
-  > {
+  ): Promise<FinaticResponse<FinaticResponseTokenResponseData>> {
     // Use params object (required parameters present)
     const resolvedParams: InitSessionParams = params; // Generate request ID
     const requestId = this._generateRequestId();
@@ -293,18 +291,17 @@ export class SessionWrapper {
       }
 
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FinaticResponseTokenResponseData> =
-        {
-          success: {
-            data: null as any,
-          },
-          error: {
-            message: errorMessage,
-            code: errorCode,
-            status: errorStatus,
-            details: errorDetails,
-          },
-        };
+      const errorResponse: FinaticResponse<FinaticResponseTokenResponseData> = {
+        success: {
+          data: null as any,
+        },
+        error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
 
       return errorResponse;
     }
@@ -329,9 +326,7 @@ export class SessionWrapper {
    */
   async startSession(
     params: StartSessionParams
-  ): Promise<
-    FinaticResponse<FinaticResponseSessionResponseData>
-  > {
+  ): Promise<FinaticResponse<FinaticResponseSessionResponseData>> {
     // Use params object (required parameters present)
     const resolvedParams: StartSessionParams = params; // Generate request ID
     const requestId = this._generateRequestId();
@@ -496,18 +491,17 @@ export class SessionWrapper {
       }
 
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FinaticResponseSessionResponseData> =
-        {
-          success: {
-            data: null as any,
-          },
-          error: {
-            message: errorMessage,
-            code: errorCode,
-            status: errorStatus,
-            details: errorDetails,
-          },
-        };
+      const errorResponse: FinaticResponse<FinaticResponseSessionResponseData> = {
+        success: {
+          data: null as any,
+        },
+        error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
 
       return errorResponse;
     }
@@ -543,9 +537,7 @@ export class SessionWrapper {
    */
   async getPortalUrl(
     params?: GetPortalUrlParams
-  ): Promise<
-    FinaticResponse<FinaticResponsePortalUrlResponse>
-  > {
+  ): Promise<FinaticResponse<FinaticResponsePortalUrlResponse>> {
     // No parameters - use empty params object
     const resolvedParams: GetPortalUrlParams = params || {}; // Authentication check
     if (!this.sessionId || !this.companyId) {
@@ -723,18 +715,17 @@ export class SessionWrapper {
       }
 
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FinaticResponsePortalUrlResponse> =
-        {
-          success: {
-            data: null as any,
-          },
-          error: {
-            message: errorMessage,
-            code: errorCode,
-            status: errorStatus,
-            details: errorDetails,
-          },
-        };
+      const errorResponse: FinaticResponse<FinaticResponsePortalUrlResponse> = {
+        success: {
+          data: null as any,
+        },
+        error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
 
       return errorResponse;
     }
@@ -781,9 +772,7 @@ export class SessionWrapper {
    */
   async getSessionUser(
     params: GetSessionUserParams
-  ): Promise<
-    FinaticResponse<FinaticResponseSessionUserResponse>
-  > {
+  ): Promise<FinaticResponse<FinaticResponseSessionUserResponse>> {
     // Use params object (required parameters present)
     const resolvedParams: GetSessionUserParams = params; // Authentication check
     if (!this.sessionId || !this.companyId) {
@@ -953,18 +942,17 @@ export class SessionWrapper {
       }
 
       // Phase 2C: Return standard error response structure
-      const errorResponse: FinaticResponse<FinaticResponseSessionUserResponse> =
-        {
-          success: {
-            data: null as any,
-          },
-          error: {
-            message: errorMessage,
-            code: errorCode,
-            status: errorStatus,
-            details: errorDetails,
-          },
-        };
+      const errorResponse: FinaticResponse<FinaticResponseSessionUserResponse> = {
+        success: {
+          data: null as any,
+        },
+        error: {
+          message: errorMessage,
+          code: errorCode,
+          status: errorStatus,
+          details: errorDetails,
+        },
+      };
 
       return errorResponse;
     }
