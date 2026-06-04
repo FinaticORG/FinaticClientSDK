@@ -65,6 +65,10 @@ export interface GetSessionUserParams {
 /**
  * Session wrapper functions.
  * Provides simplified method names and response unwrapping.
+ *
+ * @deprecated New browser workflows should use `V1Wrapper`/`finatic.v1`.
+ * API PR #174 maps beta session routes to `/api/v1/sessions`,
+ * `/api/v1/sessions/{sessionId}/portal-links`, and related v1 session routes.
  */
 export class SessionWrapper {
   protected api: SessionApi;
