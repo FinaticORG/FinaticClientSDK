@@ -47,6 +47,10 @@ export interface GetCompanyParams {
 /**
  * Company wrapper functions.
  * Provides simplified method names and response unwrapping.
+ *
+ * @deprecated New browser workflows should use `V1Wrapper`/`finatic.v1`.
+ * Company API key flows are server-side and should not be normalized into
+ * new browser-safe v1 code.
  */
 export class CompanyWrapper {
   protected api: CompanyApi;

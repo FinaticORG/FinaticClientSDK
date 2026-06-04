@@ -28,6 +28,36 @@ Account-first v1 calls send `X-Finatic-Environment: live|sandbox` and use financ
 `/api/v1/accounts/{accountId}/...` paths. Beta connection-first wrappers remain available for
 compatibility, but new browser workflows should prefer `finatic.v1`.
 
+## Migrating From Beta Wrappers
+
+The generated beta wrappers (`SessionWrapper`, `BrokersWrapper`, and `CompanyWrapper`) are
+deprecated for new account-first browser work. They remain exported for compatibility while API
+PR #174 finalizes the v1 OpenAPI contract.
+
+Use this mapping from the API beta migration metadata:
+
+| Beta route family | v1 browser/client replacement |
+|---|---|
+| `/api/beta/session/init` | `finatic.v1.createSession(...)` |
+| `/api/beta/session/start` | `finatic.v1.getSession(sessionId)` |
+| `/api/beta/session/portal` | `finatic.v1.createPortalLink(sessionId, ...)` |
+| `/api/beta/session/{session_id}/user` | `finatic.v1.getSessionUser(sessionId)` |
+| `/api/beta/brokers/data/accounts` | `finatic.v1.listAccounts(...)` |
+| `/api/beta/brokers/data/balances` | `finatic.v1.listBalances({ accountId, ... })` |
+| `/api/beta/brokers/data/positions` | `finatic.v1.listPositions({ accountId, ... })` |
+| `/api/beta/brokers/data/positions/lots` | `finatic.v1.listPositionLots({ accountId, ... })` |
+| `/api/beta/brokers/data/positions/lots/{lot_id}/fills` | `finatic.v1.getAccountPositionLotFills({ accountId, lotId })` |
+| `/api/beta/brokers/data/orders` | `finatic.v1.listOrders({ accountId, ... })` |
+| `/api/beta/brokers/data/orders/{order_id}/fills` | `finatic.v1.getAccountOrderFills({ accountId, orderId })` |
+| `/api/beta/brokers/data/orders/{order_id}/events` | `finatic.v1.getAccountOrderEvents({ accountId, orderId })` |
+| `/api/beta/brokers/data/transactions` | `finatic.v1.listTransactions({ accountId, ... })` |
+| `/api/beta/brokers/orders` | `finatic.v1.createAccountOrder({ accountId, ... })` |
+| `/api/beta/brokers/orders/{order_id}` | `finatic.v1.modifyAccountOrder(...)` or `finatic.v1.cancelAccountOrder(...)` |
+| `/api/beta/brokers/connections` | `finatic.v1.listAccounts(...)` plus `finatic.v1.listAccountGrants()` |
+
+The v1 surface uses financial account ids in path parameters. Do not carry beta
+`connectionId` or `user_broker_connection_id` values into new browser flows.
+
 ## Environments
 
 Use the `environment` option for the standard Finatic targets, or `custom` with explicit URLs:

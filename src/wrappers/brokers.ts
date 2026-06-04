@@ -315,6 +315,10 @@ export interface ModifyOrderParams {
 /**
  * Brokers wrapper functions.
  * Provides simplified method names and response unwrapping.
+ *
+ * @deprecated New browser workflows should use `V1Wrapper`/`finatic.v1`.
+ * API PR #174 maps beta broker data and order routes to account-first
+ * `/api/v1/accounts/{accountId}/...` routes plus account grants.
  */
 export class BrokersWrapper {
   protected api: BrokersApi;
