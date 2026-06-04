@@ -291,6 +291,13 @@ export class V1Wrapper {
     return this.unwrap<T>(this.api.listConsents(this.headers(options)));
   }
 
+  createConsent<T = unknown>(
+    body: unknown,
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(this.api.createConsent(body, this.headers(options)));
+  }
+
   getConsent<T = unknown>(
     consentId: string,
     options?: FinaticV1CallOptions
