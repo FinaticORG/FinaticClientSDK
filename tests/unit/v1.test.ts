@@ -102,6 +102,32 @@ describe('V1 account-first wrapper', () => {
     );
   });
 
+  it('creates FDX consent grants from the current API contract', async () => {
+    const axios = createAxiosLikeClient();
+    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
+    const wrapper = new V1Wrapper(api);
+
+    await wrapper.createConsent({
+      consentGrant: {
+        accountId: 'acct_123',
+        dataClusters: ['account_info'],
+      },
+    });
+
+    expect(axios.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'POST',
+        url: 'https://api.test/api/v1/consents',
+        data: {
+          consentGrant: {
+            accountId: 'acct_123',
+            dataClusters: ['account_info'],
+          },
+        },
+      })
+    );
+  });
+
   it('covers account trading commands and position lot fills from the API contract', async () => {
     const axios = createAxiosLikeClient();
     const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);

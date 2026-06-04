@@ -5,7 +5,7 @@
  * Finatic account-first v1 API surface.
  *
  * Generated-equivalent client pinned to FinaticAPI PR #174 head
- * baa49d215c56994d89d3beca86152a017218d055.
+ * f7bc984f1012c58b45cf2dfa1002eefe152ae451.
  */
 
 import type { AxiosInstance, AxiosPromise, RawAxiosRequestConfig } from 'axios';
@@ -357,6 +357,15 @@ export class V1Api extends BaseAPI {
     return this.axios.request({
       method: 'GET',
       url: `${this.basePath}/api/v1/consents`,
+      ...withEnvironmentHeader(options, this.fallbackEnvironment),
+    });
+  }
+
+  public createConsent(body: unknown, options?: V1RequestOptions): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'POST',
+      url: `${this.basePath}/api/v1/consents`,
+      data: body,
       ...withEnvironmentHeader(options, this.fallbackEnvironment),
     });
   }
