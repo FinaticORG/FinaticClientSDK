@@ -15,6 +15,8 @@
 export interface SdkConfig {
   /** Named Finatic environment preset */
   environment: FinaticEnvironment;
+  /** Account-first v1 API environment sent as X-Finatic-Environment */
+  apiEnvironment: FinaticApiEnvironment;
 
   // ═══════════════════════════════════════════════════════════════════════
   // API Configuration
@@ -142,6 +144,7 @@ export interface SdkConfig {
 }
 
 export type FinaticEnvironment = 'production' | 'staging' | 'development' | 'sandbox' | 'custom';
+export type FinaticApiEnvironment = 'live' | 'sandbox';
 
 export type SdkConfigOverrides = Partial<Omit<SdkConfig, 'portalConfig'>> & {
   portalConfig?: Partial<SdkConfig['portalConfig']> & {
@@ -182,6 +185,8 @@ export const environmentPresets: Record<
  */
 export const defaultConfig: SdkConfig = {
   environment: 'production',
+  apiEnvironment:
+    process.env['FINATIC_API_ENVIRONMENT'] === 'sandbox' ? 'sandbox' : 'live',
 
   // API Configuration
   baseUrl: process.env['FINATIC_API_URL'] || 'https://api.finatic.dev',

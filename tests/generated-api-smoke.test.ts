@@ -1,6 +1,7 @@
 import { BrokersApi } from '../src/openapi/api/brokers-api';
 import { CompanyApi } from '../src/openapi/api/company-api';
 import { SessionApi } from '../src/openapi/api/session-api';
+import { V1Api } from '../src/openapi/api/v1-api';
 
 type ApiCtor = new (...args: any[]) => any;
 
@@ -93,9 +94,11 @@ describe('Generated API smoke coverage', () => {
     const brokersInvoked = await invokeApiMethods(BrokersApi);
     const companyInvoked = await invokeApiMethods(CompanyApi);
     const sessionInvoked = await invokeApiMethods(SessionApi);
+    const v1Invoked = await invokeApiMethods(V1Api);
 
     expect(brokersInvoked).toBeGreaterThan(5);
     expect(companyInvoked).toBeGreaterThan(0);
     expect(sessionInvoked).toBeGreaterThan(0);
+    expect(v1Invoked).toBeGreaterThan(10);
   });
 });
