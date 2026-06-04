@@ -142,6 +142,13 @@ export class V1Wrapper {
     return this.unwrap<T>(this.api.getSessionUser({ sessionId }, this.headers(options)));
   }
 
+  getSessionSyncStatus<T = unknown>(
+    sessionId: string,
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(this.api.getSessionSyncStatus({ sessionId }, this.headers(options)));
+  }
+
   listAccounts<T = unknown>(
     params: { limit?: number; offset?: number; includeSyncStatus?: boolean } = {},
     options?: FinaticV1CallOptions
