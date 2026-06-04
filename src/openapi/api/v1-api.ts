@@ -5,7 +5,7 @@
  * Finatic account-first v1 API surface.
  *
  * Generated-equivalent client pinned to FinaticAPI PR #174 head
- * ca77cd8db75af42d9d87c4a726911b0874de7c09.
+ * 059c38e25cb4a404318e72ffc6f316c0c9380505.
  */
 
 import type { AxiosInstance, AxiosPromise, RawAxiosRequestConfig } from 'axios';
@@ -55,6 +55,11 @@ export interface V1AccountOrderCommandRequest extends V1AccountOrderRequest {
 
 export interface V1AccountGrantRequest {
   grantId: string;
+}
+
+export interface V1PortalAccountGrantRequest {
+  sessionId: string;
+  body: unknown;
 }
 
 export interface V1ConsentRequest {
@@ -124,6 +129,18 @@ export class V1Api extends BaseAPI {
     return this.axios.request({
       method: 'POST',
       url: `${this.basePath}/api/v1/sessions/${encodeURIComponent(requestParameters.sessionId)}/portal-links`,
+      data: requestParameters.body,
+      ...withEnvironmentHeader(options, this.fallbackEnvironment),
+    });
+  }
+
+  public createPortalAccountGrant(
+    requestParameters: V1PortalAccountGrantRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'POST',
+      url: `${this.basePath}/api/v1/sessions/${encodeURIComponent(requestParameters.sessionId)}/account-grants`,
       data: requestParameters.body,
       ...withEnvironmentHeader(options, this.fallbackEnvironment),
     });
