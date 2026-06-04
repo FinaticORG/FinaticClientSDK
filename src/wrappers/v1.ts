@@ -118,6 +118,23 @@ export class V1Wrapper {
     return this.unwrap<T>(this.api.createPortalLink({ sessionId, body }, this.headers(options)));
   }
 
+  createPortalAccountGrant<T = unknown>(
+    sessionId: string,
+    body: {
+      accountId: string;
+      authAttemptId: string;
+      canRead?: boolean;
+      canTrade?: boolean;
+      dataClusters?: string[];
+      consentId?: string | null;
+    },
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(
+      this.api.createPortalAccountGrant({ sessionId, body }, this.headers(options))
+    );
+  }
+
   getSessionUser<T = unknown>(
     sessionId: string,
     options?: FinaticV1CallOptions

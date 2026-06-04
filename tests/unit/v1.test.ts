@@ -63,6 +63,30 @@ describe('V1 account-first wrapper', () => {
     );
   });
 
+  it('creates portal account grants with the authAttemptId API contract', async () => {
+    const axios = createAxiosLikeClient();
+    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
+    const wrapper = new V1Wrapper(api);
+
+    await wrapper.createPortalAccountGrant('session_123', {
+      accountId: 'account_123',
+      authAttemptId: 'auth_attempt_123',
+      canRead: true,
+      canTrade: false,
+    });
+
+    expect(axios.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'POST',
+        url: 'https://api.test/api/v1/sessions/session_123/account-grants',
+        data: expect.objectContaining({
+          accountId: 'account_123',
+          authAttemptId: 'auth_attempt_123',
+        }),
+      })
+    );
+  });
+
   it('covers account trading commands and position lot fills from the API contract', async () => {
     const axios = createAxiosLikeClient();
     const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
