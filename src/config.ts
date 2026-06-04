@@ -185,8 +185,7 @@ export const environmentPresets: Record<
  */
 export const defaultConfig: SdkConfig = {
   environment: 'production',
-  apiEnvironment:
-    process.env['FINATIC_API_ENVIRONMENT'] === 'sandbox' ? 'sandbox' : 'live',
+  apiEnvironment: process.env['FINATIC_API_ENVIRONMENT'] === 'sandbox' ? 'sandbox' : 'live',
 
   // API Configuration
   baseUrl: process.env['FINATIC_API_URL'] || 'https://api.finatic.dev',
