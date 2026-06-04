@@ -20,9 +20,11 @@ import { unwrapAxiosResponse } from './utils/response-utils';
 import { SessionApi } from './openapi/api/session-api';
 import { BrokersApi } from './openapi/api/brokers-api';
 import { CompanyApi } from './openapi/api/company-api';
+import { V1Api } from './openapi/api/v1-api';
 import { BrokersWrapper } from './wrappers/brokers';
 import { CompanyWrapper } from './wrappers/company';
 import { SessionWrapper } from './wrappers/session';
+import { V1Wrapper } from './wrappers/v1';
 import type {
   CancelOrderParams,
   DisconnectCompanyFromBrokerParams,
@@ -75,6 +77,7 @@ export class FinaticConnect extends EventEmitter {
   private brokers: BrokersWrapper;
   private company: CompanyWrapper;
   private session: SessionWrapper;
+  public v1: V1Wrapper;
 
   constructor(options: FinaticConnectOptions) {
     super(); // Initialize EventEmitter
@@ -86,6 +89,7 @@ export class FinaticConnect extends EventEmitter {
     this.brokers = new BrokersWrapper(new BrokersApi(this.config), this.config, this.sdkConfig);
     this.company = new CompanyWrapper(new CompanyApi(this.config), this.config, this.sdkConfig);
     this.session = new SessionWrapper(new SessionApi(this.config), this.config, this.sdkConfig);
+    this.v1 = new V1Wrapper(new V1Api(this.config), this.config, this.sdkConfig);
     this.rebuildClients();
   }
 
@@ -273,6 +277,7 @@ export class FinaticConnect extends EventEmitter {
     this.brokers = new BrokersWrapper(new BrokersApi(this.config), this.config, this.sdkConfig);
     this.company = new CompanyWrapper(new CompanyApi(this.config), this.config, this.sdkConfig);
     this.session = new SessionWrapper(new SessionApi(this.config), this.config, this.sdkConfig);
+    this.v1 = new V1Wrapper(new V1Api(this.config), this.config, this.sdkConfig);
 
     if (this.sessionId && this.companyId) {
       this.setSessionContext(this.sessionId, this.companyId, this.csrfToken || '');

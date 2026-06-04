@@ -18,6 +18,8 @@ export type { ValidationError as ApiValidationError } from './openapi/models/val
 // Re-export all models (ValidationError export is excluded from models/index.ts to avoid conflict)
 export * from './openapi/models';
 export * from './openapi/configuration';
+export { V1Api } from './openapi/api/v1-api';
+export type { FinaticApiEnvironment, V1RequestOptions } from './openapi/api/v1-api';
 
 // Main SDK classes
 export { FinaticConnect } from './FinaticConnect';

@@ -7,6 +7,8 @@ import {
   CompanyWrapper,
   FinaticConnect,
   SessionWrapper,
+  V1Api,
+  V1Wrapper,
 } from "../../src/index";
 
 describe("public surface @finatic/client", () => {
@@ -21,5 +23,7 @@ describe("public surface @finatic/client", () => {
     expect(BrokersWrapper).toBeDefined();
     expect(CompanyWrapper).toBeDefined();
     expect(SessionWrapper).toBeDefined();
+    expect(V1Wrapper).toBeDefined();
+    expect(V1Api).toBeDefined();
   });
 });

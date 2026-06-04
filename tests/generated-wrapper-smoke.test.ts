@@ -1,6 +1,7 @@
 import { BrokersWrapper } from '../src/wrappers/brokers';
 import { CompanyWrapper } from '../src/wrappers/company';
 import { SessionWrapper } from '../src/wrappers/session';
+import { V1Wrapper } from '../src/wrappers/v1';
 import { FinaticConnect } from '../src/FinaticConnectCore';
 
 type WrapperCtor = new (...args: any[]) => any;
@@ -87,10 +88,12 @@ describe('Generated wrapper smoke coverage', () => {
     const brokersInvoked = await invokeWrapperMethods(BrokersWrapper);
     const companyInvoked = await invokeWrapperMethods(CompanyWrapper);
     const sessionInvoked = await invokeWrapperMethods(SessionWrapper);
+    const v1Invoked = await invokeWrapperMethods(V1Wrapper);
 
     expect(brokersInvoked).toBeGreaterThan(10);
     expect(companyInvoked).toBeGreaterThan(0);
     expect(sessionInvoked).toBeGreaterThan(0);
+    expect(v1Invoked).toBeGreaterThan(10);
   });
 
   it('invokes many top-level generated SDK methods', async () => {
