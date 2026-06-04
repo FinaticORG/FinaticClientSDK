@@ -87,6 +87,21 @@ describe('V1 account-first wrapper', () => {
     );
   });
 
+  it('polls session sync status from the current API contract', async () => {
+    const axios = createAxiosLikeClient();
+    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
+    const wrapper = new V1Wrapper(api);
+
+    await wrapper.getSessionSyncStatus('session_123');
+
+    expect(axios.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'GET',
+        url: 'https://api.test/api/v1/sessions/session_123/sync-status',
+      })
+    );
+  });
+
   it('covers account trading commands and position lot fills from the API contract', async () => {
     const axios = createAxiosLikeClient();
     const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
