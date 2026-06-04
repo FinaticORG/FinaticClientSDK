@@ -29,6 +29,22 @@ export interface AccountOrderParams {
   orderId: string;
 }
 
+export interface AccountPositionLotFillsParams {
+  accountId: string;
+  lotId: string;
+}
+
+export interface CreateAccountOrderCommandParams {
+  accountId: string;
+  body?: unknown;
+  idempotencyKey: string;
+}
+
+export interface AccountOrderCommandParams extends AccountOrderParams {
+  body?: unknown;
+  idempotencyKey: string;
+}
+
 type AccountResource =
   | 'balances'
   | 'positions'
@@ -41,6 +57,9 @@ export class V1Wrapper {
   protected api: V1Api;
   protected config?: Configuration;
   protected sdkConfig?: SdkConfig;
+  protected sessionId?: string;
+  protected companyId?: string;
+  protected csrfToken?: string;
 
   constructor(api: V1Api, config?: Configuration, sdkConfig?: SdkConfig) {
     this.api = api;
@@ -60,8 +79,17 @@ export class V1Wrapper {
       finaticEnvironment: options?.environment ?? this.sdkConfig?.apiEnvironment ?? 'live',
       headers: {
         'x-request-id': generateRequestId(),
+        ...(this.sessionId ? { 'x-session-id': this.sessionId } : {}),
+        ...(this.companyId ? { 'x-company-id': this.companyId } : {}),
+        ...(this.csrfToken ? { 'x-csrf-token': this.csrfToken } : {}),
       },
     };
+  }
+
+  setSessionContext(sessionId: string, companyId: string, csrfToken: string): void {
+    this.sessionId = sessionId;
+    this.companyId = companyId;
+    this.csrfToken = csrfToken;
   }
 
   private async unwrap<T>(call: Promise<unknown>): Promise<FinaticV1Response<T>> {
@@ -179,6 +207,34 @@ export class V1Wrapper {
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
     return this.unwrap<T>(this.api.getAccountOrderEvents(params, this.headers(options)));
+  }
+
+  getAccountPositionLotFills<T = unknown>(
+    params: AccountPositionLotFillsParams,
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(this.api.getAccountPositionLotFills(params, this.headers(options)));
+  }
+
+  createAccountOrder<T = unknown>(
+    params: CreateAccountOrderCommandParams,
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(this.api.createAccountOrder(params, this.headers(options)));
+  }
+
+  modifyAccountOrder<T = unknown>(
+    params: AccountOrderCommandParams,
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(this.api.modifyAccountOrder(params, this.headers(options)));
+  }
+
+  cancelAccountOrder<T = unknown>(
+    params: AccountOrderCommandParams,
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(this.api.cancelAccountOrder(params, this.headers(options)));
   }
 
   listAccountGrants<T = unknown>(options?: FinaticV1CallOptions): Promise<FinaticV1Response<T>> {

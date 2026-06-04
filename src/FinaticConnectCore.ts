@@ -839,6 +839,7 @@ export class FinaticConnect extends EventEmitter {
     this.brokers.setSessionContext(sessionId, companyId, csrfToken);
     this.company.setSessionContext(sessionId, companyId, csrfToken);
     this.session.setSessionContext(sessionId, companyId, csrfToken);
+    this.v1.setSessionContext(sessionId, companyId, csrfToken);
   }
 
   /**

@@ -39,6 +39,20 @@ export interface V1AccountOrderRequest extends V1AccountRequest {
   orderId: string;
 }
 
+export interface V1AccountPositionLotFillsRequest extends V1AccountRequest {
+  lotId: string;
+}
+
+export interface V1CreateAccountOrderCommandRequest extends V1AccountRequest {
+  body?: unknown;
+  idempotencyKey: string;
+}
+
+export interface V1AccountOrderCommandRequest extends V1AccountOrderRequest {
+  body?: unknown;
+  idempotencyKey: string;
+}
+
 export interface V1AccountGrantRequest {
   grantId: string;
 }
@@ -92,7 +106,10 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public getSession(requestParameters: { sessionId: string }, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public getSession(
+    requestParameters: { sessionId: string },
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'GET',
       url: `${this.basePath}/api/v1/sessions/${encodeURIComponent(requestParameters.sessionId)}`,
@@ -100,16 +117,22 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public createPortalLink(requestParameters: { sessionId: string; body?: unknown }, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public createPortalLink(
+    requestParameters: { sessionId: string; body?: unknown },
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'POST',
-      url: `${this.basePath}/api/v1/sessions/${encodeURIComponent(requestParameters.sessionId)}/portal-link`,
+      url: `${this.basePath}/api/v1/sessions/${encodeURIComponent(requestParameters.sessionId)}/portal-links`,
       data: requestParameters.body,
       ...withEnvironmentHeader(options, this.fallbackEnvironment),
     });
   }
 
-  public getSessionUser(requestParameters: { sessionId: string }, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public getSessionUser(
+    requestParameters: { sessionId: string },
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'GET',
       url: `${this.basePath}/api/v1/sessions/${encodeURIComponent(requestParameters.sessionId)}/user`,
@@ -117,7 +140,10 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public listAccounts(requestParameters: V1ListAccountsRequest = {}, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public listAccounts(
+    requestParameters: V1ListAccountsRequest = {},
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'GET',
       url: `${this.basePath}/api/v1/accounts`,
@@ -126,7 +152,10 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public getAccount(requestParameters: V1AccountRequest, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public getAccount(
+    requestParameters: V1AccountRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'GET',
       url: `${this.basePath}/api/v1/accounts/${encodeURIComponent(requestParameters.accountId)}`,
@@ -134,7 +163,10 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public listAccountResource(requestParameters: V1AccountResourceRequest, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public listAccountResource(
+    requestParameters: V1AccountResourceRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     const { accountId, resource, ...params } = requestParameters;
     return this.axios.request({
       method: 'GET',
@@ -144,7 +176,10 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public getAccountOrder(requestParameters: V1AccountOrderRequest, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public getAccountOrder(
+    requestParameters: V1AccountOrderRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'GET',
       url: `${this.basePath}/api/v1/accounts/${encodeURIComponent(requestParameters.accountId)}/orders/${encodeURIComponent(requestParameters.orderId)}`,
@@ -152,7 +187,10 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public getAccountOrderFills(requestParameters: V1AccountOrderRequest, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public getAccountOrderFills(
+    requestParameters: V1AccountOrderRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'GET',
       url: `${this.basePath}/api/v1/accounts/${encodeURIComponent(requestParameters.accountId)}/orders/${encodeURIComponent(requestParameters.orderId)}/fills`,
@@ -160,11 +198,88 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public getAccountOrderEvents(requestParameters: V1AccountOrderRequest, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public getAccountOrderEvents(
+    requestParameters: V1AccountOrderRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'GET',
       url: `${this.basePath}/api/v1/accounts/${encodeURIComponent(requestParameters.accountId)}/orders/${encodeURIComponent(requestParameters.orderId)}/events`,
       ...withEnvironmentHeader(options, this.fallbackEnvironment),
+    });
+  }
+
+  public getAccountPositionLotFills(
+    requestParameters: V1AccountPositionLotFillsRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'GET',
+      url: `${this.basePath}/api/v1/accounts/${encodeURIComponent(requestParameters.accountId)}/position-lots/${encodeURIComponent(requestParameters.lotId)}/fills`,
+      ...withEnvironmentHeader(options, this.fallbackEnvironment),
+    });
+  }
+
+  public createAccountOrder(
+    requestParameters: V1CreateAccountOrderCommandRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'POST',
+      url: `${this.basePath}/api/v1/accounts/${encodeURIComponent(requestParameters.accountId)}/orders`,
+      data: requestParameters.body,
+      ...withEnvironmentHeader(
+        {
+          ...options,
+          headers: {
+            ...options?.headers,
+            'Idempotency-Key': requestParameters.idempotencyKey,
+          },
+        },
+        this.fallbackEnvironment
+      ),
+    });
+  }
+
+  public modifyAccountOrder(
+    requestParameters: V1AccountOrderCommandRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'PATCH',
+      url: `${this.basePath}/api/v1/accounts/${encodeURIComponent(requestParameters.accountId)}/orders/${encodeURIComponent(requestParameters.orderId)}`,
+      data: requestParameters.body,
+      ...withEnvironmentHeader(
+        {
+          ...options,
+          headers: {
+            ...options?.headers,
+            'Idempotency-Key': requestParameters.idempotencyKey,
+          },
+        },
+        this.fallbackEnvironment
+      ),
+    });
+  }
+
+  public cancelAccountOrder(
+    requestParameters: V1AccountOrderCommandRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'DELETE',
+      url: `${this.basePath}/api/v1/accounts/${encodeURIComponent(requestParameters.accountId)}/orders/${encodeURIComponent(requestParameters.orderId)}`,
+      data: requestParameters.body,
+      ...withEnvironmentHeader(
+        {
+          ...options,
+          headers: {
+            ...options?.headers,
+            'Idempotency-Key': requestParameters.idempotencyKey,
+          },
+        },
+        this.fallbackEnvironment
+      ),
     });
   }
 
@@ -176,7 +291,10 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public getAccountGrant(requestParameters: V1AccountGrantRequest, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public getAccountGrant(
+    requestParameters: V1AccountGrantRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'GET',
       url: `${this.basePath}/api/v1/account-grants/${encodeURIComponent(requestParameters.grantId)}`,
@@ -184,7 +302,10 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public updateAccountGrant(requestParameters: V1AccountGrantRequest & { body: unknown }, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public updateAccountGrant(
+    requestParameters: V1AccountGrantRequest & { body: unknown },
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'PATCH',
       url: `${this.basePath}/api/v1/account-grants/${encodeURIComponent(requestParameters.grantId)}`,
@@ -193,7 +314,10 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public revokeAccountGrant(requestParameters: V1AccountGrantRequest, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public revokeAccountGrant(
+    requestParameters: V1AccountGrantRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'POST',
       url: `${this.basePath}/api/v1/account-grants/${encodeURIComponent(requestParameters.grantId)}/revoke`,
@@ -209,7 +333,10 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public getConsent(requestParameters: V1ConsentRequest, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public getConsent(
+    requestParameters: V1ConsentRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'GET',
       url: `${this.basePath}/api/v1/consents/${encodeURIComponent(requestParameters.consentId)}`,
@@ -217,7 +344,10 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public revokeConsent(requestParameters: V1ConsentRequest, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public revokeConsent(
+    requestParameters: V1ConsentRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'POST',
       url: `${this.basePath}/api/v1/consents/${encodeURIComponent(requestParameters.consentId)}/revoke`,
@@ -249,7 +379,10 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public createWebhookSubscription(body: unknown, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public createWebhookSubscription(
+    body: unknown,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'POST',
       url: `${this.basePath}/api/v1/webhooks/subscriptions`,
@@ -258,7 +391,10 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public updateWebhookSubscription(requestParameters: V1WebhookSubscriptionRequest & { body: unknown }, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public updateWebhookSubscription(
+    requestParameters: V1WebhookSubscriptionRequest & { body: unknown },
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'PATCH',
       url: `${this.basePath}/api/v1/webhooks/subscriptions/${encodeURIComponent(requestParameters.subscriptionId)}`,
@@ -267,7 +403,10 @@ export class V1Api extends BaseAPI {
     });
   }
 
-  public revokeWebhookSubscription(requestParameters: V1WebhookSubscriptionRequest, options?: V1RequestOptions): AxiosPromise<unknown> {
+  public revokeWebhookSubscription(
+    requestParameters: V1WebhookSubscriptionRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'POST',
       url: `${this.basePath}/api/v1/webhooks/subscriptions/${encodeURIComponent(requestParameters.subscriptionId)}/revoke`,
