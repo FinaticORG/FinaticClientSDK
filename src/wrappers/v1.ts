@@ -143,6 +143,55 @@ export class V1Wrapper {
     );
   }
 
+  exchangePortalToken<T = unknown>(
+    token: string,
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(this.api.exchangePortalToken({ token }, this.headers(options)));
+  }
+
+  consumeOAuthCompletionToken<T = unknown>(
+    token: string,
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(this.api.consumeOAuthCompletionToken({ token }, this.headers(options)));
+  }
+
+  linkPortalUser<T = unknown>(
+    sessionId: string,
+    body: { userId: string },
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(this.api.linkPortalUser({ sessionId, body }, this.headers(options)));
+  }
+
+  listPortalInstitutions<T = unknown>(
+    sessionId: string,
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(this.api.listPortalInstitutions({ sessionId }, this.headers(options)));
+  }
+
+  createPortalAuthAttempt<T = unknown>(
+    sessionId: string,
+    body: { brokerId: string },
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(
+      this.api.createPortalAuthAttempt({ sessionId, body }, this.headers(options))
+    );
+  }
+
+  getPortalAuthAttempt<T = unknown>(
+    sessionId: string,
+    authAttemptId: string,
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(
+      this.api.getPortalAuthAttempt({ sessionId, authAttemptId }, this.headers(options))
+    );
+  }
+
   listPortalDiscoveredAccounts<T = unknown>(
     sessionId: string,
     params: { authAttemptId?: string } = {},
@@ -151,6 +200,13 @@ export class V1Wrapper {
     return this.unwrap<T>(
       this.api.listPortalDiscoveredAccounts({ sessionId, ...params }, this.headers(options))
     );
+  }
+
+  completePortalSession<T = unknown>(
+    sessionId: string,
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(this.api.completePortalSession({ sessionId }, this.headers(options)));
   }
 
   getSessionUser<T = unknown>(

@@ -67,6 +67,12 @@ describe('V1 account-first wrapper', () => {
     const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
     const wrapper = new V1Wrapper(api);
 
+    await wrapper.exchangePortalToken('portal_token_123');
+    await wrapper.consumeOAuthCompletionToken('oauth_token_123');
+    await wrapper.linkPortalUser('session_123', { userId: 'user_123' });
+    await wrapper.listPortalInstitutions('session_123');
+    await wrapper.createPortalAuthAttempt('session_123', { brokerId: 'alpaca' });
+    await wrapper.getPortalAuthAttempt('session_123', 'auth_attempt_123');
     await wrapper.listPortalDiscoveredAccounts('session_123', {
       authAttemptId: 'auth_attempt_123',
     });
@@ -76,9 +82,54 @@ describe('V1 account-first wrapper', () => {
       canRead: true,
       canTrade: false,
     });
+    await wrapper.completePortalSession('session_123');
 
     expect(axios.request).toHaveBeenNthCalledWith(
       1,
+      expect.objectContaining({
+        method: 'GET',
+        url: 'https://api.test/api/v1/portal/portal_token_123',
+      })
+    );
+    expect(axios.request).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        method: 'GET',
+        url: 'https://api.test/api/v1/portal/oauth/completion/oauth_token_123',
+      })
+    );
+    expect(axios.request).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        method: 'POST',
+        url: 'https://api.test/api/v1/portal/session_123/user-link',
+        data: { userId: 'user_123' },
+      })
+    );
+    expect(axios.request).toHaveBeenNthCalledWith(
+      4,
+      expect.objectContaining({
+        method: 'GET',
+        url: 'https://api.test/api/v1/portal/session_123/institutions',
+      })
+    );
+    expect(axios.request).toHaveBeenNthCalledWith(
+      5,
+      expect.objectContaining({
+        method: 'POST',
+        url: 'https://api.test/api/v1/portal/session_123/auth-attempts',
+        data: { brokerId: 'alpaca' },
+      })
+    );
+    expect(axios.request).toHaveBeenNthCalledWith(
+      6,
+      expect.objectContaining({
+        method: 'GET',
+        url: 'https://api.test/api/v1/portal/session_123/auth-attempts/auth_attempt_123',
+      })
+    );
+    expect(axios.request).toHaveBeenNthCalledWith(
+      7,
       expect.objectContaining({
         method: 'GET',
         url: 'https://api.test/api/v1/portal/session_123/discovered-accounts',
@@ -86,7 +137,7 @@ describe('V1 account-first wrapper', () => {
       })
     );
     expect(axios.request).toHaveBeenNthCalledWith(
-      2,
+      8,
       expect.objectContaining({
         method: 'POST',
         url: 'https://api.test/api/v1/portal/session_123/account-grants',
@@ -94,6 +145,13 @@ describe('V1 account-first wrapper', () => {
           accountId: 'account_123',
           authAttemptId: 'auth_attempt_123',
         }),
+      })
+    );
+    expect(axios.request).toHaveBeenNthCalledWith(
+      9,
+      expect.objectContaining({
+        method: 'POST',
+        url: 'https://api.test/api/v1/portal/session_123/complete',
       })
     );
   });
