@@ -67,6 +67,9 @@ describe('V1 account-first wrapper', () => {
     const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
     const wrapper = new V1Wrapper(api);
 
+    await wrapper.listPortalDiscoveredAccounts('session_123', {
+      authAttemptId: 'auth_attempt_123',
+    });
     await wrapper.createPortalAccountGrant('session_123', {
       accountId: 'account_123',
       authAttemptId: 'auth_attempt_123',
@@ -74,7 +77,16 @@ describe('V1 account-first wrapper', () => {
       canTrade: false,
     });
 
-    expect(axios.request).toHaveBeenCalledWith(
+    expect(axios.request).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        method: 'GET',
+        url: 'https://api.test/api/v1/portal/session_123/discovered-accounts',
+        params: { authAttemptId: 'auth_attempt_123' },
+      })
+    );
+    expect(axios.request).toHaveBeenNthCalledWith(
+      2,
       expect.objectContaining({
         method: 'POST',
         url: 'https://api.test/api/v1/sessions/session_123/account-grants',

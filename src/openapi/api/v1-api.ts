@@ -5,7 +5,7 @@
  * Finatic account-first v1 API surface.
  *
  * Generated-equivalent client pinned to FinaticAPI PR #174 head
- * bf7fa4e44c7cb2621704777c24433636ad3a69af.
+ * af42136a4a5efc21395f853955af3ccd4c0949b7.
  */
 
 import type { AxiosInstance, AxiosPromise, RawAxiosRequestConfig } from 'axios';
@@ -60,6 +60,11 @@ export interface V1AccountGrantRequest {
 export interface V1PortalAccountGrantRequest {
   sessionId: string;
   body: unknown;
+}
+
+export interface V1PortalDiscoveredAccountsRequest {
+  sessionId: string;
+  authAttemptId?: string;
 }
 
 export interface V1ConsentRequest {
@@ -142,6 +147,18 @@ export class V1Api extends BaseAPI {
       method: 'POST',
       url: `${this.basePath}/api/v1/sessions/${encodeURIComponent(requestParameters.sessionId)}/account-grants`,
       data: requestParameters.body,
+      ...withEnvironmentHeader(options, this.fallbackEnvironment),
+    });
+  }
+
+  public listPortalDiscoveredAccounts(
+    requestParameters: V1PortalDiscoveredAccountsRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'GET',
+      url: `${this.basePath}/api/v1/portal/${encodeURIComponent(requestParameters.sessionId)}/discovered-accounts`,
+      params: query({ authAttemptId: requestParameters.authAttemptId }),
       ...withEnvironmentHeader(options, this.fallbackEnvironment),
     });
   }
@@ -515,7 +532,6 @@ export class V1Api extends BaseAPI {
       ...withEnvironmentHeader(options, this.fallbackEnvironment),
     });
   }
-
 }
 
 interface AccountScopedRequest extends V1AccountRequest {
