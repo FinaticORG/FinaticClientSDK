@@ -184,6 +184,55 @@ describe('V1 account-first wrapper', () => {
     );
   });
 
+  it('uses explicit account resource routes from the current API OpenAPI contract', async () => {
+    const axios = createAxiosLikeClient();
+    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
+    const wrapper = new V1Wrapper(api);
+
+    await wrapper.listBalances({ accountId: 'acct_123', limit: 10, offset: 2 });
+    await wrapper.listPositions({ accountId: 'acct_123' });
+    await wrapper.listTransactions({ accountId: 'acct_123' });
+    await wrapper.listOrders({ accountId: 'acct_123' });
+    await wrapper.listPositionLots({ accountId: 'acct_123' });
+
+    expect(axios.request).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        method: 'GET',
+        url: 'https://api.test/api/v1/accounts/acct_123/balances',
+        params: { limit: 10, offset: 2 },
+      })
+    );
+    expect(axios.request).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        method: 'GET',
+        url: 'https://api.test/api/v1/accounts/acct_123/positions',
+      })
+    );
+    expect(axios.request).toHaveBeenNthCalledWith(
+      3,
+      expect.objectContaining({
+        method: 'GET',
+        url: 'https://api.test/api/v1/accounts/acct_123/transactions',
+      })
+    );
+    expect(axios.request).toHaveBeenNthCalledWith(
+      4,
+      expect.objectContaining({
+        method: 'GET',
+        url: 'https://api.test/api/v1/accounts/acct_123/orders',
+      })
+    );
+    expect(axios.request).toHaveBeenNthCalledWith(
+      5,
+      expect.objectContaining({
+        method: 'GET',
+        url: 'https://api.test/api/v1/accounts/acct_123/position-lots',
+      })
+    );
+  });
+
   it('keeps provider connection ids out of public v1 account params', () => {
     const params = ['accountId', 'limit', 'offset'];
 
