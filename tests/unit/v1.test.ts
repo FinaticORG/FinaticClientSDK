@@ -89,7 +89,7 @@ describe('V1 account-first wrapper', () => {
       2,
       expect.objectContaining({
         method: 'POST',
-        url: 'https://api.test/api/v1/sessions/session_123/account-grants',
+        url: 'https://api.test/api/v1/portal/session_123/account-grants',
         data: expect.objectContaining({
           accountId: 'account_123',
           authAttemptId: 'auth_attempt_123',
