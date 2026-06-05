@@ -143,6 +143,16 @@ export class V1Wrapper {
     );
   }
 
+  listPortalDiscoveredAccounts<T = unknown>(
+    sessionId: string,
+    params: { authAttemptId?: string } = {},
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(
+      this.api.listPortalDiscoveredAccounts({ sessionId, ...params }, this.headers(options))
+    );
+  }
+
   getSessionUser<T = unknown>(
     _sessionId: string,
     _options?: FinaticV1CallOptions
