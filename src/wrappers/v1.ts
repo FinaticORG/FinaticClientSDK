@@ -96,26 +96,34 @@ export class V1Wrapper {
     return unwrapAxiosResponse(await call) as FinaticV1Response<T>;
   }
 
+  private serverOnlySessionRoute(routeName: string): never {
+    throw new Error(
+      `${routeName} is server-only in the v1 API because it requires a company API key. ` +
+        'Create sessions and portal links from a backend/server SDK flow, then initialize ' +
+        'the browser Client SDK with the returned one-time token.'
+    );
+  }
+
   createSession<T = unknown>(
-    body: unknown,
-    options?: FinaticV1CallOptions
+    _body: unknown,
+    _options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.createSession(body, this.headers(options)));
+    return this.serverOnlySessionRoute('finatic.v1.createSession');
   }
 
   getSession<T = unknown>(
-    sessionId: string,
-    options?: FinaticV1CallOptions
+    _sessionId: string,
+    _options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.getSession({ sessionId }, this.headers(options)));
+    return this.serverOnlySessionRoute('finatic.v1.getSession');
   }
 
   createPortalLink<T = unknown>(
-    sessionId: string,
-    body?: unknown,
-    options?: FinaticV1CallOptions
+    _sessionId: string,
+    _body?: unknown,
+    _options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.createPortalLink({ sessionId, body }, this.headers(options)));
+    return this.serverOnlySessionRoute('finatic.v1.createPortalLink');
   }
 
   createPortalAccountGrant<T = unknown>(
@@ -136,17 +144,17 @@ export class V1Wrapper {
   }
 
   getSessionUser<T = unknown>(
-    sessionId: string,
-    options?: FinaticV1CallOptions
+    _sessionId: string,
+    _options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.getSessionUser({ sessionId }, this.headers(options)));
+    return this.serverOnlySessionRoute('finatic.v1.getSessionUser');
   }
 
   getSessionSyncStatus<T = unknown>(
-    sessionId: string,
-    options?: FinaticV1CallOptions
+    _sessionId: string,
+    _options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.getSessionSyncStatus({ sessionId }, this.headers(options)));
+    return this.serverOnlySessionRoute('finatic.v1.getSessionSyncStatus');
   }
 
   listAccounts<T = unknown>(

@@ -48,19 +48,18 @@ describe('V1 account-first wrapper', () => {
     );
   });
 
-  it('uses the plural portal-links path from the API contract', async () => {
+  it('keeps API-key-owned session routes out of the browser-safe wrapper', async () => {
     const axios = createAxiosLikeClient();
     const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
     const wrapper = new V1Wrapper(api);
 
-    await wrapper.createPortalLink('session_123');
+    expect(() => wrapper.createSession({})).toThrow('server-only');
+    expect(() => wrapper.getSession('session_123')).toThrow('server-only');
+    expect(() => wrapper.createPortalLink('session_123')).toThrow('server-only');
+    expect(() => wrapper.getSessionUser('session_123')).toThrow('server-only');
+    expect(() => wrapper.getSessionSyncStatus('session_123')).toThrow('server-only');
 
-    expect(axios.request).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: 'POST',
-        url: 'https://api.test/api/v1/sessions/session_123/portal-links',
-      })
-    );
+    expect(axios.request).not.toHaveBeenCalled();
   });
 
   it('creates portal account grants with the authAttemptId API contract', async () => {
@@ -87,17 +86,20 @@ describe('V1 account-first wrapper', () => {
     );
   });
 
-  it('polls session sync status from the current API contract', async () => {
+  it('keeps generated-equivalent session routes available for server-bound callers', async () => {
     const axios = createAxiosLikeClient();
     const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
-    const wrapper = new V1Wrapper(api);
 
-    await wrapper.getSessionSyncStatus('session_123');
+    await api.createPortalLink(
+      { sessionId: 'session_123' },
+      { headers: { 'X-API-Key': 'server_key' } }
+    );
 
     expect(axios.request).toHaveBeenCalledWith(
       expect.objectContaining({
-        method: 'GET',
-        url: 'https://api.test/api/v1/sessions/session_123/sync-status',
+        method: 'POST',
+        url: 'https://api.test/api/v1/sessions/session_123/portal-links',
+        headers: expect.objectContaining({ 'X-API-Key': 'server_key' }),
       })
     );
   });
