@@ -174,28 +174,28 @@ export class V1Wrapper {
     params: AccountScopedParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
-    return this.listAccountResource<T>('balances', params, options);
+    return this.unwrap<T>(this.api.listAccountBalances(params, this.headers(options)));
   }
 
   listPositions<T = unknown>(
     params: AccountScopedParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
-    return this.listAccountResource<T>('positions', params, options);
+    return this.unwrap<T>(this.api.listAccountPositions(params, this.headers(options)));
   }
 
   listTransactions<T = unknown>(
     params: AccountScopedParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
-    return this.listAccountResource<T>('transactions', params, options);
+    return this.unwrap<T>(this.api.listAccountTransactions(params, this.headers(options)));
   }
 
   listOrders<T = unknown>(
     params: AccountScopedParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
-    return this.listAccountResource<T>('orders', params, options);
+    return this.unwrap<T>(this.api.listAccountOrders(params, this.headers(options)));
   }
 
   listOrderGroups<T = unknown>(
@@ -209,7 +209,7 @@ export class V1Wrapper {
     params: AccountScopedParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
-    return this.listAccountResource<T>('position-lots', params, options);
+    return this.unwrap<T>(this.api.listAccountPositionLots(params, this.headers(options)));
   }
 
   getAccountOrder<T = unknown>(

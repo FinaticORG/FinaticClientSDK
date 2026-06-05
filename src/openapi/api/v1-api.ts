@@ -5,7 +5,7 @@
  * Finatic account-first v1 API surface.
  *
  * Generated-equivalent client pinned to FinaticAPI PR #174 head
- * f7bc984f1012c58b45cf2dfa1002eefe152ae451.
+ * 669860e84fd8ba7beacbe554e603d6302f4f1c6d.
  */
 
 import type { AxiosInstance, AxiosPromise, RawAxiosRequestConfig } from 'axios';
@@ -202,6 +202,71 @@ export class V1Api extends BaseAPI {
       params: query(params),
       ...withEnvironmentHeader(options, this.fallbackEnvironment),
     });
+  }
+
+  public listAccountBalances(
+    requestParameters: AccountScopedRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return listExplicitAccountResource(
+      this,
+      this.fallbackEnvironment,
+      'balances',
+      requestParameters,
+      options
+    );
+  }
+
+  public listAccountPositions(
+    requestParameters: AccountScopedRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return listExplicitAccountResource(
+      this,
+      this.fallbackEnvironment,
+      'positions',
+      requestParameters,
+      options
+    );
+  }
+
+  public listAccountTransactions(
+    requestParameters: AccountScopedRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return listExplicitAccountResource(
+      this,
+      this.fallbackEnvironment,
+      'transactions',
+      requestParameters,
+      options
+    );
+  }
+
+  public listAccountOrders(
+    requestParameters: AccountScopedRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return listExplicitAccountResource(
+      this,
+      this.fallbackEnvironment,
+      'orders',
+      requestParameters,
+      options
+    );
+  }
+
+  public listAccountPositionLots(
+    requestParameters: AccountScopedRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return listExplicitAccountResource(
+      this,
+      this.fallbackEnvironment,
+      'position-lots',
+      requestParameters,
+      options
+    );
   }
 
   public getAccountOrder(
@@ -450,4 +515,26 @@ export class V1Api extends BaseAPI {
       ...withEnvironmentHeader(options, this.fallbackEnvironment),
     });
   }
+
+}
+
+interface AccountScopedRequest extends V1AccountRequest {
+  limit?: number;
+  offset?: number;
+}
+
+function listExplicitAccountResource(
+  api: BaseAPI,
+  fallbackEnvironment: FinaticApiEnvironment,
+  resource: 'balances' | 'positions' | 'transactions' | 'orders' | 'position-lots',
+  requestParameters: AccountScopedRequest,
+  options?: V1RequestOptions
+): AxiosPromise<unknown> {
+  const { accountId, ...params } = requestParameters;
+  return api.axios.request({
+    method: 'GET',
+    url: `${api.basePath}/api/v1/accounts/${encodeURIComponent(accountId)}/${resource}`,
+    params: query(params),
+    ...withEnvironmentHeader(options, fallbackEnvironment),
+  });
 }
