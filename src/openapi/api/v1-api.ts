@@ -62,6 +62,22 @@ export interface V1PortalAccountGrantRequest {
   body: unknown;
 }
 
+export interface V1PortalSessionRequest {
+  sessionId: string;
+}
+
+export interface V1PortalTokenRequest {
+  token: string;
+}
+
+export interface V1PortalAuthAttemptRequest extends V1PortalSessionRequest {
+  body: unknown;
+}
+
+export interface V1PortalAuthAttemptGetRequest extends V1PortalSessionRequest {
+  authAttemptId: string;
+}
+
 export interface V1PortalDiscoveredAccountsRequest {
   sessionId: string;
   authAttemptId?: string;
@@ -151,6 +167,74 @@ export class V1Api extends BaseAPI {
     });
   }
 
+  public exchangePortalToken(
+    requestParameters: V1PortalTokenRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'GET',
+      url: `${this.basePath}/api/v1/portal/${encodeURIComponent(requestParameters.token)}`,
+      ...withEnvironmentHeader(options, this.fallbackEnvironment),
+    });
+  }
+
+  public consumeOAuthCompletionToken(
+    requestParameters: V1PortalTokenRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'GET',
+      url: `${this.basePath}/api/v1/portal/oauth/completion/${encodeURIComponent(requestParameters.token)}`,
+      ...withEnvironmentHeader(options, this.fallbackEnvironment),
+    });
+  }
+
+  public linkPortalUser(
+    requestParameters: V1PortalSessionRequest & { body: unknown },
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'POST',
+      url: `${this.basePath}/api/v1/portal/${encodeURIComponent(requestParameters.sessionId)}/user-link`,
+      data: requestParameters.body,
+      ...withEnvironmentHeader(options, this.fallbackEnvironment),
+    });
+  }
+
+  public listPortalInstitutions(
+    requestParameters: V1PortalSessionRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'GET',
+      url: `${this.basePath}/api/v1/portal/${encodeURIComponent(requestParameters.sessionId)}/institutions`,
+      ...withEnvironmentHeader(options, this.fallbackEnvironment),
+    });
+  }
+
+  public createPortalAuthAttempt(
+    requestParameters: V1PortalAuthAttemptRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'POST',
+      url: `${this.basePath}/api/v1/portal/${encodeURIComponent(requestParameters.sessionId)}/auth-attempts`,
+      data: requestParameters.body,
+      ...withEnvironmentHeader(options, this.fallbackEnvironment),
+    });
+  }
+
+  public getPortalAuthAttempt(
+    requestParameters: V1PortalAuthAttemptGetRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'GET',
+      url: `${this.basePath}/api/v1/portal/${encodeURIComponent(requestParameters.sessionId)}/auth-attempts/${encodeURIComponent(requestParameters.authAttemptId)}`,
+      ...withEnvironmentHeader(options, this.fallbackEnvironment),
+    });
+  }
+
   public listPortalDiscoveredAccounts(
     requestParameters: V1PortalDiscoveredAccountsRequest,
     options?: V1RequestOptions
@@ -159,6 +243,17 @@ export class V1Api extends BaseAPI {
       method: 'GET',
       url: `${this.basePath}/api/v1/portal/${encodeURIComponent(requestParameters.sessionId)}/discovered-accounts`,
       params: query({ authAttemptId: requestParameters.authAttemptId }),
+      ...withEnvironmentHeader(options, this.fallbackEnvironment),
+    });
+  }
+
+  public completePortalSession(
+    requestParameters: V1PortalSessionRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'POST',
+      url: `${this.basePath}/api/v1/portal/${encodeURIComponent(requestParameters.sessionId)}/complete`,
       ...withEnvironmentHeader(options, this.fallbackEnvironment),
     });
   }
