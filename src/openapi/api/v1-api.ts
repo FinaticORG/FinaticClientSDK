@@ -145,7 +145,7 @@ export class V1Api extends BaseAPI {
   ): AxiosPromise<unknown> {
     return this.axios.request({
       method: 'POST',
-      url: `${this.basePath}/api/v1/sessions/${encodeURIComponent(requestParameters.sessionId)}/account-grants`,
+      url: `${this.basePath}/api/v1/portal/${encodeURIComponent(requestParameters.sessionId)}/account-grants`,
       data: requestParameters.body,
       ...withEnvironmentHeader(options, this.fallbackEnvironment),
     });
