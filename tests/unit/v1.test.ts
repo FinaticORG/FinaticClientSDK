@@ -305,6 +305,12 @@ describe('V1 account-first wrapper', () => {
     );
   });
 
+  it('does not expose unsupported order-groups through the v1 account resource surface', () => {
+    const wrapperMethods = Object.getOwnPropertyNames(V1Wrapper.prototype);
+
+    expect(wrapperMethods).not.toContain('listOrderGroups');
+  });
+
   it('keeps provider connection ids out of public v1 account params', () => {
     const params = ['accountId', 'limit', 'offset'];
 

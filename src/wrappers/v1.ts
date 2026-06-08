@@ -45,13 +45,7 @@ export interface AccountOrderCommandParams extends AccountOrderParams {
   idempotencyKey: string;
 }
 
-type AccountResource =
-  | 'balances'
-  | 'positions'
-  | 'transactions'
-  | 'orders'
-  | 'order-groups'
-  | 'position-lots';
+type AccountResource = 'balances' | 'positions' | 'transactions' | 'orders' | 'position-lots';
 
 export class V1Wrapper {
   protected api: V1Api;
@@ -270,13 +264,6 @@ export class V1Wrapper {
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
     return this.unwrap<T>(this.api.listAccountOrders(params, this.headers(options)));
-  }
-
-  listOrderGroups<T = unknown>(
-    params: AccountScopedParams,
-    options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.listAccountResource<T>('order-groups', params, options);
   }
 
   listPositionLots<T = unknown>(

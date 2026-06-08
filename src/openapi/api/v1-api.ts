@@ -30,7 +30,7 @@ export interface V1AccountRequest {
 }
 
 export interface V1AccountResourceRequest extends V1AccountRequest {
-  resource: 'balances' | 'positions' | 'transactions' | 'orders' | 'order-groups' | 'position-lots';
+  resource: 'balances' | 'positions' | 'transactions' | 'orders' | 'position-lots';
   limit?: number;
   offset?: number;
 }
