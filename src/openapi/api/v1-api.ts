@@ -5,7 +5,7 @@
  * Finatic account-first v1 API surface.
  *
  * Generated-equivalent client pinned to FinaticAPI PR #174 head
- * af42136a4a5efc21395f853955af3ccd4c0949b7.
+ * e778f539b2da2a227d579f23d6a84aac9a470285.
  */
 
 import type { AxiosInstance, AxiosPromise, RawAxiosRequestConfig } from 'axios';
