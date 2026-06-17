@@ -5,7 +5,7 @@
  * Finatic account-first v1 API surface.
  *
  * Generated-equivalent client pinned to FinaticAPI PR #174 head
- * 308bb9734eb23006d3c12dd8936c2b2586653bdc.
+ * c0982edbc58868303eb3bc971582a9dd39a12f6b.
  */
 
 import type { AxiosInstance, AxiosPromise, RawAxiosRequestConfig } from 'axios';
@@ -80,7 +80,7 @@ export interface V1PortalAuthAttemptGetRequest extends V1PortalSessionRequest {
 
 export interface V1PortalDiscoveredAccountsRequest {
   sessionId: string;
-  authAttemptId?: string;
+  authAttemptId: string;
 }
 
 export interface V1ConsentRequest {
