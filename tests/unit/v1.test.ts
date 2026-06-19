@@ -75,6 +75,7 @@ describe('V1 account-first wrapper', () => {
     await wrapper.getPortalAuthAttempt('session_123', 'auth_attempt_123');
     await wrapper.listPortalDiscoveredAccounts('session_123', {
       authAttemptId: 'auth_attempt_123',
+      includeSyncStatus: true,
     });
     await wrapper.createPortalAccountGrant('session_123', {
       accountId: 'account_123',
@@ -133,7 +134,7 @@ describe('V1 account-first wrapper', () => {
       expect.objectContaining({
         method: 'GET',
         url: 'https://api.test/api/v1/portal/session_123/discovered-accounts',
-        params: { authAttemptId: 'auth_attempt_123' },
+        params: { authAttemptId: 'auth_attempt_123', includeSyncStatus: true },
       })
     );
     expect(axios.request).toHaveBeenNthCalledWith(

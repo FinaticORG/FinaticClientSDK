@@ -5,7 +5,7 @@
  * Finatic account-first v1 API surface.
  *
  * Generated-equivalent client pinned to FinaticAPI PR #174 head
- * c0982edbc58868303eb3bc971582a9dd39a12f6b.
+ * 4ca1732070e58cefca2c4a442670c48cf414eedb.
  */
 
 import type { AxiosInstance, AxiosPromise, RawAxiosRequestConfig } from 'axios';
@@ -81,6 +81,7 @@ export interface V1PortalAuthAttemptGetRequest extends V1PortalSessionRequest {
 export interface V1PortalDiscoveredAccountsRequest {
   sessionId: string;
   authAttemptId: string;
+  includeSyncStatus?: boolean;
 }
 
 export interface V1ConsentRequest {
@@ -242,7 +243,10 @@ export class V1Api extends BaseAPI {
     return this.axios.request({
       method: 'GET',
       url: `${this.basePath}/api/v1/portal/${encodeURIComponent(requestParameters.sessionId)}/discovered-accounts`,
-      params: query({ authAttemptId: requestParameters.authAttemptId }),
+      params: query({
+        authAttemptId: requestParameters.authAttemptId,
+        includeSyncStatus: requestParameters.includeSyncStatus,
+      }),
       ...withEnvironmentHeader(options, this.fallbackEnvironment),
     });
   }
