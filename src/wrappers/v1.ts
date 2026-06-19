@@ -188,7 +188,7 @@ export class V1Wrapper {
 
   listPortalDiscoveredAccounts<T = unknown>(
     sessionId: string,
-    params: { authAttemptId: string },
+    params: { authAttemptId: string; includeSyncStatus?: boolean },
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
     return this.unwrap<T>(
