@@ -2,9 +2,9 @@
  * Hand-maintained company wrapper over the OpenAPI-generated client in ``src/openapi/``.
  */
 
-import { CompanyApi } from '../openapi/api/company-api';
+import { CompanyApi } from '../openapi-legacy/api/company-api';
 
-import type { Configuration } from '../openapi/configuration';
+import type { Configuration } from '../openapi-legacy/configuration';
 import type { SdkConfig } from '../config';
 import { generateRequestId } from '../utils/request-id';
 import { retryApiCall } from '../utils/retry';
@@ -15,7 +15,7 @@ import { applyResponseInterceptors, applyErrorInterceptors } from '../utils/inte
 import { unwrapAxiosResponse } from '../utils/response-utils';
 import { convertToPlainObject } from '../utils/plain-object';
 
-import type { Accounts } from '../openapi/models';
+import type { Accounts } from '../openapi-legacy/models';
 
 // Always import PaginatedData since method bodies may reference it (even if unreachable)
 import { PaginatedData } from '../utils/pagination';
