@@ -2,10 +2,10 @@
  * Hand-maintained brokers wrapper over the OpenAPI-generated client in ``src/openapi/``.
  */
 
-import { BrokersApi } from '../openapi/api/brokers-api';
-import type { BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest } from '../openapi/api/brokers-api';
+import { BrokersApi } from '../openapi-legacy/api/brokers-api';
+import type { BrokersApiPlaceOrderApiBetaBrokersOrdersPostRequest } from '../openapi-legacy/api/brokers-api';
 
-import type { Configuration } from '../openapi/configuration';
+import type { Configuration } from '../openapi-legacy/configuration';
 import type { SdkConfig } from '../config';
 import { generateRequestId } from '../utils/request-id';
 import { retryApiCall } from '../utils/retry';
@@ -16,25 +16,25 @@ import { applyResponseInterceptors, applyErrorInterceptors } from '../utils/inte
 import { unwrapAxiosResponse } from '../utils/response-utils';
 import { coerceEnumValue } from '../utils/enum-coercion';
 import { convertToPlainObject } from '../utils/plain-object';
-import { BrokerDataAccountTypeEnum } from '../openapi/models';
-import { BrokerDataAssetTypeEnum } from '../openapi/models';
-import { BrokerDataOrderSideEnum } from '../openapi/models';
-import { BrokerDataPositionStatusEnum } from '../openapi/models';
+import { BrokerDataAccountTypeEnum } from '../openapi-legacy/models';
+import { BrokerDataAssetTypeEnum } from '../openapi-legacy/models';
+import { BrokerDataOrderSideEnum } from '../openapi-legacy/models';
+import { BrokerDataPositionStatusEnum } from '../openapi-legacy/models';
 
-import type { BrokerInfo } from '../openapi/models';
-import type { DisconnectCompanyFromBrokerConnectionResult } from '../openapi/models';
-import type { FDXBrokerOrder } from '../openapi/models/fdxbroker-order';
-import type { FDXBrokerOrderEvent } from '../openapi/models/fdxbroker-order-event';
-import type { FDXBrokerOrderFill } from '../openapi/models/fdxbroker-order-fill';
-import type { FDXBrokerOrderGroup } from '../openapi/models/fdxbroker-order-group';
-import type { FDXBrokerPosition } from '../openapi/models/fdxbroker-position';
-import type { FDXBrokerPositionLot } from '../openapi/models/fdxbroker-position-lot';
-import type { FDXBrokerPositionLotFill } from '../openapi/models/fdxbroker-position-lot-fill';
-import type { FDXBrokerTransaction } from '../openapi/models/fdxbroker-transaction';
-import type { LegacyBrokerAccount } from '../openapi/models';
-import type { LegacyBrokerBalance } from '../openapi/models';
-import type { OrderActionResult } from '../openapi/models';
-import type { UserBrokerConnectionWithPermissions } from '../openapi/models';
+import type { BrokerInfo } from '../openapi-legacy/models';
+import type { DisconnectCompanyFromBrokerConnectionResult } from '../openapi-legacy/models';
+import type { FDXBrokerOrder } from '../openapi-legacy/models/fdxbroker-order';
+import type { FDXBrokerOrderEvent } from '../openapi-legacy/models/fdxbroker-order-event';
+import type { FDXBrokerOrderFill } from '../openapi-legacy/models/fdxbroker-order-fill';
+import type { FDXBrokerOrderGroup } from '../openapi-legacy/models/fdxbroker-order-group';
+import type { FDXBrokerPosition } from '../openapi-legacy/models/fdxbroker-position';
+import type { FDXBrokerPositionLot } from '../openapi-legacy/models/fdxbroker-position-lot';
+import type { FDXBrokerPositionLotFill } from '../openapi-legacy/models/fdxbroker-position-lot-fill';
+import type { FDXBrokerTransaction } from '../openapi-legacy/models/fdxbroker-transaction';
+import type { LegacyBrokerAccount } from '../openapi-legacy/models';
+import type { LegacyBrokerBalance } from '../openapi-legacy/models';
+import type { OrderActionResult } from '../openapi-legacy/models';
+import type { UserBrokerConnectionWithPermissions } from '../openapi-legacy/models';
 
 // Always import PaginatedData since method bodies may reference it (even if unreachable)
 import { PaginatedData } from '../utils/pagination';

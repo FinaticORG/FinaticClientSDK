@@ -4,6 +4,15 @@ Browser SDK for integrating Finatic in frontend applications.
 
 This package is optimized for SDK-first portal and brokerage-data workflows from client-side apps.
 
+## Version lines (FDX v1)
+
+| Version | API surface | Use when |
+|---------|-------------|----------|
+| **1.0.0+** | `/api/v1/*` via `finatic.v1` | New account-grant integrations |
+| **0.9.x** | `/api/beta/*` via legacy wrappers | Existing apps until migrated |
+
+Legacy beta clients live under `src/openapi-legacy/`; v1 OpenAPI output is under `src/openapi/`.
+
 ## Install
 
 ```bash

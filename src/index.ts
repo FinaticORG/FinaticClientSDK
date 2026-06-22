@@ -15,11 +15,12 @@ export * from './config';
 // Client SDK uses FinaticConnect instead of raw API clients
 // Export models - ValidationError interface is available as ApiValidationError
 export type { ValidationError as ApiValidationError } from './openapi/models/validation-error';
-// Re-export all models (ValidationError export is excluded from models/index.ts to avoid conflict)
+// Re-export v1 models (FinaticEnvironment excluded — conflicts with SdkConfig type)
 export * from './openapi/models';
 export * from './openapi/configuration';
 export { V1Api } from './openapi/api/v1-api';
 export type { FinaticApiEnvironment, V1RequestOptions } from './openapi/api/v1-api';
+// Legacy beta models live under openapi-legacy/ and are not re-exported from the public barrel.
 
 // Main SDK classes
 export { FinaticConnect } from './FinaticConnect';

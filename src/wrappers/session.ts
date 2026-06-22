@@ -2,9 +2,9 @@
  * Hand-maintained session wrapper over the OpenAPI-generated client in ``src/openapi/``.
  */
 
-import { SessionApi } from '../openapi/api/session-api';
+import { SessionApi } from '../openapi-legacy/api/session-api';
 
-import type { Configuration } from '../openapi/configuration';
+import type { Configuration } from '../openapi-legacy/configuration';
 import type { SdkConfig } from '../config';
 import { generateRequestId } from '../utils/request-id';
 import { retryApiCall } from '../utils/retry';
@@ -15,11 +15,11 @@ import { applyResponseInterceptors, applyErrorInterceptors } from '../utils/inte
 import { unwrapAxiosResponse } from '../utils/response-utils';
 import { convertToPlainObject } from '../utils/plain-object';
 
-import type { FinaticResponsePortalUrlResponse } from '../openapi/models';
-import type { FinaticResponseSessionResponseData } from '../openapi/models';
-import type { FinaticResponseSessionUserResponse } from '../openapi/models';
-import type { FinaticResponseTokenResponseData } from '../openapi/models';
-import type { SessionStartRequest } from '../openapi/models';
+import type { FinaticResponsePortalUrlResponse } from '../openapi-legacy/models';
+import type { FinaticResponseSessionResponseData } from '../openapi-legacy/models';
+import type { FinaticResponseSessionUserResponse } from '../openapi-legacy/models';
+import type { FinaticResponseTokenResponseData } from '../openapi-legacy/models';
+import type { SessionStartRequest } from '../openapi-legacy/models';
 
 // Always import PaginatedData since method bodies may reference it (even if unreachable)
 import { PaginatedData } from '../utils/pagination';
