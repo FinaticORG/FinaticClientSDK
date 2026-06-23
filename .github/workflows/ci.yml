@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, fdx-account-consent-v1]
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, fdx-account-consent-v1]
 
 jobs:
   quality-and-tests:
@@ -31,5 +31,5 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test
-        run: npm test -- --runInBand
+      - name: Unit tests with coverage gate
+        run: npm run test:coverage -- --runInBand
