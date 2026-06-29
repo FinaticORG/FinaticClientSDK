@@ -124,9 +124,7 @@ export function appendStageToURL(baseUrl: string, stages?: PortalStage[]): strin
   try {
     const url = new URL(baseUrl);
     const normalizedStages = [...new Set(stages)];
-    const includesAllStages = ALL_PORTAL_STAGES.every((stage) =>
-      normalizedStages.includes(stage),
-    );
+    const includesAllStages = ALL_PORTAL_STAGES.every((stage) => normalizedStages.includes(stage));
     url.searchParams.set('stage', includesAllStages ? 'all' : normalizedStages.join(','));
     return url.toString();
   } catch {

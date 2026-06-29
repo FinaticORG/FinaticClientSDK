@@ -179,11 +179,7 @@ export class FinaticConnect extends EventEmitter {
     this.v1 = new V1Wrapper(new V1Api(this.config), this.config, this.sdkConfig);
 
     if (previousSessionId && previousCompanyId) {
-      this.v1.setSessionContext(
-        previousSessionId,
-        previousCompanyId,
-        previousCsrfToken || ''
-      );
+      this.v1.setSessionContext(previousSessionId, previousCompanyId, previousCsrfToken || '');
     }
     if (previousUserId) {
       this.v1.setUserId(previousUserId);
@@ -327,5 +323,4 @@ export class FinaticConnect extends EventEmitter {
       },
     });
   }
-
 }
