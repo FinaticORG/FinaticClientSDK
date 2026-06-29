@@ -5,7 +5,7 @@
  * Finatic account-first v1 API surface.
  *
  * Generated-equivalent client pinned to FinaticAPI PR #174 head
- * 969cccc50b44cd8c701f47dddf8cb3b95c9b8f6e.
+ * 9ecc1e0be7f045c2cb439008732c6ec4b941173d.
  */
 
 import type { AxiosInstance, AxiosPromise, RawAxiosRequestConfig } from 'axios';
@@ -30,13 +30,17 @@ export interface V1AccountRequest {
 }
 
 export interface V1AccountResourceRequest extends V1AccountRequest {
-  resource: 'balances' | 'positions' | 'transactions' | 'orders';
+  resource: 'balances' | 'positions' | 'transactions' | 'orders' | 'position-lots';
   limit?: number;
   offset?: number;
 }
 
 export interface V1AccountOrderRequest extends V1AccountRequest {
   orderId: string;
+}
+
+export interface V1AccountPositionLotRequest extends V1AccountRequest {
+  lotId: string;
 }
 
 export interface V1CreateAccountOrderCommandRequest extends V1AccountRequest {
@@ -368,6 +372,19 @@ export class V1Api extends BaseAPI {
     );
   }
 
+  public listAccountPositionLots(
+    requestParameters: AccountScopedRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return listExplicitAccountResource(
+      this,
+      this.fallbackEnvironment,
+      'position-lots',
+      requestParameters,
+      options
+    );
+  }
+
   public getAccountOrder(
     requestParameters: V1AccountOrderRequest,
     options?: V1RequestOptions
@@ -397,6 +414,17 @@ export class V1Api extends BaseAPI {
     return this.axios.request({
       method: 'GET',
       url: `${this.basePath}/api/v1/accounts/${encodeURIComponent(requestParameters.accountId)}/orders/${encodeURIComponent(requestParameters.orderId)}/events`,
+      ...withEnvironmentHeader(options, this.fallbackEnvironment),
+    });
+  }
+
+  public getAccountPositionLotFills(
+    requestParameters: V1AccountPositionLotRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'GET',
+      url: `${this.basePath}/api/v1/accounts/${encodeURIComponent(requestParameters.accountId)}/position-lots/${encodeURIComponent(requestParameters.lotId)}/fills`,
       ...withEnvironmentHeader(options, this.fallbackEnvironment),
     });
   }
@@ -613,7 +641,7 @@ interface AccountScopedRequest extends V1AccountRequest {
 function listExplicitAccountResource(
   api: BaseAPI,
   fallbackEnvironment: FinaticApiEnvironment,
-  resource: 'balances' | 'positions' | 'transactions' | 'orders',
+  resource: 'balances' | 'positions' | 'transactions' | 'orders' | 'position-lots',
   requestParameters: AccountScopedRequest,
   options?: V1RequestOptions
 ): AxiosPromise<unknown> {

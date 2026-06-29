@@ -37,6 +37,11 @@ export interface AccountOrderParams {
   orderId: string;
 }
 
+export interface AccountPositionLotParams {
+  accountId: string;
+  lotId: string;
+}
+
 export interface CreateAccountOrderCommandParams {
   accountId: string;
   body?: unknown;
@@ -48,7 +53,7 @@ export interface AccountOrderCommandParams extends AccountOrderParams {
   idempotencyKey: string;
 }
 
-type AccountResource = 'balances' | 'positions' | 'transactions' | 'orders';
+type AccountResource = 'balances' | 'positions' | 'transactions' | 'orders' | 'position-lots';
 
 export interface PortalUrlParams {
   theme?: string | { preset?: string; custom?: Record<string, unknown> };
@@ -358,6 +363,13 @@ export class V1Wrapper {
     return this.unwrap<T>(this.api.listAccountOrders(params, this.headers(options)));
   }
 
+  listPositionLots<T = unknown>(
+    params: AccountScopedParams,
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(this.api.listAccountPositionLots(params, this.headers(options)));
+  }
+
   getAccountOrder<T = unknown>(
     params: AccountOrderParams,
     options?: FinaticV1CallOptions
@@ -377,6 +389,13 @@ export class V1Wrapper {
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
     return this.unwrap<T>(this.api.getAccountOrderEvents(params, this.headers(options)));
+  }
+
+  getAccountPositionLotFills<T = unknown>(
+    params: AccountPositionLotParams,
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(this.api.getAccountPositionLotFills(params, this.headers(options)));
   }
 
   createAccountOrder<T = unknown>(
