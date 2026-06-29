@@ -8,7 +8,6 @@ import axios from 'axios';
 import { Client } from 'pg';
 
 import type { FinaticV1Response } from '../../../src/wrappers/v1';
-import type { V1Wrapper } from '../../../src/wrappers/v1';
 
 const SANDBOX_USER_ID_NAMESPACE = '2221c296-b144-5ebc-847b-08412e806b8c';
 
@@ -133,70 +132,6 @@ export async function assertApiReachable(baseUrl: string = DEFAULT_API_BASE_URL)
   }
 }
 
-function sessionField(
-  sessionData: Record<string, unknown>,
-  ...keys: string[]
-): string {
-  for (const key of keys) {
-    const value = sessionData[key];
-    if (value !== undefined && value !== null) {
-      return String(value);
-    }
-  }
-  throw new Error(`Missing session field (${keys.join(', ')}) in ${JSON.stringify(sessionData)}`);
-}
-
-export async function createSandboxPortalSessionHttp(
-  apiKey: string,
-  linkEmail: string,
-  v1: V1Wrapper,
-  baseUrl: string = DEFAULT_API_BASE_URL
-): Promise<{ sessionId: string; companyId: string }> {
-  const sessionResponse = await axios.post(
-    `${baseUrl}/api/v1/sessions`,
-    {},
-    {
-      headers: {
-        'x-api-key': apiKey,
-        'X-Finatic-Environment': 'sandbox',
-        ...DEVICE_HEADERS,
-      },
-      validateStatus: () => true,
-    }
-  );
-  if (sessionResponse.status !== 200) {
-    throw new Error(`createSession failed: ${sessionResponse.status} ${JSON.stringify(sessionResponse.data)}`);
-  }
-
-  const sessionPayload = sessionResponse.data?.success?.data ?? sessionResponse.data?.data;
-  const sessionData = (sessionPayload ?? {}) as Record<string, unknown>;
-  const sessionId = sessionField(sessionData, 'sessionId', 'session_id');
-  const companyId = sessionField(sessionData, 'companyId', 'company_id');
-
-  const institutionsResponse = await axios.get(`${baseUrl}/api/v1/portal/${sessionId}/institutions`, {
-    headers: {
-      'x-api-key': apiKey,
-      'X-Finatic-Environment': 'sandbox',
-      ...DEVICE_HEADERS,
-    },
-    validateStatus: () => true,
-  });
-  const csrfToken = institutionsResponse.headers['x-csrf-token'];
-  if (!csrfToken || typeof csrfToken !== 'string') {
-    throw new Error('Expected x-csrf-token header from portal institutions GET');
-  }
-
-  v1.setSessionContext(sessionId, companyId, csrfToken);
-  const linkResponse = await v1.linkPortalUser(
-    sessionId,
-    { userId: sandboxUserIdFromEmail(linkEmail) },
-    { environment: 'sandbox' }
-  );
-  assertClientV1Success(linkResponse);
-
-  return { sessionId, companyId };
-}
-
 export function assertClientV1Success<T>(response: FinaticV1Response<T>): T {
   if (response.error) {
     throw new Error(JSON.stringify(response.error));
@@ -205,40 +140,4 @@ export function assertClientV1Success<T>(response: FinaticV1Response<T>): T {
     throw new Error(`Missing success data: ${JSON.stringify(response)}`);
   }
   return response.success.data;
-}
-
-function firstPresent(record: Record<string, unknown>, ...keys: string[]): unknown {
-  for (const key of keys) {
-    if (record[key] !== undefined && record[key] !== null) {
-      return record[key];
-    }
-  }
-  return undefined;
-}
-
-export async function createSandboxPortalAccountGrant(
-  v1: V1Wrapper,
-  sessionId: string,
-  authAttempt: Record<string, unknown>
-): Promise<Record<string, unknown>> {
-  const authAttemptId = String(firstPresent(authAttempt, 'id', 'authAttemptId') ?? '');
-  const discoveredAccountIds =
-    (firstPresent(authAttempt, 'discoveredAccountIds', 'discovered_account_ids') as
-      | string[]
-      | undefined) ?? [];
-  if (!authAttemptId || discoveredAccountIds.length === 0) {
-    throw new Error(`Auth attempt missing discovered accounts: ${JSON.stringify(authAttempt)}`);
-  }
-
-  const grantResponse = await v1.createPortalAccountGrant(
-    sessionId,
-    {
-      accountId: String(discoveredAccountIds[0]),
-      authAttemptId,
-      canRead: true,
-      canTrade: false,
-    },
-    { environment: 'sandbox' }
-  );
-  return assertClientV1Success(grantResponse) as Record<string, unknown>;
 }

@@ -56,105 +56,23 @@ describe('V1 account-first wrapper', () => {
     expect(() => wrapper.createSession({})).toThrow('server-only');
     expect(() => wrapper.getSession('session_123')).toThrow('server-only');
     expect(() => wrapper.createPortalLink('session_123')).toThrow('server-only');
-    expect(() => wrapper.getSessionUser('session_123')).toThrow('server-only');
     expect(() => wrapper.getSessionSyncStatus('session_123')).toThrow('server-only');
 
     expect(axios.request).not.toHaveBeenCalled();
   });
 
-  it('creates portal account grants with the authAttemptId API contract', async () => {
-    const axios = createAxiosLikeClient();
-    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
-    const wrapper = new V1Wrapper(api);
+  it('does not expose portal consent flow methods on the client SDK', () => {
+    const wrapperMethods = Object.getOwnPropertyNames(V1Wrapper.prototype);
 
-    await wrapper.exchangePortalToken('portal_token_123');
-    await wrapper.consumeOAuthCompletionToken('oauth_token_123');
-    await wrapper.linkPortalUser('session_123', { userId: 'user_123' });
-    await wrapper.listPortalInstitutions('session_123');
-    await wrapper.createPortalAuthAttempt('session_123', { brokerId: 'alpaca' });
-    await wrapper.getPortalAuthAttempt('session_123', 'auth_attempt_123');
-    await wrapper.listPortalDiscoveredAccounts('session_123', {
-      authAttemptId: 'auth_attempt_123',
-      includeSyncStatus: true,
-    });
-    await wrapper.createPortalAccountGrant('session_123', {
-      accountId: 'account_123',
-      authAttemptId: 'auth_attempt_123',
-      canRead: true,
-      canTrade: false,
-    });
-    await wrapper.completePortalSession('session_123');
-
-    expect(axios.request).toHaveBeenNthCalledWith(
-      1,
-      expect.objectContaining({
-        method: 'GET',
-        url: 'https://api.test/api/v1/portal/portal_token_123',
-      })
-    );
-    expect(axios.request).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining({
-        method: 'GET',
-        url: 'https://api.test/api/v1/portal/oauth/completion/oauth_token_123',
-      })
-    );
-    expect(axios.request).toHaveBeenNthCalledWith(
-      3,
-      expect.objectContaining({
-        method: 'POST',
-        url: 'https://api.test/api/v1/portal/session_123/user-link',
-        data: { userId: 'user_123' },
-      })
-    );
-    expect(axios.request).toHaveBeenNthCalledWith(
-      4,
-      expect.objectContaining({
-        method: 'GET',
-        url: 'https://api.test/api/v1/portal/session_123/institutions',
-      })
-    );
-    expect(axios.request).toHaveBeenNthCalledWith(
-      5,
-      expect.objectContaining({
-        method: 'POST',
-        url: 'https://api.test/api/v1/portal/session_123/auth-attempts',
-        data: { brokerId: 'alpaca' },
-      })
-    );
-    expect(axios.request).toHaveBeenNthCalledWith(
-      6,
-      expect.objectContaining({
-        method: 'GET',
-        url: 'https://api.test/api/v1/portal/session_123/auth-attempts/auth_attempt_123',
-      })
-    );
-    expect(axios.request).toHaveBeenNthCalledWith(
-      7,
-      expect.objectContaining({
-        method: 'GET',
-        url: 'https://api.test/api/v1/portal/session_123/discovered-accounts',
-        params: { authAttemptId: 'auth_attempt_123', includeSyncStatus: true },
-      })
-    );
-    expect(axios.request).toHaveBeenNthCalledWith(
-      8,
-      expect.objectContaining({
-        method: 'POST',
-        url: 'https://api.test/api/v1/portal/session_123/account-grants',
-        data: expect.objectContaining({
-          accountId: 'account_123',
-          authAttemptId: 'auth_attempt_123',
-        }),
-      })
-    );
-    expect(axios.request).toHaveBeenNthCalledWith(
-      9,
-      expect.objectContaining({
-        method: 'POST',
-        url: 'https://api.test/api/v1/portal/session_123/complete',
-      })
-    );
+    expect(wrapperMethods).not.toContain('exchangePortalToken');
+    expect(wrapperMethods).not.toContain('consumeOAuthCompletionToken');
+    expect(wrapperMethods).not.toContain('linkPortalUser');
+    expect(wrapperMethods).not.toContain('listPortalInstitutions');
+    expect(wrapperMethods).not.toContain('createPortalAuthAttempt');
+    expect(wrapperMethods).not.toContain('getPortalAuthAttempt');
+    expect(wrapperMethods).not.toContain('listPortalDiscoveredAccounts');
+    expect(wrapperMethods).not.toContain('createPortalAccountGrant');
+    expect(wrapperMethods).not.toContain('completePortalSession');
   });
 
   it('keeps generated-equivalent session routes available for server-bound callers', async () => {
@@ -175,38 +93,11 @@ describe('V1 account-first wrapper', () => {
     );
   });
 
-  it('creates FDX consent grants from the current API contract', async () => {
+  it('covers account trading commands from the API contract', async () => {
     const axios = createAxiosLikeClient();
     const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
     const wrapper = new V1Wrapper(api);
 
-    await wrapper.createConsent({
-      consentGrant: {
-        accountId: 'acct_123',
-        dataClusters: ['account_info'],
-      },
-    });
-
-    expect(axios.request).toHaveBeenCalledWith(
-      expect.objectContaining({
-        method: 'POST',
-        url: 'https://api.test/api/v1/consents',
-        data: {
-          consentGrant: {
-            accountId: 'acct_123',
-            dataClusters: ['account_info'],
-          },
-        },
-      })
-    );
-  });
-
-  it('covers account trading commands and position lot fills from the API contract', async () => {
-    const axios = createAxiosLikeClient();
-    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
-    const wrapper = new V1Wrapper(api);
-
-    await wrapper.getAccountPositionLotFills({ accountId: 'acct_123', lotId: 'lot_123' });
     await wrapper.createAccountOrder({
       accountId: 'acct_123',
       idempotencyKey: 'idem_123',
@@ -227,20 +118,13 @@ describe('V1 account-first wrapper', () => {
     expect(axios.request).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
-        method: 'GET',
-        url: 'https://api.test/api/v1/accounts/acct_123/position-lots/lot_123/fills',
-      })
-    );
-    expect(axios.request).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining({
         method: 'POST',
         url: 'https://api.test/api/v1/accounts/acct_123/orders',
         headers: expect.objectContaining({ 'Idempotency-Key': 'idem_123' }),
       })
     );
     expect(axios.request).toHaveBeenNthCalledWith(
-      3,
+      2,
       expect.objectContaining({
         method: 'PATCH',
         url: 'https://api.test/api/v1/accounts/acct_123/orders/order_123',
@@ -248,7 +132,7 @@ describe('V1 account-first wrapper', () => {
       })
     );
     expect(axios.request).toHaveBeenNthCalledWith(
-      4,
+      3,
       expect.objectContaining({
         method: 'DELETE',
         url: 'https://api.test/api/v1/accounts/acct_123/orders/order_123',
@@ -266,7 +150,6 @@ describe('V1 account-first wrapper', () => {
     await wrapper.listPositions({ accountId: 'acct_123' });
     await wrapper.listTransactions({ accountId: 'acct_123' });
     await wrapper.listOrders({ accountId: 'acct_123' });
-    await wrapper.listPositionLots({ accountId: 'acct_123' });
 
     expect(axios.request).toHaveBeenNthCalledWith(
       1,
@@ -295,13 +178,6 @@ describe('V1 account-first wrapper', () => {
       expect.objectContaining({
         method: 'GET',
         url: 'https://api.test/api/v1/accounts/acct_123/orders',
-      })
-    );
-    expect(axios.request).toHaveBeenNthCalledWith(
-      5,
-      expect.objectContaining({
-        method: 'GET',
-        url: 'https://api.test/api/v1/accounts/acct_123/position-lots',
       })
     );
   });
