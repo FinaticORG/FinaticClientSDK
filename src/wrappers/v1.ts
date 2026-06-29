@@ -1,6 +1,14 @@
 import { V1Api, type FinaticApiEnvironment } from '../openapi/api/v1-api';
+import { SessionApi } from '../openapi/api/session-api';
 import type { Configuration } from '../openapi/configuration';
 import type { SdkConfig } from '../config';
+import {
+  appendAssetTypesToURL,
+  appendBrokerFilterToURL,
+  appendKindToURL,
+  appendStageToURL,
+  appendThemeToURL,
+} from '../utils/url-utils';
 import { generateRequestId } from '../utils/request-id';
 import { unwrapAxiosResponse } from '../utils/response-utils';
 
@@ -29,11 +37,6 @@ export interface AccountOrderParams {
   orderId: string;
 }
 
-export interface AccountPositionLotFillsParams {
-  accountId: string;
-  lotId: string;
-}
-
 export interface CreateAccountOrderCommandParams {
   accountId: string;
   body?: unknown;
@@ -45,18 +48,66 @@ export interface AccountOrderCommandParams extends AccountOrderParams {
   idempotencyKey: string;
 }
 
-type AccountResource = 'balances' | 'positions' | 'transactions' | 'orders' | 'position-lots';
+type AccountResource = 'balances' | 'positions' | 'transactions' | 'orders';
+
+export interface PortalUrlParams {
+  theme?: string | { preset?: string; custom?: Record<string, unknown> };
+  brokers?: string[];
+  kind?: 'broker' | 'exchange';
+  asset_types?: string[];
+  stage?: ('production' | 'beta' | 'alpha')[];
+  email?: string;
+  mode?: 'light' | 'dark';
+}
+
+function readSessionField(
+  data: Record<string, unknown> | null | undefined,
+  keys: string[]
+): string {
+  if (!data) {
+    return '';
+  }
+  for (const key of keys) {
+    const value = data[key];
+    if (typeof value === 'string' && value) {
+      return value;
+    }
+  }
+  return '';
+}
+
+function extractFinaticData(response: FinaticV1Response | null | undefined): Record<string, unknown> {
+  if (!response) {
+    throw new Error('Empty response from API');
+  }
+  if (response.error) {
+    throw new Error(
+      typeof response.error['message'] === 'string'
+        ? response.error['message']
+        : 'Request failed'
+    );
+  }
+  if (response.success?.data !== null && response.success?.data !== undefined) {
+    if (typeof response.success.data === 'object') {
+      return response.success.data as Record<string, unknown>;
+    }
+  }
+  throw new Error('Invalid response structure from API');
+}
 
 export class V1Wrapper {
   protected api: V1Api;
+  protected sessionApi: SessionApi;
   protected config?: Configuration;
   protected sdkConfig?: SdkConfig;
   protected sessionId?: string;
   protected companyId?: string;
   protected csrfToken?: string;
+  protected userId?: string;
 
   constructor(api: V1Api, config?: Configuration, sdkConfig?: SdkConfig) {
     this.api = api;
+    this.sessionApi = new SessionApi(config);
     if (config !== undefined) {
       this.config = config;
     }
@@ -84,6 +135,137 @@ export class V1Wrapper {
     this.sessionId = sessionId;
     this.companyId = companyId;
     this.csrfToken = csrfToken;
+  }
+
+  getSessionId(): string | undefined {
+    return this.sessionId;
+  }
+
+  getCompanyId(): string | undefined {
+    return this.companyId;
+  }
+
+  getUserId(): string | undefined {
+    return this.userId;
+  }
+
+  isAuthed(): boolean {
+    return !!this.userId;
+  }
+
+  setUserId(userId: string): void {
+    this.userId = userId;
+  }
+
+  getCsrfToken(): string | undefined {
+    return this.csrfToken;
+  }
+
+  async startSession(
+    oneTimeToken: string,
+    userId?: string
+  ): Promise<{ session_id: string; company_id: string }> {
+    const requestBody = userId !== undefined ? { user_id: userId } : null;
+    const axiosResponse = await this.sessionApi.startSessionApiV1SessionStartPost({
+      oneTimeToken,
+      sessionStartRequest: requestBody,
+    });
+    const response = unwrapAxiosResponse<FinaticV1Response>(axiosResponse);
+    const data = extractFinaticData(response);
+
+    const sessionId = readSessionField(data, ['session_id', 'sessionId']);
+    const companyId = readSessionField(data, ['company_id', 'companyId']);
+    const responseUserId = readSessionField(data, ['user_id', 'userId']);
+    const csrfToken = readSessionField(data, ['csrf_token', 'csrfToken']);
+
+    if (sessionId && companyId) {
+      this.setSessionContext(sessionId, companyId, csrfToken);
+    }
+
+    const finalUserId = responseUserId || userId;
+    if (finalUserId) {
+      this.userId = finalUserId;
+    }
+
+    return { session_id: sessionId, company_id: companyId };
+  }
+
+  async getPortalUrl(params?: PortalUrlParams): Promise<string> {
+    if (!this.sessionId) {
+      throw new Error('Session not initialized. Call v1.startSession() first.');
+    }
+
+    const axiosResponse = await this.sessionApi.getPortalUrlApiV1SessionPortalGet(
+      { sessionId: this.sessionId },
+      { headers: { 'x-session-id': this.sessionId } }
+    );
+
+    const response = unwrapAxiosResponse<FinaticV1Response>(axiosResponse);
+    const data = extractFinaticData(response);
+
+    let portalUrl = readSessionField(data, ['portal_url', 'portalUrl']);
+    if (!portalUrl) {
+      throw new Error('Invalid portal URL response: missing portal_url');
+    }
+
+    try {
+      new URL(portalUrl);
+    } catch {
+      throw new Error(`Invalid portal URL received from API: ${portalUrl}`);
+    }
+
+    const { theme, brokers, kind, asset_types, stage, email, mode } = params || {};
+    if (theme) {
+      portalUrl = appendThemeToURL(portalUrl, theme);
+    }
+    if (brokers) {
+      portalUrl = appendBrokerFilterToURL(portalUrl, brokers);
+    }
+    if (kind) {
+      portalUrl = appendKindToURL(portalUrl, kind);
+    }
+    if (asset_types && asset_types.length > 0) {
+      portalUrl = appendAssetTypesToURL(portalUrl, asset_types);
+    }
+    if (stage && stage.length > 0) {
+      portalUrl = appendStageToURL(portalUrl, stage);
+    }
+    if (email) {
+      const url = new URL(portalUrl);
+      url.searchParams.set('email', email);
+      portalUrl = url.toString();
+    }
+    if (mode) {
+      const url = new URL(portalUrl);
+      url.searchParams.set('mode', mode);
+      portalUrl = url.toString();
+    }
+
+    return portalUrl;
+  }
+
+  async getSessionUser(): Promise<{ user_id: string; company_id: string }> {
+    if (!this.sessionId) {
+      throw new Error('Session not initialized. Call v1.startSession() first.');
+    }
+
+    const axiosResponse = await this.sessionApi.getSessionUserApiV1SessionSessionIdUserGet({
+      sessionId: this.sessionId,
+      xSessionId: this.sessionId,
+    });
+
+    const response = unwrapAxiosResponse<FinaticV1Response>(axiosResponse);
+    const data = extractFinaticData(response);
+    const resolvedUserId = readSessionField(data, ['user_id', 'userId']);
+
+    if (resolvedUserId) {
+      this.userId = resolvedUserId;
+    }
+
+    return {
+      user_id: resolvedUserId,
+      company_id: this.companyId || '',
+    };
   }
 
   private async unwrap<T>(call: Promise<unknown>): Promise<FinaticV1Response<T>> {
@@ -118,96 +300,6 @@ export class V1Wrapper {
     _options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
     return this.serverOnlySessionRoute('finatic.v1.createPortalLink');
-  }
-
-  createPortalAccountGrant<T = unknown>(
-    sessionId: string,
-    body: {
-      accountId: string;
-      authAttemptId: string;
-      canRead?: boolean;
-      canTrade?: boolean;
-      dataClusters?: string[];
-      consentId?: string | null;
-    },
-    options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(
-      this.api.createPortalAccountGrant({ sessionId, body }, this.headers(options))
-    );
-  }
-
-  exchangePortalToken<T = unknown>(
-    token: string,
-    options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.exchangePortalToken({ token }, this.headers(options)));
-  }
-
-  consumeOAuthCompletionToken<T = unknown>(
-    token: string,
-    options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.consumeOAuthCompletionToken({ token }, this.headers(options)));
-  }
-
-  linkPortalUser<T = unknown>(
-    sessionId: string,
-    body: { userId: string },
-    options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.linkPortalUser({ sessionId, body }, this.headers(options)));
-  }
-
-  listPortalInstitutions<T = unknown>(
-    sessionId: string,
-    options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.listPortalInstitutions({ sessionId }, this.headers(options)));
-  }
-
-  createPortalAuthAttempt<T = unknown>(
-    sessionId: string,
-    body: { brokerId: string },
-    options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(
-      this.api.createPortalAuthAttempt({ sessionId, body }, this.headers(options))
-    );
-  }
-
-  getPortalAuthAttempt<T = unknown>(
-    sessionId: string,
-    authAttemptId: string,
-    options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(
-      this.api.getPortalAuthAttempt({ sessionId, authAttemptId }, this.headers(options))
-    );
-  }
-
-  listPortalDiscoveredAccounts<T = unknown>(
-    sessionId: string,
-    params: { authAttemptId: string; includeSyncStatus?: boolean },
-    options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(
-      this.api.listPortalDiscoveredAccounts({ sessionId, ...params }, this.headers(options))
-    );
-  }
-
-  completePortalSession<T = unknown>(
-    sessionId: string,
-    options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.completePortalSession({ sessionId }, this.headers(options)));
-  }
-
-  getSessionUser<T = unknown>(
-    _sessionId: string,
-    _options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.serverOnlySessionRoute('finatic.v1.getSessionUser');
   }
 
   getSessionSyncStatus<T = unknown>(
@@ -266,13 +358,6 @@ export class V1Wrapper {
     return this.unwrap<T>(this.api.listAccountOrders(params, this.headers(options)));
   }
 
-  listPositionLots<T = unknown>(
-    params: AccountScopedParams,
-    options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.listAccountPositionLots(params, this.headers(options)));
-  }
-
   getAccountOrder<T = unknown>(
     params: AccountOrderParams,
     options?: FinaticV1CallOptions
@@ -292,13 +377,6 @@ export class V1Wrapper {
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
     return this.unwrap<T>(this.api.getAccountOrderEvents(params, this.headers(options)));
-  }
-
-  getAccountPositionLotFills<T = unknown>(
-    params: AccountPositionLotFillsParams,
-    options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.getAccountPositionLotFills(params, this.headers(options)));
   }
 
   createAccountOrder<T = unknown>(
@@ -346,31 +424,6 @@ export class V1Wrapper {
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
     return this.unwrap<T>(this.api.revokeAccountGrant({ grantId }, this.headers(options)));
-  }
-
-  listConsents<T = unknown>(options?: FinaticV1CallOptions): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.listConsents(this.headers(options)));
-  }
-
-  createConsent<T = unknown>(
-    body: unknown,
-    options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.createConsent(body, this.headers(options)));
-  }
-
-  getConsent<T = unknown>(
-    consentId: string,
-    options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.getConsent({ consentId }, this.headers(options)));
-  }
-
-  revokeConsent<T = unknown>(
-    consentId: string,
-    options?: FinaticV1CallOptions
-  ): Promise<FinaticV1Response<T>> {
-    return this.unwrap<T>(this.api.revokeConsent({ consentId }, this.headers(options)));
   }
 
   getWebhookCatalog<T = unknown>(options?: FinaticV1CallOptions): Promise<FinaticV1Response<T>> {

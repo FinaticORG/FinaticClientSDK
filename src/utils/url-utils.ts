@@ -107,9 +107,11 @@ export function appendAssetTypesToURL(baseUrl: string, assetTypes?: string[]): s
 /** Stage filter: production (no alpha/beta), beta, or alpha. Portal filters brokers client-side by these. */
 export type PortalStage = 'production' | 'beta' | 'alpha';
 
+const ALL_PORTAL_STAGES: PortalStage[] = ['production', 'beta', 'alpha'];
+
 /**
  * Append stage filter to a portal URL.
- * Portal shows only brokers in any of the given stages (OR). Omit or empty = show all.
+ * Portal shows only brokers in any of the given stages (OR). Omit = portal default (production + beta).
  * @param baseUrl The base portal URL (may already have query parameters)
  * @param stages One or more of 'production' | 'beta' | 'alpha'
  * @returns The portal URL with stage parameter appended
@@ -121,7 +123,11 @@ export function appendStageToURL(baseUrl: string, stages?: PortalStage[]): strin
 
   try {
     const url = new URL(baseUrl);
-    url.searchParams.set('stage', stages.join(','));
+    const normalizedStages = [...new Set(stages)];
+    const includesAllStages = ALL_PORTAL_STAGES.every((stage) =>
+      normalizedStages.includes(stage),
+    );
+    url.searchParams.set('stage', includesAllStages ? 'all' : normalizedStages.join(','));
     return url.toString();
   } catch {
     return baseUrl;
