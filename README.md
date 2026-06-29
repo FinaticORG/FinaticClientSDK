@@ -52,11 +52,11 @@ Use this mapping from the API beta migration metadata:
 | `/api/beta/session/start` | `FinaticConnect.init(...)` with the one-time token |
 | `/api/beta/session/portal` | `finatic.openPortal(...)` or a backend/server SDK portal-link flow |
 | `/api/beta/session/{session_id}/user` | Backend/server SDK session lookup |
-| `/api/beta/session/link-user` | `finatic.v1.linkPortalUser(...)` |
-| `/api/beta/portal/{token}` | `finatic.v1.exchangePortalToken(...)` |
-| `/api/beta/portal/{session_id}/complete` | `finatic.v1.completePortalSession(...)` |
-| `/api/beta/brokers` | `finatic.v1.listPortalInstitutions(...)` |
-| `/api/beta/brokers/connect` | `finatic.v1.createPortalAuthAttempt(...)` |
+| `/api/beta/session/link-user` | Backend/server SDK portal user-link flow |
+| `/api/beta/portal/{token}` | Backend/server SDK portal token exchange flow |
+| `/api/beta/portal/{session_id}/complete` | Backend/server SDK portal completion flow |
+| `/api/beta/brokers` | Backend/server SDK institution discovery flow |
+| `/api/beta/brokers/connect` | Backend/server SDK portal auth-attempt flow |
 | `/api/beta/brokers/data/accounts` | `finatic.v1.listAccounts(...)` |
 | `/api/beta/brokers/data/balances` | `finatic.v1.listBalances({ accountId, ... })` |
 | `/api/beta/brokers/data/positions` | `finatic.v1.listPositions({ accountId, ... })` |

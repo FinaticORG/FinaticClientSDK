@@ -148,8 +148,10 @@ describe('V1 account-first wrapper', () => {
 
     await wrapper.listBalances({ accountId: 'acct_123', limit: 10, offset: 2 });
     await wrapper.listPositions({ accountId: 'acct_123' });
+    await wrapper.listPositionLots({ accountId: 'acct_123', limit: 5 });
     await wrapper.listTransactions({ accountId: 'acct_123' });
     await wrapper.listOrders({ accountId: 'acct_123' });
+    await wrapper.getAccountPositionLotFills({ accountId: 'acct_123', lotId: 'lot_123' });
 
     expect(axios.request).toHaveBeenNthCalledWith(
       1,
@@ -170,14 +172,29 @@ describe('V1 account-first wrapper', () => {
       3,
       expect.objectContaining({
         method: 'GET',
-        url: 'https://api.test/api/v1/accounts/acct_123/transactions',
+        url: 'https://api.test/api/v1/accounts/acct_123/position-lots',
+        params: { limit: 5 },
       })
     );
     expect(axios.request).toHaveBeenNthCalledWith(
       4,
       expect.objectContaining({
         method: 'GET',
+        url: 'https://api.test/api/v1/accounts/acct_123/transactions',
+      })
+    );
+    expect(axios.request).toHaveBeenNthCalledWith(
+      5,
+      expect.objectContaining({
+        method: 'GET',
         url: 'https://api.test/api/v1/accounts/acct_123/orders',
+      })
+    );
+    expect(axios.request).toHaveBeenNthCalledWith(
+      6,
+      expect.objectContaining({
+        method: 'GET',
+        url: 'https://api.test/api/v1/accounts/acct_123/position-lots/lot_123/fills',
       })
     );
   });
