@@ -33,6 +33,8 @@ export default tseslint.config(
       'src/openapi-legacy/**',
       '**/*.d.ts',
       'src/openapi/**/*.d.ts',
+      '**/*.test.ts',
+      '**/*.spec.ts',
     ],
   }
 );
