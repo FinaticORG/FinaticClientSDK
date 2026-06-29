@@ -76,15 +76,15 @@ function readSessionField(
   return '';
 }
 
-function extractFinaticData(response: FinaticV1Response | null | undefined): Record<string, unknown> {
+function extractFinaticData(
+  response: FinaticV1Response | null | undefined
+): Record<string, unknown> {
   if (!response) {
     throw new Error('Empty response from API');
   }
   if (response.error) {
     throw new Error(
-      typeof response.error['message'] === 'string'
-        ? response.error['message']
-        : 'Request failed'
+      typeof response.error['message'] === 'string' ? response.error['message'] : 'Request failed'
     );
   }
   if (response.success?.data !== null && response.success?.data !== undefined) {
