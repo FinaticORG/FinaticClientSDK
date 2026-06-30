@@ -1,5 +1,3 @@
-import { BrokersApi } from '../src/openapi/api/brokers-api';
-import { CompanyApi } from '../src/openapi/api/company-api';
 import { SessionApi } from '../src/openapi/api/session-api';
 import { V1Api } from '../src/openapi/api/v1-api';
 
@@ -90,14 +88,10 @@ async function invokeApiMethods(apiCtor: ApiCtor): Promise<number> {
 }
 
 describe('Generated API smoke coverage', () => {
-  it('invokes many generated api methods', async () => {
-    const brokersInvoked = await invokeApiMethods(BrokersApi);
-    const companyInvoked = await invokeApiMethods(CompanyApi);
+  it('invokes the generated v1/session api methods that ship in 1.0', async () => {
     const sessionInvoked = await invokeApiMethods(SessionApi);
     const v1Invoked = await invokeApiMethods(V1Api);
 
-    expect(brokersInvoked).toBeGreaterThan(5);
-    expect(companyInvoked).toBeGreaterThan(0);
     expect(sessionInvoked).toBeGreaterThan(0);
     expect(v1Invoked).toBeGreaterThan(10);
   });

@@ -21,3 +21,14 @@
 #docs/*.md
 # Then explicitly reverse the ignore rule for a single file:
 #!docs/README.md
+
+# FDX 1.0 ships only account-first v1/session SDK source. Do not regenerate
+# beta broker/company clients, connection-first models, or inactive position-lot
+# contracts until the API intentionally reintroduces that product surface.
+api/brokers-api.ts
+api/company-api.ts
+models/*beta*
+models/*legacy*
+models/*fdxbroker*
+models/*broker-connection*
+models/*user-broker-connection*
