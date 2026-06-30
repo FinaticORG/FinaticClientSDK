@@ -60,8 +60,6 @@ Use this mapping from the API beta migration metadata:
 | `/api/beta/brokers/data/accounts` | `finatic.v1.listAccounts(...)` |
 | `/api/beta/brokers/data/balances` | `finatic.v1.listBalances({ accountId, ... })` |
 | `/api/beta/brokers/data/positions` | `finatic.v1.listPositions({ accountId, ... })` |
-| `/api/beta/brokers/data/positions/lots` | `finatic.v1.listPositionLots({ accountId, ... })` |
-| `/api/beta/brokers/data/positions/lots/{lot_id}/fills` | `finatic.v1.getAccountPositionLotFills({ accountId, lotId })` |
 | `/api/beta/brokers/data/orders` | `finatic.v1.listOrders({ accountId, ... })` |
 | `/api/beta/brokers/data/orders/{order_id}/fills` | `finatic.v1.getAccountOrderFills({ accountId, orderId })` |
 | `/api/beta/brokers/data/orders/{order_id}/events` | `finatic.v1.getAccountOrderEvents({ accountId, orderId })` |

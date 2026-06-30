@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Added account-first v1 API and wrapper surface pinned to FinaticAPI PR #174 head `9ecc1e0be7f045c2cb439008732c6ec4b941173d`, including explicit account resource routes, portal discovered-account binding with optional sync-status inclusion, session sync-status polling, and FDX consent creation.
+- Added account-first v1 API and wrapper surface pinned to FinaticAPI PR #174 head `441c160842b7c6a539f578bf8f5b8c4ee900e0d4`, including explicit account resource routes, portal discovered-account binding with optional sync-status inclusion, session sync-status polling, and FDX consent creation.
 - Added session sync-status polling for the current account-first API contract.
 - Added `apiEnvironment: 'live' | 'sandbox'` configuration support for `X-Finatic-Environment`.
 - Kept beta connection-first wrappers importable while documenting `finatic.v1` as the browser-safe path for new workflows.
