@@ -7,21 +7,16 @@ describe('MarketDataWrapper contract', () => {
     expect(existsSync(file)).toBe(false);
   });
 
-  it('current public api modules still include session/company/brokers', () => {
+  it('current generated api modules expose session without legacy beta broker/company clients', () => {
     const sessionApi = readFileSync(
       path.resolve(__dirname, '../../src/openapi/api/session-api.ts'),
       'utf8',
     );
-    const companyApi = readFileSync(
-      path.resolve(__dirname, '../../src/openapi/api/company-api.ts'),
-      'utf8',
-    );
-    const brokersApi = readFileSync(
-      path.resolve(__dirname, '../../src/openapi/api/brokers-api.ts'),
-      'utf8',
-    );
+    const companyApi = path.resolve(__dirname, '../../src/openapi/api/company-api.ts');
+    const brokersApi = path.resolve(__dirname, '../../src/openapi/api/brokers-api.ts');
+
     expect(sessionApi).toContain('export class SessionApi');
-    expect(companyApi).toContain('export class CompanyApi');
-    expect(brokersApi).toContain('export class BrokersApi');
+    expect(existsSync(companyApi)).toBe(false);
+    expect(existsSync(brokersApi)).toBe(false);
   });
 });
