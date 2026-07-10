@@ -252,10 +252,7 @@ export class V1Wrapper {
     if (typeof window !== 'undefined' && window.location?.origin) {
       const portalUrlWithParent = new URL(portalUrl);
       if (!portalUrlWithParent.searchParams.has('parent_origin')) {
-        portalUrlWithParent.searchParams.set(
-          'parent_origin',
-          window.location.origin
-        );
+        portalUrlWithParent.searchParams.set('parent_origin', window.location.origin);
         portalUrl = portalUrlWithParent.toString();
       }
     }
