@@ -247,6 +247,19 @@ export class V1Wrapper {
       portalUrl = url.toString();
     }
 
+    // Tell Connect which origin embeds the iframe so postMessage is not '*'.
+    // Works for arbitrary partner hosts without a Vercel allowlist.
+    if (typeof window !== 'undefined' && window.location?.origin) {
+      const portalUrlWithParent = new URL(portalUrl);
+      if (!portalUrlWithParent.searchParams.has('parent_origin')) {
+        portalUrlWithParent.searchParams.set(
+          'parent_origin',
+          window.location.origin
+        );
+        portalUrl = portalUrlWithParent.toString();
+      }
+    }
+
     return portalUrl;
   }
 
