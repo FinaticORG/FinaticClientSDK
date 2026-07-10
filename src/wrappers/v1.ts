@@ -48,6 +48,12 @@ export interface AccountOrderCommandParams extends AccountOrderParams {
   idempotencyKey: string;
 }
 
+export interface AccountOrderSchemaParams {
+  accountId: string;
+  action: 'place' | 'modify' | 'cancel';
+  broker?: string;
+}
+
 type AccountResource = 'balances' | 'positions' | 'transactions' | 'orders';
 
 export interface PortalUrlParams {
@@ -377,6 +383,13 @@ export class V1Wrapper {
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
     return this.unwrap<T>(this.api.getAccountOrderEvents(params, this.headers(options)));
+  }
+
+  getAccountOrderSchema<T = unknown>(
+    params: AccountOrderSchemaParams,
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(this.api.getAccountOrderSchema(params, this.headers(options)));
   }
 
   createAccountOrder<T = unknown>(

@@ -39,6 +39,11 @@ export interface V1AccountOrderRequest extends V1AccountRequest {
   orderId: string;
 }
 
+export interface V1AccountOrderSchemaRequest extends V1AccountRequest {
+  action: 'place' | 'modify' | 'cancel';
+  broker?: string;
+}
+
 export interface V1CreateAccountOrderCommandRequest extends V1AccountRequest {
   body?: unknown;
   idempotencyKey: string;
@@ -397,6 +402,21 @@ export class V1Api extends BaseAPI {
     return this.axios.request({
       method: 'GET',
       url: `${this.basePath}/api/v1/accounts/${encodeURIComponent(requestParameters.accountId)}/orders/${encodeURIComponent(requestParameters.orderId)}/events`,
+      ...withEnvironmentHeader(options, this.fallbackEnvironment),
+    });
+  }
+
+  public getAccountOrderSchema(
+    requestParameters: V1AccountOrderSchemaRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'GET',
+      url: `${this.basePath}/api/v1/accounts/${encodeURIComponent(requestParameters.accountId)}/order-schemas`,
+      params: query({
+        action: requestParameters.action,
+        broker: requestParameters.broker,
+      }),
       ...withEnvironmentHeader(options, this.fallbackEnvironment),
     });
   }

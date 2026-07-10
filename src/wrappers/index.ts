@@ -6,6 +6,7 @@ export { V1Wrapper } from './v1';
 export type {
   AccountOrderCommandParams,
   AccountOrderParams,
+  AccountOrderSchemaParams,
   AccountScopedParams,
   CreateAccountOrderCommandParams,
   FinaticV1CallOptions,

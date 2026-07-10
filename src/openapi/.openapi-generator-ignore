@@ -26,9 +26,6 @@
 # beta broker/company clients, connection-first models, or inactive position-lot
 # contracts until the API intentionally reintroduces that product surface.
 api/brokers-api.ts
-api/company-api.ts
 models/*beta*
 models/*legacy*
-models/*fdxbroker*
-models/*broker-connection*
 models/*user-broker-connection*
