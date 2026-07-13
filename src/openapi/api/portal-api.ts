@@ -28,7 +28,6 @@ import {
   serializeDataIfNeeded,
   toPathString,
   createRequestFunction,
-  replaceWithSerializableTypeIfNeeded,
 } from '../common';
 // @ts-ignore
 import {
@@ -80,7 +79,6 @@ export const PortalApiAxiosParamCreator = function (configuration?: Configuratio
       const localVarQueryParameter = {} as any;
 
       localVarHeaderParameter['Content-Type'] = 'application/json';
-      localVarHeaderParameter['Accept'] = 'application/json';
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};

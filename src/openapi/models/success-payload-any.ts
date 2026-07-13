@@ -15,8 +15,5 @@
 export interface SuccessPayloadAny {
   _id?: string;
   data?: any;
-  /**
-   * Optional metadata (pagination, etc.)
-   */
   meta?: { [key: string]: any } | null;
 }

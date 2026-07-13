@@ -12,12 +12,4 @@
  * Do not edit the class manually.
  */
 
-// May contain unused imports in some cases
-// @ts-ignore
-import type { OwnerPortalBootstrapResponse } from './owner-portal-bootstrap-response';
-
-export interface SuccessPayloadOwnerPortalBootstrapResponse {
-  _id?: string;
-  data?: OwnerPortalBootstrapResponse | null;
-  meta?: { [key: string]: any } | null;
-}
+export interface ValidationErrorLocInner {}

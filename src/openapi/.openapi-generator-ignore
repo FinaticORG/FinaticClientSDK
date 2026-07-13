@@ -29,3 +29,8 @@ api/brokers-api.ts
 models/*beta*
 models/*legacy*
 models/*user-broker-connection*
+api/account-grants-api.ts
+api/accounts-api.ts
+api/consents-api.ts
+api/sessions-api.ts
+api/webhooks-api.ts

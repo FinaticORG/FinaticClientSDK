@@ -28,7 +28,6 @@ import {
   serializeDataIfNeeded,
   toPathString,
   createRequestFunction,
-  replaceWithSerializableTypeIfNeeded,
 } from '../common';
 // @ts-ignore
 import {
@@ -87,8 +86,6 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
-      localVarHeaderParameter['Accept'] = 'application/json';
-
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
       localVarRequestOptions.headers = {
@@ -119,7 +116,7 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         );
         const localVarPath =
           `/api/v1/owner-portal/connections/{connection_id}/reauth-notification-preference`.replace(
-            '{connection_id}',
+            `{${'connection_id'}}`,
             encodeURIComponent(String(connectionId))
           );
         // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -136,8 +133,6 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         // authentication HTTPBearer required
         // http bearer authentication required
         await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-        localVarHeaderParameter['Accept'] = 'application/json';
 
         setSearchParams(localVarUrlObj, localVarQueryParameter);
         let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -186,7 +181,6 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
       localVarHeaderParameter['Content-Type'] = 'application/json';
-      localVarHeaderParameter['Accept'] = 'application/json';
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -224,7 +218,7 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         connectionId
       );
       const localVarPath = `/api/v1/owner-portal/connections/{connection_id}`.replace(
-        '{connection_id}',
+        `{${'connection_id'}}`,
         encodeURIComponent(String(connectionId))
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -241,8 +235,6 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
       // authentication HTTPBearer required
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-      localVarHeaderParameter['Accept'] = 'application/json';
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -273,7 +265,7 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
           connectionId
         );
         const localVarPath = `/api/v1/owner-portal/connections/{connection_id}/companies`.replace(
-          '{connection_id}',
+          `{${'connection_id'}}`,
           encodeURIComponent(String(connectionId))
         );
         // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -290,8 +282,6 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         // authentication HTTPBearer required
         // http bearer authentication required
         await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-        localVarHeaderParameter['Accept'] = 'application/json';
 
         setSearchParams(localVarUrlObj, localVarQueryParameter);
         let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -334,8 +324,8 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         );
         const localVarPath =
           `/api/v1/owner-portal/connections/{connection_id}/companies/{company_id}`
-            .replace('{connection_id}', encodeURIComponent(String(connectionId)))
-            .replace('{company_id}', encodeURIComponent(String(companyId)));
+            .replace(`{${'connection_id'}}`, encodeURIComponent(String(connectionId)))
+            .replace(`{${'company_id'}}`, encodeURIComponent(String(companyId)));
         // use dummy base URL string because the URL constructor only accepts absolute URLs.
         const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
         let baseOptions;
@@ -350,8 +340,6 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         // authentication HTTPBearer required
         // http bearer authentication required
         await setBearerAuthToObject(localVarHeaderParameter, configuration);
-
-        localVarHeaderParameter['Accept'] = 'application/json';
 
         setSearchParams(localVarUrlObj, localVarQueryParameter);
         let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -402,8 +390,8 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         );
         const localVarPath =
           `/api/v1/owner-portal/connections/{connection_id}/companies/{company_id}/permissions`
-            .replace('{connection_id}', encodeURIComponent(String(connectionId)))
-            .replace('{company_id}', encodeURIComponent(String(companyId)));
+            .replace(`{${'connection_id'}}`, encodeURIComponent(String(connectionId)))
+            .replace(`{${'company_id'}}`, encodeURIComponent(String(companyId)));
         // use dummy base URL string because the URL constructor only accepts absolute URLs.
         const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
         let baseOptions;
@@ -420,7 +408,6 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
         localVarHeaderParameter['Content-Type'] = 'application/json';
-        localVarHeaderParameter['Accept'] = 'application/json';
 
         setSearchParams(localVarUrlObj, localVarQueryParameter);
         let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -468,7 +455,7 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         );
         const localVarPath =
           `/api/v1/owner-portal/connections/{connection_id}/reauth-notification-preference`.replace(
-            '{connection_id}',
+            `{${'connection_id'}}`,
             encodeURIComponent(String(connectionId))
           );
         // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -487,7 +474,6 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
         localVarHeaderParameter['Content-Type'] = 'application/json';
-        localVarHeaderParameter['Accept'] = 'application/json';
 
         setSearchParams(localVarUrlObj, localVarQueryParameter);
         let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};

@@ -171,10 +171,9 @@ export class V1Wrapper {
     oneTimeToken: string,
     userId?: string
   ): Promise<{ session_id: string; company_id: string }> {
-    const requestBody = userId !== undefined ? { user_id: userId } : null;
     const axiosResponse = await this.sessionApi.startSessionApiV1SessionStartPost({
       oneTimeToken,
-      sessionStartRequest: requestBody,
+      ...(userId !== undefined ? { sessionStartRequest: { user_id: userId } } : {}),
     });
     const response = unwrapAxiosResponse<FinaticV1Response>(axiosResponse);
     const data = extractFinaticData(response);

@@ -28,7 +28,6 @@ import {
   serializeDataIfNeeded,
   toPathString,
   createRequestFunction,
-  replaceWithSerializableTypeIfNeeded,
 } from '../common';
 // @ts-ignore
 import {
@@ -81,8 +80,6 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
 
-      localVarHeaderParameter['Accept'] = 'application/json';
-
       if (sessionId != null) {
         localVarHeaderParameter['session-id'] = String(sessionId);
       }
@@ -117,7 +114,7 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
       // verify required parameter 'xSessionId' is not null or undefined
       assertParamExists('getSessionUserApiV1SessionSessionIdUserGet', 'xSessionId', xSessionId);
       const localVarPath = `/api/v1/session/{session_id}/user`.replace(
-        '{session_id}',
+        `{${'session_id'}}`,
         encodeURIComponent(String(sessionId))
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -130,8 +127,6 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
       const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options };
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
-
-      localVarHeaderParameter['Accept'] = 'application/json';
 
       if (xSessionId != null) {
         localVarHeaderParameter['x-session-id'] = String(xSessionId);
@@ -174,8 +169,6 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
 
-      localVarHeaderParameter['Accept'] = 'application/json';
-
       if (xApiKey != null) {
         localVarHeaderParameter['x-api-key'] = String(xApiKey);
       }
@@ -196,13 +189,13 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
      * Start a session with a one-time token.
      * @summary Start Session
      * @param {string} oneTimeToken One-time use token obtained from init_session endpoint to authenticate and start the session
-     * @param {SessionStartRequest | null} [sessionStartRequest] Session start request containing optional user ID to associate with the session
+     * @param {SessionStartRequest} [sessionStartRequest] Session start request containing optional user ID to associate with the session
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     startSessionApiV1SessionStartPost: async (
       oneTimeToken: string,
-      sessionStartRequest?: SessionStartRequest | null,
+      sessionStartRequest?: SessionStartRequest,
       options: RawAxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
       // verify required parameter 'oneTimeToken' is not null or undefined
@@ -220,7 +213,6 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
       const localVarQueryParameter = {} as any;
 
       localVarHeaderParameter['Content-Type'] = 'application/json';
-      localVarHeaderParameter['Accept'] = 'application/json';
 
       if (oneTimeToken != null) {
         localVarHeaderParameter['One-Time-Token'] = String(oneTimeToken);
@@ -350,13 +342,13 @@ export const SessionApiFp = function (configuration?: Configuration) {
      * Start a session with a one-time token.
      * @summary Start Session
      * @param {string} oneTimeToken One-time use token obtained from init_session endpoint to authenticate and start the session
-     * @param {SessionStartRequest | null} [sessionStartRequest] Session start request containing optional user ID to associate with the session
+     * @param {SessionStartRequest} [sessionStartRequest] Session start request containing optional user ID to associate with the session
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
     async startSessionApiV1SessionStartPost(
       oneTimeToken: string,
-      sessionStartRequest?: SessionStartRequest | null,
+      sessionStartRequest?: SessionStartRequest,
       options?: RawAxiosRequestConfig
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseSessionResponseData>
@@ -563,7 +555,7 @@ export interface SessionApiStartSessionApiV1SessionStartPostRequest {
   /**
    * Session start request containing optional user ID to associate with the session
    */
-  readonly sessionStartRequest?: SessionStartRequest | null;
+  readonly sessionStartRequest?: SessionStartRequest;
 }
 
 /**

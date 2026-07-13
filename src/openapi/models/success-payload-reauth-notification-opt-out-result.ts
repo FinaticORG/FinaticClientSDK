@@ -18,12 +18,6 @@ import type { ReauthNotificationOptOutResult } from './reauth-notification-opt-o
 
 export interface SuccessPayloadReauthNotificationOptOutResult {
   _id?: string;
-  /**
-   * The response data (None when error is present)
-   */
   data?: ReauthNotificationOptOutResult | null;
-  /**
-   * Optional metadata (pagination, etc.)
-   */
   meta?: { [key: string]: any } | null;
 }

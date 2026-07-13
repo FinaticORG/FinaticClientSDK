@@ -18,12 +18,6 @@ import type { TokenResponseData } from './token-response-data';
 
 export interface SuccessPayloadTokenResponseData {
   _id?: string;
-  /**
-   * The response data (None when error is present)
-   */
   data?: TokenResponseData | null;
-  /**
-   * Optional metadata (pagination, etc.)
-   */
   meta?: { [key: string]: any } | null;
 }

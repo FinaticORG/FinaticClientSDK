@@ -18,12 +18,6 @@ import type { OwnerPortalRevokeAllCompaniesResult } from './owner-portal-revoke-
 
 export interface SuccessPayloadOwnerPortalRevokeAllCompaniesResult {
   _id?: string;
-  /**
-   * The response data (None when error is present)
-   */
   data?: OwnerPortalRevokeAllCompaniesResult | null;
-  /**
-   * Optional metadata (pagination, etc.)
-   */
   meta?: { [key: string]: any } | null;
 }

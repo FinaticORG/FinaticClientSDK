@@ -28,7 +28,6 @@ import {
   serializeDataIfNeeded,
   toPathString,
   createRequestFunction,
-  replaceWithSerializableTypeIfNeeded,
 } from '../common';
 // @ts-ignore
 import {
@@ -62,7 +61,7 @@ export const CompanyApiAxiosParamCreator = function (configuration?: Configurati
       // verify required parameter 'companyId' is not null or undefined
       assertParamExists('getCompanyApiV1CompanyCompanyIdGet', 'companyId', companyId);
       const localVarPath = `/api/v1/company/{company_id}`.replace(
-        '{company_id}',
+        `{${'company_id'}}`,
         encodeURIComponent(String(companyId))
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -75,8 +74,6 @@ export const CompanyApiAxiosParamCreator = function (configuration?: Configurati
       const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options };
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
-
-      localVarHeaderParameter['Accept'] = 'application/json';
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
