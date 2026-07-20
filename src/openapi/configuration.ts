@@ -28,21 +28,19 @@ export interface ConfigurationParameters {
     | string
     | Promise<string>
     | ((name: string) => string)
-    | ((name: string) => Promise<string>)
-    | undefined;
-  username?: string | undefined;
-  password?: string | undefined;
+    | ((name: string) => Promise<string>);
+  username?: string;
+  password?: string;
   accessToken?:
     | string
     | Promise<string>
     | ((name?: string, scopes?: string[]) => string)
-    | ((name?: string, scopes?: string[]) => Promise<string>)
-    | undefined;
-  awsv4?: AWSv4Configuration | undefined;
-  basePath?: string | undefined;
-  serverIndex?: number | undefined;
+    | ((name?: string, scopes?: string[]) => Promise<string>);
+  awsv4?: AWSv4Configuration;
+  basePath?: string;
+  serverIndex?: number;
   baseOptions?: any;
-  formDataCtor?: (new () => any) | undefined;
+  formDataCtor?: new () => any;
 }
 
 export class Configuration {
@@ -50,31 +48,29 @@ export class Configuration {
    * parameter for apiKey security
    * @param name security name
    */
-  apiKey:
+  apiKey?:
     | string
     | Promise<string>
     | ((name: string) => string)
-    | ((name: string) => Promise<string>)
-    | undefined;
+    | ((name: string) => Promise<string>);
   /**
    * parameter for basic security
    */
-  username: string | undefined;
+  username?: string;
   /**
    * parameter for basic security
    */
-  password: string | undefined;
+  password?: string;
   /**
    * parameter for oauth2 security
    * @param name security name
    * @param scopes oauth2 scope
    */
-  accessToken:
+  accessToken?:
     | string
     | Promise<string>
     | ((name?: string, scopes?: string[]) => string)
-    | ((name?: string, scopes?: string[]) => Promise<string>)
-    | undefined;
+    | ((name?: string, scopes?: string[]) => Promise<string>);
   /**
    * parameter for aws4 signature security
    * @param {Object} AWS4Signature - AWS4 Signature security
@@ -85,15 +81,15 @@ export class Configuration {
    * @param {string} credentials.sessionToken - aws session token
    * @memberof Configuration
    */
-  awsv4: AWSv4Configuration | undefined;
+  awsv4?: AWSv4Configuration;
   /**
    * override base path
    */
-  basePath: string | undefined;
+  basePath?: string;
   /**
    * override server index
    */
-  serverIndex: number | undefined;
+  serverIndex?: number;
   /**
    * base options for axios calls
    */
@@ -105,7 +101,7 @@ export class Configuration {
    *
    * @type {new () => FormData}
    */
-  formDataCtor: (new () => any) | undefined;
+  formDataCtor?: new () => any;
 
   constructor(param: ConfigurationParameters = {}) {
     this.apiKey = param.apiKey;
@@ -135,7 +131,12 @@ export class Configuration {
    * @return True if the given MIME is JSON, false otherwise.
    */
   public isJsonMime(mime: string): boolean {
-    const jsonMime: RegExp = /^(application\/json|[^;/ \t]+\/[^;/ \t]+[+]json)[ \t]*(;.*)?$/i;
-    return mime !== null && jsonMime.test(mime);
+    const jsonMime: RegExp = new RegExp(
+      '^(application\/json|[^;/ \t]+\/[^;/ \t]+[+]json)[ \t]*(;.*)?$',
+      'i'
+    );
+    return (
+      mime !== null && (jsonMime.test(mime) || mime.toLowerCase() === 'application/json-patch+json')
+    );
   }
 }

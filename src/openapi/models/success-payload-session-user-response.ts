@@ -18,12 +18,6 @@ import type { SessionUserResponse } from './session-user-response';
 
 export interface SuccessPayloadSessionUserResponse {
   _id?: string;
-  /**
-   * The response data (None when error is present)
-   */
   data?: SessionUserResponse | null;
-  /**
-   * Optional metadata (pagination, etc.)
-   */
   meta?: { [key: string]: any } | null;
 }

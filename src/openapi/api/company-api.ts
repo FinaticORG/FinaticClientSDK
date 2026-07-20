@@ -28,7 +28,6 @@ import {
   serializeDataIfNeeded,
   toPathString,
   createRequestFunction,
-  replaceWithSerializableTypeIfNeeded,
 } from '../common';
 // @ts-ignore
 import {
@@ -55,14 +54,14 @@ export const CompanyApiAxiosParamCreator = function (configuration?: Configurati
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getCompanyApiBetaCompanyCompanyIdGet: async (
+    getCompanyApiV1CompanyCompanyIdGet: async (
       companyId: string,
       options: RawAxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
       // verify required parameter 'companyId' is not null or undefined
-      assertParamExists('getCompanyApiBetaCompanyCompanyIdGet', 'companyId', companyId);
-      const localVarPath = `/api/beta/company/{company_id}`.replace(
-        '{company_id}',
+      assertParamExists('getCompanyApiV1CompanyCompanyIdGet', 'companyId', companyId);
+      const localVarPath = `/api/v1/company/{company_id}`.replace(
+        `{${'company_id'}}`,
         encodeURIComponent(String(companyId))
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -75,8 +74,6 @@ export const CompanyApiAxiosParamCreator = function (configuration?: Configurati
       const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options };
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
-
-      localVarHeaderParameter['Accept'] = 'application/json';
 
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -107,17 +104,19 @@ export const CompanyApiFp = function (configuration?: Configuration) {
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async getCompanyApiBetaCompanyCompanyIdGet(
+    async getCompanyApiV1CompanyCompanyIdGet(
       companyId: string,
       options?: RawAxiosRequestConfig
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseAccounts>
     > {
-      const localVarAxiosArgs =
-        await localVarAxiosParamCreator.getCompanyApiBetaCompanyCompanyIdGet(companyId, options);
+      const localVarAxiosArgs = await localVarAxiosParamCreator.getCompanyApiV1CompanyCompanyIdGet(
+        companyId,
+        options
+      );
       const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
       const localVarOperationServerBasePath =
-        operationServerMap['CompanyApi.getCompanyApiBetaCompanyCompanyIdGet']?.[
+        operationServerMap['CompanyApi.getCompanyApiV1CompanyCompanyIdGet']?.[
           localVarOperationServerIndex
         ]?.url;
       return (axios, basePath) =>
@@ -144,16 +143,16 @@ export const CompanyApiFactory = function (
     /**
      * Get public company details by ID (no user check, no sensitive data).
      * @summary Get Company
-     * @param {CompanyApiGetCompanyApiBetaCompanyCompanyIdGetRequest} requestParameters Request parameters.
+     * @param {CompanyApiGetCompanyApiV1CompanyCompanyIdGetRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getCompanyApiBetaCompanyCompanyIdGet(
-      requestParameters: CompanyApiGetCompanyApiBetaCompanyCompanyIdGetRequest,
+    getCompanyApiV1CompanyCompanyIdGet(
+      requestParameters: CompanyApiGetCompanyApiV1CompanyCompanyIdGetRequest,
       options?: RawAxiosRequestConfig
     ): AxiosPromise<FinaticResponseAccounts> {
       return localVarFp
-        .getCompanyApiBetaCompanyCompanyIdGet(requestParameters.companyId, options)
+        .getCompanyApiV1CompanyCompanyIdGet(requestParameters.companyId, options)
         .then((request) => request(axios, basePath));
     },
   };
@@ -166,20 +165,20 @@ export interface CompanyApiInterface {
   /**
    * Get public company details by ID (no user check, no sensitive data).
    * @summary Get Company
-   * @param {CompanyApiGetCompanyApiBetaCompanyCompanyIdGetRequest} requestParameters Request parameters.
+   * @param {CompanyApiGetCompanyApiV1CompanyCompanyIdGetRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    */
-  getCompanyApiBetaCompanyCompanyIdGet(
-    requestParameters: CompanyApiGetCompanyApiBetaCompanyCompanyIdGetRequest,
+  getCompanyApiV1CompanyCompanyIdGet(
+    requestParameters: CompanyApiGetCompanyApiV1CompanyCompanyIdGetRequest,
     options?: RawAxiosRequestConfig
   ): AxiosPromise<FinaticResponseAccounts>;
 }
 
 /**
- * Request parameters for getCompanyApiBetaCompanyCompanyIdGet operation in CompanyApi.
+ * Request parameters for getCompanyApiV1CompanyCompanyIdGet operation in CompanyApi.
  */
-export interface CompanyApiGetCompanyApiBetaCompanyCompanyIdGetRequest {
+export interface CompanyApiGetCompanyApiV1CompanyCompanyIdGetRequest {
   /**
    * Company ID
    */
@@ -193,16 +192,16 @@ export class CompanyApi extends BaseAPI implements CompanyApiInterface {
   /**
    * Get public company details by ID (no user check, no sensitive data).
    * @summary Get Company
-   * @param {CompanyApiGetCompanyApiBetaCompanyCompanyIdGetRequest} requestParameters Request parameters.
+   * @param {CompanyApiGetCompanyApiV1CompanyCompanyIdGetRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    */
-  public getCompanyApiBetaCompanyCompanyIdGet(
-    requestParameters: CompanyApiGetCompanyApiBetaCompanyCompanyIdGetRequest,
+  public getCompanyApiV1CompanyCompanyIdGet(
+    requestParameters: CompanyApiGetCompanyApiV1CompanyCompanyIdGetRequest,
     options?: RawAxiosRequestConfig
   ) {
     return CompanyApiFp(this.configuration)
-      .getCompanyApiBetaCompanyCompanyIdGet(requestParameters.companyId, options)
+      .getCompanyApiV1CompanyCompanyIdGet(requestParameters.companyId, options)
       .then((request) => request(this.axios, this.basePath));
   }
 }

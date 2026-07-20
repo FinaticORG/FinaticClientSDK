@@ -30,8 +30,11 @@ export default tseslint.config(
       'coverage/',
       '*.js',
       'src/openapi/**',
+      'src/openapi-legacy/**',
       '**/*.d.ts',
       'src/openapi/**/*.d.ts',
+      '**/*.test.ts',
+      '**/*.spec.ts',
     ],
   }
 );

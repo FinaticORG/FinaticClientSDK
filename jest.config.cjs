@@ -3,6 +3,9 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/tests'],
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
+  testPathIgnorePatterns:
+    process.env.FINATIC_INTEGRATION === '1' ? [] : ['<rootDir>/tests/integration/'],
+  testTimeout: process.env.FINATIC_INTEGRATION === '1' ? 120000 : 10000,
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',
@@ -15,7 +18,7 @@ module.exports = {
   testTimeout: 10000,
   // ESM-only deps used by generated client code (e.g. p-retry)
   transformIgnorePatterns: [
-    '/node_modules/(?!(p-retry|is-network-error)/)',
+    '/node_modules/(?!(p-retry|is-network-error|uuid)/)',
   ],
   transform: {
     '^.+\\.ts$': [
@@ -35,5 +38,13 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'js', 'json'],
   extensionsToTreatAsEsm: [],
+  coverageThreshold: {
+    global: {
+      branches: 30,
+      functions: 46,
+      lines: 49,
+      statements: 49,
+    },
+  },
 };
 
