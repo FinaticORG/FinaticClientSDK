@@ -1,8 +1,7 @@
 name: Release Client SDK
 
 on:
-  push:
-    branches: [main]
+  # Manual only: auto-publish on every main push fights branch-protection version sync.
   workflow_dispatch:
     inputs:
       dry_run:
