@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1
+
+- Release from 7ae30c729bf87fb25a84646dea773121e3b9e212.
+
+
 ## Unreleased
 
 - Added account-first v1 API and wrapper surface pinned to FinaticAPI PR #174 head `969cccc50b44cd8c701f47dddf8cb3b95c9b8f6e`, including explicit account resource routes, portal discovered-account binding with optional sync-status inclusion, session sync-status polling, and FDX consent creation.
