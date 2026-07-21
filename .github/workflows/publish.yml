@@ -36,11 +36,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.14"
+          node-version: "22"
           registry-url: "https://registry.npmjs.org"
-
-      - name: Ensure npm supports OIDC trusted publishing
-        run: npm install -g npm@^11.5.1
 
       - name: Install dependencies
         run: npm ci
@@ -116,7 +113,11 @@ jobs:
       # Publish via OIDC Trusted Publisher — no NPM_TOKEN.
       - name: Publish to NPM
         if: steps.mode.outputs.dry_run != 'true'
-        run: npm publish --access public
+        run: |
+          # OIDC trusted publishing needs npm >= 11.5.1; keep npm 10 for npm ci lockfile compat.
+          npm install -g npm@^11.5.1
+          npm --version
+          npm publish --access public
 
       - name: Open version bump pull request
         if: steps.mode.outputs.dry_run != 'true'
