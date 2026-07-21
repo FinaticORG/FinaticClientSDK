@@ -57,7 +57,7 @@ export class PortalUI {
     // legacy fallback navigated the portal iframe itself to the broker.
     this.iframe.setAttribute(
       'sandbox',
-      'allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin',
+      'allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin'
     );
     this.iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
     this.iframe.setAttribute(
