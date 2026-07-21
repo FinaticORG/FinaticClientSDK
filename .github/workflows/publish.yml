@@ -1,113 +1,93 @@
 name: Release Client SDK
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - '**/*.ts'
-      - '**/*.js'
-      - 'package.json'
-      - 'CHANGELOG.md'
-      - 'release-please-config.json'
-      - '.release-please-manifest.json'
-      - '.github/workflows/publish.yml'
-  workflow_dispatch: {}
+  # Manual only: auto-publish on every main push fights branch-protection version sync.
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build and pack without publishing to NPM"
+        required: true
+        default: "true"
+        type: choice
+        options: ["true", "false"]
+      version:
+        description: "Optional release version. Defaults to the next patch version."
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
 
 jobs:
-  release-please:
-    if: github.event_name == 'push'
+  release:
+    if: github.event_name != 'push' || !startsWith(github.event.head_commit.message, 'chore(release):')
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-    outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      sha: ${{ steps.release.outputs.sha }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
-      html_url: ${{ steps.release.outputs.html_url }}
+    timeout-minutes: 20
 
     steps:
-      - name: Create or publish release
-        id: release
-        uses: googleapis/release-please-action@v4
+      - uses: actions/checkout@v4
         with:
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-  publish:
-    if: github.event_name == 'push' && needs.release-please.outputs.release_created == 'true'
-    needs: release-please
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout code at release commit
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.release-please.outputs.sha }}
-
+      # Trusted Publishing (OIDC) requires Node >= 22.14 and npm >= 11.5.1.
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Lint
-        run: npm run lint
-
-      - name: Format check
-        run: npm run format:check
-
-      - name: Build package
-        run: npm run build
-
-      - name: Test
-        run: npm test -- --runInBand
-
-      - name: Verify package contents
-        run: npm pack --dry-run
-
-      - name: Publish to NPM
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
-
-      - name: Output release trace
+      - name: Resolve release mode
+        id: mode
+        shell: bash
         run: |
-          echo "Published $(node -p 'require("./package.json").name + "@" + require("./package.json").version')"
-          echo "Source commit: ${{ needs.release-please.outputs.sha }}"
-          echo "Source tag: ${{ needs.release-please.outputs.tag_name }}"
-          echo "Release URL: ${{ needs.release-please.outputs.html_url }}"
-          echo "Changelog excerpt:"
-          sed -n '1,80p' CHANGELOG.md
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "dry_run=${{ inputs.dry_run }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "dry_run=false" >> "$GITHUB_OUTPUT"
+          fi
 
-  dry-run:
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
+      - name: Guard publish ref
+        shell: bash
+        run: |
+          if [[ "${{ steps.mode.outputs.dry_run }}" != "true" && "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "::error::Non-dry-run releases must run from refs/heads/main."
+            exit 1
+          fi
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Prepare release version
+        id: version
+        shell: bash
+        env:
+          REQUESTED_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.version || '' }}
+          DRY_RUN: ${{ steps.mode.outputs.dry_run }}
+        run: |
+          if [[ -n "$REQUESTED_VERSION" ]]; then
+            npm version "$REQUESTED_VERSION" --no-git-tag-version
+          else
+            npm version patch --no-git-tag-version
+          fi
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
+          VERSION="$(node -p "require('./package.json').version")"
+          TAG="v${VERSION}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
-      - name: Install dependencies
-        run: npm install
+          if [[ "$DRY_RUN" != "true" ]]; then
+            if [[ -f CHANGELOG.md ]]; then
+              EXISTING="$(cat CHANGELOG.md)"
+            else
+              EXISTING="# Changelog"
+            fi
+            if ! grep -q "## ${VERSION}" CHANGELOG.md 2>/dev/null; then
+              printf '# Changelog\n\n## %s\n\n- Release from %s.\n\n%s\n' "$VERSION" "$GITHUB_SHA" "$(printf '%s' "$EXISTING" | sed '1{/^# Changelog$/d;}')" > CHANGELOG.md
+            fi
+          fi
 
       - name: Lint
         run: npm run lint
@@ -121,8 +101,70 @@ jobs:
       - name: Test
         run: npm test -- --runInBand
 
-      - name: Verify package contents
-        run: npm pack --dry-run
+      - name: Pack release artifact
+        run: npm pack
 
-      - name: Verify publish configuration
-        run: npm publish --dry-run --access public
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: finatic-client-${{ steps.version.outputs.version }}
+          path: finatic-client-*.tgz
+
+      # Publish via OIDC Trusted Publisher — no NPM_TOKEN.
+      - name: Publish to NPM
+        if: steps.mode.outputs.dry_run != 'true'
+        run: |
+          # OIDC trusted publishing needs npm >= 11.5.1; keep npm 10 for npm ci lockfile compat.
+          npm install -g npm@^11.5.1
+          npm --version
+          npm publish --access public
+
+      - name: Open version bump pull request
+        if: steps.mode.outputs.dry_run != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="chore/release-v${VERSION}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          if [[ -f .release-please-manifest.json ]]; then
+            printf '{\n  ".": "%s"\n}\n' "$VERSION" > .release-please-manifest.json
+          fi
+          git add package.json package-lock.json CHANGELOG.md .release-please-manifest.json || true
+          if git diff --cached --quiet; then
+            echo "No version/changelog changes to commit."
+            exit 0
+          fi
+          git commit -m "chore(release): v${VERSION}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag ${TAG} already exists locally."
+          else
+            git tag "$TAG"
+          fi
+          if ! git push -u origin "HEAD:${BRANCH}" --tags; then
+            echo "::warning::Could not push release branch/tag after npm publish of v${VERSION}."
+            exit 0
+          fi
+          if gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore(release): v${VERSION}" \
+            --body "$(cat <<EOF
+          ## Summary
+          - Sync package metadata after publishing \`@finatic/client@${VERSION}\` to npm.
+          - Direct pushes to \`main\` are blocked by branch protection; this PR carries the version bump.
+
+          ## Test plan
+          - [ ] Confirm npm shows \`@finatic/client@${VERSION}\`
+          - [ ] Merge this PR so \`main\` matches the published version
+          EOF
+          )"; then
+            echo "Opened version bump PR for v${VERSION}."
+          else
+            echo "::warning::npm publish of v${VERSION} succeeded, but could not open the version bump PR (org may block Actions from creating PRs)."
+          fi
