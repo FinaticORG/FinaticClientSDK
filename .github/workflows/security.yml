@@ -1,0 +1,41 @@
+name: Security
+
+on:
+  pull_request:
+  push:
+    branches: [develop, staging, main]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  actionlint:
+    uses: FinaticORG/.github/.github/workflows/reusable-actionlint.yml@main
+    with:
+      strict: true
+
+  gitleaks:
+    uses: FinaticORG/.github/.github/workflows/reusable-gitleaks.yml@main
+    with:
+      strict: true
+      scan-mode: no-git
+
+  osv:
+    uses: FinaticORG/.github/.github/workflows/reusable-osv.yml@main
+    with:
+      strict: true
+
+  licenses:
+    uses: FinaticORG/.github/.github/workflows/reusable-licenses-npm.yml@main
+    with:
+      strict: true
+
+  codeql:
+    uses: FinaticORG/.github/.github/workflows/reusable-codeql.yml@main
+    with:
+      languages: '["javascript-typescript"]'
