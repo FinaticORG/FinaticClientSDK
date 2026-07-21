@@ -32,12 +32,15 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # Trusted Publishing (OIDC) requires Node >= 22.14 and npm >= 11.5.1.
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22.14"
           registry-url: "https://registry.npmjs.org"
-          cache: "npm"
+
+      - name: Ensure npm supports OIDC trusted publishing
+        run: npm install -g npm@^11.5.1
 
       - name: Install dependencies
         run: npm ci
@@ -110,10 +113,9 @@ jobs:
           name: finatic-client-${{ steps.version.outputs.version }}
           path: finatic-client-*.tgz
 
+      # Publish via OIDC Trusted Publisher — no NPM_TOKEN.
       - name: Publish to NPM
         if: steps.mode.outputs.dry_run != 'true'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public
 
       - name: Open version bump pull request
