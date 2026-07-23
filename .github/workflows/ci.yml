@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, develop, fdx-account-consent-v1]
+    branches: [main, develop, staging, fdx-account-consent-v1]
   pull_request:
-    branches: [main, develop, fdx-account-consent-v1]
+    branches: [main, develop, staging, fdx-account-consent-v1]
 
 jobs:
   quality-and-tests:
