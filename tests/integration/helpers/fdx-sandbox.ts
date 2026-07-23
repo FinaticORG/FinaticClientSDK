@@ -132,6 +132,33 @@ export async function assertApiReachable(baseUrl: string = DEFAULT_API_BASE_URL)
   }
 }
 
+export async function createSandboxOneTimeToken(
+  apiKey: string,
+  baseUrl: string = DEFAULT_API_BASE_URL
+): Promise<string> {
+  const response = await axios.post(
+    `${baseUrl}/api/v1/session/init`,
+    {},
+    {
+      headers: {
+        'x-api-key': apiKey,
+        ...DEVICE_HEADERS,
+      },
+      validateStatus: () => true,
+    }
+  );
+  if (response.status !== 200) {
+    throw new Error(`initSession failed: ${response.status} ${JSON.stringify(response.data)}`);
+  }
+
+  const data = response.data?.success?.data ?? response.data?.data;
+  const oneTimeToken = data?.one_time_token ?? data?.oneTimeToken;
+  if (!oneTimeToken || typeof oneTimeToken !== 'string') {
+    throw new Error(`Missing one-time token: ${JSON.stringify(response.data)}`);
+  }
+  return oneTimeToken;
+}
+
 export function assertClientV1Success<T>(response: FinaticV1Response<T>): T {
   if (response.error) {
     throw new Error(JSON.stringify(response.error));
