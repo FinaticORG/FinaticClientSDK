@@ -31,7 +31,10 @@ export class FinaticConnect extends EventEmitter {
     super();
     this.options = options;
     this.sdkConfig = getConfig(options.sdkConfig);
-    this.config = new Configuration({ basePath: this.sdkConfig.baseUrl });
+    this.config = new Configuration({
+      basePath: this.sdkConfig.baseUrl,
+      baseOptions: { headers: this.sdkConfig.headers },
+    });
     this.logger = console;
     this.v1 = new V1Wrapper(new V1Api(this.config), this.config, this.sdkConfig);
     this.rebuildClients();
@@ -163,6 +166,7 @@ export class FinaticConnect extends EventEmitter {
   private rebuildClients(): void {
     this.config = new Configuration({
       basePath: this.sdkConfig.baseUrl || 'https://api.finatic.dev',
+      baseOptions: { headers: this.sdkConfig.headers },
     });
 
     try {

@@ -132,6 +132,30 @@ export async function assertApiReachable(baseUrl: string = DEFAULT_API_BASE_URL)
   }
 }
 
+export async function bootstrapSandboxOneTimeToken(
+  apiKey: string,
+  baseUrl: string = DEFAULT_API_BASE_URL
+): Promise<string> {
+  const response = await axios.post(`${baseUrl}/api/v1/session/init`, undefined, {
+    headers: {
+      'x-api-key': apiKey,
+      'X-Finatic-Environment': 'sandbox',
+      ...DEVICE_HEADERS,
+    },
+    validateStatus: () => true,
+  });
+  if (response.status !== 200) {
+    throw new Error(`Session init failed: ${response.status} ${JSON.stringify(response.data)}`);
+  }
+
+  const data = response.data?.success?.data ?? response.data?.data;
+  const token = data?.one_time_token ?? data?.oneTimeToken;
+  if (typeof token !== 'string' || !token) {
+    throw new Error(`Session init returned no one-time token: ${JSON.stringify(response.data)}`);
+  }
+  return token;
+}
+
 export function assertClientV1Success<T>(response: FinaticV1Response<T>): T {
   if (response.error) {
     throw new Error(JSON.stringify(response.error));
