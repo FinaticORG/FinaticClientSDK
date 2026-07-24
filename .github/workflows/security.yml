@@ -2,7 +2,7 @@ name: Security
 
 # Cost controls:
 # - PR: actionlint + gitleaks only (cheap)
-# - schedule / workflow_dispatch / push to main: + osv, licenses, codeql
+# - schedule / workflow_dispatch only: + osv, licenses, codeql
 # - skip dependabot; cancel superseded runs on the same ref
 
 on:
@@ -40,8 +40,7 @@ jobs:
     if: >-
       github.actor != 'dependabot[bot]' &&
       (github.event_name == 'schedule' ||
-       github.event_name == 'workflow_dispatch' ||
-       github.event_name == 'push')
+       github.event_name == 'workflow_dispatch')
     uses: FinaticORG/.github/.github/workflows/reusable-osv.yml@main
     with:
       strict: true
@@ -50,8 +49,7 @@ jobs:
     if: >-
       github.actor != 'dependabot[bot]' &&
       (github.event_name == 'schedule' ||
-       github.event_name == 'workflow_dispatch' ||
-       github.event_name == 'push')
+       github.event_name == 'workflow_dispatch')
     uses: FinaticORG/.github/.github/workflows/reusable-licenses-npm.yml@main
     with:
       strict: true
@@ -60,8 +58,7 @@ jobs:
     if: >-
       github.actor != 'dependabot[bot]' &&
       (github.event_name == 'schedule' ||
-       github.event_name == 'workflow_dispatch' ||
-       github.event_name == 'push')
+       github.event_name == 'workflow_dispatch')
     uses: FinaticORG/.github/.github/workflows/reusable-codeql.yml@main
     with:
       languages: '["javascript-typescript"]'
