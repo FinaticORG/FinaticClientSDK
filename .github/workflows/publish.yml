@@ -27,14 +27,14 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
       # Trusted Publishing (OIDC) requires Node >= 22.14 and npm >= 11.5.1.
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
@@ -105,7 +105,7 @@ jobs:
         run: npm pack
 
       - name: Upload release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: finatic-client-${{ steps.version.outputs.version }}
           path: finatic-client-*.tgz
