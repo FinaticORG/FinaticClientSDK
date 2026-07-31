@@ -5,10 +5,21 @@
  * Generated - do not edit directly.
  */
 
+export type PortalEventName =
+  | 'broker.connected'
+  | 'broker.disconnected'
+  | 'broker.permissions_updated'
+  | 'account.grant.created'
+  | 'account.grant.updated'
+  | 'account.grant.revoked';
+
+export type PortalEventCallback = (eventName: string, payload?: unknown) => void;
+
 export interface PortalUIOptions {
   onSuccess?: (userId: string) => void;
   onError?: (error: Error) => void;
   onClose?: () => void;
+  onEvent?: PortalEventCallback;
 }
 
 export class PortalUI {
@@ -186,6 +197,17 @@ export class PortalUI {
         if (typeof resizeHeight === 'number' && this.iframe) {
           // Optionally adjust iframe height based on portal content
           this.iframe.style.height = `${resizeHeight}px`;
+        }
+        break;
+      }
+
+      case 'portal-event': {
+        const portalEvent = event.data as {
+          eventName?: unknown;
+          payload?: unknown;
+        };
+        if (typeof portalEvent.eventName === 'string') {
+          this.options?.onEvent?.(portalEvent.eventName, portalEvent.payload);
         }
         break;
       }

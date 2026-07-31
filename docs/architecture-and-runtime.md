@@ -20,6 +20,20 @@
 3. Caller invokes auth/portal/data methods.
 4. Wrapper/utility layers normalize retries, validation, and response handling.
 
+## Portal Messaging
+
+`PortalUI` validates the message origin before dispatching host callbacks.
+`portal-success` invokes `onSuccess` for authentication/session readiness, and
+`portal-close` invokes `onClose` and hides the iframe. Structured
+`portal-event` messages invoke `onEvent(eventName, payload)` and emit
+`portal:event`; they never invoke success/close callbacks or hide the iframe.
+
+Connect currently publishes account-grant lifecycle names
+`account.grant.created`, `account.grant.updated`, and
+`account.grant.revoked`. Browser hosts may refresh account state and explicitly
+close after one of these events. Server consumers continue to use HTTPS
+`account.grant.*` webhooks.
+
 ## Operational Boundaries
 
 - API key and privileged server flows remain in server SDKs.
