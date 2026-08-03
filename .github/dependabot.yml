@@ -1,6 +1,5 @@
 version: 2
 updates:
-
   - package-ecosystem: npm
     directory: /
     schedule:
@@ -30,7 +29,6 @@ updates:
       - dependency-name: typescript
         update-types:
           - version-update:semver-major
-
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -47,3 +45,4 @@ updates:
       ci-dependencies:
         patterns:
           - "*"
+    open-pull-requests-limit: 2
