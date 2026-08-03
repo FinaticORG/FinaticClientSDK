@@ -1,11 +1,12 @@
 version: 2
 updates:
+
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     target-branch: develop
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
     reviewers:
       - founders
     assignees:
@@ -33,7 +34,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     target-branch: develop
     reviewers:
       - founders
