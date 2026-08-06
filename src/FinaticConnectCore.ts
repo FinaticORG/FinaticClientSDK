@@ -9,6 +9,7 @@ import { V1Api } from './openapi/api/v1-api';
 import { SdkConfig, SdkConfigOverrides, getConfig } from './config';
 import { EventEmitter } from './utils/events';
 import { PortalUI } from './portal/PortalUI';
+import type { PortalEventCallback } from './portal/PortalUI';
 import { getLogger, type Logger } from './utils/logger';
 import { V1Wrapper } from './wrappers/v1';
 
@@ -31,7 +32,10 @@ export class FinaticConnect extends EventEmitter {
     super();
     this.options = options;
     this.sdkConfig = getConfig(options.sdkConfig);
-    this.config = new Configuration({ basePath: this.sdkConfig.baseUrl });
+    this.config = new Configuration({
+      basePath: this.sdkConfig.baseUrl,
+      baseOptions: { headers: this.sdkConfig.headers },
+    });
     this.logger = console;
     this.v1 = new V1Wrapper(new V1Api(this.config), this.config, this.sdkConfig);
     this.rebuildClients();
@@ -163,6 +167,7 @@ export class FinaticConnect extends EventEmitter {
   private rebuildClients(): void {
     this.config = new Configuration({
       basePath: this.sdkConfig.baseUrl || 'https://api.finatic.dev',
+      baseOptions: { headers: this.sdkConfig.headers },
     });
 
     try {
@@ -197,6 +202,7 @@ export class FinaticConnect extends EventEmitter {
     onSuccess?: (userId: string) => void;
     onError?: (error: Error) => void;
     onClose?: () => void;
+    onEvent?: PortalEventCallback;
   }): Promise<void>;
   async openPortal(
     params?: {
@@ -225,6 +231,7 @@ export class FinaticConnect extends EventEmitter {
           onSuccess?: (userId: string) => void;
           onError?: (error: Error) => void;
           onClose?: () => void;
+          onEvent?: PortalEventCallback;
         }
       | {
           theme?: string | { preset?: string; custom?: Record<string, unknown> };
@@ -259,6 +266,7 @@ export class FinaticConnect extends EventEmitter {
     let successCallback: ((userId: string) => void) | undefined;
     let errorCallback: ((error: Error) => void) | undefined;
     let closeCallback: (() => void) | undefined;
+    let eventCallback: PortalEventCallback | undefined;
 
     if (isNewPattern) {
       const options = (optionsOrParams || {}) as {
@@ -272,17 +280,20 @@ export class FinaticConnect extends EventEmitter {
         onSuccess?: (userId: string) => void;
         onError?: (error: Error) => void;
         onClose?: () => void;
+        onEvent?: PortalEventCallback;
       };
       const {
         onSuccess: optOnSuccess,
         onError: optOnError,
         onClose: optOnClose,
+        onEvent: optOnEvent,
         ...portalParams
       } = options;
       params = portalParams;
       successCallback = optOnSuccess;
       errorCallback = optOnError;
       closeCallback = optOnClose;
+      eventCallback = optOnEvent;
     } else {
       params = optionsOrParams as
         | {
@@ -320,6 +331,10 @@ export class FinaticConnect extends EventEmitter {
       onClose: () => {
         this.emit('portal:close');
         closeCallback?.();
+      },
+      onEvent: (eventName: string, payload?: unknown) => {
+        this.emit('portal:event', eventName, payload);
+        eventCallback?.(eventName, payload);
       },
     });
   }

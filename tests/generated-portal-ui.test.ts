@@ -43,12 +43,15 @@ describe('Generated PortalUI coverage', () => {
     const onSuccess = jest.fn();
     const onError = jest.fn();
     const onClose = jest.fn();
+    const onEvent = jest.fn();
 
     const portalUI = new PortalUI('https://portal.example.com/connect');
+    const hideSpy = jest.spyOn(portalUI, 'hide');
     portalUI.show('https://portal.example.com/connect', 'session-id', {
       onSuccess,
       onError,
       onClose,
+      onEvent,
     });
 
     (portalUI as any).handleMessage({
@@ -62,6 +65,35 @@ describe('Generated PortalUI coverage', () => {
     (portalUI as any).handleMessage({
       origin: 'https://portal.example.com',
       data: { type: 'portal-resize', height: 420 },
+    });
+    (portalUI as any).handleMessage({
+      origin: 'https://portal.example.com',
+      data: {
+        type: 'portal-event',
+        eventName: 'account.grant.created',
+        payload: {
+          brokerId: 'alpaca',
+          accountId: 'account-1',
+          grantId: 'grant-1',
+        },
+      },
+    });
+    expect(onEvent).toHaveBeenCalledWith('account.grant.created', {
+      brokerId: 'alpaca',
+      accountId: 'account-1',
+      grantId: 'grant-1',
+    });
+    expect(onSuccess).toHaveBeenCalledTimes(1);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(hideSpy).not.toHaveBeenCalled();
+
+    (portalUI as any).handleMessage({
+      origin: 'https://portal.example.com',
+      data: {
+        type: 'portal-event',
+        eventName: 123,
+        payload: { ignored: true },
+      },
     });
     (portalUI as any).handleMessage({
       origin: 'https://portal.example.com',
@@ -81,5 +113,6 @@ describe('Generated PortalUI coverage', () => {
     expect(onSuccess).toHaveBeenCalledWith('user-1');
     expect(onError).toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();
+    expect(onEvent).toHaveBeenCalledTimes(1);
   });
 });

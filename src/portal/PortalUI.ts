@@ -5,10 +5,21 @@
  * Generated - do not edit directly.
  */
 
+export type PortalEventName =
+  | 'broker.connected'
+  | 'broker.disconnected'
+  | 'broker.permissions_updated'
+  | 'account.grant.created'
+  | 'account.grant.updated'
+  | 'account.grant.revoked';
+
+export type PortalEventCallback = (eventName: string, payload?: unknown) => void;
+
 export interface PortalUIOptions {
   onSuccess?: (userId: string) => void;
   onError?: (error: Error) => void;
   onClose?: () => void;
+  onEvent?: PortalEventCallback;
 }
 
 export class PortalUI {
@@ -52,7 +63,13 @@ export class PortalUI {
     `;
 
     // Set security headers
-    this.iframe.setAttribute('sandbox', 'allow-scripts allow-forms allow-popups allow-same-origin');
+    // allow-popups-to-escape-sandbox: broker OAuth must open a real top-level
+    // window; without it, some hosts trap or block the popup and Connect's
+    // legacy fallback navigated the portal iframe itself to the broker.
+    this.iframe.setAttribute(
+      'sandbox',
+      'allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin'
+    );
     this.iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
     this.iframe.setAttribute(
       'allow',
@@ -180,6 +197,17 @@ export class PortalUI {
         if (typeof resizeHeight === 'number' && this.iframe) {
           // Optionally adjust iframe height based on portal content
           this.iframe.style.height = `${resizeHeight}px`;
+        }
+        break;
+      }
+
+      case 'portal-event': {
+        const portalEvent = event.data as {
+          eventName?: unknown;
+          payload?: unknown;
+        };
+        if (typeof portalEvent.eventName === 'string') {
+          this.options?.onEvent?.(portalEvent.eventName, portalEvent.payload);
         }
         break;
       }

@@ -1,15 +1,12 @@
 /**
- * FDX v1 sandbox session smoke — Client SDK v1 wrapper against local finaticAPI.
+ * Browser-safe Client SDK session smoke against local finaticAPI.
  */
 
-import { getConfig } from '../../src/config';
-import { V1Api } from '../../src/openapi/api/v1-api';
-import { Configuration } from '../../src/openapi/configuration';
-import { V1Wrapper } from '../../src/wrappers/v1';
+import { FinaticConnect } from '../../src/FinaticConnect';
 import {
   assertApiReachable,
   bootstrapSandboxApiKey,
-  createSandboxOneTimeToken,
+  bootstrapSandboxOneTimeToken,
   DEFAULT_API_BASE_URL,
   DEVICE_HEADERS,
   integrationEnabled,
@@ -17,36 +14,37 @@ import {
 
 const describeIntegration = integrationEnabled() ? describe : describe.skip;
 
-function buildClientV1(): V1Wrapper {
-  const sdkConfig = getConfig({
-    baseUrl: DEFAULT_API_BASE_URL,
-    apiEnvironment: 'sandbox',
-    headers: DEVICE_HEADERS,
-  });
-  const configuration = new Configuration({
-    basePath: DEFAULT_API_BASE_URL,
-    baseOptions: {
-      headers: DEVICE_HEADERS,
-    },
-  });
-  return new V1Wrapper(new V1Api(configuration), configuration, sdkConfig);
-}
+describeIntegration('FDX v1 sandbox session (Client SDK)', () => {
+  beforeEach(() => FinaticConnect.reset());
+  afterEach(() => FinaticConnect.reset());
 
-describeIntegration('FDX v1 sandbox session (Client SDK v1)', () => {
-  it('starts a sandbox session with a one-time token', async () => {
+  it('starts a sandbox session and obtains a portal URL', async () => {
     await assertApiReachable();
     const bootstrap = await bootstrapSandboxApiKey();
 
     try {
-      const oneTimeToken = await createSandboxOneTimeToken(bootstrap.sandboxApiKey);
-      const v1 = buildClientV1();
-      const session = await v1.startSession(oneTimeToken);
+      const token = await bootstrapSandboxOneTimeToken(bootstrap.sandboxApiKey);
+      const finatic = await FinaticConnect.init(token, undefined, {
+        environment: 'custom',
+        baseUrl: DEFAULT_API_BASE_URL,
+        apiEnvironment: 'sandbox',
+        headers: {
+          ...DEVICE_HEADERS,
+          'X-Finatic-Environment': 'sandbox',
+        },
+        portalConfig: { baseUrl: DEFAULT_API_BASE_URL },
+        logLevel: 'silent',
+      });
 
-      expect(session.session_id).toBeTruthy();
-      expect(session.company_id).toBe(bootstrap.accountId);
-      expect(v1.getSessionId()).toBe(session.session_id);
-      expect(v1.getCompanyId()).toBe(session.company_id);
-      expect(v1.isAuthed()).toBe(false);
+      expect(finatic.v1.getSessionId()).toBeTruthy();
+      expect(finatic.v1.getCompanyId()).toBe(bootstrap.accountId);
+
+      const portalUrl = await finatic.v1.getPortalUrl({
+        brokers: ['fidelity'],
+        mode: 'light',
+      });
+      expect(() => new URL(portalUrl)).not.toThrow();
+      expect(portalUrl).toContain('token=');
     } finally {
       await bootstrap.cleanup();
     }
