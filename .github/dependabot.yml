@@ -3,9 +3,9 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     target-branch: develop
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 3
     reviewers:
       - founders
     assignees:
@@ -29,11 +29,10 @@ updates:
       - dependency-name: typescript
         update-types:
           - version-update:semver-major
-
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     target-branch: develop
     reviewers:
       - founders
@@ -46,3 +45,4 @@ updates:
       ci-dependencies:
         patterns:
           - "*"
+    open-pull-requests-limit: 2

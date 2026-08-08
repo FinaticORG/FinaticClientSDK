@@ -7,6 +7,7 @@
 
 ## Unreleased
 
+- Added optional `openPortal({ onEvent })` handling for structured account-grant lifecycle events without changing authentication or close behavior.
 - Added account-first v1 API and wrapper surface pinned to FinaticAPI PR #174 head `969cccc50b44cd8c701f47dddf8cb3b95c9b8f6e`, including explicit account resource routes, portal discovered-account binding with optional sync-status inclusion, session sync-status polling, and FDX consent creation.
 - Added session sync-status polling for the current account-first API contract.
 - Added `apiEnvironment: 'live' | 'sandbox'` configuration support for `X-Finatic-Environment`.
