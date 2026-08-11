@@ -3,7 +3,8 @@ name: Security
 # Cost controls:
 # - PR: actionlint + gitleaks only (cheap)
 # - schedule / workflow_dispatch only: + osv, licenses, codeql
-# - skip dependabot; cancel superseded runs on the same ref
+# - PR cheap jobs run for Dependabot; heavy jobs still skip Dependabot
+# - cancel superseded runs on the same ref
 
 on:
   pull_request:
@@ -24,13 +25,11 @@ permissions:
 
 jobs:
   actionlint:
-    if: github.actor != 'dependabot[bot]'
     uses: FinaticORG/.github/.github/workflows/reusable-actionlint.yml@main
     with:
       strict: true
 
   gitleaks:
-    if: github.actor != 'dependabot[bot]'
     uses: FinaticORG/.github/.github/workflows/reusable-gitleaks.yml@main
     with:
       strict: true
