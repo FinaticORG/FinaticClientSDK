@@ -5,7 +5,7 @@ updates:
     schedule:
       interval: monthly
     target-branch: develop
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 2
     reviewers:
       - founders
     assignees:
