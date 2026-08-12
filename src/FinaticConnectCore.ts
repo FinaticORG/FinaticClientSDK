@@ -101,7 +101,8 @@ export class FinaticConnect extends EventEmitter {
       if (error instanceof Error && error.message.includes('Session not initialized')) {
         throw new Error(
           `Failed to initialize Finatic session: ${error.message}. ` +
-            'Please check the API response and ensure the one-time token is valid.'
+            'Please check the API response and ensure the one-time token is valid.',
+          { cause: error },
         );
       }
       throw error;
