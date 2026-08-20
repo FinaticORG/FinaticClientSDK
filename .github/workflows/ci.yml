@@ -15,34 +15,34 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - name: Skip heavy CI for Dependabot
-        if: github.actor == 'dependabot[bot]'
-        run: echo "Skipping heavy product CI for Dependabot (Actions cost control)."
+      - name: Skip heavy CI for Dependabot / release PRs
+        if: github.actor == 'dependabot[bot]' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.event.pull_request.title, 'chore(release):'))
+        run: echo "Skipping heavy product CI for Dependabot or chore(release) PRs (Actions cost control)."
       - uses: actions/checkout@v7
-        if: github.actor != 'dependabot[bot]'
+        if: github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository || startsWith(github.event.pull_request.title, 'chore(release):') == false)
 
       - uses: actions/setup-node@v7
-        if: github.actor != 'dependabot[bot]'
+        if: github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository || startsWith(github.event.pull_request.title, 'chore(release):') == false)
         with:
           node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
-        if: github.actor != 'dependabot[bot]'
+        if: github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository || startsWith(github.event.pull_request.title, 'chore(release):') == false)
         run: npm install
 
       - name: Lint
-        if: github.actor != 'dependabot[bot]'
+        if: github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository || startsWith(github.event.pull_request.title, 'chore(release):') == false)
         run: npm run lint
 
       - name: Format check
-        if: github.actor != 'dependabot[bot]'
+        if: github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository || startsWith(github.event.pull_request.title, 'chore(release):') == false)
         run: npm run format:check
 
       - name: Build
-        if: github.actor != 'dependabot[bot]'
+        if: github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository || startsWith(github.event.pull_request.title, 'chore(release):') == false)
         run: npm run build
 
       - name: Unit tests with coverage gate
-        if: github.actor != 'dependabot[bot]'
+        if: github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository || startsWith(github.event.pull_request.title, 'chore(release):') == false)
         run: npm run test:coverage -- --runInBand
