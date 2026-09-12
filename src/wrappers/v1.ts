@@ -195,6 +195,14 @@ export class V1Wrapper {
     return { session_id: sessionId, company_id: companyId };
   }
 
+  /**
+   * Redirect URL for Finatic Connect. Pair with `openPortal` in the browser SDK.
+   *
+   * @example
+   * ```typescript-client
+   * const portalUrl = await finatic.v1.getPortalUrl({ mode: 'dark' });
+   * ```
+   */
   async getPortalUrl(params?: PortalUrlParams): Promise<string> {
     if (!this.sessionId) {
       throw new Error('Session not initialized. Call v1.startSession() first.');
@@ -324,6 +332,17 @@ export class V1Wrapper {
     return this.serverOnlySessionRoute('finatic.v1.getSessionSyncStatus');
   }
 
+  /**
+   * List granted financial accounts. Client envelope is `{ success, error, warning }`.
+   *
+   * @example
+   * ```typescript-client
+   * const result = await finatic.v1.listAccounts();
+   * if (result.success) {
+   *   console.log(result.success.data);
+   * }
+   * ```
+   */
   listAccounts<T = unknown>(
     params: { limit?: number; offset?: number; includeSyncStatus?: boolean } = {},
     options?: FinaticV1CallOptions
@@ -352,6 +371,17 @@ export class V1Wrapper {
     return this.unwrap<T>(this.api.listAccountBalances(params, this.headers(options)));
   }
 
+  /**
+   * Positions for one financial account (`accountId` from listAccounts or a grant event).
+   *
+   * @example
+   * ```typescript-client
+   * const result = await finatic.v1.listPositions({ accountId: 'acct_123' });
+   * if (result.success) {
+   *   console.log(result.success.data);
+   * }
+   * ```
+   */
   listPositions<T = unknown>(
     params: AccountScopedParams,
     options?: FinaticV1CallOptions
