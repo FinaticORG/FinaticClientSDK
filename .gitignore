@@ -63,6 +63,9 @@ pids/
 # Yarn Integrity file
 .yarn-integrity
 
+# Isolated git worktrees
+.worktrees/
+
 # Yarn lock file
 yarn.lock
 

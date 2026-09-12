@@ -102,9 +102,9 @@ export class FinaticConnect extends EventEmitter {
         throw Object.assign(
           new Error(
             `Failed to initialize Finatic session: ${error.message}. ` +
-              'Please check the API response and ensure the one-time token is valid.',
+              'Please check the API response and ensure the one-time token is valid.'
           ),
-          { cause: error },
+          { cause: error }
         );
       }
       throw error;
