@@ -22,10 +22,20 @@ export interface PortalUIOptions {
   onEvent?: PortalEventCallback;
 }
 
+/** Compact starting pane so the iframe grows to content instead of opening at 94dvh. */
+export const EMBEDDED_PORTAL_INITIAL_HEIGHT_PX = 280;
+
+/** Keep the host overlay from covering the full window. */
+export const EMBEDDED_PORTAL_HOST_HEIGHT_RATIO = 0.94;
+
+const EMBEDDED_PORTAL_MAX_WIDTH_PX = 448;
+
 export class PortalUI {
   private iframe: HTMLIFrameElement | null = null;
   private container: HTMLDivElement | null = null;
   private messageHandler: ((event: MessageEvent) => void) | null = null;
+  private viewportResizeHandler: (() => void) | null = null;
+  private lastContentHeightPx: number | null = null;
   private sessionId: string | null = null;
   private portalOrigin: string | null = null;
   private options?: PortalUIOptions;
@@ -54,12 +64,16 @@ export class PortalUI {
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 90%;
-      max-width: 500px;
-      height: 90%;
-      max-height: 600px;
+      width: min(94vw, 28rem);
+      max-width: min(94vw, 28rem);
+      height: ${EMBEDDED_PORTAL_INITIAL_HEIGHT_PX}px;
+      max-height: 94dvh;
+      min-width: 0;
+      min-height: 0;
       border: none;
       border-radius: 24px;
+      overflow: hidden;
+      transition: height 180ms ease;
     `;
 
     // Set security headers
@@ -68,7 +82,7 @@ export class PortalUI {
     // legacy fallback navigated the portal iframe itself to the broker.
     this.iframe.setAttribute(
       'sandbox',
-      'allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin'
+      'allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-downloads'
     );
     this.iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
     this.iframe.setAttribute(
@@ -78,6 +92,43 @@ export class PortalUI {
 
     this.container.appendChild(this.iframe);
     document.body.appendChild(this.container);
+    this.applyResponsiveIframeBox();
+  }
+
+  /**
+   * Sizes the portal iframe to content height, growing from a compact start.
+   * Tall content caps at 94dvh and scrolls inside Connect.
+   */
+  private applyResponsiveIframeBox(contentHeightPx?: number): void {
+    if (!this.iframe || typeof window === 'undefined') {
+      return;
+    }
+
+    if (typeof contentHeightPx === 'number' && Number.isFinite(contentHeightPx)) {
+      this.lastContentHeightPx = Math.max(0, Math.ceil(contentHeightPx));
+    }
+
+    const hostWidthPx =
+      typeof window.innerWidth === 'number' && window.innerWidth > 0
+        ? window.innerWidth
+        : EMBEDDED_PORTAL_MAX_WIDTH_PX;
+    const hostHeightPx =
+      typeof window.innerHeight === 'number' && window.innerHeight > 0 ? window.innerHeight : 720;
+    const maximumWidthPx = Math.min(
+      Math.round(hostWidthPx * EMBEDDED_PORTAL_HOST_HEIGHT_RATIO),
+      EMBEDDED_PORTAL_MAX_WIDTH_PX
+    );
+    const maximumHeightPx = Math.round(hostHeightPx * EMBEDDED_PORTAL_HOST_HEIGHT_RATIO);
+    const nextHeightPx = Math.min(
+      this.lastContentHeightPx ?? EMBEDDED_PORTAL_INITIAL_HEIGHT_PX,
+      maximumHeightPx
+    );
+
+    this.iframe.style.width = `${maximumWidthPx}px`;
+    this.iframe.style.maxWidth = `${maximumWidthPx}px`;
+    this.iframe.style.height = `${nextHeightPx}px`;
+    this.iframe.style.maxHeight = `${maximumHeightPx}px`;
+    this.iframe.style.transition = 'height 180ms ease';
   }
 
   private lockScroll(): void {
@@ -117,6 +168,7 @@ export class PortalUI {
     this.options = options;
     this.container!.style.display = 'block';
     this.iframe!.src = url;
+    this.applyResponsiveIframeBox();
 
     // Lock background scrolling
     this.lockScroll();
@@ -124,6 +176,8 @@ export class PortalUI {
     // Set up message handler
     this.messageHandler = this.handleMessage.bind(this);
     window.addEventListener('message', this.messageHandler);
+    this.viewportResizeHandler = () => this.applyResponsiveIframeBox();
+    window.addEventListener('resize', this.viewportResizeHandler);
   }
 
   public hide(): void {
@@ -137,7 +191,12 @@ export class PortalUI {
       window.removeEventListener('message', this.messageHandler);
       this.messageHandler = null;
     }
+    if (this.viewportResizeHandler) {
+      window.removeEventListener('resize', this.viewportResizeHandler);
+      this.viewportResizeHandler = null;
+    }
     this.sessionId = null;
+    this.lastContentHeightPx = null;
 
     // Unlock background scrolling
     this.unlockScroll();
@@ -191,12 +250,9 @@ export class PortalUI {
         break;
 
       case 'portal-resize': {
-        // Handle resize messages (optional - can be used to adjust iframe height)
-        // Portal sends: { type: 'portal-resize', height: number }
         const resizeHeight = (event.data as { height?: unknown }).height;
-        if (typeof resizeHeight === 'number' && this.iframe) {
-          // Optionally adjust iframe height based on portal content
-          this.iframe.style.height = `${resizeHeight}px`;
+        if (typeof resizeHeight === 'number') {
+          this.applyResponsiveIframeBox(resizeHeight);
         }
         break;
       }
