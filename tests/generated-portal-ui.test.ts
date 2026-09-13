@@ -27,6 +27,8 @@ describe('Generated PortalUI coverage', () => {
 
     (global as any).window = {
       scrollY: 0,
+      innerWidth: 1280,
+      innerHeight: 800,
       location: { hostname: 'localhost' },
       addEventListener: jest.fn(),
       removeEventListener: jest.fn(),
@@ -53,6 +55,22 @@ describe('Generated PortalUI coverage', () => {
       onClose,
       onEvent,
     });
+
+    const iframe = (portalUI as any).iframe as {
+      style: { height: string };
+      setAttribute: jest.Mock;
+    };
+    expect(iframe.style.height).toBe('280px');
+    expect(iframe.setAttribute).toHaveBeenCalledWith(
+      'sandbox',
+      expect.stringContaining('allow-downloads'),
+    );
+
+    (portalUI as any).handleMessage({
+      origin: 'https://portal.example.com',
+      data: { type: 'portal-resize', height: 420 },
+    });
+    expect(iframe.style.height).toBe('420px');
 
     (portalUI as any).handleMessage({
       origin: 'https://portal.example.com',
