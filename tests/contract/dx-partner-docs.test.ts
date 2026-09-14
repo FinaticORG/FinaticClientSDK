@@ -24,6 +24,12 @@ describe('partner-facing README matches published v1', () => {
     expect(readme).toContain(
       'https://github.com/FinaticORG/FinaticServerSDK-Node/blob/develop/README.md',
     );
+    expect(readme).toContain(
+      'https://finatic.dev/docs/quick-start/portal-configuration',
+    );
+    expect(readme).not.toContain(
+      'https://github.com/FinaticORG/FinaticConnect/',
+    );
     expect(readme).toContain('https://finatic.dev/AGENTS.md');
     expect(readme).toContain('https://finatic.dev/openapi.json');
   });
