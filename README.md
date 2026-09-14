@@ -85,7 +85,7 @@ This README is the Client SDK contract. Fetch the rest before writing a full int
 - Quick start: [https://finatic.dev/docs/quick-start/quick-start](https://finatic.dev/docs/quick-start/quick-start)
 - Node backend README: [https://github.com/FinaticORG/FinaticServerSDK-Node/blob/develop/README.md](https://github.com/FinaticORG/FinaticServerSDK-Node/blob/develop/README.md)
 - Python backend README: [https://github.com/FinaticORG/FinaticServerSDK-Python/blob/develop/README.md](https://github.com/FinaticORG/FinaticServerSDK-Python/blob/develop/README.md)
-- Embed Connect: [https://github.com/FinaticORG/FinaticConnect/blob/develop/docs/embedding.md](https://github.com/FinaticORG/FinaticConnect/blob/develop/docs/embedding.md)
+- Embed Connect: [https://finatic.dev/docs/quick-start/portal-configuration](https://finatic.dev/docs/quick-start/portal-configuration)
 - Demo apps: [https://github.com/FinaticORG/FinaticDemoApps/blob/develop/README.md](https://github.com/FinaticORG/FinaticDemoApps/blob/develop/README.md)
 - API reference: [https://finatic.dev/docs/api-reference](https://finatic.dev/docs/api-reference)
 - OpenAPI: [https://finatic.dev/openapi.json](https://finatic.dev/openapi.json)
