@@ -22,6 +22,12 @@ describe('public surface @finatic/client', () => {
     expect(typeof sdk.v1.listAccounts).toBe('function');
     expect(typeof sdk.v1.listBalances).toBe('function');
     expect(typeof sdk.v1.listPositions).toBe('function');
+    expect(typeof sdk.closePortal).toBe('function');
+    expect(() => sdk.closePortal()).not.toThrow();
+    const close = jest.fn();
+    (sdk as any).portalUI = { close };
+    sdk.closePortal();
+    expect(close).toHaveBeenCalledTimes(1);
     expect(typeof (sdk as unknown as Record<string, unknown>)['getPortalUrl']).toBe('undefined');
     expect(typeof (sdk as unknown as Record<string, unknown>)['getSessionId']).toBe('undefined');
     expect(typeof (sdk as unknown as Record<string, unknown>)['isAuthed']).toBe('undefined');

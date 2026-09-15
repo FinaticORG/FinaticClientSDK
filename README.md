@@ -35,6 +35,23 @@ await finatic.openPortal({
 
 `openPortal` must use the **object** form to receive `onEvent`. The positional overload has no grant events.
 
+The embedding app controls when Connect is dismissed. Call `closePortal()`
+from host UI or after handling an optional portal event; repeated calls are
+safe and do nothing when no portal is open:
+
+```ts
+await finatic.openPortal({
+  onEvent: (eventName) => {
+    if (eventName === 'account.grant.created') {
+      finatic.closePortal();
+    }
+  },
+  onClose: () => {
+    // Runs once for either the portal close control or closePortal().
+  },
+});
+```
+
 Client data methods return the wire envelope `{ success, error, warning }` (not `{ data, errors }`).
 
 Call `FinaticConnect.reset()` before `init` when you need a new session boundary.

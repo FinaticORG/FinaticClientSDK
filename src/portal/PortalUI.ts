@@ -38,7 +38,7 @@ export class PortalUI {
   private lastContentHeightPx: number | null = null;
   private sessionId: string | null = null;
   private portalOrigin: string | null = null;
-  private options?: PortalUIOptions;
+  private options: PortalUIOptions | undefined;
   private originalBodyStyle: string | null = null;
 
   constructor(_portalUrl: string) {
@@ -196,10 +196,35 @@ export class PortalUI {
       this.viewportResizeHandler = null;
     }
     this.sessionId = null;
+    this.portalOrigin = null;
+    this.options = undefined;
     this.lastContentHeightPx = null;
 
     // Unlock background scrolling
     this.unlockScroll();
+  }
+
+  /**
+   * Closes the active portal through the same callback and cleanup path used
+   * by the embedded portal's close control.
+   */
+  public close(): void {
+    if (!this.sessionId) {
+      return;
+    }
+
+    const onClose = this.options?.onClose;
+
+    // Consume active state before notifying the host so repeated or re-entrant
+    // close requests cannot emit duplicate close callbacks.
+    this.sessionId = null;
+    this.options = undefined;
+
+    try {
+      onClose?.();
+    } finally {
+      this.hide();
+    }
   }
 
   private handleMessage(event: MessageEvent): void {
@@ -245,8 +270,7 @@ export class PortalUI {
       }
 
       case 'portal-close':
-        this.options?.onClose?.();
-        this.hide();
+        this.close();
         break;
 
       case 'portal-resize': {
