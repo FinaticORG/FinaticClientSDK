@@ -118,6 +118,10 @@ describe('Generated PortalUI coverage', () => {
       data: { type: 'portal-close' },
     });
     (portalUI as any).handleMessage({
+      origin: 'https://portal.example.com',
+      data: { type: 'portal-close' },
+    });
+    (portalUI as any).handleMessage({
       origin: 'https://different.example.com',
       data: { type: 'portal-success', userId: 'ignored' },
     });
@@ -130,7 +134,43 @@ describe('Generated PortalUI coverage', () => {
 
     expect(onSuccess).toHaveBeenCalledWith('user-1');
     expect(onError).toHaveBeenCalled();
-    expect(onClose).toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalledTimes(1);
     expect(onEvent).toHaveBeenCalledTimes(1);
+  });
+
+  it('closes directly once and ignores pre-open, repeated, and re-entrant closes', () => {
+    const portalUI = new PortalUI('https://portal.example.com/connect');
+    const onClose = jest.fn(() => portalUI.close());
+
+    portalUI.close();
+    expect(onClose).not.toHaveBeenCalled();
+
+    portalUI.show('https://portal.example.com/connect', 'session-id', { onClose });
+    portalUI.close();
+    portalUI.close();
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect((portalUI as any).container.style.display).toBe('none');
+    expect((portalUI as any).iframe.src).toBe('');
+    expect((portalUI as any).options).toBeUndefined();
+    expect(window.removeEventListener).toHaveBeenCalledWith('message', expect.any(Function));
+    expect(window.removeEventListener).toHaveBeenCalledWith('resize', expect.any(Function));
+  });
+
+  it('finishes cleanup when the close callback throws', () => {
+    const portalUI = new PortalUI('https://portal.example.com/connect');
+    portalUI.show('https://portal.example.com/connect', 'session-id', {
+      onClose: () => {
+        throw new Error('host callback failed');
+      },
+    });
+
+    expect(() => portalUI.close()).toThrow('host callback failed');
+    expect((portalUI as any).container.style.display).toBe('none');
+    expect((portalUI as any).iframe.src).toBe('');
+    expect((portalUI as any).sessionId).toBeNull();
+    expect((portalUI as any).options).toBeUndefined();
+
+    expect(() => portalUI.close()).not.toThrow();
   });
 });
