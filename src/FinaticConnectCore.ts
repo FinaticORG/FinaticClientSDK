@@ -194,6 +194,15 @@ export class FinaticConnect extends EventEmitter {
     }
   }
 
+  /**
+   * Dismisses the active Connect portal, if one is open.
+   *
+   * This uses the same callback and cleanup path as the portal close control.
+   */
+  closePortal(): void {
+    this.portalUI?.close();
+  }
+
   async openPortal(options?: {
     theme?: string | { preset?: string; custom?: Record<string, unknown> };
     brokers?: string[];

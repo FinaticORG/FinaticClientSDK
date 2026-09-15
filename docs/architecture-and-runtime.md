@@ -24,7 +24,8 @@
 
 `PortalUI` validates the message origin before dispatching host callbacks.
 `portal-success` invokes `onSuccess` for authentication/session readiness, and
-`portal-close` invokes `onClose` and hides the iframe. Structured
+`portal-close` and host-initiated `closePortal()` share one idempotent close
+path that invokes `onClose` once and guarantees iframe/listener cleanup. Structured
 `portal-event` messages invoke `onEvent(eventName, payload)` and emit
 `portal:event`; they never invoke success/close callbacks or hide the iframe.
 
