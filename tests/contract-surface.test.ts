@@ -29,7 +29,7 @@ describe("Client SDK contract surface", () => {
     expect(src).toContain("__CUSTOM_CLASS__");
   });
 
-  it("exposes a correlated and exhaustively narrowable lifecycle callback", () => {
+  it("exposes a guard for exhaustive lifecycle payload narrowing", () => {
     const seenStages: string[] = [];
     const callback: PortalEventCallback = (eventName, payload) => {
       if (

@@ -38,8 +38,9 @@ credential issuance and live/no-data states never imply accepted account data.
 The SDK validates lifecycle payloads against exact stage/state/key allowlists
 before invoking callbacks and drops unsupported versions, malformed payloads,
 extra secret-bearing fields, and invalid readiness claims. The public callback
-uses correlated tuple arguments so lifecycle payloads narrow exhaustively while
-legacy broad handlers remain assignable.
+retains the broad event-name/unknown-payload shape for source compatibility;
+hosts use `isPortalLifecycleEventPayload` to narrow lifecycle payloads
+exhaustively while arbitrary non-lifecycle event names remain supported.
 
 Connect currently publishes account-grant lifecycle names
 `account.grant.created`, `account.grant.updated`, and
