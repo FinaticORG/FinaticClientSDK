@@ -344,7 +344,7 @@ export class FinaticConnect extends EventEmitter {
         this.emit('portal:close');
         closeCallback?.();
       },
-      onEvent: (eventName: string, payload?: unknown) => {
+      onEvent: (eventName, payload) => {
         this.emit('portal:event', eventName, payload);
         eventCallback?.(eventName, payload);
       },

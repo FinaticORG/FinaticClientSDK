@@ -29,6 +29,19 @@ path that invokes `onClose` once and guarantees iframe/listener cleanup. Structu
 `portal-event` messages invoke `onEvent(eventName, payload)` and emit
 `portal:event`; they never invoke success/close callbacks or hide the iframe.
 
+Authentication and broker readiness are separate contracts. `portal-success`
+and lifecycle stage `portal_authenticated` describe portal/session
+authentication. Schema-v1 `portal.lifecycle` events then distinguish
+`broker_connection_created` from `push_agent_state_changed`. Only connector
+states `LIVE_DATA` and `STALE_LIVE_DATA` can assert `dataReady: true`;
+credential issuance and live/no-data states never imply accepted account data.
+The SDK validates lifecycle payloads against exact stage/state/key allowlists
+before invoking callbacks and drops unsupported versions, malformed payloads,
+extra secret-bearing fields, and invalid readiness claims. The public callback
+retains the broad event-name/unknown-payload shape for source compatibility;
+hosts use `isPortalLifecycleEventPayload` to narrow lifecycle payloads
+exhaustively while arbitrary non-lifecycle event names remain supported.
+
 Connect currently publishes account-grant lifecycle names
 `account.grant.created`, `account.grant.updated`, and
 `account.grant.revoked`. Browser hosts may refresh account state and explicitly
