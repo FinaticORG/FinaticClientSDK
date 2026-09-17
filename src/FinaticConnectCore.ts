@@ -9,7 +9,7 @@ import { V1Api } from './openapi/api/v1-api';
 import { SdkConfig, SdkConfigOverrides, getConfig } from './config';
 import { EventEmitter } from './utils/events';
 import { PortalUI } from './portal/PortalUI';
-import type { PortalEventArguments, PortalEventCallback } from './portal/PortalUI';
+import type { PortalEventCallback } from './portal/PortalUI';
 import { getLogger, type Logger } from './utils/logger';
 import { V1Wrapper } from './wrappers/v1';
 
@@ -344,10 +344,9 @@ export class FinaticConnect extends EventEmitter {
         this.emit('portal:close');
         closeCallback?.();
       },
-      onEvent: (...args: PortalEventArguments) => {
-        const [eventName, payload] = args;
+      onEvent: (eventName, payload) => {
         this.emit('portal:event', eventName, payload);
-        eventCallback?.(...args);
+        eventCallback?.(eventName, payload);
       },
     });
   }

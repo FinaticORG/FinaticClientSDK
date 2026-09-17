@@ -11,7 +11,7 @@ npm install @finatic/client
 ## Quick start
 
 ```ts
-import { FinaticConnect } from '@finatic/client';
+import { FinaticConnect, isPortalLifecycleEventPayload } from '@finatic/client';
 
 const finatic = await FinaticConnect.init('one-time-token', undefined, {
   apiEnvironment: 'sandbox', // or 'live'
@@ -60,20 +60,19 @@ publishes those later transitions through the typed `portal.lifecycle` event:
 
 ```ts
 await finatic.openPortal({
-  onEvent: (...event) => {
-    if (event[0] !== 'portal.lifecycle') return;
+  onEvent: (eventName, payload) => {
+    if (eventName !== 'portal.lifecycle' || !isPortalLifecycleEventPayload(payload)) return;
 
-    const lifecycle = event[1];
-    switch (lifecycle.stage) {
+    switch (payload.stage) {
       case 'portal_authenticated':
-        console.log('Portal authenticated', lifecycle.userId);
+        console.log('Portal authenticated', payload.userId);
         break;
       case 'broker_connection_created':
-        console.log('Connection persisted', lifecycle.connectionId);
+        console.log('Connection persisted', payload.connectionId);
         break;
       case 'push_agent_state_changed':
         // Only LIVE_DATA and STALE_LIVE_DATA can report dataReady: true.
-        console.log(lifecycle.state, lifecycle.dataReady ?? 'not asserted');
+        console.log(payload.state, payload.dataReady ?? 'not asserted');
         break;
     }
   },

@@ -54,20 +54,22 @@ export interface PortalEventPayloadMap {
   'portal.lifecycle': PortalLifecycleEventPayload;
 }
 
-export type PortalEventName = keyof PortalEventPayloadMap;
-
-export type PortalEventArguments =
-  | [
-      eventName: Exclude<PortalEventName, 'portal.lifecycle'>,
-      payload?: PortalEventPayloadMap[Exclude<PortalEventName, 'portal.lifecycle'>],
-    ]
-  | [eventName: 'portal.lifecycle', payload: PortalLifecycleEventPayload];
+export type KnownPortalEventName = keyof PortalEventPayloadMap;
 
 /**
- * Correlated arguments keep lifecycle payload narrowing type-safe. A legacy
- * `(eventName: string, payload?: unknown) => void` handler remains assignable.
+ * Connect can forward partner-defined events in addition to the events known
+ * by this SDK version, so event names intentionally remain open-ended.
  */
-export type PortalEventCallback = (...args: PortalEventArguments) => void;
+export type PortalEventName = KnownPortalEventName | (string & {});
+
+export type PortalEventArguments = [eventName: PortalEventName, payload?: unknown];
+
+/**
+ * Preserve the original callback contract so existing contextual two-parameter
+ * handlers and partner-defined event names remain source-compatible. Use
+ * `isPortalLifecycleEventPayload` to narrow schema-v1 lifecycle payloads.
+ */
+export type PortalEventCallback = (eventName: PortalEventName, payload?: unknown) => void;
 
 const PORTAL_CONNECTOR_STATES = new Set<PortalConnectorState>([
   'REGISTERING',
@@ -103,28 +105,30 @@ function hasExactKeys(
   );
 }
 
-function parsePortalLifecycleEventPayload(payload: unknown): PortalLifecycleEventPayload | null {
+export function isPortalLifecycleEventPayload(
+  payload: unknown
+): payload is PortalLifecycleEventPayload {
   if (
     !isRecord(payload) ||
     payload['schemaVersion'] !== PORTAL_LIFECYCLE_SCHEMA_VERSION ||
     typeof payload['stage'] !== 'string'
   ) {
-    return null;
+    return false;
   }
 
   switch (payload['stage']) {
     case 'portal_authenticated':
-      return hasExactKeys(payload, ['schemaVersion', 'stage', 'userId']) &&
+      return (
+        hasExactKeys(payload, ['schemaVersion', 'stage', 'userId']) &&
         isNonEmptyString(payload['userId'])
-        ? (payload as PortalLifecycleEventPayload)
-        : null;
+      );
 
     case 'broker_connection_created':
-      return hasExactKeys(payload, ['schemaVersion', 'stage', 'brokerId', 'connectionId']) &&
+      return (
+        hasExactKeys(payload, ['schemaVersion', 'stage', 'brokerId', 'connectionId']) &&
         isNonEmptyString(payload['brokerId']) &&
         isNonEmptyString(payload['connectionId'])
-        ? (payload as PortalLifecycleEventPayload)
-        : null;
+      );
 
     case 'push_agent_state_changed': {
       if (
@@ -138,25 +142,25 @@ function parsePortalLifecycleEventPayload(payload: unknown): PortalLifecycleEven
         typeof payload['state'] !== 'string' ||
         !PORTAL_CONNECTOR_STATES.has(payload['state'] as PortalConnectorState)
       ) {
-        return null;
+        return false;
       }
 
       const hasDataReady = Object.prototype.hasOwnProperty.call(payload, 'dataReady');
       if (hasDataReady && typeof payload['dataReady'] !== 'boolean') {
-        return null;
+        return false;
       }
       if (
         payload['dataReady'] === true &&
         !DATA_READY_STATES.has(payload['state'] as PortalConnectorState)
       ) {
-        return null;
+        return false;
       }
 
-      return payload as PortalLifecycleEventPayload;
+      return true;
     }
 
     default:
-      return null;
+      return false;
   }
 }
 
@@ -432,16 +436,11 @@ export class PortalUI {
           payload?: unknown;
         };
         if (portalEvent.eventName === 'portal.lifecycle') {
-          const lifecyclePayload = parsePortalLifecycleEventPayload(portalEvent.payload);
-          if (lifecyclePayload) {
-            this.options?.onEvent?.('portal.lifecycle', lifecyclePayload);
+          if (isPortalLifecycleEventPayload(portalEvent.payload)) {
+            this.options?.onEvent?.('portal.lifecycle', portalEvent.payload);
           }
         } else if (typeof portalEvent.eventName === 'string') {
-          // Keep forwarding generic events at runtime for compatibility. Known
-          // legacy names retain their public correlated callback typing.
-          const callback = this.options?.onEvent as
-            ((eventName: string, payload?: unknown) => void) | undefined;
-          callback?.(portalEvent.eventName, portalEvent.payload);
+          this.options?.onEvent?.(portalEvent.eventName, portalEvent.payload);
         }
         break;
       }

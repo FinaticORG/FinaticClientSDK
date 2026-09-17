@@ -8,6 +8,7 @@ import type {
   PortalEventCallback,
   PortalLifecycleEventPayload,
 } from "../src/portal/PortalUI";
+import { isPortalLifecycleEventPayload } from "../src/portal/PortalUI";
 
 const connectorStates = [
   "REGISTERING",
@@ -30,12 +31,14 @@ describe("Client SDK contract surface", () => {
 
   it("exposes a correlated and exhaustively narrowable lifecycle callback", () => {
     const seenStages: string[] = [];
-    const callback: PortalEventCallback = (...args) => {
-      if (args[0] !== "portal.lifecycle") {
+    const callback: PortalEventCallback = (eventName, payload) => {
+      if (
+        eventName !== "portal.lifecycle" ||
+        !isPortalLifecycleEventPayload(payload)
+      ) {
         return;
       }
 
-      const payload = args[1];
       switch (payload.stage) {
         case "portal_authenticated":
           seenStages.push(payload.userId);
@@ -79,5 +82,14 @@ describe("Client SDK contract surface", () => {
     expect(legacyHandler).toHaveBeenCalledWith("account.grant.created", {
       grantId: "grant-1",
     });
+  });
+
+  it("keeps arbitrary forwarded event names callable", () => {
+    const callback: PortalEventCallback = (eventName, payload) => ({
+      eventName,
+      payload,
+    });
+
+    expect(() => callback("partner.custom-event", { partnerId: "partner-1" })).not.toThrow();
   });
 });
