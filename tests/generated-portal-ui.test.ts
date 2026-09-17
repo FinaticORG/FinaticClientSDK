@@ -157,6 +157,147 @@ describe('Generated PortalUI coverage', () => {
     expect(window.removeEventListener).toHaveBeenCalledWith('resize', expect.any(Function));
   });
 
+  it('forwards every valid schema-v1 lifecycle stage and connector state', () => {
+    const onEvent = jest.fn();
+    const portalUI = new PortalUI('https://portal.example.com/connect');
+    portalUI.show('https://portal.example.com/connect', 'session-id', { onEvent });
+
+    const payloads = [
+      {
+        schemaVersion: 1,
+        stage: 'portal_authenticated',
+        userId: 'user-1',
+      },
+      {
+        schemaVersion: 1,
+        stage: 'broker_connection_created',
+        brokerId: 'mt5',
+        connectionId: 'connection-1',
+      },
+      ...[
+        'REGISTERING',
+        'AWAITING_FIRST_HEARTBEAT',
+        'ONLINE_NO_DATA',
+        'LIVE_DATA',
+        'STALE_ONLINE_NO_DATA',
+        'STALE_LIVE_DATA',
+        'COOLDOWN',
+        'REVOKED',
+        'UNKNOWN',
+      ].map((state) => ({
+        schemaVersion: 1,
+        stage: 'push_agent_state_changed',
+        brokerId: 'mt5',
+        connectionId: 'connection-1',
+        state,
+        ...(state === 'LIVE_DATA' || state === 'STALE_LIVE_DATA'
+          ? { dataReady: true }
+          : state === 'ONLINE_NO_DATA' || state === 'STALE_ONLINE_NO_DATA'
+            ? { dataReady: false }
+            : {}),
+      })),
+    ];
+
+    for (const payload of payloads) {
+      (portalUI as any).handleMessage({
+        origin: 'https://portal.example.com',
+        data: { type: 'portal-event', eventName: 'portal.lifecycle', payload },
+      });
+    }
+
+    expect(onEvent).toHaveBeenCalledTimes(payloads.length);
+    payloads.forEach((payload, index) => {
+      expect(onEvent).toHaveBeenNthCalledWith(index + 1, 'portal.lifecycle', payload);
+    });
+  });
+
+  it('rejects malformed, unsupported, secret-bearing, and wrong-origin lifecycle events', () => {
+    const onEvent = jest.fn();
+    const portalUI = new PortalUI('https://portal.example.com/connect');
+    portalUI.show('https://portal.example.com/connect', 'session-id', { onEvent });
+
+    const invalidPayloads = [
+      null,
+      { schemaVersion: 2, stage: 'portal_authenticated', userId: 'user-1' },
+      { schemaVersion: 1, stage: 'unknown', userId: 'user-1' },
+      { schemaVersion: 1, stage: 'portal_authenticated' },
+      { schemaVersion: 1, stage: 'portal_authenticated', userId: 'user-1', accessToken: 'secret' },
+      {
+        schemaVersion: 1,
+        stage: 'broker_connection_created',
+        brokerId: 'mt5',
+        connectionId: '',
+      },
+      {
+        schemaVersion: 1,
+        stage: 'push_agent_state_changed',
+        brokerId: 'mt5',
+        connectionId: 'connection-1',
+        state: 'NOT_A_STATE',
+      },
+      {
+        schemaVersion: 1,
+        stage: 'push_agent_state_changed',
+        brokerId: 'mt5',
+        connectionId: 'connection-1',
+        state: 'ONLINE_NO_DATA',
+        dataReady: true,
+      },
+      {
+        schemaVersion: 1,
+        stage: 'push_agent_state_changed',
+        brokerId: 'mt5',
+        connectionId: 'connection-1',
+        state: 'LIVE_DATA',
+        dataReady: 'yes',
+      },
+      {
+        schemaVersion: 1,
+        stage: 'push_agent_state_changed',
+        brokerId: 'mt5',
+        connectionId: 'connection-1',
+        state: 'LIVE_DATA',
+        dataReady: true,
+        connectorSecret: 'secret',
+      },
+    ];
+
+    for (const payload of invalidPayloads) {
+      (portalUI as any).handleMessage({
+        origin: 'https://portal.example.com',
+        data: { type: 'portal-event', eventName: 'portal.lifecycle', payload },
+      });
+    }
+
+    (portalUI as any).handleMessage({
+      origin: 'https://different.example.com',
+      data: {
+        type: 'portal-event',
+        eventName: 'portal.lifecycle',
+        payload: { schemaVersion: 1, stage: 'portal_authenticated', userId: 'user-1' },
+      },
+    });
+
+    expect(onEvent).not.toHaveBeenCalled();
+  });
+
+  it('retains generic runtime forwarding for non-lifecycle event names', () => {
+    const onEvent = jest.fn();
+    const portalUI = new PortalUI('https://portal.example.com/connect');
+    portalUI.show('https://portal.example.com/connect', 'session-id', { onEvent });
+
+    (portalUI as any).handleMessage({
+      origin: 'https://portal.example.com',
+      data: {
+        type: 'portal-event',
+        eventName: 'partner.custom-event',
+        payload: { value: 1 },
+      },
+    });
+
+    expect(onEvent).toHaveBeenCalledWith('partner.custom-event', { value: 1 });
+  });
+
   it('finishes cleanup when the close callback throws', () => {
     const portalUI = new PortalUI('https://portal.example.com/connect');
     portalUI.show('https://portal.example.com/connect', 'session-id', {
