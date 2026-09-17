@@ -11,7 +11,7 @@ npm install @finatic/client
 ## Quick start
 
 ```ts
-import { FinaticConnect } from '@finatic/client';
+import { FinaticConnect, isPortalLifecycleEventPayload } from '@finatic/client';
 
 const finatic = await FinaticConnect.init('one-time-token', undefined, {
   apiEnvironment: 'sandbox', // or 'live'
@@ -51,6 +51,39 @@ await finatic.openPortal({
   },
 });
 ```
+
+### Portal authentication and connection readiness
+
+`onSuccess(userId)` means the portal session authenticated. It does not mean a
+broker connection exists or that connector data is ready. Connect schema v1
+publishes those later transitions through the typed `portal.lifecycle` event:
+
+```ts
+await finatic.openPortal({
+  onEvent: (eventName, payload) => {
+    if (eventName !== 'portal.lifecycle' || !isPortalLifecycleEventPayload(payload)) return;
+
+    switch (payload.stage) {
+      case 'portal_authenticated':
+        console.log('Portal authenticated', payload.userId);
+        break;
+      case 'broker_connection_created':
+        console.log('Connection persisted', payload.connectionId);
+        break;
+      case 'push_agent_state_changed':
+        // Only LIVE_DATA and STALE_LIVE_DATA can report dataReady: true.
+        console.log(payload.state, payload.dataReady ?? 'not asserted');
+        break;
+    }
+  },
+});
+```
+
+The SDK accepts lifecycle messages only when they match schema version 1 and
+the exported stage/state allowlists. Unsupported versions, malformed payloads,
+unexpected fields (including secret-bearing fields), and invalid readiness
+claims are dropped. Existing broad `(eventName: string, payload?: unknown)`
+handlers remain assignable, and non-lifecycle events continue to be forwarded.
 
 Client data methods return the wire envelope `{ success, error, warning }` (not `{ data, errors }`).
 
