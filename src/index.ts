@@ -13,4 +13,14 @@ export * from './config';
 
 export { FinaticConnect } from './FinaticConnect';
 export type { FinaticConnectOptions } from './FinaticConnectCore';
-export type { PortalEventCallback, PortalEventName } from './portal/PortalUI';
+export { PORTAL_LIFECYCLE_SCHEMA_VERSION } from './portal/PortalUI';
+export type {
+  PortalConnectorState,
+  PortalEventArguments,
+  PortalEventCallback,
+  PortalEventName,
+  PortalEventPayloadMap,
+  PortalLifecycleEventPayload,
+  PortalLifecycleSchemaVersion,
+  PortalLifecycleStage,
+} from './portal/PortalUI';

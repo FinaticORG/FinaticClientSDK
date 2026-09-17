@@ -5,15 +5,160 @@
  * Generated - do not edit directly.
  */
 
-export type PortalEventName =
-  | 'broker.connected'
-  | 'broker.disconnected'
-  | 'broker.permissions_updated'
-  | 'account.grant.created'
-  | 'account.grant.updated'
-  | 'account.grant.revoked';
+export const PORTAL_LIFECYCLE_SCHEMA_VERSION = 1 as const;
 
-export type PortalEventCallback = (eventName: string, payload?: unknown) => void;
+export type PortalLifecycleSchemaVersion = typeof PORTAL_LIFECYCLE_SCHEMA_VERSION;
+
+export type PortalLifecycleStage =
+  'portal_authenticated' | 'broker_connection_created' | 'push_agent_state_changed';
+
+export type PortalConnectorState =
+  | 'REGISTERING'
+  | 'AWAITING_FIRST_HEARTBEAT'
+  | 'ONLINE_NO_DATA'
+  | 'LIVE_DATA'
+  | 'STALE_ONLINE_NO_DATA'
+  | 'STALE_LIVE_DATA'
+  | 'COOLDOWN'
+  | 'REVOKED'
+  | 'UNKNOWN';
+
+export type PortalLifecycleEventPayload =
+  | {
+      schemaVersion: PortalLifecycleSchemaVersion;
+      stage: 'portal_authenticated';
+      userId: string;
+    }
+  | {
+      schemaVersion: PortalLifecycleSchemaVersion;
+      stage: 'broker_connection_created';
+      brokerId: string;
+      connectionId: string;
+    }
+  | {
+      schemaVersion: PortalLifecycleSchemaVersion;
+      stage: 'push_agent_state_changed';
+      brokerId: string;
+      connectionId: string;
+      state: PortalConnectorState;
+      dataReady?: boolean;
+    };
+
+export interface PortalEventPayloadMap {
+  'broker.connected': unknown;
+  'broker.disconnected': unknown;
+  'broker.permissions_updated': unknown;
+  'account.grant.created': unknown;
+  'account.grant.updated': unknown;
+  'account.grant.revoked': unknown;
+  'portal.lifecycle': PortalLifecycleEventPayload;
+}
+
+export type PortalEventName = keyof PortalEventPayloadMap;
+
+export type PortalEventArguments =
+  | [
+      eventName: Exclude<PortalEventName, 'portal.lifecycle'>,
+      payload?: PortalEventPayloadMap[Exclude<PortalEventName, 'portal.lifecycle'>],
+    ]
+  | [eventName: 'portal.lifecycle', payload: PortalLifecycleEventPayload];
+
+/**
+ * Correlated arguments keep lifecycle payload narrowing type-safe. A legacy
+ * `(eventName: string, payload?: unknown) => void` handler remains assignable.
+ */
+export type PortalEventCallback = (...args: PortalEventArguments) => void;
+
+const PORTAL_CONNECTOR_STATES = new Set<PortalConnectorState>([
+  'REGISTERING',
+  'AWAITING_FIRST_HEARTBEAT',
+  'ONLINE_NO_DATA',
+  'LIVE_DATA',
+  'STALE_ONLINE_NO_DATA',
+  'STALE_LIVE_DATA',
+  'COOLDOWN',
+  'REVOKED',
+  'UNKNOWN',
+]);
+
+const DATA_READY_STATES = new Set<PortalConnectorState>(['LIVE_DATA', 'STALE_LIVE_DATA']);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function hasExactKeys(
+  value: Record<string, unknown>,
+  requiredKeys: readonly string[],
+  optionalKeys: readonly string[] = []
+): boolean {
+  const allowedKeys = new Set([...requiredKeys, ...optionalKeys]);
+  return (
+    requiredKeys.every((key) => Object.prototype.hasOwnProperty.call(value, key)) &&
+    Object.keys(value).every((key) => allowedKeys.has(key))
+  );
+}
+
+function parsePortalLifecycleEventPayload(payload: unknown): PortalLifecycleEventPayload | null {
+  if (
+    !isRecord(payload) ||
+    payload['schemaVersion'] !== PORTAL_LIFECYCLE_SCHEMA_VERSION ||
+    typeof payload['stage'] !== 'string'
+  ) {
+    return null;
+  }
+
+  switch (payload['stage']) {
+    case 'portal_authenticated':
+      return hasExactKeys(payload, ['schemaVersion', 'stage', 'userId']) &&
+        isNonEmptyString(payload['userId'])
+        ? (payload as PortalLifecycleEventPayload)
+        : null;
+
+    case 'broker_connection_created':
+      return hasExactKeys(payload, ['schemaVersion', 'stage', 'brokerId', 'connectionId']) &&
+        isNonEmptyString(payload['brokerId']) &&
+        isNonEmptyString(payload['connectionId'])
+        ? (payload as PortalLifecycleEventPayload)
+        : null;
+
+    case 'push_agent_state_changed': {
+      if (
+        !hasExactKeys(
+          payload,
+          ['schemaVersion', 'stage', 'brokerId', 'connectionId', 'state'],
+          ['dataReady']
+        ) ||
+        !isNonEmptyString(payload['brokerId']) ||
+        !isNonEmptyString(payload['connectionId']) ||
+        typeof payload['state'] !== 'string' ||
+        !PORTAL_CONNECTOR_STATES.has(payload['state'] as PortalConnectorState)
+      ) {
+        return null;
+      }
+
+      const hasDataReady = Object.prototype.hasOwnProperty.call(payload, 'dataReady');
+      if (hasDataReady && typeof payload['dataReady'] !== 'boolean') {
+        return null;
+      }
+      if (
+        payload['dataReady'] === true &&
+        !DATA_READY_STATES.has(payload['state'] as PortalConnectorState)
+      ) {
+        return null;
+      }
+
+      return payload as PortalLifecycleEventPayload;
+    }
+
+    default:
+      return null;
+  }
+}
 
 export interface PortalUIOptions {
   onSuccess?: (userId: string) => void;
@@ -286,8 +431,17 @@ export class PortalUI {
           eventName?: unknown;
           payload?: unknown;
         };
-        if (typeof portalEvent.eventName === 'string') {
-          this.options?.onEvent?.(portalEvent.eventName, portalEvent.payload);
+        if (portalEvent.eventName === 'portal.lifecycle') {
+          const lifecyclePayload = parsePortalLifecycleEventPayload(portalEvent.payload);
+          if (lifecyclePayload) {
+            this.options?.onEvent?.('portal.lifecycle', lifecyclePayload);
+          }
+        } else if (typeof portalEvent.eventName === 'string') {
+          // Keep forwarding generic events at runtime for compatibility. Known
+          // legacy names retain their public correlated callback typing.
+          const callback = this.options?.onEvent as
+            ((eventName: string, payload?: unknown) => void) | undefined;
+          callback?.(portalEvent.eventName, portalEvent.payload);
         }
         break;
       }

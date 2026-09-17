@@ -52,6 +52,40 @@ await finatic.openPortal({
 });
 ```
 
+### Portal authentication and connection readiness
+
+`onSuccess(userId)` means the portal session authenticated. It does not mean a
+broker connection exists or that connector data is ready. Connect schema v1
+publishes those later transitions through the typed `portal.lifecycle` event:
+
+```ts
+await finatic.openPortal({
+  onEvent: (...event) => {
+    if (event[0] !== 'portal.lifecycle') return;
+
+    const lifecycle = event[1];
+    switch (lifecycle.stage) {
+      case 'portal_authenticated':
+        console.log('Portal authenticated', lifecycle.userId);
+        break;
+      case 'broker_connection_created':
+        console.log('Connection persisted', lifecycle.connectionId);
+        break;
+      case 'push_agent_state_changed':
+        // Only LIVE_DATA and STALE_LIVE_DATA can report dataReady: true.
+        console.log(lifecycle.state, lifecycle.dataReady ?? 'not asserted');
+        break;
+    }
+  },
+});
+```
+
+The SDK accepts lifecycle messages only when they match schema version 1 and
+the exported stage/state allowlists. Unsupported versions, malformed payloads,
+unexpected fields (including secret-bearing fields), and invalid readiness
+claims are dropped. Existing broad `(eventName: string, payload?: unknown)`
+handlers remain assignable, and non-lifecycle events continue to be forwarded.
+
 Client data methods return the wire envelope `{ success, error, warning }` (not `{ data, errors }`).
 
 Call `FinaticConnect.reset()` before `init` when you need a new session boundary.
