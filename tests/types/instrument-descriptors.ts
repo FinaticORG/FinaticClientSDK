@@ -51,8 +51,13 @@ const rootOnlyOrder: AccountOrderCommandInput = {
   order: { symbol: 'MGC' },
 };
 
+const numericProviderInstrumentOrder: AccountOrderCommandInput = {
+  order: { instrumentId: 456 },
+};
+
 void exactContractOrder;
 void rootOnlyOrder;
+void numericProviderInstrumentOrder;
 void FDXInstrumentDescriptorVersionEnum._10;
 void FDXFutureInstrumentDetailsIdentityQualityEnum.Exact;
 void FDXFutureInstrumentDetailsIdentityQualityEnum.RootOnly;
@@ -104,13 +109,57 @@ const malformedCanonicalId: AccountOrderCommandInput = {
 
 const malformedProviderId: AccountOrderCommandInput = {
   order: {
-    // @ts-expect-error provider-native instrument ids are strings
-    instrumentId: 456,
+    // @ts-expect-error provider-native instrument ids are strings or integers
+    instrumentId: { broker: 456 },
   },
+};
+
+const malformedOrderLeg: FDXOrderLeg = {
+  // @ts-expect-error asset types are strings
+  assetType: 17,
+  legIndex: 0,
+  // @ts-expect-error position intent is string-valued
+  positionIntent: { invalid: true },
+  // @ts-expect-error quantities are decimal strings or numbers
+  quantity: {},
+  securityId: 'MGCZ6',
+  // @ts-expect-error security id types are strings
+  securityIdType: [],
+  // @ts-expect-error order sides are strings
+  side: 42,
+};
+
+const malformedOrder: FDXBrokerOrder = {
+  accountId: 'account-id',
+  orderId: 'order-id',
+  status: 'OPEN',
+  // @ts-expect-error time in force is string-valued
+  timeInForce: { invalid: true },
+};
+
+const malformedLotSide: FDXBrokerPositionLot = {
+  accountId: 'account-id',
+  assetType: 'FUTURE',
+  closedQuantity: 0,
+  costBasis: 5000,
+  costBasisWithCommission: 5001,
+  lotId: 'lot-id',
+  openPrice: 2500,
+  openQuantity: 2,
+  openedAt: '2026-09-19T00:00:00Z',
+  realizedProfitLoss: 0,
+  realizedProfitLossWithCommission: -1,
+  remainingQuantity: 2,
+  securityId: 'MGCZ6',
+  // @ts-expect-error position sides are string-valued
+  side: 42,
 };
 
 void malformedCanonicalId;
 void malformedProviderId;
+void malformedOrderLeg;
+void malformedOrder;
+void malformedLotSide;
 
 const malformedIdentityQuality: FDXFutureInstrumentDetails = {
   // @ts-expect-error identity quality is EXACT or ROOT_ONLY

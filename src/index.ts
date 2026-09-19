@@ -26,7 +26,7 @@ export type {
   FDXFutureInstrumentDetails,
   FDXInstrumentDescriptor,
   FDXOrderLeg,
-} from './openapi/models';
+} from './contracts/instrument-descriptors';
 export {
   FDXBrokerOrderCommandResultActionEnum,
   FDXBrokerOrderCommandResultExecutionStrategyEnum,

@@ -9,7 +9,7 @@ import type {
   FDXBrokerOrderEvent,
   FDXBrokerOrderFill,
   FDXBrokerPosition,
-} from '../openapi/models';
+} from '../contracts/instrument-descriptors';
 import type { SdkConfig } from '../config';
 import {
   appendAssetTypesToURL,
@@ -49,15 +49,15 @@ export interface AccountOrderParams {
 /**
  * Browser-safe order payload input. OpenAPI Generator 7.22 emits the nullable
  * provider-native identifier as an empty interface under OpenAPI 3.1, so the
- * facade narrows both public identifiers to their wire type without changing
- * the generated response models or provider-specific extension fields.
+ * facade restores its API-defined string-or-integer wire type while preserving
+ * provider-specific extension fields.
  */
 export type AccountOrderPayloadInput = Omit<
   AccountOrderPayload,
   'finaticInstrumentId' | 'instrumentId'
 > & {
   finaticInstrumentId?: string | null;
-  instrumentId?: string | null;
+  instrumentId?: string | number | null;
 };
 
 export type AccountOrderCommandInput = Omit<AccountOrderCommandRequest, 'order'> & {
