@@ -12,8 +12,12 @@
  * Do not edit the class manually.
  */
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { FDXBrokerOrder } from './fdxbroker-order';
+
 /**
- * Result of an account-scoped order command (place, modify, or cancel).  The ``order`` field uses the same FDX public shape as ``GET /accounts/{id}/orders``.
+ * Result of an account-scoped order command (place, modify, or cancel).  The ``order`` field uses the same FDX public shape as ``GET /accounts/{id}/orders``.  Notes ----- CamelCase fields that differ from the Python name must use ``alias=`` (not only ``serialization_alias``). Account-grant handlers often return a camelCase public dict that ``FinaticResponse[FDXBrokerOrderCommandResult]`` re-validates; serialization-only aliases are dropped on that pass.
  */
 export interface FDXBrokerOrderCommandResult {
   _id?: string;
@@ -40,7 +44,7 @@ export interface FDXBrokerOrderCommandResult {
   /**
    * Persisted order snapshot from integration.orders.
    */
-  order: any;
+  order: FDXBrokerOrder;
   /**
    * Prior Finatic order id after cancel-replace modify.
    */

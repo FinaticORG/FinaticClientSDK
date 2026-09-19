@@ -5,6 +5,8 @@
 export { V1Wrapper } from './v1';
 export type {
   AccountOrderCommandParams,
+  AccountOrderCommandInput,
+  AccountOrderPayloadInput,
   AccountOrderParams,
   AccountOrderSchemaParams,
   AccountScopedParams,

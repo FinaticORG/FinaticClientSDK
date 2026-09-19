@@ -5,7 +5,13 @@
     "declarationMap": false,
     "exactOptionalPropertyTypes": false,
     "noEmit": true,
-    "rootDir": "."
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "@finatic/client": [
+        "src/index.ts"
+      ]
+    }
   },
   "include": [
     "tests/types/**/*.ts"

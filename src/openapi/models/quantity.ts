@@ -13,6 +13,6 @@
  */
 
 /**
- * Requested quantity
+ * Filled quantity
  */
 export interface Quantity {}

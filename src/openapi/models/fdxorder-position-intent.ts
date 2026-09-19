@@ -13,6 +13,12 @@
  */
 
 /**
- * Notional value for this leg
+ * Order-leg lifecycle direction independent of BUY/SELL execution side.
  */
-export interface Notional2 {}
+
+export enum FDXOrderPositionIntent {
+  BuyToOpen = 'BUY_TO_OPEN',
+  BuyToClose = 'BUY_TO_CLOSE',
+  SellToOpen = 'SELL_TO_OPEN',
+  SellToClose = 'SELL_TO_CLOSE',
+}
