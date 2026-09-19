@@ -20,6 +20,9 @@ import type { Assettype } from './assettype';
 import type { Averagefillprice } from './averagefillprice';
 // May contain unused imports in some cases
 // @ts-ignore
+import type { FDXInstrumentDescriptor } from './fdxinstrument-descriptor';
+// May contain unused imports in some cases
+// @ts-ignore
 import type { Filledquantity } from './filledquantity';
 // May contain unused imports in some cases
 // @ts-ignore
@@ -29,19 +32,22 @@ import type { Futureunderlyingassettype } from './futureunderlyingassettype';
 import type { Limitprice } from './limitprice';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Notional } from './notional';
+import type { Notional2 } from './notional2';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Quantity } from './quantity';
+import type { Positionintent } from './positionintent';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Remainingquantity } from './remainingquantity';
+import type { Quantity2 } from './quantity2';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { Remainingquantity1 } from './remainingquantity1';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Securityidtype } from './securityidtype';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Side } from './side';
+import type { Side3 } from './side3';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Stopprice } from './stopprice';
@@ -53,31 +59,57 @@ import type { Strikeprice } from './strikeprice';
  * FDX-style order leg schema for multi-leg orders.
  */
 export interface FDXOrderLeg {
+  assetType: Assettype;
+  averageFillPrice?: Averagefillprice | null;
+  /**
+   * Raw symbol/contract from broker
+   */
+  brokerProvidedSymbol?: string | null;
+  /**
+   * Future contract code (e.g., ESZ4)
+   */
+  contractCode?: string | null;
+  /**
+   * Crypto base symbol
+   */
+  cryptoBaseSymbol?: string | null;
+  /**
+   * Crypto quote symbol
+   */
+  cryptoQuoteSymbol?: string | null;
+  /**
+   * Expiration date
+   */
+  expirationDate?: string | null;
+  filledQuantity?: Filledquantity | null;
+  futureUnderlyingAssetType?: Futureunderlyingassettype | null;
+  /**
+   * Versioned Finatic instrument identity
+   */
+  instrument?: FDXInstrumentDescriptor | null;
   /**
    * Leg index (0 for single-leg)
    */
   legIndex: number;
+  limitPrice?: Limitprice | null;
+  notional?: Notional2 | null;
+  /**
+   * Option type (CALL, PUT)
+   */
+  optionType?: string | null;
+  positionIntent?: Positionintent | null;
+  quantity: Quantity2;
+  remainingQuantity?: Remainingquantity1 | null;
   /**
    * Symbol or instrument identifier
    */
   securityId: string;
   securityIdType: Securityidtype;
-  assetType: Assettype;
-  side: Side;
-  quantity: Quantity;
-  remainingQuantity?: Remainingquantity | null;
-  limitPrice?: Limitprice | null;
+  side: Side3;
   stopPrice?: Stopprice | null;
-  filledQuantity?: Filledquantity | null;
-  averageFillPrice?: Averagefillprice | null;
-  optionType?: string | null;
   strikePrice?: Strikeprice | null;
-  expirationDate?: string | null;
+  /**
+   * Underlying symbol
+   */
   underlyingSymbol?: string | null;
-  contractCode?: string | null;
-  futureUnderlyingAssetType?: Futureunderlyingassettype | null;
-  cryptoBaseSymbol?: string | null;
-  cryptoQuoteSymbol?: string | null;
-  brokerProvidedSymbol?: string | null;
-  notional?: Notional | null;
 }

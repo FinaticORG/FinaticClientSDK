@@ -1,6 +1,15 @@
 import { V1Api, type FinaticApiEnvironment } from '../openapi/api/v1-api';
 import { SessionApi } from '../openapi/api/session-api';
 import type { Configuration } from '../openapi/configuration';
+import type {
+  AccountOrderCommandRequest,
+  AccountOrderPayload,
+  FDXBrokerOrder,
+  FDXBrokerOrderCommandResult,
+  FDXBrokerOrderEvent,
+  FDXBrokerOrderFill,
+  FDXBrokerPosition,
+} from '../openapi/models';
 import type { SdkConfig } from '../config';
 import {
   appendAssetTypesToURL,
@@ -37,14 +46,32 @@ export interface AccountOrderParams {
   orderId: string;
 }
 
+/**
+ * Browser-safe order payload input. OpenAPI Generator 7.22 emits the nullable
+ * provider-native identifier as an empty interface under OpenAPI 3.1, so the
+ * facade narrows both public identifiers to their wire type without changing
+ * the generated response models or provider-specific extension fields.
+ */
+export type AccountOrderPayloadInput = Omit<
+  AccountOrderPayload,
+  'finaticInstrumentId' | 'instrumentId'
+> & {
+  finaticInstrumentId?: string | null;
+  instrumentId?: string | null;
+};
+
+export type AccountOrderCommandInput = Omit<AccountOrderCommandRequest, 'order'> & {
+  order: AccountOrderPayloadInput;
+};
+
 export interface CreateAccountOrderCommandParams {
   accountId: string;
-  body?: unknown;
+  body?: AccountOrderCommandInput;
   idempotencyKey: string;
 }
 
 export interface AccountOrderCommandParams extends AccountOrderParams {
-  body?: unknown;
+  body?: AccountOrderCommandInput;
   idempotencyKey: string;
 }
 
@@ -382,7 +409,7 @@ export class V1Wrapper {
    * }
    * ```
    */
-  listPositions<T = unknown>(
+  listPositions<T = FDXBrokerPosition[]>(
     params: AccountScopedParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
@@ -396,28 +423,28 @@ export class V1Wrapper {
     return this.unwrap<T>(this.api.listAccountTransactions(params, this.headers(options)));
   }
 
-  listOrders<T = unknown>(
+  listOrders<T = FDXBrokerOrder[]>(
     params: AccountScopedParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
     return this.unwrap<T>(this.api.listAccountOrders(params, this.headers(options)));
   }
 
-  getAccountOrder<T = unknown>(
+  getAccountOrder<T = FDXBrokerOrder>(
     params: AccountOrderParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
     return this.unwrap<T>(this.api.getAccountOrder(params, this.headers(options)));
   }
 
-  getAccountOrderFills<T = unknown>(
+  getAccountOrderFills<T = FDXBrokerOrderFill[]>(
     params: AccountOrderParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
     return this.unwrap<T>(this.api.getAccountOrderFills(params, this.headers(options)));
   }
 
-  getAccountOrderEvents<T = unknown>(
+  getAccountOrderEvents<T = FDXBrokerOrderEvent[]>(
     params: AccountOrderParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
@@ -431,21 +458,21 @@ export class V1Wrapper {
     return this.unwrap<T>(this.api.getAccountOrderSchema(params, this.headers(options)));
   }
 
-  createAccountOrder<T = unknown>(
+  createAccountOrder<T = FDXBrokerOrderCommandResult>(
     params: CreateAccountOrderCommandParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
     return this.unwrap<T>(this.api.createAccountOrder(params, this.headers(options)));
   }
 
-  modifyAccountOrder<T = unknown>(
+  modifyAccountOrder<T = FDXBrokerOrderCommandResult>(
     params: AccountOrderCommandParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
     return this.unwrap<T>(this.api.modifyAccountOrder(params, this.headers(options)));
   }
 
-  cancelAccountOrder<T = unknown>(
+  cancelAccountOrder<T = FDXBrokerOrderCommandResult>(
     params: AccountOrderCommandParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {

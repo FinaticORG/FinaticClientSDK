@@ -87,6 +87,47 @@ handlers remain assignable, and non-lifecycle events continue to be forwarded.
 
 Client data methods return the wire envelope `{ success, error, warning }` (not `{ data, errors }`).
 
+### Exact instrument descriptors
+
+Account orders, order fills and events, positions, position lots, and lot fills expose the
+API-generated `FDXInstrumentDescriptor` from the package root. Exact futures keep their full
+contract identity (`MGCZ6` and `MGCG7` remain distinct); root-only symbols such as `MGC` are
+marked with `future.identityQuality === 'ROOT_ONLY'`. Optional expiry, exchange, provider symbol,
+and provenance fields stay absent when the API cannot verify them—the browser SDK does not infer
+or normalize instrument identity.
+
+```ts
+import {
+  FDXFutureInstrumentDetailsIdentityQualityEnum,
+  type FDXBrokerPosition,
+} from '@finatic/client';
+
+const result = await finatic.v1.listPositions({ accountId: 'account-id' });
+const position: FDXBrokerPosition | undefined = result.success?.data[0];
+
+if (
+  position?.instrument?.future?.identityQuality ===
+  FDXFutureInstrumentDetailsIdentityQualityEnum.Exact
+) {
+  console.log(position.instrument.finaticInstrumentId, position.instrument.future.contractCode);
+}
+
+await finatic.v1.createAccountOrder({
+  accountId: 'account-id',
+  idempotencyKey: crypto.randomUUID(),
+  body: {
+    order: {
+      symbol: 'MGCZ6',
+      finaticInstrumentId: 'fininst_mgcz6',
+      instrumentId: 'provider-native-id',
+    },
+  },
+});
+```
+
+Legacy symbol-only order bodies and existing flat identity fields remain supported. When both
+identity fields are supplied, the API validates that they agree in the authorized account scope.
+
 Call `FinaticConnect.reset()` before `init` when you need a new session boundary.
 
 ## Token handoff

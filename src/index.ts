@@ -11,12 +11,32 @@ export * from './wrappers';
 export * from './utils';
 export * from './config';
 
+// Stable, browser-safe identity and account-resource contracts generated from
+// FinaticAPI PR #748 at 82fba8df3ee811771bca705542ef6e0ce92850ad.
+export type {
+  AccountOrderCommandRequest,
+  AccountOrderPayload,
+  FDXBrokerOrder,
+  FDXBrokerOrderCommandResult,
+  FDXBrokerOrderEvent,
+  FDXBrokerOrderFill,
+  FDXBrokerPosition,
+  FDXBrokerPositionLot,
+  FDXBrokerPositionLotFill,
+  FDXFutureInstrumentDetails,
+  FDXInstrumentDescriptor,
+  FDXOrderLeg,
+} from './openapi/models';
+export {
+  FDXBrokerOrderCommandResultActionEnum,
+  FDXBrokerOrderCommandResultExecutionStrategyEnum,
+  FDXFutureInstrumentDetailsIdentityQualityEnum,
+  FDXInstrumentDescriptorVersionEnum,
+} from './openapi/models';
+
 export { FinaticConnect } from './FinaticConnect';
 export type { FinaticConnectOptions } from './FinaticConnectCore';
-export {
-  PORTAL_LIFECYCLE_SCHEMA_VERSION,
-  isPortalLifecycleEventPayload,
-} from './portal/PortalUI';
+export { PORTAL_LIFECYCLE_SCHEMA_VERSION, isPortalLifecycleEventPayload } from './portal/PortalUI';
 export type {
   KnownPortalEventName,
   PortalConnectorState,

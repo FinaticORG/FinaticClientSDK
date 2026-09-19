@@ -23,7 +23,7 @@ function createParamsProxy(): Record<string, any> {
         }
         return 'value';
       },
-    },
+    }
   );
 }
 
@@ -42,12 +42,10 @@ async function invokeApiMethods(apiCtor: ApiCtor): Promise<number> {
   const api = new apiCtor(undefined, 'http://localhost', createAxiosLikeClient());
   const prototype = Object.getPrototypeOf(api) as Record<string, unknown>;
   const prototypeMethodNames = Object.getOwnPropertyNames(prototype).filter(
-    (name) =>
-      name !== 'constructor' &&
-      typeof (api as Record<string, unknown>)[name] === 'function',
+    (name) => name !== 'constructor' && typeof (api as Record<string, unknown>)[name] === 'function'
   );
   const ownMethodNames = Object.getOwnPropertyNames(api).filter(
-    (name) => !name.startsWith('_') && typeof (api as Record<string, unknown>)[name] === 'function',
+    (name) => !name.startsWith('_') && typeof (api as Record<string, unknown>)[name] === 'function'
   );
   const methodNames = [...new Set([...prototypeMethodNames, ...ownMethodNames])];
 
@@ -81,7 +79,7 @@ async function invokeApiMethods(apiCtor: ApiCtor): Promise<number> {
     const firstErrorDetails =
       firstError instanceof Error ? firstError.stack || firstError.message : String(firstError);
     throw new Error(
-      `Generated API smoke: ${errorCount} methods threw. First failing method: ${firstErrorMethodName}\n${firstErrorDetails}`,
+      `Generated API smoke: ${errorCount} methods threw. First failing method: ${firstErrorMethodName}\n${firstErrorDetails}`
     );
   }
   return invokedMethodCount;
@@ -94,5 +92,27 @@ describe('Generated API smoke coverage', () => {
 
     expect(sessionInvoked).toBeGreaterThan(0);
     expect(v1Invoked).toBeGreaterThan(10);
+  });
+
+  it('returns account resource descriptors without client-side remapping', async () => {
+    const axios = createAxiosLikeClient();
+    const api = new V1Api(undefined, 'http://localhost', axios);
+    const descriptor = {
+      version: '1.0',
+      assetType: 'FUTURE',
+      displaySymbol: 'MGCZ6',
+      finaticInstrumentId: 'fininst_mgcz6',
+      future: { identityQuality: 'EXACT', contractCode: 'MGCZ6' },
+    };
+    axios.request.mockResolvedValueOnce({
+      data: { success: { data: [{ instrument: descriptor }] } },
+    });
+
+    const response = await api.listAccountPositions({ accountId: 'acct_123' });
+    const data = response.data as {
+      success: { data: Array<{ instrument: unknown }> };
+    };
+
+    expect(data.success.data[0]?.instrument).toBe(descriptor);
   });
 });
