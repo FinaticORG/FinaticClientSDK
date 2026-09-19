@@ -1,5 +1,7 @@
 import { SessionApi } from '../src/openapi/api/session-api';
 import { V1Api } from '../src/openapi/api/v1-api';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 type ApiCtor = new (...args: any[]) => any;
 
@@ -86,6 +88,25 @@ async function invokeApiMethods(apiCtor: ApiCtor): Promise<number> {
 }
 
 describe('Generated API smoke coverage', () => {
+  it('keeps the generated resource-model dependency closure aligned to the pinned artifact', () => {
+    const modelsDirectory = join(process.cwd(), 'src', 'openapi', 'models');
+    const quantity = readFileSync(join(modelsDirectory, 'quantity2.ts'), 'utf8');
+    const orderSide = readFileSync(join(modelsDirectory, 'side3.ts'), 'utf8');
+    const lotSide = readFileSync(join(modelsDirectory, 'side2.ts'), 'utf8');
+    const timeInForce = readFileSync(join(modelsDirectory, 'timeinforce1.ts'), 'utf8');
+    const positionIntent = readFileSync(join(modelsDirectory, 'positionintent.ts'), 'utf8');
+
+    expect(quantity).toContain('Requested quantity');
+    expect(orderSide).toContain("import type { FDXOrderSide } from './fdxorder-side'");
+    expect(orderSide).toContain('Order side (BUY, SELL)');
+    expect(lotSide).toContain("import type { FDXPositionSide } from './fdxposition-side'");
+    expect(lotSide).toContain('Lot side (LONG, SHORT)');
+    expect(timeInForce).toContain("import type { FDXTimeInForce } from './fdxtime-in-force'");
+    expect(positionIntent).toContain(
+      "import type { FDXOrderPositionIntent } from './fdxorder-position-intent'"
+    );
+  });
+
   it('invokes the generated v1/session api methods that ship in 1.0', async () => {
     const sessionInvoked = await invokeApiMethods(SessionApi);
     const v1Invoked = await invokeApiMethods(V1Api);

@@ -32,6 +32,9 @@ export {
   FDXBrokerOrderCommandResultExecutionStrategyEnum,
   FDXFutureInstrumentDetailsIdentityQualityEnum,
   FDXInstrumentDescriptorVersionEnum,
+  FDXOrderPositionIntent,
+  FDXOrderSide,
+  FDXPositionSide,
 } from './openapi/models';
 
 export { FinaticConnect } from './FinaticConnect';

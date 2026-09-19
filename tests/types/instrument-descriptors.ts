@@ -1,6 +1,9 @@
 import {
   FDXFutureInstrumentDetailsIdentityQualityEnum,
   FDXInstrumentDescriptorVersionEnum,
+  FDXOrderPositionIntent,
+  FDXOrderSide,
+  FDXPositionSide,
   type AccountOrderCommandInput,
   type FDXBrokerOrder,
   type FDXBrokerOrderEvent,
@@ -9,6 +12,7 @@ import {
   type FDXBrokerPositionLot,
   type FDXBrokerPositionLotFill,
   type FDXFutureInstrumentDetails,
+  type FDXOrderLeg,
 } from '@finatic/client';
 
 declare const orders: FDXBrokerOrder[];
@@ -52,6 +56,44 @@ void rootOnlyOrder;
 void FDXInstrumentDescriptorVersionEnum._10;
 void FDXFutureInstrumentDetailsIdentityQualityEnum.Exact;
 void FDXFutureInstrumentDetailsIdentityQualityEnum.RootOnly;
+
+const exactFutureOrderLeg: FDXOrderLeg = {
+  assetType: 'FUTURE',
+  legIndex: 0,
+  positionIntent: FDXOrderPositionIntent.BuyToOpen,
+  quantity: 2,
+  securityId: 'MGCZ6',
+  securityIdType: 'SYMBOL',
+  side: FDXOrderSide.Buy,
+};
+
+const longFutureLot: FDXBrokerPositionLot = {
+  accountId: 'account-id',
+  assetType: 'FUTURE',
+  closedQuantity: 0,
+  costBasis: 5000,
+  costBasisWithCommission: 5001,
+  lotId: 'lot-id',
+  openPrice: 2500,
+  openQuantity: 2,
+  openedAt: '2026-09-19T00:00:00Z',
+  realizedProfitLoss: 0,
+  realizedProfitLossWithCommission: -1,
+  remainingQuantity: 2,
+  securityId: 'MGCZ6',
+  side: FDXPositionSide.Long,
+};
+
+void exactFutureOrderLeg;
+void longFutureLot;
+
+// @ts-expect-error order sides cannot use position-side values
+const malformedOrderSide: FDXOrderSide = 'LONG';
+// @ts-expect-error position sides cannot use order-side values
+const malformedPositionSide: FDXPositionSide = 'BUY';
+
+void malformedOrderSide;
+void malformedPositionSide;
 
 const malformedCanonicalId: AccountOrderCommandInput = {
   order: {
