@@ -14,9 +14,9 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { FDXOrderSide } from './fdxorder-side';
+import type { FDXPositionSide } from './fdxposition-side';
 
 /**
- * Execution side (BUY, SELL)
+ * Lot side (LONG, SHORT)
  */
 export interface Side2 {}
