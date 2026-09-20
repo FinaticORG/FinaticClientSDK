@@ -42,15 +42,25 @@ try {
     stdio: 'inherit',
   });
 
+  execFileSync(process.execPath, [join(consumerRoot, 'runtime.mjs')], {
+    cwd: consumerRoot,
+    stdio: 'inherit',
+  });
+  execFileSync(process.execPath, [join(consumerRoot, 'runtime.cjs')], {
+    cwd: consumerRoot,
+    stdio: 'inherit',
+  });
+
   const installedPackage = JSON.parse(
     readFileSync(join(consumerRoot, 'node_modules', '@finatic', 'client', 'package.json'), 'utf8')
   );
   if (
     installedPackage.exports?.['.']?.import?.types !== './dist/index.d.mts' ||
-    installedPackage.exports?.['.']?.require?.types !== './dist/index.d.cts'
+    installedPackage.exports?.['.']?.require?.types !== './dist/index.d.cts' ||
+    installedPackage.exports?.['.']?.require?.default !== './dist/index.cjs'
   ) {
     throw new Error(
-      'Packed package does not route import/require to condition-specific declarations'
+      'Packed package does not route import/require to condition-specific entrypoints'
     );
   }
 } finally {
