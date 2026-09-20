@@ -12,7 +12,11 @@
  * Do not edit the class manually.
  */
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { FDXOrderPositionIntent } from './fdxorder-position-intent';
+
 /**
- * Notional value for this leg
+ * Order lifecycle direction (for example SELL_TO_OPEN)
  */
-export interface Notional2 {}
+export interface Positionintent {}

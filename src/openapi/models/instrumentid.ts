@@ -13,6 +13,6 @@
  */
 
 /**
- * Notional value for this leg
+ * Provider-native instrument id, preserved alongside finaticInstrumentId when supplied.
  */
-export interface Notional2 {}
+export interface Instrumentid {}

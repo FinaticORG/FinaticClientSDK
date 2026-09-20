@@ -12,4 +12,7 @@
  * Do not edit the class manually.
  */
 
+/**
+ * Strike price
+ */
 export interface Strikeprice {}

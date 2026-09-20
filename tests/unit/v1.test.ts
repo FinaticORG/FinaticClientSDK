@@ -182,6 +182,91 @@ describe('V1 account-first wrapper', () => {
     );
   });
 
+  it('passes exact and provider-native instrument ids through order placement unchanged', async () => {
+    const axios = createAxiosLikeClient();
+    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
+    const wrapper = new V1Wrapper(api);
+    const body = {
+      order: {
+        symbol: 'MGCZ6',
+        finaticInstrumentId: 'fininst_mgcz6',
+        instrumentId: 'ibkr_12345',
+      },
+    };
+
+    await wrapper.createAccountOrder({
+      accountId: 'acct_123',
+      idempotencyKey: 'idem_exact',
+      body,
+    });
+
+    expect(axios.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'POST',
+        data: body,
+        headers: expect.objectContaining({ 'Idempotency-Key': 'idem_exact' }),
+      })
+    );
+  });
+
+  it('preserves exact, root-only, missing, and ordered event descriptors', async () => {
+    const axios = createAxiosLikeClient();
+    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
+    const wrapper = new V1Wrapper(api);
+    const exact = {
+      version: '1.0',
+      assetType: 'FUTURE',
+      displaySymbol: 'MGCZ6',
+      finaticInstrumentId: 'fininst_mgcz6',
+      future: {
+        contractCode: 'MGCZ6',
+        expirationDate: '2026-12-29',
+        identityQuality: 'EXACT',
+        productRoot: 'MGC',
+      },
+    };
+    const rootOnly = {
+      version: '1.0',
+      assetType: 'FUTURE',
+      displaySymbol: 'MGC',
+      finaticInstrumentId: 'fininst_mgc_root',
+      future: { identityQuality: 'ROOT_ONLY', productRoot: 'MGC' },
+    };
+    const differentMonth = {
+      ...exact,
+      displaySymbol: 'MGCG7',
+      finaticInstrumentId: 'fininst_mgcg7',
+      future: { ...exact.future, contractCode: 'MGCG7', expirationDate: '2027-02-25' },
+    };
+    const eventPayload = {
+      eventId: 'evt_1',
+      eventTime: '2026-09-19T00:00:00Z',
+      eventType: 'UPDATED',
+      orderId: 'order_1',
+      affectedLegs: [0, 1, 2],
+      affectedInstruments: [exact, differentMonth, rootOnly],
+    };
+    axios.request.mockResolvedValueOnce({
+      data: {
+        success: {
+          data: [{ accountId: 'acct_123', instrument: exact }, { accountId: 'acct_123' }],
+        },
+      },
+    });
+    axios.request.mockResolvedValueOnce({ data: { success: { data: [eventPayload] } } });
+
+    const positions = await wrapper.listPositions({ accountId: 'acct_123' });
+    const events = await wrapper.getAccountOrderEvents({
+      accountId: 'acct_123',
+      orderId: 'order_1',
+    });
+
+    expect(positions.success?.data[0]?.instrument).toEqual(exact);
+    expect(positions.success?.data[1]?.instrument).toBeUndefined();
+    expect(events.success?.data[0]?.affectedLegs).toEqual([0, 1, 2]);
+    expect(events.success?.data[0]?.affectedInstruments).toEqual([exact, differentMonth, rootOnly]);
+  });
+
   it('does not expose unsupported order-groups through the v1 account resource surface', () => {
     const wrapperMethods = Object.getOwnPropertyNames(V1Wrapper.prototype);
 
