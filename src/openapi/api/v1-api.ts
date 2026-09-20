@@ -4,14 +4,17 @@
 /**
  * Finatic account-first v1 API surface.
  *
- * Generated-equivalent client pinned to FinaticAPI PR #174 head
- * 969cccc50b44cd8c701f47dddf8cb3b95c9b8f6e.
+ * Generated-equivalent client pinned to FinaticAPI PR #748 head
+ * 82fba8df3ee811771bca705542ef6e0ce92850ad. Resource models were generated
+ * with OpenAPI Generator 7.22.0 from artifact SHA-256
+ * 5c450a4e43aaad1e0f30d0bf0705183b0b882c86308ff78d9ff05cf2bde8054f.
  */
 
 import type { AxiosInstance, AxiosPromise, RawAxiosRequestConfig } from 'axios';
 import globalAxios from 'axios';
 import type { Configuration } from '../configuration';
 import { BaseAPI } from '../base';
+import type { AccountOrderCommandRequest } from '../models/account-order-command-request';
 
 export type FinaticApiEnvironment = 'live' | 'sandbox';
 
@@ -45,12 +48,12 @@ export interface V1AccountOrderSchemaRequest extends V1AccountRequest {
 }
 
 export interface V1CreateAccountOrderCommandRequest extends V1AccountRequest {
-  body?: unknown;
+  body?: AccountOrderCommandRequest;
   idempotencyKey: string;
 }
 
 export interface V1AccountOrderCommandRequest extends V1AccountOrderRequest {
-  body?: unknown;
+  body?: AccountOrderCommandRequest;
   idempotencyKey: string;
 }
 

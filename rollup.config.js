@@ -42,7 +42,7 @@ export default [
   {
     input: 'src/index.ts',
     output: {
-      file: 'dist/index.js',
+      file: 'dist/index.cjs',
       format: 'cjs',
       sourcemap: true,
       exports: 'named',
@@ -65,12 +65,21 @@ export default [
   // TypeScript declarations
   {
     input: 'src/index.ts',
-    output: {
-      file: 'dist/index.d.ts',
-      format: 'es',
-    },
+    output: [
+      {
+        file: 'dist/index.d.ts',
+        format: 'es',
+      },
+      {
+        file: 'dist/index.d.mts',
+        format: 'es',
+      },
+      {
+        file: 'dist/index.d.cts',
+        format: 'es',
+      },
+    ],
     external,
     plugins: [dts()],
   },
 ];
-

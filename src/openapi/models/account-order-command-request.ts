@@ -12,6 +12,10 @@
  * Do not edit the class manually.
  */
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { AccountOrderPayload } from './account-order-payload';
+
 /**
  * Account-scoped order command body for place and modify.
  */
@@ -21,7 +25,11 @@ export interface AccountOrderCommandRequest {
    */
   broker?: string | null;
   /**
-   * Broker-specific order payload
+   * Broker-specific order payload. Provider-specific fields are accepted and preserved.
    */
-  order: { [key: string]: any };
+  order: AccountOrderPayload;
+  /**
+   * Explicit per-operation confirmation for paper-trading writes. Public sandbox orders are rejected unless this is true.
+   */
+  paperTradeConfirmed?: boolean;
 }
