@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.4
+
+- Release from 2328aafcce2a364212f068c72837a433d03e481b.
+
+
 ## 1.1.3
 
 - Release from b22dc5df721088ed2f9cd611866ea15c02ec5e09.
