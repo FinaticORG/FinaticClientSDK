@@ -81,6 +81,22 @@ export interface AccountOrderSchemaParams {
   broker?: string;
 }
 
+export interface BrokerConnectionOffboardingParams {
+  userId: string;
+  accountId: string;
+  idempotencyKey: string;
+}
+
+export interface BrokerConnectionOffboardingResult {
+  operationId: string;
+  userId: string;
+  accountId: string;
+  state: 'accepted' | 'completed';
+  action: 'company_grants_revoked' | 'connection_deletion_started';
+  revokedGrantCount: number;
+  idempotentReplay: boolean;
+}
+
 type AccountResource = 'balances' | 'positions' | 'transactions' | 'orders';
 
 export interface PortalUrlParams {
@@ -503,6 +519,13 @@ export class V1Wrapper {
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
     return this.unwrap<T>(this.api.revokeAccountGrant({ grantId }, this.headers(options)));
+  }
+
+  offboardBrokerConnection<T = BrokerConnectionOffboardingResult>(
+    params: BrokerConnectionOffboardingParams,
+    options?: FinaticV1CallOptions
+  ): Promise<FinaticV1Response<T>> {
+    return this.unwrap<T>(this.api.offboardBrokerConnection(params, this.headers(options)));
   }
 
   getWebhookCatalog<T = unknown>(options?: FinaticV1CallOptions): Promise<FinaticV1Response<T>> {
