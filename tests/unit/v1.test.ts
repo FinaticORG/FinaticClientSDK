@@ -141,6 +141,28 @@ describe('V1 account-first wrapper', () => {
     );
   });
 
+  it('offboards one account-selected broker connection without a connection ID', async () => {
+    const axios = createAxiosLikeClient();
+    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
+    const wrapper = new V1Wrapper(api);
+
+    await wrapper.offboardBrokerConnection({
+      userId: 'user_123',
+      accountId: 'account_123',
+      idempotencyKey: 'idem_123',
+    });
+
+    expect(axios.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'POST',
+        url: 'https://api.test/api/v1/users/user_123/broker-connections/offboarding',
+        data: { accountId: 'account_123' },
+        headers: expect.objectContaining({ 'Idempotency-Key': 'idem_123' }),
+      })
+    );
+    expect(JSON.stringify(axios.request.mock.calls[0])).not.toContain('connectionId');
+  });
+
   it('uses explicit account resource routes from the current API OpenAPI contract', async () => {
     const axios = createAxiosLikeClient();
     const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
