@@ -61,6 +61,12 @@ export interface V1AccountGrantRequest {
   grantId: string;
 }
 
+export interface V1BrokerConnectionOffboardingRequest {
+  userId: string;
+  accountId: string;
+  idempotencyKey: string;
+}
+
 export interface V1PortalAccountGrantRequest {
   sessionId: string;
   body: unknown;
@@ -526,6 +532,27 @@ export class V1Api extends BaseAPI {
       method: 'POST',
       url: `${this.basePath}/api/v1/account-grants/${encodeURIComponent(requestParameters.grantId)}/revoke`,
       ...withEnvironmentHeader(options, this.fallbackEnvironment),
+    });
+  }
+
+  public offboardBrokerConnection(
+    requestParameters: V1BrokerConnectionOffboardingRequest,
+    options?: V1RequestOptions
+  ): AxiosPromise<unknown> {
+    return this.axios.request({
+      method: 'POST',
+      url: `${this.basePath}/api/v1/users/${encodeURIComponent(requestParameters.userId)}/broker-connections/offboarding`,
+      data: { accountId: requestParameters.accountId },
+      ...withEnvironmentHeader(
+        {
+          ...options,
+          headers: {
+            ...options?.headers,
+            'Idempotency-Key': requestParameters.idempotencyKey,
+          },
+        },
+        this.fallbackEnvironment
+      ),
     });
   }
 
