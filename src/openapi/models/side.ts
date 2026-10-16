@@ -17,6 +17,6 @@
 import type { FDXOrderSide } from './fdxorder-side';
 
 /**
- * Execution side (BUY, SELL)
+ * Order side (BUY, SELL)
  */
 export interface Side {}

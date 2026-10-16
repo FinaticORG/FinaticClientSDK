@@ -20,6 +20,8 @@ import type { Lastsyncedat } from './lastsyncedat';
  * Public sync status for one granted account in a session.
  */
 export interface SessionSyncAccountStatus {
+  [key: string]: any;
+
   accountId?: string | null;
   brokerId?: string | null;
   lastSyncedAt?: Lastsyncedat | null;

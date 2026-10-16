@@ -14,12 +14,6 @@
 
 export interface SuccessPayloadDictStrAny {
   _id?: string;
-  /**
-   * The response data (None when error is present)
-   */
   data?: { [key: string]: any } | null;
-  /**
-   * Optional metadata (pagination, etc.)
-   */
   meta?: { [key: string]: any } | null;
 }

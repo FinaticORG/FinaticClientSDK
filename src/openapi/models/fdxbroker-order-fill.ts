@@ -26,13 +26,13 @@ import type { FDXInstrumentDescriptor } from './fdxinstrument-descriptor';
 import type { Price } from './price';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Quantity } from './quantity';
+import type { Quantity1 } from './quantity1';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Securityidtype } from './securityidtype';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Side } from './side';
+import type { Side1 } from './side1';
 
 /**
  * FDX-style order fill/execution schema.  Represents individual order executions/fills.
@@ -45,44 +45,26 @@ export interface FDXBrokerOrderFill {
    * Broker execution timestamp
    */
   executedAt: string;
-  /**
-   * Broker execution ID
-   */
   executionId?: string | null;
   /**
    * Finatic fill ID
    */
   fillId: string;
-  /**
-   * Versioned Finatic instrument identity
-   */
   instrument?: FDXInstrumentDescriptor | null;
-  /**
-   * Associated leg (for multi-leg orders)
-   */
   legId?: string | null;
-  /**
-   * Extended broker-specific data (excluded when None for FDX compliance)
-   */
   metadata?: { [key: string]: any } | null;
   /**
    * Parent order identifier
    */
   orderId: string;
   price: Price;
-  quantity: Quantity;
+  quantity: Quantity1;
   /**
    * Security identifier
    */
   securityId: string;
   securityIdType: Securityidtype;
-  side: Side;
-  /**
-   * Broker trade ID
-   */
+  side: Side1;
   tradeId?: string | null;
-  /**
-   * Execution venue/exchange
-   */
   venue?: string | null;
 }

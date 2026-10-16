@@ -17,20 +17,11 @@
 import type { SuccessPayloadDictStrAny } from './success-payload-dict-str-any';
 
 export interface FinaticResponseDictStrAny {
-  /**
-   * Optional error object with message, code, status, and details
-   */
   error?: { [key: string]: any } | null;
-  /**
-   * Success payload containing data and optional meta. None when error is present.
-   */
   success?: SuccessPayloadDictStrAny | null;
   /**
    * Request trace identifier for tracking and debugging. Auto-generated if not provided.
    */
   trace_id?: string;
-  /**
-   * Optional array of warning objects
-   */
   warning?: Array<{ [key: string]: any }> | null;
 }

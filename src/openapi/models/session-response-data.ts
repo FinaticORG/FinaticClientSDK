@@ -21,28 +21,28 @@ import type { SessionStatus } from './session-status';
  */
 export interface SessionResponseData {
   /**
-   * Session ID
-   */
-  session_id: string;
-  /**
    * Company ID
    */
   company_id: string;
   /**
-   * Session status
-   */
-  status: SessionStatus;
-  /**
    * Session expiration time
    */
   expires_at: string;
-  user_id?: string | null;
+  /**
+   * True when a valid provisional user_id was applied: trading/data may proceed, but portal connection-management still requires link-user / OTP step-up.
+   */
+  portal_connection_management_pending?: boolean;
   /**
    * True when a provisional user_id was supplied on start but was not applied (invalid UUID or no broker connection with company access for this company).
    */
   provided_user_id_rejected?: boolean;
   /**
-   * True when a valid provisional user_id was applied: trading/data may proceed, but portal connection-management still requires link-user / OTP step-up.
+   * Session ID
    */
-  portal_connection_management_pending?: boolean;
+  session_id: string;
+  /**
+   * Session status
+   */
+  status: SessionStatus;
+  user_id?: string | null;
 }

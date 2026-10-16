@@ -16,15 +16,15 @@
  * Sanitized result for a reauth email opt-out token application.
  */
 export interface ReauthNotificationOptOutResult {
-  /**
-   * One of success, expired, invalid, or error.
-   */
-  status: string;
+  email_enabled?: boolean | null;
   /**
    * Whether the stored preference was updated.
    */
   preference_updated?: boolean;
-  user_broker_connection_id?: string | null;
-  email_enabled?: boolean | null;
   reason?: string | null;
+  /**
+   * One of success, expired, invalid, or error.
+   */
+  status: string;
+  user_broker_connection_id?: string | null;
 }

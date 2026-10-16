@@ -13,7 +13,7 @@
  */
 
 /**
- * FDX broker asset types.
+ * Public asset types, including Finatic extensions to FDX.
  */
 
 export enum FDXAssetType {
@@ -23,4 +23,5 @@ export enum FDXAssetType {
   Forex = 'FOREX',
   Future = 'FUTURE',
   FutureOption = 'FUTURE_OPTION',
+  EventContract = 'EVENT_CONTRACT',
 }

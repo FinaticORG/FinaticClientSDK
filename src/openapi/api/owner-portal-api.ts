@@ -45,6 +45,12 @@ import type { FinaticResponseAny } from '../models';
 // @ts-ignore
 import type { FinaticResponseDictStrStr } from '../models';
 // @ts-ignore
+import type { FinaticResponseFDXAccountGrant } from '../models';
+// @ts-ignore
+import type { FinaticResponseListDictStrAny } from '../models';
+// @ts-ignore
+import type { FinaticResponseListOwnerPortalAccountGrant } from '../models';
+// @ts-ignore
 import type { FinaticResponseOwnerPortalBootstrapResponse } from '../models';
 // @ts-ignore
 import type { FinaticResponseOwnerPortalRevokeAllCompaniesResult } from '../models';
@@ -52,6 +58,10 @@ import type { FinaticResponseOwnerPortalRevokeAllCompaniesResult } from '../mode
 import type { FinaticResponseReauthNotificationPreference } from '../models';
 // @ts-ignore
 import type { HTTPValidationError } from '../models';
+// @ts-ignore
+import type { OwnerPortalAccountGrantCreate } from '../models';
+// @ts-ignore
+import type { OwnerPortalAccountGrantUpdate } from '../models';
 // @ts-ignore
 import type { OwnerPortalCompanyPermissionsUpdate } from '../models';
 // @ts-ignore
@@ -61,6 +71,72 @@ import type { ReauthNotificationPreferenceUpdateRequest } from '../models';
  */
 export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configuration) {
   return {
+    /**
+     * Create a fresh consent/grant for an owner-selected account.
+     * @summary Create Owner Connection Account Grant
+     * @param {string} connectionId
+     * @param {OwnerPortalAccountGrantCreate} ownerPortalAccountGrantCreate
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    createOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPost:
+      async (
+        connectionId: string,
+        ownerPortalAccountGrantCreate: OwnerPortalAccountGrantCreate,
+        options: RawAxiosRequestConfig = {}
+      ): Promise<RequestArgs> => {
+        // verify required parameter 'connectionId' is not null or undefined
+        assertParamExists(
+          'createOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPost',
+          'connectionId',
+          connectionId
+        );
+        // verify required parameter 'ownerPortalAccountGrantCreate' is not null or undefined
+        assertParamExists(
+          'createOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPost',
+          'ownerPortalAccountGrantCreate',
+          ownerPortalAccountGrantCreate
+        );
+        const localVarPath =
+          `/api/v1/owner-portal/connections/{connection_id}/account-grants`.replace(
+            `{${'connection_id'}}`,
+            encodeURIComponent(String(connectionId))
+          );
+        // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+        let baseOptions;
+        if (configuration) {
+          baseOptions = configuration.baseOptions;
+        }
+
+        const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options };
+        const localVarHeaderParameter = {} as any;
+        const localVarQueryParameter = {} as any;
+
+        // authentication FinaticOwnerJWT required
+        // http bearer authentication required
+        await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+        localVarHeaderParameter['Content-Type'] = 'application/json';
+
+        setSearchParams(localVarUrlObj, localVarQueryParameter);
+        let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+        localVarRequestOptions.headers = {
+          ...localVarHeaderParameter,
+          ...headersFromBaseOptions,
+          ...options.headers,
+        };
+        localVarRequestOptions.data = serializeDataIfNeeded(
+          ownerPortalAccountGrantCreate,
+          localVarRequestOptions,
+          configuration
+        );
+
+        return {
+          url: toPathString(localVarUrlObj),
+          options: localVarRequestOptions,
+        };
+      },
     /**
      * Return all user connections and union company directory with per-connection grants.
      * @summary Get Owner Portal Bootstrap
@@ -82,7 +158,7 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
 
-      // authentication HTTPBearer required
+      // authentication FinaticOwnerJWT required
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
@@ -130,7 +206,7 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         const localVarHeaderParameter = {} as any;
         const localVarQueryParameter = {} as any;
 
-        // authentication HTTPBearer required
+        // authentication FinaticOwnerJWT required
         // http bearer authentication required
         await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
@@ -147,6 +223,142 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
           options: localVarRequestOptions,
         };
       },
+    /**
+     * List FDX account grants for an owner-owned connection (manage UI).
+     * @summary List Owner Connection Account Grants
+     * @param {string} connectionId
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGet: async (
+      connectionId: string,
+      options: RawAxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'connectionId' is not null or undefined
+      assertParamExists(
+        'listOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGet',
+        'connectionId',
+        connectionId
+      );
+      const localVarPath =
+        `/api/v1/owner-portal/connections/{connection_id}/account-grants`.replace(
+          `{${'connection_id'}}`,
+          encodeURIComponent(String(connectionId))
+        );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication FinaticOwnerJWT required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * List broker accounts for an owner-owned connection (no company session).
+     * @summary List Owner Connection Discovered Accounts
+     * @param {string} connectionId
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGet:
+      async (connectionId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        // verify required parameter 'connectionId' is not null or undefined
+        assertParamExists(
+          'listOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGet',
+          'connectionId',
+          connectionId
+        );
+        const localVarPath =
+          `/api/v1/owner-portal/connections/{connection_id}/discovered-accounts`.replace(
+            `{${'connection_id'}}`,
+            encodeURIComponent(String(connectionId))
+          );
+        // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+        let baseOptions;
+        if (configuration) {
+          baseOptions = configuration.baseOptions;
+        }
+
+        const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options };
+        const localVarHeaderParameter = {} as any;
+        const localVarQueryParameter = {} as any;
+
+        // authentication FinaticOwnerJWT required
+        // http bearer authentication required
+        await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+        setSearchParams(localVarUrlObj, localVarQueryParameter);
+        let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+        localVarRequestOptions.headers = {
+          ...localVarHeaderParameter,
+          ...headersFromBaseOptions,
+          ...options.headers,
+        };
+
+        return {
+          url: toPathString(localVarUrlObj),
+          options: localVarRequestOptions,
+        };
+      },
+    /**
+     * Return institution catalog for owner-portal connect/reconnect flows.
+     * @summary List Owner Portal Institutions
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listOwnerPortalInstitutionsApiV1OwnerPortalInstitutionsGet: async (
+      options: RawAxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      const localVarPath = `/api/v1/owner-portal/institutions`;
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication FinaticOwnerJWT required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
     /**
      * Connect or reauth a broker without granting company access (personal connection).
      * @summary Owner Portal Connect Broker
@@ -176,7 +388,7 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
 
-      // authentication HTTPBearer required
+      // authentication FinaticOwnerJWT required
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
@@ -232,7 +444,7 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
 
-      // authentication HTTPBearer required
+      // authentication FinaticOwnerJWT required
       // http bearer authentication required
       await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
@@ -250,17 +462,17 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
       };
     },
     /**
-     * Remove every company_access row for a connection.
-     * @summary Revoke All Owner Connection Company Access
+     * Revoke every account grant for a connection.
+     * @summary Revoke All Owner Connection Account Grants
      * @param {string} connectionId
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    revokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete:
+    revokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete:
       async (connectionId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
         // verify required parameter 'connectionId' is not null or undefined
         assertParamExists(
-          'revokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete',
+          'revokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete',
           'connectionId',
           connectionId
         );
@@ -279,7 +491,7 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         const localVarHeaderParameter = {} as any;
         const localVarQueryParameter = {} as any;
 
-        // authentication HTTPBearer required
+        // authentication FinaticOwnerJWT required
         // http bearer authentication required
         await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
@@ -297,14 +509,63 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         };
       },
     /**
+     * Revoke an account grant owned by the authenticated user.
+     * @summary Revoke Owner Account Grant
+     * @param {string} grantId
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    revokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePost: async (
+      grantId: string,
+      options: RawAxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'grantId' is not null or undefined
+      assertParamExists(
+        'revokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePost',
+        'grantId',
+        grantId
+      );
+      const localVarPath = `/api/v1/owner-portal/account-grants/{grant_id}/revoke`.replace(
+        `{${'grant_id'}}`,
+        encodeURIComponent(String(grantId))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication FinaticOwnerJWT required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
      * Remove one company\'s access to a connection.
-     * @summary Revoke Owner Connection Company Access
+     * @summary Revoke Owner Connection Account Grants
      * @param {string} connectionId
      * @param {string} companyId
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    revokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete:
+    revokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete:
       async (
         connectionId: string,
         companyId: string,
@@ -312,13 +573,13 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
       ): Promise<RequestArgs> => {
         // verify required parameter 'connectionId' is not null or undefined
         assertParamExists(
-          'revokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete',
+          'revokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete',
           'connectionId',
           connectionId
         );
         // verify required parameter 'companyId' is not null or undefined
         assertParamExists(
-          'revokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete',
+          'revokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete',
           'companyId',
           companyId
         );
@@ -337,7 +598,7 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         const localVarHeaderParameter = {} as any;
         const localVarQueryParameter = {} as any;
 
-        // authentication HTTPBearer required
+        // authentication FinaticOwnerJWT required
         // http bearer authentication required
         await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
@@ -355,7 +616,71 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         };
       },
     /**
-     * Create or update company_access for one company on a user-owned connection.
+     * Update resource clusters / trade on an account grant the user owns.
+     * @summary Update Owner Account Grant
+     * @param {string} grantId
+     * @param {OwnerPortalAccountGrantUpdate} ownerPortalAccountGrantUpdate
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatch: async (
+      grantId: string,
+      ownerPortalAccountGrantUpdate: OwnerPortalAccountGrantUpdate,
+      options: RawAxiosRequestConfig = {}
+    ): Promise<RequestArgs> => {
+      // verify required parameter 'grantId' is not null or undefined
+      assertParamExists(
+        'updateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatch',
+        'grantId',
+        grantId
+      );
+      // verify required parameter 'ownerPortalAccountGrantUpdate' is not null or undefined
+      assertParamExists(
+        'updateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatch',
+        'ownerPortalAccountGrantUpdate',
+        ownerPortalAccountGrantUpdate
+      );
+      const localVarPath = `/api/v1/owner-portal/account-grants/{grant_id}`.replace(
+        `{${'grant_id'}}`,
+        encodeURIComponent(String(grantId))
+      );
+      // use dummy base URL string because the URL constructor only accepts absolute URLs.
+      const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+      let baseOptions;
+      if (configuration) {
+        baseOptions = configuration.baseOptions;
+      }
+
+      const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options };
+      const localVarHeaderParameter = {} as any;
+      const localVarQueryParameter = {} as any;
+
+      // authentication FinaticOwnerJWT required
+      // http bearer authentication required
+      await setBearerAuthToObject(localVarHeaderParameter, configuration);
+
+      localVarHeaderParameter['Content-Type'] = 'application/json';
+
+      setSearchParams(localVarUrlObj, localVarQueryParameter);
+      let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+      localVarRequestOptions.headers = {
+        ...localVarHeaderParameter,
+        ...headersFromBaseOptions,
+        ...options.headers,
+      };
+      localVarRequestOptions.data = serializeDataIfNeeded(
+        ownerPortalAccountGrantUpdate,
+        localVarRequestOptions,
+        configuration
+      );
+
+      return {
+        url: toPathString(localVarUrlObj),
+        options: localVarRequestOptions,
+      };
+    },
+    /**
+     * Create or update account grants for one company on a user-owned connection.
      * @summary Update Owner Connection Company Permissions
      * @param {string} connectionId
      * @param {string} companyId
@@ -403,7 +728,7 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         const localVarHeaderParameter = {} as any;
         const localVarQueryParameter = {} as any;
 
-        // authentication HTTPBearer required
+        // authentication FinaticOwnerJWT required
         // http bearer authentication required
         await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
@@ -469,7 +794,7 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
         const localVarHeaderParameter = {} as any;
         const localVarQueryParameter = {} as any;
 
-        // authentication HTTPBearer required
+        // authentication FinaticOwnerJWT required
         // http bearer authentication required
         await setBearerAuthToObject(localVarHeaderParameter, configuration);
 
@@ -502,6 +827,40 @@ export const OwnerPortalApiAxiosParamCreator = function (configuration?: Configu
 export const OwnerPortalApiFp = function (configuration?: Configuration) {
   const localVarAxiosParamCreator = OwnerPortalApiAxiosParamCreator(configuration);
   return {
+    /**
+     * Create a fresh consent/grant for an owner-selected account.
+     * @summary Create Owner Connection Account Grant
+     * @param {string} connectionId
+     * @param {OwnerPortalAccountGrantCreate} ownerPortalAccountGrantCreate
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async createOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPost(
+      connectionId: string,
+      ownerPortalAccountGrantCreate: OwnerPortalAccountGrantCreate,
+      options?: RawAxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseFDXAccountGrant>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.createOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPost(
+          connectionId,
+          ownerPortalAccountGrantCreate,
+          options
+        );
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap[
+          'OwnerPortalApi.createOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPost'
+        ]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
     /**
      * Return all user connections and union company directory with per-connection grants.
      * @summary Get Owner Portal Bootstrap
@@ -558,6 +917,99 @@ export const OwnerPortalApiFp = function (configuration?: Configuration) {
       const localVarOperationServerBasePath =
         operationServerMap[
           'OwnerPortalApi.getOwnerReauthNotificationPreferenceApiV1OwnerPortalConnectionsConnectionIdReauthNotificationPreferenceGet'
+        ]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * List FDX account grants for an owner-owned connection (manage UI).
+     * @summary List Owner Connection Account Grants
+     * @param {string} connectionId
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async listOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGet(
+      connectionId: string,
+      options?: RawAxiosRequestConfig
+    ): Promise<
+      (
+        axios?: AxiosInstance,
+        basePath?: string
+      ) => AxiosPromise<FinaticResponseListOwnerPortalAccountGrant>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.listOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGet(
+          connectionId,
+          options
+        );
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap[
+          'OwnerPortalApi.listOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGet'
+        ]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * List broker accounts for an owner-owned connection (no company session).
+     * @summary List Owner Connection Discovered Accounts
+     * @param {string} connectionId
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async listOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGet(
+      connectionId: string,
+      options?: RawAxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListDictStrAny>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.listOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGet(
+          connectionId,
+          options
+        );
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap[
+          'OwnerPortalApi.listOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGet'
+        ]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * Return institution catalog for owner-portal connect/reconnect flows.
+     * @summary List Owner Portal Institutions
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async listOwnerPortalInstitutionsApiV1OwnerPortalInstitutionsGet(
+      options?: RawAxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseListDictStrAny>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.listOwnerPortalInstitutionsApiV1OwnerPortalInstitutionsGet(
+          options
+        );
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap[
+          'OwnerPortalApi.listOwnerPortalInstitutionsApiV1OwnerPortalInstitutionsGet'
         ]?.[localVarOperationServerIndex]?.url;
       return (axios, basePath) =>
         createRequestFunction(
@@ -631,13 +1083,13 @@ export const OwnerPortalApiFp = function (configuration?: Configuration) {
         )(axios, localVarOperationServerBasePath || basePath);
     },
     /**
-     * Remove every company_access row for a connection.
-     * @summary Revoke All Owner Connection Company Access
+     * Revoke every account grant for a connection.
+     * @summary Revoke All Owner Connection Account Grants
      * @param {string} connectionId
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async revokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete(
+    async revokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete(
       connectionId: string,
       options?: RawAxiosRequestConfig
     ): Promise<
@@ -647,14 +1099,45 @@ export const OwnerPortalApiFp = function (configuration?: Configuration) {
       ) => AxiosPromise<FinaticResponseOwnerPortalRevokeAllCompaniesResult>
     > {
       const localVarAxiosArgs =
-        await localVarAxiosParamCreator.revokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete(
+        await localVarAxiosParamCreator.revokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete(
           connectionId,
           options
         );
       const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
       const localVarOperationServerBasePath =
         operationServerMap[
-          'OwnerPortalApi.revokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete'
+          'OwnerPortalApi.revokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete'
+        ]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * Revoke an account grant owned by the authenticated user.
+     * @summary Revoke Owner Account Grant
+     * @param {string} grantId
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async revokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePost(
+      grantId: string,
+      options?: RawAxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseFDXAccountGrant>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.revokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePost(
+          grantId,
+          options
+        );
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap[
+          'OwnerPortalApi.revokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePost'
         ]?.[localVarOperationServerIndex]?.url;
       return (axios, basePath) =>
         createRequestFunction(
@@ -666,13 +1149,13 @@ export const OwnerPortalApiFp = function (configuration?: Configuration) {
     },
     /**
      * Remove one company\'s access to a connection.
-     * @summary Revoke Owner Connection Company Access
+     * @summary Revoke Owner Connection Account Grants
      * @param {string} connectionId
      * @param {string} companyId
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async revokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete(
+    async revokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete(
       connectionId: string,
       companyId: string,
       options?: RawAxiosRequestConfig
@@ -680,7 +1163,7 @@ export const OwnerPortalApiFp = function (configuration?: Configuration) {
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseDictStrStr>
     > {
       const localVarAxiosArgs =
-        await localVarAxiosParamCreator.revokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete(
+        await localVarAxiosParamCreator.revokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete(
           connectionId,
           companyId,
           options
@@ -688,7 +1171,7 @@ export const OwnerPortalApiFp = function (configuration?: Configuration) {
       const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
       const localVarOperationServerBasePath =
         operationServerMap[
-          'OwnerPortalApi.revokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete'
+          'OwnerPortalApi.revokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete'
         ]?.[localVarOperationServerIndex]?.url;
       return (axios, basePath) =>
         createRequestFunction(
@@ -699,7 +1182,41 @@ export const OwnerPortalApiFp = function (configuration?: Configuration) {
         )(axios, localVarOperationServerBasePath || basePath);
     },
     /**
-     * Create or update company_access for one company on a user-owned connection.
+     * Update resource clusters / trade on an account grant the user owns.
+     * @summary Update Owner Account Grant
+     * @param {string} grantId
+     * @param {OwnerPortalAccountGrantUpdate} ownerPortalAccountGrantUpdate
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    async updateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatch(
+      grantId: string,
+      ownerPortalAccountGrantUpdate: OwnerPortalAccountGrantUpdate,
+      options?: RawAxiosRequestConfig
+    ): Promise<
+      (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseFDXAccountGrant>
+    > {
+      const localVarAxiosArgs =
+        await localVarAxiosParamCreator.updateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatch(
+          grantId,
+          ownerPortalAccountGrantUpdate,
+          options
+        );
+      const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+      const localVarOperationServerBasePath =
+        operationServerMap[
+          'OwnerPortalApi.updateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatch'
+        ]?.[localVarOperationServerIndex]?.url;
+      return (axios, basePath) =>
+        createRequestFunction(
+          localVarAxiosArgs,
+          globalAxios,
+          BASE_PATH,
+          configuration
+        )(axios, localVarOperationServerBasePath || basePath);
+    },
+    /**
+     * Create or update account grants for one company on a user-owned connection.
      * @summary Update Owner Connection Company Permissions
      * @param {string} connectionId
      * @param {string} companyId
@@ -786,6 +1303,25 @@ export const OwnerPortalApiFactory = function (
   const localVarFp = OwnerPortalApiFp(configuration);
   return {
     /**
+     * Create a fresh consent/grant for an owner-selected account.
+     * @summary Create Owner Connection Account Grant
+     * @param {OwnerPortalApiCreateOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPostRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    createOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPost(
+      requestParameters: OwnerPortalApiCreateOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPostRequest,
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<FinaticResponseFDXAccountGrant> {
+      return localVarFp
+        .createOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPost(
+          requestParameters.connectionId,
+          requestParameters.ownerPortalAccountGrantCreate,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
      * Return all user connections and union company directory with per-connection grants.
      * @summary Get Owner Portal Bootstrap
      * @param {*} [options] Override http request option.
@@ -814,6 +1350,55 @@ export const OwnerPortalApiFactory = function (
           requestParameters.connectionId,
           options
         )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * List FDX account grants for an owner-owned connection (manage UI).
+     * @summary List Owner Connection Account Grants
+     * @param {OwnerPortalApiListOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGetRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGet(
+      requestParameters: OwnerPortalApiListOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGetRequest,
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<FinaticResponseListOwnerPortalAccountGrant> {
+      return localVarFp
+        .listOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGet(
+          requestParameters.connectionId,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * List broker accounts for an owner-owned connection (no company session).
+     * @summary List Owner Connection Discovered Accounts
+     * @param {OwnerPortalApiListOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGetRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGet(
+      requestParameters: OwnerPortalApiListOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGetRequest,
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<FinaticResponseListDictStrAny> {
+      return localVarFp
+        .listOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGet(
+          requestParameters.connectionId,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Return institution catalog for owner-portal connect/reconnect flows.
+     * @summary List Owner Portal Institutions
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    listOwnerPortalInstitutionsApiV1OwnerPortalInstitutionsGet(
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<FinaticResponseListDictStrAny> {
+      return localVarFp
+        .listOwnerPortalInstitutionsApiV1OwnerPortalInstitutionsGet(options)
         .then((request) => request(axios, basePath));
     },
     /**
@@ -853,36 +1438,54 @@ export const OwnerPortalApiFactory = function (
         .then((request) => request(axios, basePath));
     },
     /**
-     * Remove every company_access row for a connection.
-     * @summary Revoke All Owner Connection Company Access
-     * @param {OwnerPortalApiRevokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDeleteRequest} requestParameters Request parameters.
+     * Revoke every account grant for a connection.
+     * @summary Revoke All Owner Connection Account Grants
+     * @param {OwnerPortalApiRevokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDeleteRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    revokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete(
-      requestParameters: OwnerPortalApiRevokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDeleteRequest,
+    revokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete(
+      requestParameters: OwnerPortalApiRevokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDeleteRequest,
       options?: RawAxiosRequestConfig
     ): AxiosPromise<FinaticResponseOwnerPortalRevokeAllCompaniesResult> {
       return localVarFp
-        .revokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete(
+        .revokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete(
           requestParameters.connectionId,
           options
         )
         .then((request) => request(axios, basePath));
     },
     /**
-     * Remove one company\'s access to a connection.
-     * @summary Revoke Owner Connection Company Access
-     * @param {OwnerPortalApiRevokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDeleteRequest} requestParameters Request parameters.
+     * Revoke an account grant owned by the authenticated user.
+     * @summary Revoke Owner Account Grant
+     * @param {OwnerPortalApiRevokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePostRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    revokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete(
-      requestParameters: OwnerPortalApiRevokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDeleteRequest,
+    revokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePost(
+      requestParameters: OwnerPortalApiRevokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePostRequest,
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<FinaticResponseFDXAccountGrant> {
+      return localVarFp
+        .revokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePost(
+          requestParameters.grantId,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Remove one company\'s access to a connection.
+     * @summary Revoke Owner Connection Account Grants
+     * @param {OwnerPortalApiRevokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDeleteRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    revokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete(
+      requestParameters: OwnerPortalApiRevokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDeleteRequest,
       options?: RawAxiosRequestConfig
     ): AxiosPromise<FinaticResponseDictStrStr> {
       return localVarFp
-        .revokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete(
+        .revokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete(
           requestParameters.connectionId,
           requestParameters.companyId,
           options
@@ -890,7 +1493,26 @@ export const OwnerPortalApiFactory = function (
         .then((request) => request(axios, basePath));
     },
     /**
-     * Create or update company_access for one company on a user-owned connection.
+     * Update resource clusters / trade on an account grant the user owns.
+     * @summary Update Owner Account Grant
+     * @param {OwnerPortalApiUpdateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatchRequest} requestParameters Request parameters.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    updateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatch(
+      requestParameters: OwnerPortalApiUpdateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatchRequest,
+      options?: RawAxiosRequestConfig
+    ): AxiosPromise<FinaticResponseFDXAccountGrant> {
+      return localVarFp
+        .updateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatch(
+          requestParameters.grantId,
+          requestParameters.ownerPortalAccountGrantUpdate,
+          options
+        )
+        .then((request) => request(axios, basePath));
+    },
+    /**
+     * Create or update account grants for one company on a user-owned connection.
      * @summary Update Owner Connection Company Permissions
      * @param {OwnerPortalApiUpdateOwnerConnectionCompanyPermissionsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdPermissionsPatchRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
@@ -936,6 +1558,18 @@ export const OwnerPortalApiFactory = function (
  */
 export interface OwnerPortalApiInterface {
   /**
+   * Create a fresh consent/grant for an owner-selected account.
+   * @summary Create Owner Connection Account Grant
+   * @param {OwnerPortalApiCreateOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPostRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   */
+  createOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPost(
+    requestParameters: OwnerPortalApiCreateOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPostRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<FinaticResponseFDXAccountGrant>;
+
+  /**
    * Return all user connections and union company directory with per-connection grants.
    * @summary Get Owner Portal Bootstrap
    * @param {*} [options] Override http request option.
@@ -956,6 +1590,40 @@ export interface OwnerPortalApiInterface {
     requestParameters: OwnerPortalApiGetOwnerReauthNotificationPreferenceApiV1OwnerPortalConnectionsConnectionIdReauthNotificationPreferenceGetRequest,
     options?: RawAxiosRequestConfig
   ): AxiosPromise<FinaticResponseReauthNotificationPreference>;
+
+  /**
+   * List FDX account grants for an owner-owned connection (manage UI).
+   * @summary List Owner Connection Account Grants
+   * @param {OwnerPortalApiListOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGetRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   */
+  listOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGet(
+    requestParameters: OwnerPortalApiListOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGetRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<FinaticResponseListOwnerPortalAccountGrant>;
+
+  /**
+   * List broker accounts for an owner-owned connection (no company session).
+   * @summary List Owner Connection Discovered Accounts
+   * @param {OwnerPortalApiListOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGetRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   */
+  listOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGet(
+    requestParameters: OwnerPortalApiListOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGetRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<FinaticResponseListDictStrAny>;
+
+  /**
+   * Return institution catalog for owner-portal connect/reconnect flows.
+   * @summary List Owner Portal Institutions
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   */
+  listOwnerPortalInstitutionsApiV1OwnerPortalInstitutionsGet(
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<FinaticResponseListDictStrAny>;
 
   /**
    * Connect or reauth a broker without granting company access (personal connection).
@@ -982,31 +1650,55 @@ export interface OwnerPortalApiInterface {
   ): AxiosPromise<FinaticResponseOwnerPortalRevokeAllCompaniesResult>;
 
   /**
-   * Remove every company_access row for a connection.
-   * @summary Revoke All Owner Connection Company Access
-   * @param {OwnerPortalApiRevokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDeleteRequest} requestParameters Request parameters.
+   * Revoke every account grant for a connection.
+   * @summary Revoke All Owner Connection Account Grants
+   * @param {OwnerPortalApiRevokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDeleteRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    */
-  revokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete(
-    requestParameters: OwnerPortalApiRevokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDeleteRequest,
+  revokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete(
+    requestParameters: OwnerPortalApiRevokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDeleteRequest,
     options?: RawAxiosRequestConfig
   ): AxiosPromise<FinaticResponseOwnerPortalRevokeAllCompaniesResult>;
 
   /**
-   * Remove one company\'s access to a connection.
-   * @summary Revoke Owner Connection Company Access
-   * @param {OwnerPortalApiRevokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDeleteRequest} requestParameters Request parameters.
+   * Revoke an account grant owned by the authenticated user.
+   * @summary Revoke Owner Account Grant
+   * @param {OwnerPortalApiRevokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePostRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    */
-  revokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete(
-    requestParameters: OwnerPortalApiRevokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDeleteRequest,
+  revokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePost(
+    requestParameters: OwnerPortalApiRevokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePostRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<FinaticResponseFDXAccountGrant>;
+
+  /**
+   * Remove one company\'s access to a connection.
+   * @summary Revoke Owner Connection Account Grants
+   * @param {OwnerPortalApiRevokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDeleteRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   */
+  revokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete(
+    requestParameters: OwnerPortalApiRevokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDeleteRequest,
     options?: RawAxiosRequestConfig
   ): AxiosPromise<FinaticResponseDictStrStr>;
 
   /**
-   * Create or update company_access for one company on a user-owned connection.
+   * Update resource clusters / trade on an account grant the user owns.
+   * @summary Update Owner Account Grant
+   * @param {OwnerPortalApiUpdateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatchRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   */
+  updateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatch(
+    requestParameters: OwnerPortalApiUpdateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatchRequest,
+    options?: RawAxiosRequestConfig
+  ): AxiosPromise<FinaticResponseFDXAccountGrant>;
+
+  /**
+   * Create or update account grants for one company on a user-owned connection.
    * @summary Update Owner Connection Company Permissions
    * @param {OwnerPortalApiUpdateOwnerConnectionCompanyPermissionsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdPermissionsPatchRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
@@ -1031,9 +1723,32 @@ export interface OwnerPortalApiInterface {
 }
 
 /**
+ * Request parameters for createOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPost operation in OwnerPortalApi.
+ */
+export interface OwnerPortalApiCreateOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPostRequest {
+  readonly connectionId: string;
+
+  readonly ownerPortalAccountGrantCreate: OwnerPortalAccountGrantCreate;
+}
+
+/**
  * Request parameters for getOwnerReauthNotificationPreferenceApiV1OwnerPortalConnectionsConnectionIdReauthNotificationPreferenceGet operation in OwnerPortalApi.
  */
 export interface OwnerPortalApiGetOwnerReauthNotificationPreferenceApiV1OwnerPortalConnectionsConnectionIdReauthNotificationPreferenceGetRequest {
+  readonly connectionId: string;
+}
+
+/**
+ * Request parameters for listOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGet operation in OwnerPortalApi.
+ */
+export interface OwnerPortalApiListOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGetRequest {
+  readonly connectionId: string;
+}
+
+/**
+ * Request parameters for listOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGet operation in OwnerPortalApi.
+ */
+export interface OwnerPortalApiListOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGetRequest {
   readonly connectionId: string;
 }
 
@@ -1052,19 +1767,35 @@ export interface OwnerPortalApiOwnerPortalDeleteConnectionApiV1OwnerPortalConnec
 }
 
 /**
- * Request parameters for revokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete operation in OwnerPortalApi.
+ * Request parameters for revokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete operation in OwnerPortalApi.
  */
-export interface OwnerPortalApiRevokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDeleteRequest {
+export interface OwnerPortalApiRevokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDeleteRequest {
   readonly connectionId: string;
 }
 
 /**
- * Request parameters for revokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete operation in OwnerPortalApi.
+ * Request parameters for revokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePost operation in OwnerPortalApi.
  */
-export interface OwnerPortalApiRevokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDeleteRequest {
+export interface OwnerPortalApiRevokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePostRequest {
+  readonly grantId: string;
+}
+
+/**
+ * Request parameters for revokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete operation in OwnerPortalApi.
+ */
+export interface OwnerPortalApiRevokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDeleteRequest {
   readonly connectionId: string;
 
   readonly companyId: string;
+}
+
+/**
+ * Request parameters for updateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatch operation in OwnerPortalApi.
+ */
+export interface OwnerPortalApiUpdateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatchRequest {
+  readonly grantId: string;
+
+  readonly ownerPortalAccountGrantUpdate: OwnerPortalAccountGrantUpdate;
 }
 
 /**
@@ -1091,6 +1822,26 @@ export interface OwnerPortalApiUpdateOwnerReauthNotificationPreferenceApiV1Owner
  * OwnerPortalApi - object-oriented interface
  */
 export class OwnerPortalApi extends BaseAPI implements OwnerPortalApiInterface {
+  /**
+   * Create a fresh consent/grant for an owner-selected account.
+   * @summary Create Owner Connection Account Grant
+   * @param {OwnerPortalApiCreateOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPostRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   */
+  public createOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPost(
+    requestParameters: OwnerPortalApiCreateOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPostRequest,
+    options?: RawAxiosRequestConfig
+  ) {
+    return OwnerPortalApiFp(this.configuration)
+      .createOwnerConnectionAccountGrantApiV1OwnerPortalConnectionsConnectionIdAccountGrantsPost(
+        requestParameters.connectionId,
+        requestParameters.ownerPortalAccountGrantCreate,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
   /**
    * Return all user connections and union company directory with per-connection grants.
    * @summary Get Owner Portal Bootstrap
@@ -1119,6 +1870,58 @@ export class OwnerPortalApi extends BaseAPI implements OwnerPortalApiInterface {
         requestParameters.connectionId,
         options
       )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * List FDX account grants for an owner-owned connection (manage UI).
+   * @summary List Owner Connection Account Grants
+   * @param {OwnerPortalApiListOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGetRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   */
+  public listOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGet(
+    requestParameters: OwnerPortalApiListOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGetRequest,
+    options?: RawAxiosRequestConfig
+  ) {
+    return OwnerPortalApiFp(this.configuration)
+      .listOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdAccountGrantsGet(
+        requestParameters.connectionId,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * List broker accounts for an owner-owned connection (no company session).
+   * @summary List Owner Connection Discovered Accounts
+   * @param {OwnerPortalApiListOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGetRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   */
+  public listOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGet(
+    requestParameters: OwnerPortalApiListOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGetRequest,
+    options?: RawAxiosRequestConfig
+  ) {
+    return OwnerPortalApiFp(this.configuration)
+      .listOwnerConnectionDiscoveredAccountsApiV1OwnerPortalConnectionsConnectionIdDiscoveredAccountsGet(
+        requestParameters.connectionId,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Return institution catalog for owner-portal connect/reconnect flows.
+   * @summary List Owner Portal Institutions
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   */
+  public listOwnerPortalInstitutionsApiV1OwnerPortalInstitutionsGet(
+    options?: RawAxiosRequestConfig
+  ) {
+    return OwnerPortalApiFp(this.configuration)
+      .listOwnerPortalInstitutionsApiV1OwnerPortalInstitutionsGet(options)
       .then((request) => request(this.axios, this.basePath));
   }
 
@@ -1161,18 +1964,18 @@ export class OwnerPortalApi extends BaseAPI implements OwnerPortalApiInterface {
   }
 
   /**
-   * Remove every company_access row for a connection.
-   * @summary Revoke All Owner Connection Company Access
-   * @param {OwnerPortalApiRevokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDeleteRequest} requestParameters Request parameters.
+   * Revoke every account grant for a connection.
+   * @summary Revoke All Owner Connection Account Grants
+   * @param {OwnerPortalApiRevokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDeleteRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    */
-  public revokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete(
-    requestParameters: OwnerPortalApiRevokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDeleteRequest,
+  public revokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete(
+    requestParameters: OwnerPortalApiRevokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDeleteRequest,
     options?: RawAxiosRequestConfig
   ) {
     return OwnerPortalApiFp(this.configuration)
-      .revokeAllOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete(
+      .revokeAllOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesDelete(
         requestParameters.connectionId,
         options
       )
@@ -1180,18 +1983,37 @@ export class OwnerPortalApi extends BaseAPI implements OwnerPortalApiInterface {
   }
 
   /**
-   * Remove one company\'s access to a connection.
-   * @summary Revoke Owner Connection Company Access
-   * @param {OwnerPortalApiRevokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDeleteRequest} requestParameters Request parameters.
+   * Revoke an account grant owned by the authenticated user.
+   * @summary Revoke Owner Account Grant
+   * @param {OwnerPortalApiRevokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePostRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    */
-  public revokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete(
-    requestParameters: OwnerPortalApiRevokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDeleteRequest,
+  public revokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePost(
+    requestParameters: OwnerPortalApiRevokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePostRequest,
     options?: RawAxiosRequestConfig
   ) {
     return OwnerPortalApiFp(this.configuration)
-      .revokeOwnerConnectionCompanyAccessApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete(
+      .revokeOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdRevokePost(
+        requestParameters.grantId,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Remove one company\'s access to a connection.
+   * @summary Revoke Owner Connection Account Grants
+   * @param {OwnerPortalApiRevokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDeleteRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   */
+  public revokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete(
+    requestParameters: OwnerPortalApiRevokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDeleteRequest,
+    options?: RawAxiosRequestConfig
+  ) {
+    return OwnerPortalApiFp(this.configuration)
+      .revokeOwnerConnectionAccountGrantsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdDelete(
         requestParameters.connectionId,
         requestParameters.companyId,
         options
@@ -1200,7 +2022,27 @@ export class OwnerPortalApi extends BaseAPI implements OwnerPortalApiInterface {
   }
 
   /**
-   * Create or update company_access for one company on a user-owned connection.
+   * Update resource clusters / trade on an account grant the user owns.
+   * @summary Update Owner Account Grant
+   * @param {OwnerPortalApiUpdateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatchRequest} requestParameters Request parameters.
+   * @param {*} [options] Override http request option.
+   * @throws {RequiredError}
+   */
+  public updateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatch(
+    requestParameters: OwnerPortalApiUpdateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatchRequest,
+    options?: RawAxiosRequestConfig
+  ) {
+    return OwnerPortalApiFp(this.configuration)
+      .updateOwnerAccountGrantApiV1OwnerPortalAccountGrantsGrantIdPatch(
+        requestParameters.grantId,
+        requestParameters.ownerPortalAccountGrantUpdate,
+        options
+      )
+      .then((request) => request(this.axios, this.basePath));
+  }
+
+  /**
+   * Create or update account grants for one company on a user-owned connection.
    * @summary Update Owner Connection Company Permissions
    * @param {OwnerPortalApiUpdateOwnerConnectionCompanyPermissionsApiV1OwnerPortalConnectionsConnectionIdCompaniesCompanyIdPermissionsPatchRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.

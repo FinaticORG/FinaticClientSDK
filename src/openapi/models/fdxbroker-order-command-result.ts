@@ -29,25 +29,13 @@ export interface FDXBrokerOrderCommandResult {
    * Command that was executed.
    */
   action: FDXBrokerOrderCommandResultActionEnum;
-  /**
-   * Client reference from Idempotency-Key.
-   */
   clientOrderId?: string | null;
-  /**
-   * How modify was executed when applicable.
-   */
   executionStrategy?: FDXBrokerOrderCommandResultExecutionStrategyEnum | null;
-  /**
-   * Human-readable broker or Finatic message.
-   */
   message?: string | null;
   /**
    * Persisted order snapshot from integration.orders.
    */
   order: FDXBrokerOrder;
-  /**
-   * Prior Finatic order id after cancel-replace modify.
-   */
   supersededOrderId?: string | null;
 }
 

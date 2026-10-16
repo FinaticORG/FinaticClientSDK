@@ -1,10 +1,14 @@
 import {
   FDXFutureInstrumentDetailsIdentityQualityEnum,
+  FDXAssetType,
   FDXInstrumentDescriptorVersionEnum,
   FDXOrderPositionIntent,
   FDXOrderSide,
   FDXPositionSide,
   type AccountOrderCommandInput,
+  type AccountOrderSchemaResponse,
+  type EventContractCapabilityResponse,
+  type FinaticAPIErrorResponse,
   type FDXBrokerOrder,
   type FDXBrokerOrderEvent,
   type FDXBrokerOrderFill,
@@ -61,6 +65,30 @@ void numericProviderInstrumentOrder;
 void FDXInstrumentDescriptorVersionEnum._10;
 void FDXFutureInstrumentDetailsIdentityQualityEnum.Exact;
 void FDXFutureInstrumentDetailsIdentityQualityEnum.RootOnly;
+void FDXAssetType.EventContract;
+
+const eventContractCapability: EventContractCapabilityResponse = {
+  accountEntitled: null,
+  closingOnly: true,
+  implementationEvidenced: true,
+  implementationRef: 'core-sha',
+  observedAt: null,
+  providerOffered: true,
+  publicEnabled: false,
+};
+
+const eventContractSchema: AccountOrderSchemaResponse = {
+  action: 'PLACE' as AccountOrderSchemaResponse['action'],
+  brokerId: 'tastytrade',
+  brokerWireSchema: null,
+  eventContract: eventContractCapability,
+  orderSchema: {},
+  supportedOrderTypesByAssetClass: { EVENT_CONTRACT: ['LIMIT'] },
+};
+
+declare const eventContractError: FinaticAPIErrorResponse;
+void eventContractSchema;
+void eventContractError;
 
 const exactFutureOrderLeg: FDXOrderLeg = {
   assetType: 'FUTURE',

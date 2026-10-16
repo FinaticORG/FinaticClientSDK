@@ -20,9 +20,6 @@ import type { AccountOrderPayload } from './account-order-payload';
  * Account-scoped order command body for place and modify.
  */
 export interface AccountOrderCommandRequest {
-  /**
-   * Optional broker id hint for schema discrimination; must match the account grant when provided.
-   */
   broker?: string | null;
   /**
    * Broker-specific order payload. Provider-specific fields are accepted and preserved.

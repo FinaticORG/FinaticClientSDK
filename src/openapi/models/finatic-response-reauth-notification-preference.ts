@@ -17,11 +17,11 @@
 import type { SuccessPayloadReauthNotificationPreference } from './success-payload-reauth-notification-preference';
 
 export interface FinaticResponseReauthNotificationPreference {
+  error?: { [key: string]: any } | null;
+  success?: SuccessPayloadReauthNotificationPreference | null;
   /**
    * Request trace identifier for tracking and debugging. Auto-generated if not provided.
    */
   trace_id?: string;
-  success?: SuccessPayloadReauthNotificationPreference | null;
-  error?: { [key: string]: any } | null;
   warning?: Array<{ [key: string]: any }> | null;
 }

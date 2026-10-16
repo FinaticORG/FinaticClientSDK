@@ -18,12 +18,6 @@ import type { SuccessPayloadDictStrUnionStrNoneTypeDataValue } from './success-p
 
 export interface SuccessPayloadDictStrUnionStrNoneType {
   _id?: string;
-  /**
-   * The response data (None when error is present)
-   */
   data?: { [key: string]: SuccessPayloadDictStrUnionStrNoneTypeDataValue } | null;
-  /**
-   * Optional metadata (pagination, etc.)
-   */
   meta?: { [key: string]: any } | null;
 }
