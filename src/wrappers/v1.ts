@@ -86,6 +86,12 @@ export interface AccountOrderCommandParams extends AccountOrderParams {
   idempotencyKey: string;
 }
 
+export interface CancelAccountOrderParams extends AccountOrderParams {
+  idempotencyKey: string;
+  broker?: string;
+  paperTradeConfirmed?: boolean;
+}
+
 export interface AccountOrderSchemaParams {
   accountId: string;
   action: 'place' | 'modify' | 'cancel';
@@ -206,10 +212,10 @@ export class V1Wrapper {
   }
 
   private validateOrderAssetType(body: AccountOrderCommandInput | undefined): void {
-    const value = body?.order['assetType'];
-    if (value === undefined) {
+    if (!body || !Object.prototype.hasOwnProperty.call(body.order, 'assetType')) {
       return;
     }
+    const value = body.order['assetType'];
     if (typeof value !== 'string' || !Object.values(FDXAssetType).includes(value as FDXAssetType)) {
       throw new Error(
         `Invalid assetType: ${String(value)}. Allowed values: ${Object.values(FDXAssetType).join(', ')}`
@@ -628,7 +634,7 @@ export class V1Wrapper {
   }
 
   cancelAccountOrder<T = FDXBrokerOrderCommandResult>(
-    params: AccountOrderCommandParams,
+    params: CancelAccountOrderParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
     const { xFinaticEnvironment, axiosOptions } = this.requestOptions(options);
@@ -638,9 +644,9 @@ export class V1Wrapper {
           accountId: params.accountId,
           orderId: params.orderId,
           idempotencyKey: params.idempotencyKey,
-          ...(typeof params.body?.broker === 'string' ? { broker: params.body.broker } : {}),
-          ...(typeof params.body?.paperTradeConfirmed === 'boolean'
-            ? { paperTradeConfirmed: params.body.paperTradeConfirmed }
+          ...(params.broker !== undefined ? { broker: params.broker } : {}),
+          ...(params.paperTradeConfirmed !== undefined
+            ? { paperTradeConfirmed: params.paperTradeConfirmed }
             : {}),
           xFinaticEnvironment,
         },

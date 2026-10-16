@@ -123,6 +123,8 @@ describe('V1 account-first wrapper', () => {
       accountId: 'acct_123',
       orderId: 'order_123',
       idempotencyKey: 'idem_789',
+      broker: 'tastytrade',
+      paperTradeConfirmed: true,
     });
 
     expect(axios.request).toHaveBeenNthCalledWith(
@@ -145,7 +147,8 @@ describe('V1 account-first wrapper', () => {
       3,
       expect.objectContaining({
         method: 'DELETE',
-        url: 'https://api.test/api/v1/accounts/acct_123/orders/order_123',
+        url:
+          'https://api.test/api/v1/accounts/acct_123/orders/order_123?broker=tastytrade&paperTradeConfirmed=true',
         headers: expect.objectContaining({ 'Idempotency-Key': 'idem_789' }),
       })
     );
@@ -191,6 +194,33 @@ describe('V1 account-first wrapper', () => {
         body: { order: { assetType: 'UNKNOWN_ASSET' } },
       })
     ).toThrow('Invalid assetType');
+  });
+
+  it('allows an absent assetType but rejects explicitly malformed public values', async () => {
+    const axios = createAxiosLikeClient();
+    const wrapper = new V1Wrapper(
+      new Configuration({ basePath: 'https://api.test' }),
+      undefined,
+      axios
+    );
+
+    await wrapper.createAccountOrder({
+      accountId: 'acct_123',
+      idempotencyKey: 'idem_absent',
+      body: { order: { symbol: 'AAPL' } },
+    });
+
+    expect(axios.request).toHaveBeenCalledTimes(1);
+    for (const assetType of [undefined, null, 17, 'UNKNOWN_ASSET']) {
+      expect(() =>
+        wrapper.createAccountOrder({
+          accountId: 'acct_123',
+          idempotencyKey: 'idem_malformed',
+          body: { order: { assetType } } as any,
+        })
+      ).toThrow('Invalid assetType');
+    }
+    expect(axios.request).toHaveBeenCalledTimes(1);
   });
 
   it('offboards one account-selected broker connection without a connection ID', async () => {

@@ -6,6 +6,7 @@ import {
   FDXOrderSide,
   FDXPositionSide,
   type AccountOrderCommandInput,
+  type CancelAccountOrderParams,
   type AccountOrderSchemaResponse,
   type EventContractCapabilityResponse,
   type FinaticAPIErrorResponse,
@@ -62,6 +63,8 @@ const numericProviderInstrumentOrder: AccountOrderCommandInput = {
 void exactContractOrder;
 void rootOnlyOrder;
 void numericProviderInstrumentOrder;
+void FDXAssetType.Bond;
+void FDXAssetType.Cfd;
 void FDXInstrumentDescriptorVersionEnum._10;
 void FDXFutureInstrumentDetailsIdentityQualityEnum.Exact;
 void FDXFutureInstrumentDetailsIdentityQualityEnum.RootOnly;
@@ -89,6 +92,25 @@ const eventContractSchema: AccountOrderSchemaResponse = {
 declare const eventContractError: FinaticAPIErrorResponse;
 void eventContractSchema;
 void eventContractError;
+
+const cancelOrder: CancelAccountOrderParams = {
+  accountId: 'account-id',
+  orderId: 'order-id',
+  idempotencyKey: 'idempotency-key',
+  broker: 'tastytrade',
+  paperTradeConfirmed: true,
+};
+
+const cancelOrderWithBody: CancelAccountOrderParams = {
+  accountId: 'account-id',
+  orderId: 'order-id',
+  idempotencyKey: 'idempotency-key',
+  // @ts-expect-error cancel requests use query controls and never accept an order body
+  body: { order: { symbol: 'AAPL' } },
+};
+
+void cancelOrder;
+void cancelOrderWithBody;
 
 const exactFutureOrderLeg: FDXOrderLeg = {
   assetType: 'FUTURE',

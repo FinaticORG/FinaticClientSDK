@@ -23,5 +23,7 @@ export enum FDXAssetType {
   Forex = 'FOREX',
   Future = 'FUTURE',
   FutureOption = 'FUTURE_OPTION',
+  Bond = 'BOND',
+  Cfd = 'CFD',
   EventContract = 'EVENT_CONTRACT',
 }

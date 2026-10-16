@@ -97,6 +97,8 @@ describe('Generated API smoke coverage', () => {
     );
     const schema = readFileSync(join(modelsDirectory, 'account-order-schema-response.ts'), 'utf8');
 
+    expect(assetType).toContain("Bond = 'BOND'");
+    expect(assetType).toContain("Cfd = 'CFD'");
     expect(assetType).toContain("EventContract = 'EVENT_CONTRACT'");
     expect(capability).toContain('providerOffered: boolean');
     expect(capability).toContain('implementationEvidenced: boolean');

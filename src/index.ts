@@ -18,8 +18,8 @@ export type {
 } from './openapi/models';
 
 // Stable, browser-safe identity and account-resource contracts generated from
-// Finatic PR #112 at e894335bba3ce8bf59543457c25b373dee28a1cc
-// (artifact SHA-256 ffee54688da302eda523038e199aca4c5aa1bc2c3b9a88c17221364b2809f4fc).
+// Finatic PR #112 at 38ff4b30d70941340c1a304637002541ab2e669f
+// (artifact SHA-256 c788d74954e3914f5ba228a3e1bea439a9020bc7cff1a8be0b5eaee479833021).
 export type {
   AccountOrderCommandRequest,
   AccountOrderPayload,
