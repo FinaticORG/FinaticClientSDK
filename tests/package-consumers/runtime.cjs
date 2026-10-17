@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
-const { FDXOrderSide, FinaticConnect } = require('@finatic/client');
+const { FDXAssetType, FDXOrderSide, FinaticConnect } = require('@finatic/client');
 
 assert.equal(FDXOrderSide.Buy, 'BUY');
+assert.equal(FDXAssetType.EventContract, 'EVENT_CONTRACT');
 assert.equal(typeof FinaticConnect, 'function');

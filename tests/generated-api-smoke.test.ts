@@ -1,5 +1,5 @@
+import { AccountsApi } from '../src/openapi/api/accounts-api';
 import { SessionApi } from '../src/openapi/api/session-api';
-import { V1Api } from '../src/openapi/api/v1-api';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -90,34 +90,35 @@ async function invokeApiMethods(apiCtor: ApiCtor): Promise<number> {
 describe('Generated API smoke coverage', () => {
   it('keeps the generated resource-model dependency closure aligned to the pinned artifact', () => {
     const modelsDirectory = join(process.cwd(), 'src', 'openapi', 'models');
-    const quantity = readFileSync(join(modelsDirectory, 'quantity2.ts'), 'utf8');
-    const orderSide = readFileSync(join(modelsDirectory, 'side3.ts'), 'utf8');
-    const lotSide = readFileSync(join(modelsDirectory, 'side2.ts'), 'utf8');
-    const timeInForce = readFileSync(join(modelsDirectory, 'timeinforce1.ts'), 'utf8');
-    const positionIntent = readFileSync(join(modelsDirectory, 'positionintent.ts'), 'utf8');
-
-    expect(quantity).toContain('Requested quantity');
-    expect(orderSide).toContain("import type { FDXOrderSide } from './fdxorder-side'");
-    expect(orderSide).toContain('Order side (BUY, SELL)');
-    expect(lotSide).toContain("import type { FDXPositionSide } from './fdxposition-side'");
-    expect(lotSide).toContain('Lot side (LONG, SHORT)');
-    expect(timeInForce).toContain("import type { FDXTimeInForce } from './fdxtime-in-force'");
-    expect(positionIntent).toContain(
-      "import type { FDXOrderPositionIntent } from './fdxorder-position-intent'"
+    const assetType = readFileSync(join(modelsDirectory, 'fdxasset-type.ts'), 'utf8');
+    const capability = readFileSync(
+      join(modelsDirectory, 'event-contract-capability-response.ts'),
+      'utf8'
     );
+    const schema = readFileSync(join(modelsDirectory, 'account-order-schema-response.ts'), 'utf8');
+
+    expect(assetType).toContain("Bond = 'BOND'");
+    expect(assetType).toContain("Cfd = 'CFD'");
+    expect(assetType).toContain("EventContract = 'EVENT_CONTRACT'");
+    expect(capability).toContain('providerOffered: boolean');
+    expect(capability).toContain('implementationEvidenced: boolean');
+    expect(capability).toContain('publicEnabled: boolean');
+    expect(capability).toContain('accountEntitled: boolean | null');
+    expect(capability).toContain('closingOnly: boolean | null');
+    expect(schema).toContain('eventContract: EventContractCapabilityResponse');
   });
 
   it('invokes the generated v1/session api methods that ship in 1.0', async () => {
     const sessionInvoked = await invokeApiMethods(SessionApi);
-    const v1Invoked = await invokeApiMethods(V1Api);
+    const accountsInvoked = await invokeApiMethods(AccountsApi);
 
     expect(sessionInvoked).toBeGreaterThan(0);
-    expect(v1Invoked).toBeGreaterThan(10);
+    expect(accountsInvoked).toBeGreaterThan(10);
   });
 
   it('returns account resource descriptors without client-side remapping', async () => {
     const axios = createAxiosLikeClient();
-    const api = new V1Api(undefined, 'http://localhost', axios);
+    const api = new AccountsApi(undefined, 'http://localhost', axios);
     const descriptor = {
       version: '1.0',
       assetType: 'FUTURE',
@@ -129,7 +130,9 @@ describe('Generated API smoke coverage', () => {
       data: { success: { data: [{ instrument: descriptor }] } },
     });
 
-    const response = await api.listAccountPositions({ accountId: 'acct_123' });
+    const response = await api.finaticV1GetAccountsAccountIdPositions({
+      accountId: 'acct_123',
+    });
     const data = response.data as {
       success: { data: Array<{ instrument: unknown }> };
     };

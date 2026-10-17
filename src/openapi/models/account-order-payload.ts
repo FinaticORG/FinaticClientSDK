@@ -22,9 +22,6 @@ import type { Instrumentid } from './instrumentid';
 export interface AccountOrderPayload {
   [key: string]: any;
 
-  /**
-   * Canonical Finatic instrument id used for exact contract resolution. This is additive to provider-native identifiers.
-   */
   finaticInstrumentId?: string | null;
   instrumentId?: Instrumentid | null;
 }

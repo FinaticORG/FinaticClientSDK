@@ -18,12 +18,6 @@ import type { SessionSyncStatusResponse } from './session-sync-status-response';
 
 export interface SuccessPayloadSessionSyncStatusResponse {
   _id?: string;
-  /**
-   * The response data (None when error is present)
-   */
   data?: SessionSyncStatusResponse | null;
-  /**
-   * Optional metadata (pagination, etc.)
-   */
   meta?: { [key: string]: any } | null;
 }

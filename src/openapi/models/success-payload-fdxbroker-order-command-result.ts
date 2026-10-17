@@ -18,12 +18,6 @@ import type { FDXBrokerOrderCommandResult } from './fdxbroker-order-command-resu
 
 export interface SuccessPayloadFDXBrokerOrderCommandResult {
   _id?: string;
-  /**
-   * The response data (None when error is present)
-   */
   data?: FDXBrokerOrderCommandResult | null;
-  /**
-   * Optional metadata (pagination, etc.)
-   */
   meta?: { [key: string]: any } | null;
 }

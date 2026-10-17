@@ -8,6 +8,8 @@ module.exports = {
   testTimeout: process.env.FINATIC_INTEGRATION === '1' ? 120000 : 10000,
   collectCoverageFrom: [
     'src/**/*.ts',
+    // Generated transport is smoke/type-tested; coverage gates hand-maintained code.
+    '!src/openapi/**/*.ts',
     '!src/**/*.d.ts',
     '!src/**/*.test.ts',
     '!src/**/*.spec.ts',
@@ -47,4 +49,3 @@ module.exports = {
     },
   },
 };
-

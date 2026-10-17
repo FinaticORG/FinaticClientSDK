@@ -128,6 +128,44 @@ await finatic.v1.createAccountOrder({
 Legacy symbol-only order bodies and existing flat identity fields remain supported. When both
 identity fields are supplied, the API validates that they agree in the authorized account scope.
 
+### Event Contract capability and order types
+
+The package root exports `FDXAssetType.EventContract`, `EventContractCapabilityResponse`,
+`AccountOrderSchemaResponse`, and `FinaticAPIErrorResponse` from the approved public OpenAPI
+artifact. Capability axes are independent: provider offering and implementation evidence do not
+imply public write enablement or account entitlement. Treat `publicEnabled !== true`,
+`accountEntitled !== true`, or `closingOnly === true` as a reason not to submit an opening order.
+
+```ts
+import {
+  FDXAssetType,
+  type AccountOrderSchemaResponse,
+} from '@finatic/client';
+
+const response = await finatic.v1.getAccountOrderSchema<AccountOrderSchemaResponse>({
+  accountId: 'account-id',
+  action: 'place',
+});
+const capability = response.success?.data.eventContract;
+
+if (
+  capability?.publicEnabled === true &&
+  capability.accountEntitled === true &&
+  capability.closingOnly !== true
+) {
+  await finatic.v1.createAccountOrder({
+    accountId: 'account-id',
+    idempotencyKey: crypto.randomUUID(),
+    body: { order: { assetType: FDXAssetType.EventContract, symbol: 'EVENT-SYMBOL' } },
+  });
+}
+```
+
+`EVENT_CONTRACT` is the public asset enum value. Provider-native payload fields such as
+`asset_type: 'event_contract'` pass through unchanged. Unknown public `assetType` values fail
+locally instead of being omitted or mapped to equity. Authenticated Event Contract writes and
+public enablement still require provider/account evidence; this SDK release does not claim them.
+
 Call `FinaticConnect.reset()` before `init` when you need a new session boundary.
 
 ## Token handoff

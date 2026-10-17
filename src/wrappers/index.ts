@@ -10,6 +10,7 @@ export type {
   AccountOrderParams,
   AccountOrderSchemaParams,
   AccountScopedParams,
+  CancelAccountOrderParams,
   CreateAccountOrderCommandParams,
   FinaticV1CallOptions,
   FinaticV1Response,

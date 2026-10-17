@@ -17,11 +17,11 @@
 import type { SuccessPayloadPortalUrlResponse } from './success-payload-portal-url-response';
 
 export interface FinaticResponsePortalUrlResponse {
+  error?: { [key: string]: any } | null;
+  success?: SuccessPayloadPortalUrlResponse | null;
   /**
    * Request trace identifier for tracking and debugging. Auto-generated if not provided.
    */
   trace_id?: string;
-  success?: SuccessPayloadPortalUrlResponse | null;
-  error?: { [key: string]: any } | null;
   warning?: Array<{ [key: string]: any }> | null;
 }

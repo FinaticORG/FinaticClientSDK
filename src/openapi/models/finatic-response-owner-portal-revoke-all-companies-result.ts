@@ -17,11 +17,11 @@
 import type { SuccessPayloadOwnerPortalRevokeAllCompaniesResult } from './success-payload-owner-portal-revoke-all-companies-result';
 
 export interface FinaticResponseOwnerPortalRevokeAllCompaniesResult {
+  error?: { [key: string]: any } | null;
+  success?: SuccessPayloadOwnerPortalRevokeAllCompaniesResult | null;
   /**
    * Request trace identifier for tracking and debugging. Auto-generated if not provided.
    */
   trace_id?: string;
-  success?: SuccessPayloadOwnerPortalRevokeAllCompaniesResult | null;
-  error?: { [key: string]: any } | null;
   warning?: Array<{ [key: string]: any }> | null;
 }

@@ -5,7 +5,6 @@
  */
 
 import { Configuration } from './openapi';
-import { V1Api } from './openapi/api/v1-api';
 import { SdkConfig, SdkConfigOverrides, getConfig } from './config';
 import { EventEmitter } from './utils/events';
 import { PortalUI } from './portal/PortalUI';
@@ -37,7 +36,7 @@ export class FinaticConnect extends EventEmitter {
       baseOptions: { headers: this.sdkConfig.headers },
     });
     this.logger = console;
-    this.v1 = new V1Wrapper(new V1Api(this.config), this.config, this.sdkConfig);
+    this.v1 = new V1Wrapper(this.config, this.sdkConfig);
     this.rebuildClients();
   }
 
@@ -184,7 +183,7 @@ export class FinaticConnect extends EventEmitter {
     const previousCsrfToken = this.v1.getCsrfToken();
     const previousUserId = this.v1.getUserId();
 
-    this.v1 = new V1Wrapper(new V1Api(this.config), this.config, this.sdkConfig);
+    this.v1 = new V1Wrapper(this.config, this.sdkConfig);
 
     if (previousSessionId && previousCompanyId) {
       this.v1.setSessionContext(previousSessionId, previousCompanyId, previousCsrfToken || '');

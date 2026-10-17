@@ -30,21 +30,9 @@ import type { Previousstatus } from './previousstatus';
  */
 export interface FDXBrokerOrderEvent {
   _id?: string;
-  /**
-   * Ordered instrument identities aligned to affectedLegs
-   */
   affectedInstruments?: Array<FDXInstrumentDescriptor> | null;
-  /**
-   * Leg indices affected by this event
-   */
   affectedLegs?: Array<number> | null;
-  /**
-   * Confidence score (0-1) for inferred events
-   */
   confidence?: number | null;
-  /**
-   * Event category (status change, structural, etc.)
-   */
   eventCategory?: string | null;
   /**
    * Event identifier (for idempotency)
@@ -55,17 +43,8 @@ export interface FDXBrokerOrderEvent {
    */
   eventTime: string;
   eventType: Eventtype;
-  /**
-   * Whether relationship was inferred
-   */
   inferred?: boolean | null;
-  /**
-   * Extended broker-specific data (excluded when None for FDX compliance)
-   */
   metadata?: { [key: string]: any } | null;
-  /**
-   * Associated group (if applicable)
-   */
   orderGroupId?: string | null;
   /**
    * Associated order identifier
@@ -73,20 +52,8 @@ export interface FDXBrokerOrderEvent {
   orderId: string;
   orderStatus?: Orderstatus | null;
   previousStatus?: Previousstatus | null;
-  /**
-   * Reason for event or inference
-   */
   reasonCode?: string | null;
-  /**
-   * Server recording time (optional, falls back to eventTime if not available)
-   */
   recordedAt?: string | null;
-  /**
-   * Related event (for event chains)
-   */
   relatedEventId?: string | null;
-  /**
-   * Related order (for REPLACED_BY, OCO_LINK, etc.)
-   */
   relatedOrderId?: string | null;
 }

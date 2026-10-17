@@ -10,9 +10,16 @@
 export * from './wrappers';
 export * from './utils';
 export * from './config';
+export { AccountOrderSchemaResponseActionEnum, FDXAssetType } from './openapi/models';
+export type {
+  AccountOrderSchemaResponse,
+  EventContractCapabilityResponse,
+  FinaticAPIErrorResponse,
+} from './openapi/models';
 
 // Stable, browser-safe identity and account-resource contracts generated from
-// FinaticAPI PR #748 at 82fba8df3ee811771bca705542ef6e0ce92850ad.
+// Finatic production main at 9ebd10b3193fe4227110cec87ff96324332d3694
+// (artifact SHA-256 c788d74954e3914f5ba228a3e1bea439a9020bc7cff1a8be0b5eaee479833021).
 export type {
   AccountOrderCommandRequest,
   AccountOrderPayload,
