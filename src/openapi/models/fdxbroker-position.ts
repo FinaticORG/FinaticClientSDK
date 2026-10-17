@@ -38,7 +38,7 @@ import type { FDXInstrumentDescriptor } from './fdxinstrument-descriptor';
 import type { Marketvalue } from './marketvalue';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Quantity1 } from './quantity1';
+import type { Quantity2 } from './quantity2';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Realizedprofitloss } from './realizedprofitloss';
@@ -53,7 +53,7 @@ import type { Realizedprofitlosswithcommission } from './realizedprofitlosswithc
 import type { Securityidtype } from './securityidtype';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Side1 } from './side1';
+import type { Side2 } from './side2';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Status1 } from './status1';
@@ -89,40 +89,16 @@ export interface FDXBrokerPosition {
    * Position UUID in Finatic database
    */
   id?: string;
-  /**
-   * Versioned Finatic instrument identity
-   */
   instrument?: FDXInstrumentDescriptor | null;
-  /**
-   * Normalized instrument key
-   */
   instrumentKey?: string | null;
-  /**
-   * Internal account UUID (Finatic account id)
-   */
   internalAccountId?: string | null;
   marketValue?: Marketvalue | null;
-  /**
-   * Extended broker-specific data (excluded when None for FDX compliance)
-   */
   metadata?: { [key: string]: any } | null;
-  /**
-   * Position close time
-   */
   positionClosedAt?: string | null;
-  /**
-   * Position open time
-   */
   positionCreatedAt?: string | null;
-  /**
-   * Position group identifier
-   */
   positionGroupId?: string | null;
-  /**
-   * Last position update
-   */
   positionUpdatedAt?: string | null;
-  quantity: Quantity1;
+  quantity: Quantity2;
   realizedProfitLoss?: Realizedprofitloss | null;
   realizedProfitLossPercent?: Realizedprofitlosspercent | null;
   realizedProfitLossWithCommission?: Realizedprofitlosswithcommission | null;
@@ -131,10 +107,7 @@ export interface FDXBrokerPosition {
    */
   securityId: string;
   securityIdType: Securityidtype;
-  side?: Side1 | null;
-  /**
-   * Snapshot date
-   */
+  side?: Side2 | null;
   snapshotDate?: string | null;
   status?: Status1 | null;
   units?: Units | null;

@@ -23,7 +23,7 @@ import type { OwnerPortalKnownCompany } from './owner-portal-known-company';
  * Bootstrap payload after Supabase OTP in owner portal mode.
  */
 export interface OwnerPortalBootstrapResponse {
-  user_id: string;
-  known_companies?: Array<OwnerPortalKnownCompany>;
   connections?: Array<OwnerPortalConnection>;
+  known_companies?: Array<OwnerPortalKnownCompany>;
+  user_id: string;
 }

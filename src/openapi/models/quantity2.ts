@@ -13,6 +13,6 @@
  */
 
 /**
- * Requested quantity
+ * Current position quantity (can be negative for short)
  */
 export interface Quantity2 {}

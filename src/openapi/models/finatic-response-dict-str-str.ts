@@ -17,11 +17,11 @@
 import type { SuccessPayloadDictStrStr } from './success-payload-dict-str-str';
 
 export interface FinaticResponseDictStrStr {
+  error?: { [key: string]: any } | null;
+  success?: SuccessPayloadDictStrStr | null;
   /**
    * Request trace identifier for tracking and debugging. Auto-generated if not provided.
    */
   trace_id?: string;
-  success?: SuccessPayloadDictStrStr | null;
-  error?: { [key: string]: any } | null;
   warning?: Array<{ [key: string]: any }> | null;
 }

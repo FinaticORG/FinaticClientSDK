@@ -20,17 +20,17 @@ import type { OwnerPortalCompanyGrant } from './owner-portal-company-grant';
  * Broker connection with merged company grant rows for owner UI.
  */
 export interface OwnerPortalConnection {
-  id: string;
-  user_id: string;
   broker_id: string;
-  status?: string | null;
+  company_grants?: Array<OwnerPortalCompanyGrant>;
   connection_metadata?: { [key: string]: any } | null;
   created_at?: string | null;
-  updated_at?: string | null;
+  id: string;
   last_synced_at?: string | null;
   needs_reauth?: boolean;
-  requires_customer_agent?: boolean;
   push_agent_connector_state?: string | null;
   push_agent_last_heartbeat_at?: string | null;
-  company_grants?: Array<OwnerPortalCompanyGrant>;
+  requires_customer_agent?: boolean;
+  status?: string | null;
+  updated_at?: string | null;
+  user_id: string;
 }

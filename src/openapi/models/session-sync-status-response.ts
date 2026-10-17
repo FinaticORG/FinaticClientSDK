@@ -20,6 +20,8 @@ import type { SessionSyncAccountStatus } from './session-sync-account-status';
  * Pollable session sync status for the selected-account flow.
  */
 export interface SessionSyncStatusResponse {
+  [key: string]: any;
+
   accounts: Array<SessionSyncAccountStatus>;
   companyId: string;
   sessionId: string;

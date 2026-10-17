@@ -17,11 +17,11 @@
 import type { SuccessPayloadOwnerPortalBootstrapResponse } from './success-payload-owner-portal-bootstrap-response';
 
 export interface FinaticResponseOwnerPortalBootstrapResponse {
+  error?: { [key: string]: any } | null;
+  success?: SuccessPayloadOwnerPortalBootstrapResponse | null;
   /**
    * Request trace identifier for tracking and debugging. Auto-generated if not provided.
    */
   trace_id?: string;
-  success?: SuccessPayloadOwnerPortalBootstrapResponse | null;
-  error?: { [key: string]: any } | null;
   warning?: Array<{ [key: string]: any }> | null;
 }

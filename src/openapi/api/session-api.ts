@@ -41,6 +41,8 @@ import {
 // @ts-ignore
 import type { FinaticAPIErrorResponse } from '../models';
 // @ts-ignore
+import type { FinaticEnvironment } from '../models';
+// @ts-ignore
 import type { FinaticResponsePortalUrlResponse } from '../models';
 // @ts-ignore
 import type { FinaticResponseSessionResponseData } from '../models';
@@ -59,15 +61,17 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
      * Get a portal URL with token for a session.  The session must be in ACTIVE or AUTHENTICATING state and the request must come from the same device that initiated the session. Device info is automatically validated from the request.
      * @summary Get Portal Url
      * @param {string} sessionId Session ID
+     * @param {FinaticEnvironment} [xFinaticEnvironment] Select the Finatic environment for account-first v1 calls. Defaults to the API-key environment when omitted.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getPortalUrlApiV1SessionPortalGet: async (
+    finaticV1GetSessionPortal: async (
       sessionId: string,
+      xFinaticEnvironment?: FinaticEnvironment,
       options: RawAxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
       // verify required parameter 'sessionId' is not null or undefined
-      assertParamExists('getPortalUrlApiV1SessionPortalGet', 'sessionId', sessionId);
+      assertParamExists('finaticV1GetSessionPortal', 'sessionId', sessionId);
       const localVarPath = `/api/v1/session/portal`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -80,8 +84,17 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
 
+      // authentication FinaticSession required
+      await setApiKeyToObject(localVarHeaderParameter, 'x-session-id', configuration);
+
       if (sessionId != null) {
         localVarHeaderParameter['session-id'] = String(sessionId);
+      }
+      if (xFinaticEnvironment != null) {
+        localVarHeaderParameter['X-Finatic-Environment'] =
+          typeof xFinaticEnvironment === 'string'
+            ? xFinaticEnvironment
+            : JSON.stringify(xFinaticEnvironment);
       }
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -101,20 +114,22 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
      * @summary Get Session User
      * @param {string} sessionId Session ID
      * @param {string} xSessionId Session ID from header (must match path parameter)
+     * @param {FinaticEnvironment} [xFinaticEnvironment] Select the Finatic environment for account-first v1 calls. Defaults to the API-key environment when omitted.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getSessionUserApiV1SessionSessionIdUserGet: async (
+    finaticV1GetSessionSessionIdUser: async (
       sessionId: string,
       xSessionId: string,
+      xFinaticEnvironment?: FinaticEnvironment,
       options: RawAxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
       // verify required parameter 'sessionId' is not null or undefined
-      assertParamExists('getSessionUserApiV1SessionSessionIdUserGet', 'sessionId', sessionId);
+      assertParamExists('finaticV1GetSessionSessionIdUser', 'sessionId', sessionId);
       // verify required parameter 'xSessionId' is not null or undefined
-      assertParamExists('getSessionUserApiV1SessionSessionIdUserGet', 'xSessionId', xSessionId);
-      const localVarPath = `/api/v1/session/{session_id}/user`.replace(
-        `{${'session_id'}}`,
+      assertParamExists('finaticV1GetSessionSessionIdUser', 'xSessionId', xSessionId);
+      const localVarPath = `/api/v1/session/{sessionId}/user`.replace(
+        `{${'sessionId'}}`,
         encodeURIComponent(String(sessionId))
       );
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -128,8 +143,17 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
 
+      // authentication FinaticSession required
+      await setApiKeyToObject(localVarHeaderParameter, 'x-session-id', configuration);
+
       if (xSessionId != null) {
         localVarHeaderParameter['x-session-id'] = String(xSessionId);
+      }
+      if (xFinaticEnvironment != null) {
+        localVarHeaderParameter['X-Finatic-Environment'] =
+          typeof xFinaticEnvironment === 'string'
+            ? xFinaticEnvironment
+            : JSON.stringify(xFinaticEnvironment);
       }
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -148,15 +172,17 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
      * Initialize a new session with company API key.
      * @summary Init Session
      * @param {string} xApiKey Company API key
+     * @param {FinaticEnvironment} [xFinaticEnvironment] Select the Finatic environment for account-first v1 calls. Defaults to the API-key environment when omitted.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    initSessionApiV1SessionInitPost: async (
+    finaticV1PostSessionInit: async (
       xApiKey: string,
+      xFinaticEnvironment?: FinaticEnvironment,
       options: RawAxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
       // verify required parameter 'xApiKey' is not null or undefined
-      assertParamExists('initSessionApiV1SessionInitPost', 'xApiKey', xApiKey);
+      assertParamExists('finaticV1PostSessionInit', 'xApiKey', xApiKey);
       const localVarPath = `/api/v1/session/init`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -169,8 +195,17 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
       const localVarHeaderParameter = {} as any;
       const localVarQueryParameter = {} as any;
 
+      // authentication FinaticCompanyApiKey required
+      await setApiKeyToObject(localVarHeaderParameter, 'x-api-key', configuration);
+
       if (xApiKey != null) {
         localVarHeaderParameter['x-api-key'] = String(xApiKey);
+      }
+      if (xFinaticEnvironment != null) {
+        localVarHeaderParameter['X-Finatic-Environment'] =
+          typeof xFinaticEnvironment === 'string'
+            ? xFinaticEnvironment
+            : JSON.stringify(xFinaticEnvironment);
       }
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -189,17 +224,19 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
      * Start a session with a one-time token.
      * @summary Start Session
      * @param {string} oneTimeToken One-time use token obtained from init_session endpoint to authenticate and start the session
+     * @param {FinaticEnvironment} [xFinaticEnvironment] Select the Finatic environment for account-first v1 calls. Defaults to the API-key environment when omitted.
      * @param {SessionStartRequest} [sessionStartRequest] Session start request containing optional user ID to associate with the session
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    startSessionApiV1SessionStartPost: async (
+    finaticV1PostSessionStart: async (
       oneTimeToken: string,
+      xFinaticEnvironment?: FinaticEnvironment,
       sessionStartRequest?: SessionStartRequest,
       options: RawAxiosRequestConfig = {}
     ): Promise<RequestArgs> => {
       // verify required parameter 'oneTimeToken' is not null or undefined
-      assertParamExists('startSessionApiV1SessionStartPost', 'oneTimeToken', oneTimeToken);
+      assertParamExists('finaticV1PostSessionStart', 'oneTimeToken', oneTimeToken);
       const localVarPath = `/api/v1/session/start`;
       // use dummy base URL string because the URL constructor only accepts absolute URLs.
       const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -216,6 +253,12 @@ export const SessionApiAxiosParamCreator = function (configuration?: Configurati
 
       if (oneTimeToken != null) {
         localVarHeaderParameter['One-Time-Token'] = String(oneTimeToken);
+      }
+      if (xFinaticEnvironment != null) {
+        localVarHeaderParameter['X-Finatic-Environment'] =
+          typeof xFinaticEnvironment === 'string'
+            ? xFinaticEnvironment
+            : JSON.stringify(xFinaticEnvironment);
       }
       setSearchParams(localVarUrlObj, localVarQueryParameter);
       let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
@@ -248,24 +291,26 @@ export const SessionApiFp = function (configuration?: Configuration) {
      * Get a portal URL with token for a session.  The session must be in ACTIVE or AUTHENTICATING state and the request must come from the same device that initiated the session. Device info is automatically validated from the request.
      * @summary Get Portal Url
      * @param {string} sessionId Session ID
+     * @param {FinaticEnvironment} [xFinaticEnvironment] Select the Finatic environment for account-first v1 calls. Defaults to the API-key environment when omitted.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async getPortalUrlApiV1SessionPortalGet(
+    async finaticV1GetSessionPortal(
       sessionId: string,
+      xFinaticEnvironment?: FinaticEnvironment,
       options?: RawAxiosRequestConfig
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponsePortalUrlResponse>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.getPortalUrlApiV1SessionPortalGet(
+      const localVarAxiosArgs = await localVarAxiosParamCreator.finaticV1GetSessionPortal(
         sessionId,
+        xFinaticEnvironment,
         options
       );
       const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
       const localVarOperationServerBasePath =
-        operationServerMap['SessionApi.getPortalUrlApiV1SessionPortalGet']?.[
-          localVarOperationServerIndex
-        ]?.url;
+        operationServerMap['SessionApi.finaticV1GetSessionPortal']?.[localVarOperationServerIndex]
+          ?.url;
       return (axios, basePath) =>
         createRequestFunction(
           localVarAxiosArgs,
@@ -279,25 +324,27 @@ export const SessionApiFp = function (configuration?: Configuration) {
      * @summary Get Session User
      * @param {string} sessionId Session ID
      * @param {string} xSessionId Session ID from header (must match path parameter)
+     * @param {FinaticEnvironment} [xFinaticEnvironment] Select the Finatic environment for account-first v1 calls. Defaults to the API-key environment when omitted.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async getSessionUserApiV1SessionSessionIdUserGet(
+    async finaticV1GetSessionSessionIdUser(
       sessionId: string,
       xSessionId: string,
+      xFinaticEnvironment?: FinaticEnvironment,
       options?: RawAxiosRequestConfig
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseSessionUserResponse>
     > {
-      const localVarAxiosArgs =
-        await localVarAxiosParamCreator.getSessionUserApiV1SessionSessionIdUserGet(
-          sessionId,
-          xSessionId,
-          options
-        );
+      const localVarAxiosArgs = await localVarAxiosParamCreator.finaticV1GetSessionSessionIdUser(
+        sessionId,
+        xSessionId,
+        xFinaticEnvironment,
+        options
+      );
       const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
       const localVarOperationServerBasePath =
-        operationServerMap['SessionApi.getSessionUserApiV1SessionSessionIdUserGet']?.[
+        operationServerMap['SessionApi.finaticV1GetSessionSessionIdUser']?.[
           localVarOperationServerIndex
         ]?.url;
       return (axios, basePath) =>
@@ -312,24 +359,26 @@ export const SessionApiFp = function (configuration?: Configuration) {
      * Initialize a new session with company API key.
      * @summary Init Session
      * @param {string} xApiKey Company API key
+     * @param {FinaticEnvironment} [xFinaticEnvironment] Select the Finatic environment for account-first v1 calls. Defaults to the API-key environment when omitted.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async initSessionApiV1SessionInitPost(
+    async finaticV1PostSessionInit(
       xApiKey: string,
+      xFinaticEnvironment?: FinaticEnvironment,
       options?: RawAxiosRequestConfig
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseTokenResponseData>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.initSessionApiV1SessionInitPost(
+      const localVarAxiosArgs = await localVarAxiosParamCreator.finaticV1PostSessionInit(
         xApiKey,
+        xFinaticEnvironment,
         options
       );
       const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
       const localVarOperationServerBasePath =
-        operationServerMap['SessionApi.initSessionApiV1SessionInitPost']?.[
-          localVarOperationServerIndex
-        ]?.url;
+        operationServerMap['SessionApi.finaticV1PostSessionInit']?.[localVarOperationServerIndex]
+          ?.url;
       return (axios, basePath) =>
         createRequestFunction(
           localVarAxiosArgs,
@@ -342,27 +391,29 @@ export const SessionApiFp = function (configuration?: Configuration) {
      * Start a session with a one-time token.
      * @summary Start Session
      * @param {string} oneTimeToken One-time use token obtained from init_session endpoint to authenticate and start the session
+     * @param {FinaticEnvironment} [xFinaticEnvironment] Select the Finatic environment for account-first v1 calls. Defaults to the API-key environment when omitted.
      * @param {SessionStartRequest} [sessionStartRequest] Session start request containing optional user ID to associate with the session
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    async startSessionApiV1SessionStartPost(
+    async finaticV1PostSessionStart(
       oneTimeToken: string,
+      xFinaticEnvironment?: FinaticEnvironment,
       sessionStartRequest?: SessionStartRequest,
       options?: RawAxiosRequestConfig
     ): Promise<
       (axios?: AxiosInstance, basePath?: string) => AxiosPromise<FinaticResponseSessionResponseData>
     > {
-      const localVarAxiosArgs = await localVarAxiosParamCreator.startSessionApiV1SessionStartPost(
+      const localVarAxiosArgs = await localVarAxiosParamCreator.finaticV1PostSessionStart(
         oneTimeToken,
+        xFinaticEnvironment,
         sessionStartRequest,
         options
       );
       const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
       const localVarOperationServerBasePath =
-        operationServerMap['SessionApi.startSessionApiV1SessionStartPost']?.[
-          localVarOperationServerIndex
-        ]?.url;
+        operationServerMap['SessionApi.finaticV1PostSessionStart']?.[localVarOperationServerIndex]
+          ?.url;
       return (axios, basePath) =>
         createRequestFunction(
           localVarAxiosArgs,
@@ -387,33 +438,38 @@ export const SessionApiFactory = function (
     /**
      * Get a portal URL with token for a session.  The session must be in ACTIVE or AUTHENTICATING state and the request must come from the same device that initiated the session. Device info is automatically validated from the request.
      * @summary Get Portal Url
-     * @param {SessionApiGetPortalUrlApiV1SessionPortalGetRequest} requestParameters Request parameters.
+     * @param {SessionApiFinaticV1GetSessionPortalRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getPortalUrlApiV1SessionPortalGet(
-      requestParameters: SessionApiGetPortalUrlApiV1SessionPortalGetRequest,
+    finaticV1GetSessionPortal(
+      requestParameters: SessionApiFinaticV1GetSessionPortalRequest,
       options?: RawAxiosRequestConfig
     ): AxiosPromise<FinaticResponsePortalUrlResponse> {
       return localVarFp
-        .getPortalUrlApiV1SessionPortalGet(requestParameters.sessionId, options)
+        .finaticV1GetSessionPortal(
+          requestParameters.sessionId,
+          requestParameters.xFinaticEnvironment,
+          options
+        )
         .then((request) => request(axios, basePath));
     },
     /**
      * Get user information for a completed session.  This endpoint is designed for server SDKs to retrieve user information after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
      * @summary Get Session User
-     * @param {SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest} requestParameters Request parameters.
+     * @param {SessionApiFinaticV1GetSessionSessionIdUserRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    getSessionUserApiV1SessionSessionIdUserGet(
-      requestParameters: SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest,
+    finaticV1GetSessionSessionIdUser(
+      requestParameters: SessionApiFinaticV1GetSessionSessionIdUserRequest,
       options?: RawAxiosRequestConfig
     ): AxiosPromise<FinaticResponseSessionUserResponse> {
       return localVarFp
-        .getSessionUserApiV1SessionSessionIdUserGet(
+        .finaticV1GetSessionSessionIdUser(
           requestParameters.sessionId,
           requestParameters.xSessionId,
+          requestParameters.xFinaticEnvironment,
           options
         )
         .then((request) => request(axios, basePath));
@@ -421,32 +477,37 @@ export const SessionApiFactory = function (
     /**
      * Initialize a new session with company API key.
      * @summary Init Session
-     * @param {SessionApiInitSessionApiV1SessionInitPostRequest} requestParameters Request parameters.
+     * @param {SessionApiFinaticV1PostSessionInitRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    initSessionApiV1SessionInitPost(
-      requestParameters: SessionApiInitSessionApiV1SessionInitPostRequest,
+    finaticV1PostSessionInit(
+      requestParameters: SessionApiFinaticV1PostSessionInitRequest,
       options?: RawAxiosRequestConfig
     ): AxiosPromise<FinaticResponseTokenResponseData> {
       return localVarFp
-        .initSessionApiV1SessionInitPost(requestParameters.xApiKey, options)
+        .finaticV1PostSessionInit(
+          requestParameters.xApiKey,
+          requestParameters.xFinaticEnvironment,
+          options
+        )
         .then((request) => request(axios, basePath));
     },
     /**
      * Start a session with a one-time token.
      * @summary Start Session
-     * @param {SessionApiStartSessionApiV1SessionStartPostRequest} requestParameters Request parameters.
+     * @param {SessionApiFinaticV1PostSessionStartRequest} requestParameters Request parameters.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    startSessionApiV1SessionStartPost(
-      requestParameters: SessionApiStartSessionApiV1SessionStartPostRequest,
+    finaticV1PostSessionStart(
+      requestParameters: SessionApiFinaticV1PostSessionStartRequest,
       options?: RawAxiosRequestConfig
     ): AxiosPromise<FinaticResponseSessionResponseData> {
       return localVarFp
-        .startSessionApiV1SessionStartPost(
+        .finaticV1PostSessionStart(
           requestParameters.oneTimeToken,
+          requestParameters.xFinaticEnvironment,
           requestParameters.sessionStartRequest,
           options
         )
@@ -462,66 +523,71 @@ export interface SessionApiInterface {
   /**
    * Get a portal URL with token for a session.  The session must be in ACTIVE or AUTHENTICATING state and the request must come from the same device that initiated the session. Device info is automatically validated from the request.
    * @summary Get Portal Url
-   * @param {SessionApiGetPortalUrlApiV1SessionPortalGetRequest} requestParameters Request parameters.
+   * @param {SessionApiFinaticV1GetSessionPortalRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    */
-  getPortalUrlApiV1SessionPortalGet(
-    requestParameters: SessionApiGetPortalUrlApiV1SessionPortalGetRequest,
+  finaticV1GetSessionPortal(
+    requestParameters: SessionApiFinaticV1GetSessionPortalRequest,
     options?: RawAxiosRequestConfig
   ): AxiosPromise<FinaticResponsePortalUrlResponse>;
 
   /**
    * Get user information for a completed session.  This endpoint is designed for server SDKs to retrieve user information after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
    * @summary Get Session User
-   * @param {SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest} requestParameters Request parameters.
+   * @param {SessionApiFinaticV1GetSessionSessionIdUserRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    */
-  getSessionUserApiV1SessionSessionIdUserGet(
-    requestParameters: SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest,
+  finaticV1GetSessionSessionIdUser(
+    requestParameters: SessionApiFinaticV1GetSessionSessionIdUserRequest,
     options?: RawAxiosRequestConfig
   ): AxiosPromise<FinaticResponseSessionUserResponse>;
 
   /**
    * Initialize a new session with company API key.
    * @summary Init Session
-   * @param {SessionApiInitSessionApiV1SessionInitPostRequest} requestParameters Request parameters.
+   * @param {SessionApiFinaticV1PostSessionInitRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    */
-  initSessionApiV1SessionInitPost(
-    requestParameters: SessionApiInitSessionApiV1SessionInitPostRequest,
+  finaticV1PostSessionInit(
+    requestParameters: SessionApiFinaticV1PostSessionInitRequest,
     options?: RawAxiosRequestConfig
   ): AxiosPromise<FinaticResponseTokenResponseData>;
 
   /**
    * Start a session with a one-time token.
    * @summary Start Session
-   * @param {SessionApiStartSessionApiV1SessionStartPostRequest} requestParameters Request parameters.
+   * @param {SessionApiFinaticV1PostSessionStartRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    */
-  startSessionApiV1SessionStartPost(
-    requestParameters: SessionApiStartSessionApiV1SessionStartPostRequest,
+  finaticV1PostSessionStart(
+    requestParameters: SessionApiFinaticV1PostSessionStartRequest,
     options?: RawAxiosRequestConfig
   ): AxiosPromise<FinaticResponseSessionResponseData>;
 }
 
 /**
- * Request parameters for getPortalUrlApiV1SessionPortalGet operation in SessionApi.
+ * Request parameters for finaticV1GetSessionPortal operation in SessionApi.
  */
-export interface SessionApiGetPortalUrlApiV1SessionPortalGetRequest {
+export interface SessionApiFinaticV1GetSessionPortalRequest {
   /**
    * Session ID
    */
   readonly sessionId: string;
+
+  /**
+   * Select the Finatic environment for account-first v1 calls. Defaults to the API-key environment when omitted.
+   */
+  readonly xFinaticEnvironment?: FinaticEnvironment;
 }
 
 /**
- * Request parameters for getSessionUserApiV1SessionSessionIdUserGet operation in SessionApi.
+ * Request parameters for finaticV1GetSessionSessionIdUser operation in SessionApi.
  */
-export interface SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest {
+export interface SessionApiFinaticV1GetSessionSessionIdUserRequest {
   /**
    * Session ID
    */
@@ -531,26 +597,41 @@ export interface SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest {
    * Session ID from header (must match path parameter)
    */
   readonly xSessionId: string;
+
+  /**
+   * Select the Finatic environment for account-first v1 calls. Defaults to the API-key environment when omitted.
+   */
+  readonly xFinaticEnvironment?: FinaticEnvironment;
 }
 
 /**
- * Request parameters for initSessionApiV1SessionInitPost operation in SessionApi.
+ * Request parameters for finaticV1PostSessionInit operation in SessionApi.
  */
-export interface SessionApiInitSessionApiV1SessionInitPostRequest {
+export interface SessionApiFinaticV1PostSessionInitRequest {
   /**
    * Company API key
    */
   readonly xApiKey: string;
+
+  /**
+   * Select the Finatic environment for account-first v1 calls. Defaults to the API-key environment when omitted.
+   */
+  readonly xFinaticEnvironment?: FinaticEnvironment;
 }
 
 /**
- * Request parameters for startSessionApiV1SessionStartPost operation in SessionApi.
+ * Request parameters for finaticV1PostSessionStart operation in SessionApi.
  */
-export interface SessionApiStartSessionApiV1SessionStartPostRequest {
+export interface SessionApiFinaticV1PostSessionStartRequest {
   /**
    * One-time use token obtained from init_session endpoint to authenticate and start the session
    */
   readonly oneTimeToken: string;
+
+  /**
+   * Select the Finatic environment for account-first v1 calls. Defaults to the API-key environment when omitted.
+   */
+  readonly xFinaticEnvironment?: FinaticEnvironment;
 
   /**
    * Session start request containing optional user ID to associate with the session
@@ -565,34 +646,39 @@ export class SessionApi extends BaseAPI implements SessionApiInterface {
   /**
    * Get a portal URL with token for a session.  The session must be in ACTIVE or AUTHENTICATING state and the request must come from the same device that initiated the session. Device info is automatically validated from the request.
    * @summary Get Portal Url
-   * @param {SessionApiGetPortalUrlApiV1SessionPortalGetRequest} requestParameters Request parameters.
+   * @param {SessionApiFinaticV1GetSessionPortalRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    */
-  public getPortalUrlApiV1SessionPortalGet(
-    requestParameters: SessionApiGetPortalUrlApiV1SessionPortalGetRequest,
+  public finaticV1GetSessionPortal(
+    requestParameters: SessionApiFinaticV1GetSessionPortalRequest,
     options?: RawAxiosRequestConfig
   ) {
     return SessionApiFp(this.configuration)
-      .getPortalUrlApiV1SessionPortalGet(requestParameters.sessionId, options)
+      .finaticV1GetSessionPortal(
+        requestParameters.sessionId,
+        requestParameters.xFinaticEnvironment,
+        options
+      )
       .then((request) => request(this.axios, this.basePath));
   }
 
   /**
    * Get user information for a completed session.  This endpoint is designed for server SDKs to retrieve user information after successful OTP verification.   Security: - Requires valid session in ACTIVE state - Validates device fingerprint binding - Only accessible to authenticated sessions with user_id - Validates that header session_id matches path session_id
    * @summary Get Session User
-   * @param {SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest} requestParameters Request parameters.
+   * @param {SessionApiFinaticV1GetSessionSessionIdUserRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    */
-  public getSessionUserApiV1SessionSessionIdUserGet(
-    requestParameters: SessionApiGetSessionUserApiV1SessionSessionIdUserGetRequest,
+  public finaticV1GetSessionSessionIdUser(
+    requestParameters: SessionApiFinaticV1GetSessionSessionIdUserRequest,
     options?: RawAxiosRequestConfig
   ) {
     return SessionApiFp(this.configuration)
-      .getSessionUserApiV1SessionSessionIdUserGet(
+      .finaticV1GetSessionSessionIdUser(
         requestParameters.sessionId,
         requestParameters.xSessionId,
+        requestParameters.xFinaticEnvironment,
         options
       )
       .then((request) => request(this.axios, this.basePath));
@@ -601,33 +687,38 @@ export class SessionApi extends BaseAPI implements SessionApiInterface {
   /**
    * Initialize a new session with company API key.
    * @summary Init Session
-   * @param {SessionApiInitSessionApiV1SessionInitPostRequest} requestParameters Request parameters.
+   * @param {SessionApiFinaticV1PostSessionInitRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    */
-  public initSessionApiV1SessionInitPost(
-    requestParameters: SessionApiInitSessionApiV1SessionInitPostRequest,
+  public finaticV1PostSessionInit(
+    requestParameters: SessionApiFinaticV1PostSessionInitRequest,
     options?: RawAxiosRequestConfig
   ) {
     return SessionApiFp(this.configuration)
-      .initSessionApiV1SessionInitPost(requestParameters.xApiKey, options)
+      .finaticV1PostSessionInit(
+        requestParameters.xApiKey,
+        requestParameters.xFinaticEnvironment,
+        options
+      )
       .then((request) => request(this.axios, this.basePath));
   }
 
   /**
    * Start a session with a one-time token.
    * @summary Start Session
-   * @param {SessionApiStartSessionApiV1SessionStartPostRequest} requestParameters Request parameters.
+   * @param {SessionApiFinaticV1PostSessionStartRequest} requestParameters Request parameters.
    * @param {*} [options] Override http request option.
    * @throws {RequiredError}
    */
-  public startSessionApiV1SessionStartPost(
-    requestParameters: SessionApiStartSessionApiV1SessionStartPostRequest,
+  public finaticV1PostSessionStart(
+    requestParameters: SessionApiFinaticV1PostSessionStartRequest,
     options?: RawAxiosRequestConfig
   ) {
     return SessionApiFp(this.configuration)
-      .startSessionApiV1SessionStartPost(
+      .finaticV1PostSessionStart(
         requestParameters.oneTimeToken,
+        requestParameters.xFinaticEnvironment,
         requestParameters.sessionStartRequest,
         options
       )

@@ -18,12 +18,6 @@ import type { FDXWebhookEventDefinition } from './fdxwebhook-event-definition';
 
 export interface SuccessPayloadListFDXWebhookEventDefinition {
   _id?: string;
-  /**
-   * The response data (None when error is present)
-   */
   data?: Array<FDXWebhookEventDefinition> | null;
-  /**
-   * Optional metadata (pagination, etc.)
-   */
   meta?: { [key: string]: any } | null;
 }
