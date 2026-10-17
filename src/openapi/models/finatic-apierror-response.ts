@@ -17,15 +17,15 @@
  */
 export interface FinaticAPIErrorResponse {
   /**
-   * Request trace identifier for tracking and debugging
+   * Error details with type (FinaticErrorType), code (domain-specific), message (human-readable), status (HTTP status code), and optional details. Error codes are mapped via ERROR_CODE_REGISTRY - see registry for available codes.
    */
-  trace_id: string;
+  error: { [key: string]: any };
   /**
    * Success payload with data=None for errors
    */
   success: { [key: string]: any };
   /**
-   * Error details with type (FinaticErrorType), code (domain-specific), message (human-readable), status (HTTP status code), and optional details. Error codes are mapped via ERROR_CODE_REGISTRY - see registry for available codes.
+   * Request trace identifier for tracking and debugging
    */
-  error: { [key: string]: any };
+  trace_id: string;
 }

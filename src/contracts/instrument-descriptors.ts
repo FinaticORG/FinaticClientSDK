@@ -6,8 +6,6 @@ import type {
   FDXBrokerOrderEvent as GeneratedFDXBrokerOrderEvent,
   FDXBrokerOrderFill as GeneratedFDXBrokerOrderFill,
   FDXBrokerPosition as GeneratedFDXBrokerPosition,
-  FDXBrokerPositionLot as GeneratedFDXBrokerPositionLot,
-  FDXBrokerPositionLotFill as GeneratedFDXBrokerPositionLotFill,
   FDXFutureInstrumentDetails,
   FDXInstrumentDescriptor,
   FDXOrderLeg as GeneratedFDXOrderLeg,
@@ -98,32 +96,35 @@ export type FDXBrokerPosition = Override<
   }
 >;
 
-export type FDXBrokerPositionLotFill = Override<
-  GeneratedFDXBrokerPositionLotFill,
-  {
-    commissionShare?: FDXDecimal | null;
-    fillPrice: FDXDecimal;
-    fillQuantity: FDXDecimal;
-  }
->;
+/**
+ * Compatibility types retained for existing consumers. The current public
+ * OpenAPI artifact no longer emits position-lot schemas, so these are not
+ * exported as generated transport models.
+ */
+export interface FDXBrokerPositionLotFill {
+  commissionShare?: FDXDecimal | null;
+  fillPrice: FDXDecimal;
+  fillQuantity: FDXDecimal;
+  instrument?: FDXInstrumentDescriptor;
+  [key: string]: unknown;
+}
 
-export type FDXBrokerPositionLot = Override<
-  GeneratedFDXBrokerPositionLot,
-  {
-    assetType: string;
-    closePriceAvg?: FDXDecimal | null;
-    closedQuantity: FDXDecimal;
-    costBasis: FDXDecimal;
-    costBasisWithCommission: FDXDecimal;
-    openPrice: FDXDecimal;
-    openQuantity: FDXDecimal;
-    positionLotFills?: FDXBrokerPositionLotFill[];
-    realizedProfitLoss: FDXDecimal;
-    realizedProfitLossWithCommission: FDXDecimal;
-    remainingQuantity: FDXDecimal;
-    side?: string | null;
-  }
->;
+export interface FDXBrokerPositionLot {
+  assetType: string;
+  closePriceAvg?: FDXDecimal | null;
+  closedQuantity: FDXDecimal;
+  costBasis: FDXDecimal;
+  costBasisWithCommission: FDXDecimal;
+  instrument?: FDXInstrumentDescriptor;
+  openPrice: FDXDecimal;
+  openQuantity: FDXDecimal;
+  positionLotFills?: FDXBrokerPositionLotFill[];
+  realizedProfitLoss: FDXDecimal;
+  realizedProfitLossWithCommission: FDXDecimal;
+  remainingQuantity: FDXDecimal;
+  side?: string | null;
+  [key: string]: unknown;
+}
 
 export type AccountOrderPayload = Override<
   GeneratedAccountOrderPayload,

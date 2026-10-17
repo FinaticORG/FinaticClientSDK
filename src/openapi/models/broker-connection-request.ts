@@ -21,8 +21,8 @@ import type { BrokerPermissions } from './broker-permissions';
  */
 export interface BrokerConnectionRequest {
   broker_id: string;
-  credentials: { [key: string]: any };
-  permissions?: BrokerPermissions | null;
   connection_id?: string | null;
   create_new_connection?: boolean;
+  credentials: { [key: string]: any };
+  permissions?: BrokerPermissions | null;
 }

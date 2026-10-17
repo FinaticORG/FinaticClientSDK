@@ -1,4 +1,9 @@
-import { FDXOrderSide, type FDXOrderLeg } from '@finatic/client';
+import {
+  FDXAssetType,
+  FDXOrderSide,
+  type EventContractCapabilityResponse,
+  type FDXOrderLeg,
+} from '@finatic/client';
 
 const commonJsOrderLeg: FDXOrderLeg = {
   assetType: 'FUTURE',
@@ -10,3 +15,6 @@ const commonJsOrderLeg: FDXOrderLeg = {
 };
 
 void commonJsOrderLeg;
+declare const eventContractCapability: EventContractCapabilityResponse;
+void eventContractCapability;
+void FDXAssetType.EventContract;

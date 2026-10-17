@@ -17,11 +17,11 @@
 import type { SuccessPayloadSessionResponseData } from './success-payload-session-response-data';
 
 export interface FinaticResponseSessionResponseData {
+  error?: { [key: string]: any } | null;
+  success?: SuccessPayloadSessionResponseData | null;
   /**
    * Request trace identifier for tracking and debugging. Auto-generated if not provided.
    */
   trace_id?: string;
-  success?: SuccessPayloadSessionResponseData | null;
-  error?: { [key: string]: any } | null;
   warning?: Array<{ [key: string]: any }> | null;
 }

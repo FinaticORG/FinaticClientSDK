@@ -1,4 +1,5 @@
-import { V1Api } from '../../src/openapi/api/v1-api';
+import { SessionsApi } from '../../src/openapi/api/sessions-api';
+import { FDXAssetType } from '../../src/openapi/models';
 import { V1Wrapper } from '../../src/wrappers/v1';
 import { Configuration } from '../../src/openapi/configuration';
 
@@ -24,10 +25,10 @@ function createAxiosLikeClient(): any {
 describe('V1 account-first wrapper', () => {
   it('sends X-Finatic-Environment and account-first paths', async () => {
     const axios = createAxiosLikeClient();
-    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
-    const wrapper = new V1Wrapper(api, undefined, {
+    const config = new Configuration({ basePath: 'https://api.test' });
+    const wrapper = new V1Wrapper(config, {
       apiEnvironment: 'sandbox',
-    } as any);
+    } as any, axios);
     wrapper.setSessionContext('session_123', 'company_123', 'csrf_123');
 
     const result = await wrapper.listPositions({ accountId: 'acct_123', limit: 25 });
@@ -36,8 +37,7 @@ describe('V1 account-first wrapper', () => {
     expect(axios.request).toHaveBeenCalledWith(
       expect.objectContaining({
         method: 'GET',
-        url: 'https://api.test/api/v1/accounts/acct_123/positions',
-        params: { limit: 25 },
+        url: 'https://api.test/api/v1/accounts/acct_123/positions?limit=25',
         headers: expect.objectContaining({
           'X-Finatic-Environment': 'sandbox',
           'x-session-id': 'session_123',
@@ -50,8 +50,11 @@ describe('V1 account-first wrapper', () => {
 
   it('keeps API-key-owned session routes out of the browser-safe wrapper', async () => {
     const axios = createAxiosLikeClient();
-    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
-    const wrapper = new V1Wrapper(api);
+    const wrapper = new V1Wrapper(
+      new Configuration({ basePath: 'https://api.test' }),
+      undefined,
+      axios
+    );
 
     expect(() => wrapper.createSession({})).toThrow('server-only');
     expect(() => wrapper.getSession('session_123')).toThrow('server-only');
@@ -77,26 +80,33 @@ describe('V1 account-first wrapper', () => {
 
   it('keeps generated-equivalent session routes available for server-bound callers', async () => {
     const axios = createAxiosLikeClient();
-    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
-
-    await api.createPortalLink(
-      { sessionId: 'session_123' },
-      { headers: { 'X-API-Key': 'server_key' } }
+    const api = new SessionsApi(
+      new Configuration({ basePath: 'https://api.test' }),
+      undefined,
+      axios
     );
+
+    await api.finaticV1PostSessionsSessionIdPortalLinks({
+      sessionId: 'session_123',
+      xApiKey: 'server_key',
+    });
 
     expect(axios.request).toHaveBeenCalledWith(
       expect.objectContaining({
         method: 'POST',
         url: 'https://api.test/api/v1/sessions/session_123/portal-links',
-        headers: expect.objectContaining({ 'X-API-Key': 'server_key' }),
+        headers: expect.objectContaining({ 'x-api-key': 'server_key' }),
       })
     );
   });
 
   it('covers account trading commands from the API contract', async () => {
     const axios = createAxiosLikeClient();
-    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
-    const wrapper = new V1Wrapper(api);
+    const wrapper = new V1Wrapper(
+      new Configuration({ basePath: 'https://api.test' }),
+      undefined,
+      axios
+    );
 
     await wrapper.createAccountOrder({
       accountId: 'acct_123',
@@ -113,6 +123,8 @@ describe('V1 account-first wrapper', () => {
       accountId: 'acct_123',
       orderId: 'order_123',
       idempotencyKey: 'idem_789',
+      broker: 'tastytrade',
+      paperTradeConfirmed: true,
     });
 
     expect(axios.request).toHaveBeenNthCalledWith(
@@ -135,16 +147,89 @@ describe('V1 account-first wrapper', () => {
       3,
       expect.objectContaining({
         method: 'DELETE',
-        url: 'https://api.test/api/v1/accounts/acct_123/orders/order_123',
+        url:
+          'https://api.test/api/v1/accounts/acct_123/orders/order_123?broker=tastytrade&paperTradeConfirmed=true',
         headers: expect.objectContaining({ 'Idempotency-Key': 'idem_789' }),
       })
     );
   });
 
+  it('passes Event Contract identity unchanged and rejects unknown public asset types', async () => {
+    const axios = createAxiosLikeClient();
+    const wrapper = new V1Wrapper(
+      new Configuration({ basePath: 'https://api.test' }),
+      undefined,
+      axios
+    );
+    const publicBody = {
+      order: { assetType: FDXAssetType.EventContract, symbol: 'EVT-2026' },
+    };
+    const providerBody = {
+      order: { asset_type: 'event_contract', symbol: 'EVT-2026' },
+    };
+
+    await wrapper.createAccountOrder({
+      accountId: 'acct_123',
+      idempotencyKey: 'idem_event_public',
+      body: publicBody,
+    });
+    await wrapper.createAccountOrder({
+      accountId: 'acct_123',
+      idempotencyKey: 'idem_event_provider',
+      body: providerBody,
+    });
+
+    expect(axios.request).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ data: JSON.stringify(publicBody) })
+    );
+    expect(axios.request).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ data: JSON.stringify(providerBody) })
+    );
+    expect(() =>
+      wrapper.createAccountOrder({
+        accountId: 'acct_123',
+        idempotencyKey: 'idem_unknown',
+        body: { order: { assetType: 'UNKNOWN_ASSET' } },
+      })
+    ).toThrow('Invalid assetType');
+  });
+
+  it('allows an absent assetType but rejects explicitly malformed public values', async () => {
+    const axios = createAxiosLikeClient();
+    const wrapper = new V1Wrapper(
+      new Configuration({ basePath: 'https://api.test' }),
+      undefined,
+      axios
+    );
+
+    await wrapper.createAccountOrder({
+      accountId: 'acct_123',
+      idempotencyKey: 'idem_absent',
+      body: { order: { symbol: 'AAPL' } },
+    });
+
+    expect(axios.request).toHaveBeenCalledTimes(1);
+    for (const assetType of [undefined, null, 17, 'UNKNOWN_ASSET']) {
+      expect(() =>
+        wrapper.createAccountOrder({
+          accountId: 'acct_123',
+          idempotencyKey: 'idem_malformed',
+          body: { order: { assetType } } as any,
+        })
+      ).toThrow('Invalid assetType');
+    }
+    expect(axios.request).toHaveBeenCalledTimes(1);
+  });
+
   it('offboards one account-selected broker connection without a connection ID', async () => {
     const axios = createAxiosLikeClient();
-    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
-    const wrapper = new V1Wrapper(api);
+    const wrapper = new V1Wrapper(
+      new Configuration({ basePath: 'https://api.test' }),
+      undefined,
+      axios
+    );
 
     await wrapper.offboardBrokerConnection({
       userId: 'user_123',
@@ -156,7 +241,7 @@ describe('V1 account-first wrapper', () => {
       expect.objectContaining({
         method: 'POST',
         url: 'https://api.test/api/v1/users/user_123/broker-connections/offboarding',
-        data: { accountId: 'account_123' },
+        data: JSON.stringify({ accountId: 'account_123' }),
         headers: expect.objectContaining({ 'Idempotency-Key': 'idem_123' }),
       })
     );
@@ -165,8 +250,11 @@ describe('V1 account-first wrapper', () => {
 
   it('uses explicit account resource routes from the current API OpenAPI contract', async () => {
     const axios = createAxiosLikeClient();
-    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
-    const wrapper = new V1Wrapper(api);
+    const wrapper = new V1Wrapper(
+      new Configuration({ basePath: 'https://api.test' }),
+      undefined,
+      axios
+    );
 
     await wrapper.listBalances({ accountId: 'acct_123', limit: 10, offset: 2 });
     await wrapper.listPositions({ accountId: 'acct_123' });
@@ -177,8 +265,7 @@ describe('V1 account-first wrapper', () => {
       1,
       expect.objectContaining({
         method: 'GET',
-        url: 'https://api.test/api/v1/accounts/acct_123/balances',
-        params: { limit: 10, offset: 2 },
+        url: 'https://api.test/api/v1/accounts/acct_123/balances?limit=10&offset=2',
       })
     );
     expect(axios.request).toHaveBeenNthCalledWith(
@@ -206,8 +293,11 @@ describe('V1 account-first wrapper', () => {
 
   it('passes exact and provider-native instrument ids through order placement unchanged', async () => {
     const axios = createAxiosLikeClient();
-    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
-    const wrapper = new V1Wrapper(api);
+    const wrapper = new V1Wrapper(
+      new Configuration({ basePath: 'https://api.test' }),
+      undefined,
+      axios
+    );
     const body = {
       order: {
         symbol: 'MGCZ6',
@@ -225,7 +315,7 @@ describe('V1 account-first wrapper', () => {
     expect(axios.request).toHaveBeenCalledWith(
       expect.objectContaining({
         method: 'POST',
-        data: body,
+        data: JSON.stringify(body),
         headers: expect.objectContaining({ 'Idempotency-Key': 'idem_exact' }),
       })
     );
@@ -233,8 +323,11 @@ describe('V1 account-first wrapper', () => {
 
   it('preserves exact, root-only, missing, and ordered event descriptors', async () => {
     const axios = createAxiosLikeClient();
-    const api = new V1Api(new Configuration({ basePath: 'https://api.test' }), undefined, axios);
-    const wrapper = new V1Wrapper(api);
+    const wrapper = new V1Wrapper(
+      new Configuration({ basePath: 'https://api.test' }),
+      undefined,
+      axios
+    );
     const exact = {
       version: '1.0',
       assetType: 'FUTURE',

@@ -17,6 +17,6 @@
 import type { FDXPositionSide } from './fdxposition-side';
 
 /**
- * Lot side (LONG, SHORT)
+ * Position side (LONG, SHORT)
  */
 export interface Side2 {}

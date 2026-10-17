@@ -13,6 +13,6 @@
  */
 
 /**
- * Order notional value (for fractional)
+ * Notional value for this leg
  */
 export interface Notional {}

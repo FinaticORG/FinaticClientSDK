@@ -32,22 +32,22 @@ import type { Futureunderlyingassettype } from './futureunderlyingassettype';
 import type { Limitprice } from './limitprice';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Notional2 } from './notional2';
+import type { Notional } from './notional';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Positionintent } from './positionintent';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Quantity2 } from './quantity2';
+import type { Quantity } from './quantity';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Remainingquantity1 } from './remainingquantity1';
+import type { Remainingquantity } from './remainingquantity';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Securityidtype } from './securityidtype';
 // May contain unused imports in some cases
 // @ts-ignore
-import type { Side3 } from './side3';
+import type { Side } from './side';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { Stopprice } from './stopprice';
@@ -61,55 +61,31 @@ import type { Strikeprice } from './strikeprice';
 export interface FDXOrderLeg {
   assetType: Assettype;
   averageFillPrice?: Averagefillprice | null;
-  /**
-   * Raw symbol/contract from broker
-   */
   brokerProvidedSymbol?: string | null;
-  /**
-   * Future contract code (e.g., ESZ4)
-   */
   contractCode?: string | null;
-  /**
-   * Crypto base symbol
-   */
   cryptoBaseSymbol?: string | null;
-  /**
-   * Crypto quote symbol
-   */
   cryptoQuoteSymbol?: string | null;
-  /**
-   * Expiration date
-   */
   expirationDate?: string | null;
   filledQuantity?: Filledquantity | null;
   futureUnderlyingAssetType?: Futureunderlyingassettype | null;
-  /**
-   * Versioned Finatic instrument identity
-   */
   instrument?: FDXInstrumentDescriptor | null;
   /**
    * Leg index (0 for single-leg)
    */
   legIndex: number;
   limitPrice?: Limitprice | null;
-  notional?: Notional2 | null;
-  /**
-   * Option type (CALL, PUT)
-   */
+  notional?: Notional | null;
   optionType?: string | null;
   positionIntent?: Positionintent | null;
-  quantity: Quantity2;
-  remainingQuantity?: Remainingquantity1 | null;
+  quantity: Quantity;
+  remainingQuantity?: Remainingquantity | null;
   /**
    * Symbol or instrument identifier
    */
   securityId: string;
   securityIdType: Securityidtype;
-  side: Side3;
+  side: Side;
   stopPrice?: Stopprice | null;
   strikePrice?: Strikeprice | null;
-  /**
-   * Underlying symbol
-   */
   underlyingSymbol?: string | null;
 }

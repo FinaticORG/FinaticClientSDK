@@ -1,10 +1,15 @@
 import {
   FDXFutureInstrumentDetailsIdentityQualityEnum,
+  FDXAssetType,
   FDXInstrumentDescriptorVersionEnum,
   FDXOrderPositionIntent,
   FDXOrderSide,
   FDXPositionSide,
   type AccountOrderCommandInput,
+  type CancelAccountOrderParams,
+  type AccountOrderSchemaResponse,
+  type EventContractCapabilityResponse,
+  type FinaticAPIErrorResponse,
   type FDXBrokerOrder,
   type FDXBrokerOrderEvent,
   type FDXBrokerOrderFill,
@@ -58,9 +63,54 @@ const numericProviderInstrumentOrder: AccountOrderCommandInput = {
 void exactContractOrder;
 void rootOnlyOrder;
 void numericProviderInstrumentOrder;
+void FDXAssetType.Bond;
+void FDXAssetType.Cfd;
 void FDXInstrumentDescriptorVersionEnum._10;
 void FDXFutureInstrumentDetailsIdentityQualityEnum.Exact;
 void FDXFutureInstrumentDetailsIdentityQualityEnum.RootOnly;
+void FDXAssetType.EventContract;
+
+const eventContractCapability: EventContractCapabilityResponse = {
+  accountEntitled: null,
+  closingOnly: true,
+  implementationEvidenced: true,
+  implementationRef: 'core-sha',
+  observedAt: null,
+  providerOffered: true,
+  publicEnabled: false,
+};
+
+const eventContractSchema: AccountOrderSchemaResponse = {
+  action: 'PLACE' as AccountOrderSchemaResponse['action'],
+  brokerId: 'tastytrade',
+  brokerWireSchema: null,
+  eventContract: eventContractCapability,
+  orderSchema: {},
+  supportedOrderTypesByAssetClass: { EVENT_CONTRACT: ['LIMIT'] },
+};
+
+declare const eventContractError: FinaticAPIErrorResponse;
+void eventContractSchema;
+void eventContractError;
+
+const cancelOrder: CancelAccountOrderParams = {
+  accountId: 'account-id',
+  orderId: 'order-id',
+  idempotencyKey: 'idempotency-key',
+  broker: 'tastytrade',
+  paperTradeConfirmed: true,
+};
+
+const cancelOrderWithBody: CancelAccountOrderParams = {
+  accountId: 'account-id',
+  orderId: 'order-id',
+  idempotencyKey: 'idempotency-key',
+  // @ts-expect-error cancel requests use query controls and never accept an order body
+  body: { order: { symbol: 'AAPL' } },
+};
+
+void cancelOrder;
+void cancelOrderWithBody;
 
 const exactFutureOrderLeg: FDXOrderLeg = {
   assetType: 'FUTURE',

@@ -17,11 +17,11 @@
 import type { SuccessPayloadAny } from './success-payload-any';
 
 export interface FinaticResponseAny {
+  error?: { [key: string]: any } | null;
+  success?: SuccessPayloadAny | null;
   /**
    * Request trace identifier for tracking and debugging. Auto-generated if not provided.
    */
   trace_id?: string;
-  success?: SuccessPayloadAny | null;
-  error?: { [key: string]: any } | null;
   warning?: Array<{ [key: string]: any }> | null;
 }

@@ -18,6 +18,6 @@
 export interface OwnerPortalKnownCompany {
   company_id: string;
   company_name: string;
-  trading_enabled?: boolean;
   logo_url?: string | null;
+  trading_enabled?: boolean;
 }
