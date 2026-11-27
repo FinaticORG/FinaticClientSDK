@@ -49,7 +49,10 @@ export interface FinaticV1CallOptions {
 export interface AccountScopedParams {
   accountId: string;
   limit?: number;
+  /** Legacy offset pagination. Prefer `pageToken`; cannot be combined with it. */
   offset?: number;
+  /** Keyset cursor: the previous response's `success.meta.next_page_token`. */
+  pageToken?: string;
 }
 
 export interface AccountOrderParams {
@@ -209,6 +212,24 @@ export class V1Wrapper {
   } {
     const { xFinaticEnvironment, headers } = this.headers(options);
     return { xFinaticEnvironment, axiosOptions: { headers } };
+  }
+
+  /**
+   * Request options for account list calls. `pageToken` is sent as a query
+   * param through axios until the generated client exposes it natively.
+   */
+  private listRequestOptions(
+    params: AccountScopedParams,
+    options?: FinaticV1CallOptions
+  ): ReturnType<V1Wrapper['requestOptions']> {
+    const resolved = this.requestOptions(options);
+    if (params.pageToken === undefined) {
+      return resolved;
+    }
+    return {
+      ...resolved,
+      axiosOptions: { ...resolved.axiosOptions, params: { pageToken: params.pageToken } },
+    };
   }
 
   private validateOrderAssetType(body: AccountOrderCommandInput | undefined): void {
@@ -477,7 +498,7 @@ export class V1Wrapper {
     params: AccountScopedParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
-    const { xFinaticEnvironment, axiosOptions } = this.requestOptions(options);
+    const { xFinaticEnvironment, axiosOptions } = this.listRequestOptions(params, options);
     return this.unwrap<T>(
       this.accountsApi.finaticV1GetAccountsAccountIdBalances(
         { ...params, xFinaticEnvironment },
@@ -501,7 +522,7 @@ export class V1Wrapper {
     params: AccountScopedParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
-    const { xFinaticEnvironment, axiosOptions } = this.requestOptions(options);
+    const { xFinaticEnvironment, axiosOptions } = this.listRequestOptions(params, options);
     return this.unwrap<T>(
       this.accountsApi.finaticV1GetAccountsAccountIdPositions(
         { ...params, xFinaticEnvironment },
@@ -514,7 +535,7 @@ export class V1Wrapper {
     params: AccountScopedParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
-    const { xFinaticEnvironment, axiosOptions } = this.requestOptions(options);
+    const { xFinaticEnvironment, axiosOptions } = this.listRequestOptions(params, options);
     return this.unwrap<T>(
       this.accountsApi.finaticV1GetAccountsAccountIdTransactions(
         { ...params, xFinaticEnvironment },
@@ -527,7 +548,7 @@ export class V1Wrapper {
     params: AccountScopedParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
-    const { xFinaticEnvironment, axiosOptions } = this.requestOptions(options);
+    const { xFinaticEnvironment, axiosOptions } = this.listRequestOptions(params, options);
     return this.unwrap<T>(
       this.accountsApi.finaticV1GetAccountsAccountIdOrders(
         { ...params, xFinaticEnvironment },
@@ -797,12 +818,56 @@ export class V1Wrapper {
     params: AccountScopedParams,
     options?: FinaticV1CallOptions
   ): Promise<FinaticV1Response<T>> {
-    const { xFinaticEnvironment, axiosOptions } = this.requestOptions(options);
+    const { xFinaticEnvironment, axiosOptions } = this.listRequestOptions(params, options);
     return this.unwrap<T>(
       this.accountsApi.finaticV1GetAccountsAccountIdResource(
         { resource, ...params, xFinaticEnvironment },
         axiosOptions
       )
     );
+  }
+
+  /**
+   * Iterate every row of balances, positions, transactions, or orders using
+   * keyset pagination. Throws if any page returns an API error.
+   *
+   * @example
+   * ```typescript-client
+   * for await (const order of finatic.v1.iterateAccountResource('orders', { accountId })) {
+   *   console.log(order);
+   * }
+   * ```
+   */
+  async *iterateAccountResource<Row = unknown>(
+    resource: AccountResource,
+    params: Omit<AccountScopedParams, 'offset'>,
+    options?: FinaticV1CallOptions
+  ): AsyncGenerator<Row, void, undefined> {
+    let pageToken = params.pageToken;
+    for (;;) {
+      const page = await this.listAccountResource<Row[]>(
+        resource,
+        {
+          accountId: params.accountId,
+          ...(params.limit !== undefined ? { limit: params.limit } : {}),
+          ...(pageToken !== undefined ? { pageToken } : {}),
+        },
+        options
+      );
+      if (page.error) {
+        const code = String(page.error['code'] ?? 'ERROR');
+        const message = String(page.error['message'] ?? 'request failed');
+        throw new Error(`Listing ${resource} failed: ${code}: ${message}`);
+      }
+      for (const row of page.success?.data ?? []) {
+        yield row;
+      }
+      const meta = page.success?.meta;
+      const next = meta?.['next_page_token'];
+      if (!meta?.['has_more'] || typeof next !== 'string' || next.length === 0) {
+        return;
+      }
+      pageToken = next;
+    }
   }
 }

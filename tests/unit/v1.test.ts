@@ -394,4 +394,78 @@ describe('V1 account-first wrapper', () => {
     expect(params).not.toContain('connectionId');
     expect(params).not.toContain('user_broker_connection_id');
   });
+
+  it('sends pageToken and exposes meta.next_page_token', async () => {
+    const axios = createAxiosLikeClient();
+    axios.request.mockImplementationOnce(async (config: unknown) => ({
+      config,
+      data: {
+        trace_id: 'trace-id',
+        success: { data: [], meta: { has_more: true, next_page_token: 'tok-1' } },
+        error: null,
+        warning: null,
+      },
+    }));
+    const wrapper = new V1Wrapper(new Configuration({ basePath: 'https://api.test' }), {
+      apiEnvironment: 'sandbox',
+    } as any, axios);
+
+    const result = await wrapper.listOrders({ accountId: 'acct_123', limit: 2, pageToken: 'tok-0' });
+
+    expect(axios.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: 'https://api.test/api/v1/accounts/acct_123/orders?limit=2',
+        params: { pageToken: 'tok-0' },
+      })
+    );
+    expect(result.success?.meta?.['next_page_token']).toBe('tok-1');
+  });
+
+  it('iterates every page until has_more is false and stops on errors', async () => {
+    const axios = createAxiosLikeClient();
+    const pages = [
+      { data: [{ id: 'a' }, { id: 'b' }], meta: { has_more: true, next_page_token: 'tok-1' } },
+      { data: [{ id: 'c' }], meta: { has_more: false, next_page_token: null } },
+    ];
+    axios.request.mockImplementation(async (config: unknown) => ({
+      config,
+      data: { trace_id: 'trace-id', success: pages.shift(), error: null, warning: null },
+    }));
+    const wrapper = new V1Wrapper(new Configuration({ basePath: 'https://api.test' }), {
+      apiEnvironment: 'sandbox',
+    } as any, axios);
+
+    const ids: string[] = [];
+    for await (const row of wrapper.iterateAccountResource<{ id: string }>('transactions', {
+      accountId: 'acct_123',
+      limit: 2,
+    })) {
+      ids.push(row.id);
+    }
+    expect(ids).toEqual(['a', 'b', 'c']);
+    expect(axios.request.mock.calls.map((call: any[]) => call[0].params)).toEqual([
+      undefined,
+      { pageToken: 'tok-1' },
+    ]);
+
+    axios.request.mockImplementation(async (config: unknown) => ({
+      config,
+      data: {
+        trace_id: 'trace-id',
+        success: null,
+        error: { code: 'INVALID_PAGE_TOKEN', message: 'bad token' },
+        warning: null,
+      },
+    }));
+    await expect(
+      (async () => {
+        for await (const row of wrapper.iterateAccountResource('orders', {
+          accountId: 'acct_123',
+          pageToken: 'forged',
+        })) {
+          void row;
+        }
+      })()
+    ).rejects.toThrow('INVALID_PAGE_TOKEN');
+  });
 });
