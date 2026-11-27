@@ -13,7 +13,7 @@ function createAxiosLikeClient(): any {
     request: jest.fn(async (config) => ({
       config,
       data: {
-        _id: 'trace-id',
+        trace_id: 'trace-id',
         success: { data: { ok: true }, meta: null },
         error: null,
         warning: null,
@@ -33,7 +33,7 @@ describe('V1 account-first wrapper', () => {
 
     const result = await wrapper.listPositions({ accountId: 'acct_123', limit: 25 });
 
-    expect(result._id).toBe('trace-id');
+    expect(result.trace_id).toBe('trace-id');
     expect(axios.request).toHaveBeenCalledWith(
       expect.objectContaining({
         method: 'GET',
