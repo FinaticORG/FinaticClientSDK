@@ -33,7 +33,7 @@ import { generateRequestId } from '../utils/request-id';
 import { unwrapAxiosResponse } from '../utils/response-utils';
 
 export interface FinaticV1Response<T = unknown> {
-  _id?: string;
+  trace_id?: string;
   success?: {
     data: T;
     meta?: Record<string, unknown> | null;
