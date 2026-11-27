@@ -468,4 +468,30 @@ describe('V1 account-first wrapper', () => {
       })()
     ).rejects.toThrow('INVALID_PAGE_TOKEN');
   });
+
+  it('stops iterating when the next token repeats the previous one', async () => {
+    const axios = createAxiosLikeClient();
+    const pages = [
+      { data: [{ id: 'a' }], meta: { has_more: true, next_page_token: 'tok-1' } },
+      { data: [{ id: 'b' }], meta: { has_more: true, next_page_token: 'tok-1' } },
+      { data: [{ id: 'never' }], meta: { has_more: false, next_page_token: null } },
+    ];
+    axios.request.mockImplementation(async (config: unknown) => ({
+      config,
+      data: { trace_id: 'trace-id', success: pages.shift(), error: null, warning: null },
+    }));
+    const wrapper = new V1Wrapper(new Configuration({ basePath: 'https://api.test' }), {
+      apiEnvironment: 'sandbox',
+    } as any, axios);
+
+    const ids: string[] = [];
+    for await (const row of wrapper.iterateAccountResource<{ id: string }>('orders', {
+      accountId: 'acct_123',
+    })) {
+      ids.push(row.id);
+    }
+
+    expect(ids).toEqual(['a', 'b']);
+    expect(axios.request).toHaveBeenCalledTimes(2);
+  });
 });
